@@ -88,6 +88,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntFunction
 	Handle<v8::Value> value = global->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(global, 0, NULL);
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
+		throwResultUndefinedException(env, "");
+		return 0;
+	}
 	return result->Int32Value();
 }
 

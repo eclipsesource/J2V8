@@ -87,4 +87,22 @@ public class V8Tests {
         assertEquals(3, result);
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfIntFunction() {
+        v8.executeIntScript("function foo() {return 'test';}; 42");
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(3, result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInIntFunction() {
+        v8.executeIntScript("function foo() {}; 42");
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(3, result);
+    }
+
 }
