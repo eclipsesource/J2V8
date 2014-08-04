@@ -60,4 +60,13 @@ public class V8Tests {
 
         assertEquals(3, result);
     }
+
+    @Test
+    public void testSimpleIntFunction() {
+        v8.executeIntScript("function foo() {return 1+2;}; 42");
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(3, result);
+    }
 }
