@@ -49,13 +49,32 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1release
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1executeVoidScript
-  (JNIEnv *env, jobject, jint handle, jstring, jobject) {
+  (JNIEnv * env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	Context::Scope context_scope(context);
+	const char* js = env -> GetStringUTFChars(jjstring, NULL);
+	Local<String> source = String::NewFromUtf8(isolate, js);
+
+	TryCatch tryCatch;
+	Local<Script> script = Script::Compile(source);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, "");
+		return;
+	}
+	Local<Value> result = script->Run();
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
   (JNIEnv * env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
 	Context::Scope context_scope(context);
@@ -69,7 +88,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
 		return 0;
 	}
 	Local<Value> result = script->Run();
-	
+
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
 		throwResultUndefinedException(env, "");
 		return 0;
@@ -79,8 +98,11 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntFunction
   (JNIEnv * env, jobject, jint handle, jstring jfunctionName, jobject) {
-	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
 	Context::Scope context_scope(context);

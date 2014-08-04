@@ -63,6 +63,20 @@ public class V8Tests {
         assertEquals(3, result);
     }
 
+    @Test
+    public void testSimpleVoidScript() {
+        v8.executeVoidScript("function foo() {return 1+1}");
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(2, result);
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSyntaxErrorInVoidScript() {
+        v8.executeVoidScript("'a");
+    }
+
     @Test(expected = V8ExecutionException.class)
     public void testSimpleSyntaxError() {
         v8.executeIntScript("return 1+2");
