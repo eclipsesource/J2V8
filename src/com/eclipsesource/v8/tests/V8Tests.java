@@ -72,6 +72,18 @@ public class V8Tests {
         assertEquals(2, result);
     }
 
+    @Test
+    public void testMultipleScriptCallsPermitted() {
+        v8.executeVoidScript("function foo() {return 1+1}");
+        v8.executeVoidScript("function bar() {return foo() + 1}");
+
+        int foo = v8.executeIntFunction("foo", null);
+        int bar = v8.executeIntFunction("bar", null);
+
+        assertEquals(2, foo);
+        assertEquals(3, bar);
+    }
+
     @Test(expected = V8ExecutionException.class)
     public void testSyntaxErrorInVoidScript() {
         v8.executeVoidScript("'a");
