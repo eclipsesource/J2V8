@@ -56,13 +56,7 @@ public class V8Tests {
         assertTrue(result[0]);
     }
 
-    @Test
-    public void testSimpleIntScript() {
-        int result = v8.executeIntScript("1+2;");
-
-        assertEquals(3, result);
-    }
-
+    /*** Void Script ***/
     @Test
     public void testSimpleVoidScript() {
         v8.executeVoidScript("function foo() {return 1+1}");
@@ -89,21 +83,53 @@ public class V8Tests {
         v8.executeVoidScript("'a");
     }
 
+    /*** Int Script ***/
+    @Test
+    public void testSimpleIntScript() {
+        int result = v8.executeIntScript("1+2;");
+
+        assertEquals(3, result);
+    }
+
     @Test(expected = V8ExecutionException.class)
     public void testSimpleSyntaxError() {
         v8.executeIntScript("return 1+2");
     }
 
     @Test(expected = V8ResultUndefined.class)
-    public void testResultUndefinedException() {
+    public void testResultUndefinedExceptionIntScript() {
         v8.executeIntScript("");
     }
 
     @Test(expected = V8ResultUndefined.class)
-    public void testResultUndefinedExceptionForWrongReturnType() {
+    public void testResultUndefinedExceptionForWrongReturnTypeIntScript() {
         v8.executeIntScript("'test'");
     }
 
+    /*** String Script ***/
+    @Test
+    public void testSimpleStringScript() {
+        String result = v8.executeStringScript("'hello, world'");
+
+        assertEquals("hello, world", result);
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxErrorStringScript() {
+        v8.executeStringScript("'a");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionStringScript() {
+        v8.executeIntScript("");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnTypeStringScript() {
+        v8.executeStringScript("42");
+    }
+
+    /*** Int Function ***/
     @Test
     public void testSimpleIntFunction() {
         v8.executeIntScript("function foo() {return 1+2;}; 42");

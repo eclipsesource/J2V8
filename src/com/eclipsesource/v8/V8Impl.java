@@ -180,7 +180,7 @@ class V8Impl extends V8 {
     @Override
     public String executeStringScript(final String script) throws V8RuntimeException {
         checkThread();
-        return null;
+        return _executeStringScript(handle, script);
     }
 
     @Override
