@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,6 +62,11 @@ public class V8Tests {
         assertEquals(3, result);
     }
 
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxError() {
+        v8.executeIntScript("return 1+2");
+    }
+
     @Test
     public void testSimpleIntFunction() {
         v8.executeIntScript("function foo() {return 1+2;}; 42");
@@ -69,4 +75,5 @@ public class V8Tests {
 
         assertEquals(3, result);
     }
+
 }

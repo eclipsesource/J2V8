@@ -61,8 +61,15 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
 	Context::Scope context_scope(context);
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
+
+	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, "");
+		return 0;
+	}
 	Local<Value> result = script->Run();
+	
 	return result->Int32Value();
 }
 
