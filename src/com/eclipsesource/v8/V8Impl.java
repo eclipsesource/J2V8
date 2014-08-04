@@ -186,7 +186,7 @@ class V8Impl extends V8 {
     @Override
     public boolean executeBooleanScript(final String script) throws V8RuntimeException {
         checkThread();
-        return false;
+        return _executeBooleanScript(handle, script);
     }
 
     @Override

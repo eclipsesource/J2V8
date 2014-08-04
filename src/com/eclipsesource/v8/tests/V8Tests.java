@@ -135,6 +135,29 @@ public class V8Tests {
         assertEquals(1, result);
     }
 
+    /*** Boolean Script ***/
+    @Test
+    public void testSimpleBooleanScript() {
+        boolean result = v8.executeBooleanScript("true");
+
+        assertTrue(result);
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxErrorInBooleanScript() {
+        v8.executeBooleanScript("return 1+2");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionBooleanScript() {
+        v8.executeBooleanScript("");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnTypeBooleanScript() {
+        v8.executeBooleanScript("'test'");
+    }
+
     /*** String Script ***/
     @Test
     public void testSimpleStringScript() {
