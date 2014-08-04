@@ -106,6 +106,35 @@ public class V8Tests {
         v8.executeIntScript("'test'");
     }
 
+    /*** Double Script ***/
+    @Test
+    public void testSimpleDoubleScript() {
+        double result = v8.executeDoubleScript("3.14159;");
+
+        assertEquals(3.14159, result, 0.00001);
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxErrorInDoubleScript() {
+        v8.executeDoubleScript("return 1+2");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionDoubleScript() {
+        v8.executeDoubleScript("");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnTypeDoubleScript() {
+        v8.executeDoubleScript("'test'");
+    }
+
+    public void testDoubleScriptHandlesInts() {
+        int result = (int) v8.executeDoubleScript("1");
+
+        assertEquals(1, result);
+    }
+
     /*** String Script ***/
     @Test
     public void testSimpleStringScript() {

@@ -174,7 +174,7 @@ class V8Impl extends V8 {
     @Override
     public double executeDoubleScript(final String script) throws V8RuntimeException {
         checkThread();
-        return 0;
+        return _executeDoubleScript(handle, script);
     }
 
     @Override
