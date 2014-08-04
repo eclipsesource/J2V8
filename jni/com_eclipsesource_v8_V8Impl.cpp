@@ -70,7 +70,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
 	}
 	Local<Value> result = script->Run();
 	
-	if (result.IsEmpty() || result->IsUndefined()) {
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
 		throwResultUndefinedException(env, "");
 		return 0;
 	}

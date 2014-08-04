@@ -73,6 +73,11 @@ public class V8Tests {
         v8.executeIntScript("");
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnType() {
+        v8.executeIntScript("'test'");
+    }
+
     @Test
     public void testSimpleIntFunction() {
         v8.executeIntScript("function foo() {return 1+2;}; 42");
