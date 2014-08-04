@@ -4,6 +4,9 @@ import java.util.Collection;
 
 class V8Impl extends V8 {
 
+    private static int v8InstanceCounter;
+
+    private int        handle;
     Thread thread = null;
 
     static {
@@ -12,37 +15,38 @@ class V8Impl extends V8 {
 
     V8Impl() {
         thread = Thread.currentThread();
-        _createIsolate();
+        handle = v8InstanceCounter++;
+        _createIsolate(handle);
     }
 
     @Override
     public void release() {
         checkThread();
-        _release();
+        _release(handle);
     }
 
     @Override
     public boolean contains(final String key) {
         checkThread();
-        return _contains(key);
+        return _contains(handle, key);
     }
 
     @Override
     public Collection<String> getKeys() {
         checkThread();
-        return _getKeys();
+        return _getKeys(handle);
     }
 
     @Override
     public int getType(final String key) {
         checkThread();
-        return _getType(key);
+        return _getType(handle, key);
     }
 
     @Override
     public int getInteger(final String key) {
         checkThread();
-        return _getInteger(key);
+        return _getInteger(handle, key);
     }
 
     @Override
@@ -200,6 +204,7 @@ class V8Impl extends V8 {
     @Override
     public void executeVoidScript(final String script, final V8Array parameters) throws V8RuntimeException {
         checkThread();
+        _executeVoidScript(handle, script, parameters);
     }
 
     private void checkThread() {
@@ -209,73 +214,84 @@ class V8Impl extends V8 {
 
     }
 
-    private native void _createIsolate();
+    private native void _createIsolate(int handle);
 
-    public native void _release();
+    public native void _release(int handle);
 
-    public native boolean _contains(final String key);
+    public native boolean _contains(int handle, final String key);
 
-    public native Collection<String> _getKeys();
+    public native Collection<String> _getKeys(int handle);
 
-    public native int _getType(final String key);
+    public native int _getType(int handle, final String key);
 
-    public native int _getInteger(final String key);
+    public native int _getInteger(int handle, final String key);
 
-    public native boolean _getBoolean(final String key);
+    public native boolean _getBoolean(int handle, final String key);
 
-    public native double _getDouble(final String key);
+    public native double _getDouble(int handle, final String key);
 
-    public native String _getString(final String key);
+    public native String _getString(int handle, final String key);
 
-    public native V8Array _getArray(final String key);
+    public native V8Array _getArray(int handle, final String key);
 
-    public native V8Object _getObject(final String key);
+    public native V8Object _getObject(int handle, final String key);
 
-    public native V8Array _createParameterList(final int size);
+    public native V8Array _createParameterList(int handle, final int size);
 
-    public native int _executeIntFunction(final String name, final V8Array parameters) throws V8RuntimeException;
-
-    public native double _executeDoubleFunction(final String name, final V8Array parameters) throws V8RuntimeException;
-
-    public native String _executeStringFunction(final String name, final V8Array parameters) throws V8RuntimeException;
-
-    public native boolean _executeBooleanFunction(final String name, final V8Array parameters)
+    public native int _executeIntFunction(int handle, final String name, final V8Array parameters)
             throws V8RuntimeException;
 
-    public native V8Array _executeArrayFunction(final String name, final V8Array parameters) throws V8RuntimeException;
-
-    public native V8Object _executeObjectFunction(final String name, final V8Array parameters)
+    public native double _executeDoubleFunction(int handle, final String name, final V8Array parameters)
             throws V8RuntimeException;
 
-    public native void _executeVoidFunction(final String name, final V8Array parameters) throws V8RuntimeException;
-
-    public native void _add(final String key, final int value);
-
-    public native void _add(final String key, final boolean value);
-
-    public native void _add(final String key, final double value);
-
-    public native void _add(final String key, final String value);
-
-    public native V8Object _addObject(final String key);
-
-    public native V8Array _addArray(final String key, final int size);
-
-    public native void _registerJavaMethod(final Object object, final String methodName, final Class<?>[] parameterTypes);
-
-    public native int _executeIntScript(final String script, final V8Array parameters) throws V8RuntimeException;
-
-    public native double _executeDoubleScript(final String script, final V8Array parameters) throws V8RuntimeException;
-
-    public native String _executeStringScript(final String script, final V8Array parameters) throws V8RuntimeException;
-
-    public native boolean _executeBooleanScript(final String script, final V8Array parameters)
+    public native String _executeStringFunction(int handle, final String name, final V8Array parameters)
             throws V8RuntimeException;
 
-    public native V8Array _executeArrayScript(final String script, final V8Array parameters) throws V8RuntimeException;
-
-    public native V8Object _executeObjectScript(final String script, final V8Array parameters)
+    public native boolean _executeBooleanFunction(int handle, final String name, final V8Array parameters)
             throws V8RuntimeException;
 
-    public native void _executeVoidScript(final String script, final V8Array parameters) throws V8RuntimeException;
+    public native V8Array _executeArrayFunction(int handle, final String name, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native V8Object _executeObjectFunction(int handle, final String name, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native void _executeVoidFunction(int handle, final String name, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native void _add(int handle, final String key, final int value);
+
+    public native void _add(int handle, final String key, final boolean value);
+
+    public native void _add(int handle, final String key, final double value);
+
+    public native void _add(int handle, final String key, final String value);
+
+    public native V8Object _addObject(int handle, final String key);
+
+    public native V8Array _addArray(int handle, final String key, final int size);
+
+    public native void _registerJavaMethod(int handle, final Object object, final String methodName,
+            final Class<?>[] parameterTypes);
+
+    public native int _executeIntScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native double _executeDoubleScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native String _executeStringScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native boolean _executeBooleanScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native V8Array _executeArrayScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native V8Object _executeObjectScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
+
+    public native void _executeVoidScript(int handle, final String script, final V8Array parameters)
+            throws V8RuntimeException;
 }

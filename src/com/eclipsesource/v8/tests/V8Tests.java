@@ -27,4 +27,9 @@ public class V8Tests {
         assertNotNull(v8);
     }
 
+    @Test(expected = Error.class)
+    public void testCannotAccessDisposedIsolate() {
+        v8.release();
+        v8.executeVoidScript("", null);
+    }
 }
