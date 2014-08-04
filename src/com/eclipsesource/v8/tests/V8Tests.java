@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8ExecutionException;
+import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -65,6 +66,11 @@ public class V8Tests {
     @Test(expected = V8ExecutionException.class)
     public void testSimpleSyntaxError() {
         v8.executeIntScript("return 1+2");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedException() {
+        v8.executeIntScript("");
     }
 
     @Test
