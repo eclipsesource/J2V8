@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class V8Tests {
 
@@ -31,5 +32,24 @@ public class V8Tests {
     public void testCannotAccessDisposedIsolate() {
         v8.release();
         v8.executeVoidScript("", null);
+    }
+
+    @Test
+    public void testSingleThreadAccess() throws InterruptedException {
+        final boolean[] result = new boolean[] { false };
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    v8.executeVoidScript("", null);
+                } catch (Error e) {
+                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                }
+            }
+        });
+        t.start();
+        t.join();
+
+        assertTrue(result[0]);
     }
 }
