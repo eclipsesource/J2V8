@@ -141,6 +141,7 @@ class V8Impl extends V8 {
     @Override
     public void add(final String key, final double value) {
         checkThread();
+        _add(handle, key, value);
     }
 
     @Override

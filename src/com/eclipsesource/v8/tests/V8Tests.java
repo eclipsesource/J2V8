@@ -229,4 +229,24 @@ public class V8Tests {
         assertEquals(43, result);
     }
 
+    /*** Add Double ***/
+    @Test
+    public void testAddDouble() {
+        v8.add("foo", 3.14159);
+
+        double result = v8.executeDoubleScript("foo");
+
+        assertEquals(3.14159, result, 0.000001);
+    }
+
+    @Test
+    public void testAddDoubleReplaceValue() {
+        v8.add("foo", 42.1);
+        v8.add("foo", 43.1);
+
+        double result = v8.executeDoubleScript("foo");
+
+        assertEquals(43.1, result, 0.000001);
+    }
+
 }
