@@ -209,4 +209,24 @@ public class V8Tests {
         assertEquals(3, result);
     }
 
+    /*** Add Int ***/
+    @Test
+    public void testAddInt() {
+        v8.add("foo", 42);
+
+        int result = v8.executeIntScript("foo");
+
+        assertEquals(42, result);
+    }
+
+    @Test
+    public void testAddIntReplaceValue() {
+        v8.add("foo", 42);
+        v8.add("foo", 43);
+
+        int result = v8.executeIntScript("foo");
+
+        assertEquals(43, result);
+    }
+
 }

@@ -28,25 +28,25 @@ class V8Impl extends V8 {
     @Override
     public boolean contains(final String key) {
         checkThread();
-        return _contains(handle, key);
+        return false;
     }
 
     @Override
     public Collection<String> getKeys() {
         checkThread();
-        return _getKeys(handle);
+        return null;
     }
 
     @Override
     public int getType(final String key) {
         checkThread();
-        return _getType(handle, key);
+        return 0;
     }
 
     @Override
     public int getInteger(final String key) {
         checkThread();
-        return _getInteger(handle, key);
+        return 0;
     }
 
     @Override
@@ -130,7 +130,7 @@ class V8Impl extends V8 {
     @Override
     public void add(final String key, final int value) {
         checkThread();
-
+        _add(handle, key, value);
     }
 
     @Override
