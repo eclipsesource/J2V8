@@ -247,6 +247,22 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_Strin
 	global->Set( v8Key,  v8Value);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2Z
+  (JNIEnv *env, jobject, jint handle, jstring key, jboolean value) {
+	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = context->Global();
+
+	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
+	Local<Value> v8Value = v8::Boolean::New(isolate, value);
+	global->Set( v8Key,  v8Value);
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");

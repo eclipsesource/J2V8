@@ -9,6 +9,7 @@ import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -267,6 +268,26 @@ public class V8Tests {
         String result = v8.executeStringScript("foo");
 
         assertEquals("world", result);
+    }
+
+    /*** Add Boolean ***/
+    @Test
+    public void testBooleanString() {
+        v8.add("foo", true);
+
+        boolean result = v8.executeBooleanScript("foo");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testAddBooleanReplaceValue() {
+        v8.add("foo", true);
+        v8.add("foo", false);
+
+        boolean result = v8.executeBooleanScript("foo");
+
+        assertFalse(result);
     }
 
 }
