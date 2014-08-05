@@ -249,4 +249,24 @@ public class V8Tests {
         assertEquals(43.1, result, 0.000001);
     }
 
+    /*** Add String ***/
+    @Test
+    public void testAddString() {
+        v8.add("foo", "hello, world!");
+
+        String result = v8.executeStringScript("foo");
+
+        assertEquals("hello, world!", result);
+    }
+
+    @Test
+    public void testAddStringReplaceValue() {
+        v8.add("foo", "hello");
+        v8.add("foo", "world");
+
+        String result = v8.executeStringScript("foo");
+
+        assertEquals("world", result);
+    }
+
 }
