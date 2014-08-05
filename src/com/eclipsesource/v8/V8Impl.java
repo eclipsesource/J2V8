@@ -46,7 +46,7 @@ class V8Impl extends V8 {
     @Override
     public int getInteger(final String key) {
         checkThread();
-        return 0;
+        return _getInteger(handle, key);
     }
 
     @Override
@@ -124,7 +124,6 @@ class V8Impl extends V8 {
     @Override
     public void executeVoidFunction(final String name, final V8Array parameters) throws V8RuntimeException {
         checkThread();
-
     }
 
     @Override
@@ -214,7 +213,6 @@ class V8Impl extends V8 {
         if (thread != Thread.currentThread()) {
             throw new Error("Invalid V8 thread access.");
         }
-
     }
 
     private native void _createIsolate(int handle);

@@ -300,6 +300,40 @@ public class V8Tests {
         assertEquals("test", result);
     }
 
+    /*** Get Int ***/
+    @Test
+    public void testGetInt() {
+        v8.executeVoidScript("x = 7");
+
+        int result = v8.getInteger("x");
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testGetIntReplaceValue() {
+        v8.executeVoidScript("x = 7; x = 8");
+
+        int result = v8.getInteger("x");
+
+        assertEquals(8, result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetIntWrongType() {
+        v8.executeVoidScript("x = 'foo'");
+
+        v8.getInteger("x");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetIntDoesNotExist() {
+        v8.executeVoidScript("");
+
+        v8.getInteger("x");
+    }
+
+
     /*** Contains ***/
     @Test
     public void testContainsKey() {
