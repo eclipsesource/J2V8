@@ -234,6 +234,30 @@ public class V8Tests {
         v8.executeStringFunction("foo", null);
     }
 
+    /*** Double Function ***/
+    @Test
+    public void testSimpleDoubleunction() {
+        v8.executeVoidScript("function foo() {return 3.14 + 1;}");
+
+        double result = v8.executeDoubleFunction("foo", null);
+
+        assertEquals(4.14, result, 0.000001);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfDoubleFunction() {
+        v8.executeVoidScript("function foo() {return 'foo';}");
+
+        v8.executeDoubleFunction("foo", null);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInDoubleFunction() {
+        v8.executeVoidScript("function foo() {};");
+
+        v8.executeDoubleFunction("foo", null);
+    }
+
     /*** Add Int ***/
     @Test
     public void testAddInt() {
