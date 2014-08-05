@@ -210,6 +210,30 @@ public class V8Tests {
         assertEquals(3, result);
     }
 
+    /*** String Function ***/
+    @Test
+    public void testSimpleStringFunction() {
+        v8.executeVoidScript("function foo() {return 'hello';}");
+
+        String result = v8.executeStringFunction("foo", null);
+
+        assertEquals("hello", result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfStringFunction() {
+        v8.executeVoidScript("function foo() {return 42;}");
+
+        v8.executeStringFunction("foo", null);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInStringFunction() {
+        v8.executeVoidScript("function foo() {};");
+
+        v8.executeStringFunction("foo", null);
+    }
+
     /*** Add Int ***/
     @Test
     public void testAddInt() {

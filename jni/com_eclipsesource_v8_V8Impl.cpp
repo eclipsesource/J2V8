@@ -199,6 +199,28 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntFunction
 	return result->Int32Value();
 }
 
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringFunction
+  (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
+	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return NULL;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = context->Global();
+	Handle<v8::Value> value = global->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+	Handle<Value> result = func->Call(global, 0, NULL);
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsString()) {
+		throwResultUndefinedException(env, "");
+		return NULL;
+	}
+	String::Utf8Value utf(result->ToString());
+	return env->NewStringUTF(*utf);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2I
   (JNIEnv * env, jobject, jint handle, jstring key, jint value) {
 	Isolate* isolate = getIsolate(env, handle);

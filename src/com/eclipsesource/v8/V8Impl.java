@@ -100,7 +100,7 @@ class V8Impl extends V8 {
     @Override
     public String executeStringFunction(final String name, final V8Array parameters) throws V8RuntimeException {
         checkThread();
-        return null;
+        return _executeStringFunction(handle, name, parameters);
     }
 
     @Override
