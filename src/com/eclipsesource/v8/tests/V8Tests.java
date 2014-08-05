@@ -290,4 +290,54 @@ public class V8Tests {
         assertFalse(result);
     }
 
+    @Test
+    public void testAddReplaceValue() {
+        v8.add("foo", true);
+        v8.add("foo", "test");
+
+        String result = v8.executeStringScript("foo");
+
+        assertEquals("test", result);
+    }
+
+    /*** Contains ***/
+    @Test
+    public void testContainsKey() {
+        v8.add("foo", true);
+
+        boolean result = v8.contains("foo");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testContainsKeyFromScript() {
+        v8.executeVoidScript("bar = 3");
+
+        assertTrue(v8.contains("bar"));
+    }
+
+    @Test
+    public void testContainsMultipleKeys() {
+        v8.add("true", true);
+        v8.add("test", "test");
+        v8.add("one", 1);
+        v8.add("pi", 3.14);
+
+        assertTrue(v8.contains("true"));
+        assertTrue(v8.contains("test"));
+        assertTrue(v8.contains("one"));
+        assertTrue(v8.contains("pi"));
+        assertFalse(v8.contains("bar"));
+    }
+
+    @Test
+    public void testDoesNotContainsKey() {
+        v8.add("foo", true);
+
+        boolean result = v8.contains("bar");
+
+        assertFalse(result);
+    }
+
 }
