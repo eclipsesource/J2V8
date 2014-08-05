@@ -52,7 +52,7 @@ class V8Impl extends V8 {
     @Override
     public boolean getBoolean(final String key) {
         checkThread();
-        return false;
+        return _getBoolean(handle, key);
     }
 
     @Override

@@ -399,6 +399,51 @@ public class V8Tests {
         v8.getString("x");
     }
 
+    /*** Get Boolean ***/
+    @Test
+    public void testGetBoolean() {
+        v8.executeVoidScript("x = true");
+
+        boolean result = v8.getBoolean("x");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testGetBooleanReplaceValue() {
+        v8.executeVoidScript("x = true; x = false");
+
+        boolean result = v8.getBoolean("x");
+
+        assertFalse(result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetBooleanWrongType() {
+        v8.executeVoidScript("x = 42");
+
+        v8.getBoolean("x");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetBooleanDoesNotExist() {
+        v8.executeVoidScript("");
+
+        v8.getBoolean("x");
+    }
+    @Test
+    public void testAddGet() {
+        v8.add("string", "string");
+        v8.add("int", 7);
+        v8.add("double", 3.1);
+        v8.add("boolean", true);
+
+        assertEquals("string", v8.getString("string"));
+        assertEquals(7, v8.getInteger("int"));
+        assertEquals(3.1, v8.getDouble("double"), 0.00001);
+        assertTrue(v8.getBoolean("boolean"));
+    }
+
     /*** Contains ***/
     @Test
     public void testContainsKey() {
