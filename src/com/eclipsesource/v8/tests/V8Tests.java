@@ -333,6 +333,38 @@ public class V8Tests {
         v8.getInteger("x");
     }
 
+    /*** Get Double ***/
+    @Test
+    public void testGetDouble() {
+        v8.executeVoidScript("x = 3.14159");
+
+        double result = v8.getDouble("x");
+
+        assertEquals(3.14159, result, 0.00001);
+    }
+
+    @Test
+    public void testGetDoubleReplaceValue() {
+        v8.executeVoidScript("x = 7.1; x = 8.1");
+
+        double result = v8.getDouble("x");
+
+        assertEquals(8.1, result, 0.00001);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetDoubleWrongType() {
+        v8.executeVoidScript("x = 'foo'");
+
+        v8.getDouble("x");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetDoubleDoesNotExist() {
+        v8.executeVoidScript("");
+
+        v8.getDouble("x");
+    }
 
     /*** Contains ***/
     @Test

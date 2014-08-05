@@ -58,7 +58,7 @@ class V8Impl extends V8 {
     @Override
     public double getDouble(final String key) {
         checkThread();
-        return 0;
+        return _getDouble(handle, key);
     }
 
     @Override
