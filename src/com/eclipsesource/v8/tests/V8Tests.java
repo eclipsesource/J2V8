@@ -236,7 +236,7 @@ public class V8Tests {
 
     /*** Double Function ***/
     @Test
-    public void testSimpleDoubleunction() {
+    public void testSimpleDoubleFunction() {
         v8.executeVoidScript("function foo() {return 3.14 + 1;}");
 
         double result = v8.executeDoubleFunction("foo", null);
@@ -256,6 +256,30 @@ public class V8Tests {
         v8.executeVoidScript("function foo() {};");
 
         v8.executeDoubleFunction("foo", null);
+    }
+
+    /*** Boolean Function ***/
+    @Test
+    public void testSimpleBooleanFunction() {
+        v8.executeVoidScript("function foo() {return true;}");
+
+        boolean result = v8.executeBooleanFunction("foo", null);
+
+        assertTrue(result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfBooleanFunction() {
+        v8.executeVoidScript("function foo() {return 'foo';}");
+
+        v8.executeBooleanFunction("foo", null);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInBooleanFunction() {
+        v8.executeVoidScript("function foo() {};");
+
+        v8.executeBooleanFunction("foo", null);
     }
 
     /*** Add Int ***/

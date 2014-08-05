@@ -106,7 +106,7 @@ class V8Impl extends V8 {
     @Override
     public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8RuntimeException {
         checkThread();
-        return false;
+        return _executeBooleanFunction(handle, name, parameters);
     }
 
     @Override

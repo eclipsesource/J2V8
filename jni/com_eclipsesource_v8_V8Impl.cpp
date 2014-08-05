@@ -220,6 +220,27 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1executeDoubleFuncti
 	return result->NumberValue();
 }
 
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1executeBooleanFunction
+  (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
+	Isolate* isolate = getIsolate(env, handle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = context->Global();
+	Handle<v8::Value> value = global->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+	Handle<Value> result = func->Call(global, 0, NULL);
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsBoolean()) {
+		throwResultUndefinedException(env, "");
+		return 0;
+	}
+	return result->BooleanValue();
+}
+
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringFunction
   (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);
