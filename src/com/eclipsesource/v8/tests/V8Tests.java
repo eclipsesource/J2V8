@@ -366,6 +366,39 @@ public class V8Tests {
         v8.getDouble("x");
     }
 
+    /*** Get String ***/
+    @Test
+    public void testGetString() {
+        v8.executeVoidScript("x = 'hello'");
+
+        String result = v8.getString("x");
+
+        assertEquals("hello", result);
+    }
+
+    @Test
+    public void testGetStringReplaceValue() {
+        v8.executeVoidScript("x = 'hello'; x = 'world'");
+
+        String result = v8.getString("x");
+
+        assertEquals("world", result);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetStringeWrongType() {
+        v8.executeVoidScript("x = 42");
+
+        v8.getString("x");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetStringDoesNotExist() {
+        v8.executeVoidScript("");
+
+        v8.getString("x");
+    }
+
     /*** Contains ***/
     @Test
     public void testContainsKey() {

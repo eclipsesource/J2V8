@@ -64,7 +64,7 @@ class V8Impl extends V8 {
     @Override
     public String getString(final String key) {
         checkThread();
-        return null;
+        return _getString(handle, key);
     }
 
     @Override
