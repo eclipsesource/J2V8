@@ -34,9 +34,9 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1contains
 /*
  * Class:     com_eclipsesource_v8_V8Impl
  * Method:    _getKeys
- * Signature: (I)Ljava/util/Collection;
+ * Signature: (I)[Ljava/lang/String;
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8Impl__1getKeys
+JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8Impl__1getKeys
   (JNIEnv *, jobject, jint);
 
 /*

@@ -1,6 +1,5 @@
 package com.eclipsesource.v8;
 
-import java.util.Collection;
 
 class V8Impl extends V8 {
 
@@ -32,9 +31,9 @@ class V8Impl extends V8 {
     }
 
     @Override
-    public Collection<String> getKeys() {
+    public String[] getKeys() {
         checkThread();
-        return null;
+        return _getKeys(handle);
     }
 
     @Override
@@ -221,7 +220,7 @@ class V8Impl extends V8 {
 
     private native boolean _contains(int handle, final String key);
 
-    private native Collection<String> _getKeys(int handle);
+    private native String[] _getKeys(int handle);
 
     private native int _getType(int handle, final String key);
 

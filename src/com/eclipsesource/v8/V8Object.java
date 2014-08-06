@@ -1,6 +1,5 @@
 package com.eclipsesource.v8;
 
-import java.util.Collection;
 
 public interface V8Object {
 
@@ -19,7 +18,7 @@ public interface V8Object {
 
     public boolean contains(String key);
 
-    public Collection<String> getKeys();
+    public String[] getKeys();
 
     public int getType(String key) throws V8ResultUndefined;
 
@@ -44,12 +43,12 @@ public interface V8Object {
     public String executeStringFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
 
     public boolean executeBooleanFunction(String name, V8Array parameters) throws V8ExecutionException,
-            V8ResultUndefined;
+    V8ResultUndefined;
 
     public V8Array executeArrayFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
 
     public V8Object executeObjectFunction(String name, V8Array parameters) throws V8ExecutionException,
-            V8ResultUndefined;
+    V8ResultUndefined;
 
     public void executeVoidFunction(String name, V8Array parameters) throws V8ExecutionException;
 

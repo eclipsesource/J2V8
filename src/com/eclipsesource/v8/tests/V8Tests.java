@@ -1,5 +1,8 @@
 package com.eclipsesource.v8.tests;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -554,6 +557,52 @@ public class V8Tests {
         boolean result = v8.contains("bar");
 
         assertFalse(result);
+    }
+
+    /*** GetKeys ***/
+    @Test
+    public void testZeroKeys() {
+        assertEquals(0, v8.getKeys().length);
+    }
+
+    @Test
+    public void testGetKeys() {
+        v8.add("true", true);
+        v8.add("test", "test");
+        v8.add("one", 1);
+        v8.add("pi", 3.14);
+
+        assertEquals(4, v8.getKeys().length);
+        assertTrue(arrayContains(v8.getKeys(), "true", "test", "one", "pi"));
+    }
+
+    private boolean arrayContains(final String[] keys, final String... strings) {
+        List<String> keyList = Arrays.asList(keys);
+        for (String s : strings) {
+            if (!keyList.contains(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Test
+    public void testReplacedKey() {
+        v8.add("test", true);
+        v8.add("test", "test");
+        v8.add("test", 1);
+        v8.add("test", 3.14);
+
+        assertEquals(1, v8.getKeys().length);
+        assertEquals("test", v8.getKeys()[0]);
+    }
+
+    @Test
+    public void testGetKeysSetFromScript() {
+        v8.executeVoidScript("var foo=37");
+
+        assertEquals(1, v8.getKeys().length);
+        assertEquals("foo", v8.getKeys()[0]);
     }
 
 }
