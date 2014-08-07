@@ -13,6 +13,7 @@ public:
     Isolate::Scope* isolate_scope;
     Persistent<ObjectTemplate> globalObjectTemplate;
     Persistent<Context> context_;
+    std::map <int, Persistent<Object>* > objects;
 };
 
 std::map <int, V8Runtime*> v8Isolates;
@@ -22,7 +23,7 @@ void throwExecutionException( JNIEnv *env, const char *message );
 void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1createIsolate
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
   (JNIEnv *, jobject, jint handle) {
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
@@ -31,38 +32,87 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1createIsolate
 	v8Isolates[handle]->globalObjectTemplate.Reset(v8Isolates[handle]->isolate, ObjectTemplate::New(v8Isolates[handle]->isolate));
 	Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, Local<ObjectTemplate>::New(v8Isolates[handle]->isolate, v8Isolates[handle]->globalObjectTemplate));
 	v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
+	v8Isolates[handle]->objects[0] = new Persistent<Object>;
+	v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global());
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1release
-  (JNIEnv *env, jobject obj, jint handle) {
-	if ( v8Isolates.count(handle) == 0 ) {
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
 		return;
 	}
-	Isolate* isolate = getIsolate(env, handle);
 	HandleScope handle_scope(isolate);
-	v8Isolates[handle]->context_.Reset();
-	delete(v8Isolates[handle]->isolate_scope);
-	v8Isolates[handle]->isolate->Dispose();
-	delete(v8Isolates[handle]);
-	v8Isolates.erase(handle);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Local<Object> obj = Object::New(isolate);
+	v8Isolates[v8RuntimeHandle]->objects[objectHandle] = new Persistent<Object>;
+	v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 }
 
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1contains
-  (JNIEnv *env, jobject, jint handle, jstring key) {
-	Isolate* isolate = getIsolate(env, handle);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint parentHandle, jstring objectKey, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	const char* utf_string = env -> GetStringUTFChars(objectKey, NULL);
+	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
+
+	Handle<Object> obj = parentObject->Get(v8Key)->ToObject();
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
+	env->ReleaseStringUTFChars(objectKey, utf_string);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
+	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
+		return;
+	}
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	HandleScope handle_scope(isolate);
+	v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset();
+	delete(v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	v8Isolates[v8RuntimeHandle]->objects.erase(objectHandle);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
+  (JNIEnv *env, jobject, jint v8RuntimeHandle) {
+	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
+		return;
+	}
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	HandleScope handle_scope(isolate);
+	v8Isolates[v8RuntimeHandle]->context_.Reset();
+	delete(v8Isolates[v8RuntimeHandle]->isolate_scope);
+	v8Isolates[v8RuntimeHandle]->isolate->Dispose();
+	delete(v8Isolates[v8RuntimeHandle]);
+	v8Isolates.erase(v8RuntimeHandle);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1contains
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return false;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
-	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
-	return global->Has( v8Key );
+	const char * utf_string = env -> GetStringUTFChars(key, NULL);
+	Local<String> v8Key = String::NewFromUtf8(isolate, utf_string);
+	bool result = global->Has( v8Key );
+	env->ReleaseStringUTFChars(key, utf_string);
+	return result;
 }
 
-JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8Impl__1getKeys
+JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
   (JNIEnv *env, jobject, jint handle) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -84,7 +134,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8Impl__1getKeys
 	return keys;
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1executeVoidScript
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
   (JNIEnv * env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -105,7 +155,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1executeVoidScript
 	Local<Value> result = script->Run();
 }
 
-JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1executeDoubleScript
+JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
   (JNIEnv * env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -132,7 +182,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1executeDoubleScript
 	return result->NumberValue();
 }
 
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1executeBooleanScript
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
   (JNIEnv *env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -159,7 +209,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1executeBooleanScri
 	return result->BooleanValue();
 }
 
-JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringScript
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
   (JNIEnv *env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -187,7 +237,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringScript
 	return env->NewStringUTF(*utf);
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
   (JNIEnv * env, jobject, jint handle, jstring jjstring) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -214,7 +264,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntScript
 	return result->Int32Value();
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntFunction
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
   (JNIEnv * env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -235,7 +285,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1executeIntFunction
 	return result->Int32Value();
 }
 
-JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1executeDoubleFunction
+JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
   (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -256,7 +306,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1executeDoubleFuncti
 	return result->NumberValue();
 }
 
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1executeBooleanFunction
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
   (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -277,7 +327,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1executeBooleanFunc
 	return result->BooleanValue();
 }
 
-JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringFunction
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
   (JNIEnv *env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -299,7 +349,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1executeStringFuncti
 	return env->NewStringUTF(*utf);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2I
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2I
   (JNIEnv * env, jobject, jint handle, jstring key, jint value) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -315,7 +365,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_Strin
 	global->Set( v8Key,  v8Value);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2D
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2D
   (JNIEnv * env, jobject, jint handle, jstring key, jdouble value) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -331,7 +381,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_Strin
 	global->Set( v8Key,  v8Value);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2Ljava_lang_String_2
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jobject, jint handle, jstring key, jstring value) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -347,7 +397,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_Strin
 	global->Set( v8Key,  v8Value);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_String_2Z
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2Z
   (JNIEnv *env, jobject, jint handle, jstring key, jboolean value) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -363,7 +413,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8Impl__1add__ILjava_lang_Strin
 	global->Set( v8Key,  v8Value);
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1getInteger
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
   (JNIEnv *env, jobject, jint handle, jstring key) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -382,7 +432,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8Impl__1getInteger
 	return v8Value->Int32Value();
 }
 
-JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1getDouble
+JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
   (JNIEnv *env, jobject, jint handle, jstring key) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -401,7 +451,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8Impl__1getDouble
 	return v8Value->NumberValue();
 }
 
-JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1getString
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
   (JNIEnv *env, jobject, jint handle, jstring key) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {
@@ -421,7 +471,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8Impl__1getString
 	return env->NewStringUTF(*utf);
 }
 
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8Impl__1getBoolean
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
   (JNIEnv *env, jobject, jint handle, jstring key) {
 	Isolate* isolate = getIsolate(env, handle);
 	if ( isolate == NULL ) {

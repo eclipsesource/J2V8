@@ -22,7 +22,7 @@ public class V8Tests {
 
     @Before
     public void seutp() {
-        v8 = V8.createV8Isolate();
+        v8 = new V8();
     }
 
     @After
