@@ -242,34 +242,34 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _add
- * Signature: (ILjava/lang/String;I)V
+ * Signature: (IILjava/lang/String;I)V
  */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2I
-  (JNIEnv *, jobject, jint, jstring, jint);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _add
- * Signature: (ILjava/lang/String;Z)V
+ * Signature: (IILjava/lang/String;Z)V
  */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2Z
-  (JNIEnv *, jobject, jint, jstring, jboolean);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Z
+  (JNIEnv *, jobject, jint, jint, jstring, jboolean);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _add
- * Signature: (ILjava/lang/String;D)V
+ * Signature: (IILjava/lang/String;D)V
  */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2D
-  (JNIEnv *, jobject, jint, jstring, jdouble);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2D
+  (JNIEnv *, jobject, jint, jint, jstring, jdouble);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _add
- * Signature: (ILjava/lang/String;Ljava/lang/String;)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2Ljava_lang_String_2
-  (JNIEnv *, jobject, jint, jstring, jstring);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Ljava_lang_String_2
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8

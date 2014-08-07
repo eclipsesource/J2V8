@@ -140,22 +140,22 @@ public class V8Object {
 
     public void add(final String key, final int value) {
         v8.checkThread();
-        v8._add(v8.getV8RuntimeHandle(), key, value);
+        v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
     }
 
     public void add(final String key, final boolean value) {
         v8.checkThread();
-        v8._add(v8.getV8RuntimeHandle(), key, value);
+        v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
     }
 
     public void add(final String key, final double value) {
         v8.checkThread();
-        v8._add(v8.getV8RuntimeHandle(), key, value);
+        v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
     }
 
     public void add(final String key, final String value) {
         v8.checkThread();
-        v8._add(v8.getV8RuntimeHandle(), key, value);
+        v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
     }
 
     public V8Object addObject(final String key) {

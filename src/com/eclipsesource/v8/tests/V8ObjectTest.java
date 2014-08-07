@@ -188,4 +188,45 @@ public class V8ObjectTest {
         assertEquals(7, result.getInteger("x"));
         result.release();
     }
+
+    /*** Add Primitives ***/
+    @Test
+    public void testAddString() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("hello", "world");
+
+        assertEquals("world", v8Object.getString("hello"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddInt() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("hello", 7);
+
+        assertEquals(7, v8Object.getInteger("hello"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddDouble() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("hello", 3.14159);
+
+        assertEquals(3.14159, v8Object.getDouble("hello"), 0.000001);
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddBoolean() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("hello", true);
+
+        assertTrue(v8Object.getBoolean("hello"));
+        v8Object.release();
+    }
 }
