@@ -104,13 +104,13 @@ public class V8 extends V8Object {
 
     protected native int _getType(int v8RuntimeHandle, final String key);
 
-    protected native int _getInteger(int v8RuntimeHandle, final String key);
+    protected native int _getInteger(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native boolean _getBoolean(int v8RuntimeHandle, final String key);
+    protected native boolean _getBoolean(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native double _getDouble(int v8RuntimeHandle, final String key);
+    protected native double _getDouble(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native String _getString(int v8RuntimeHandle, final String key);
+    protected native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
 
     protected native V8Array _getArray(int v8RuntimeHandle, final String key);
 

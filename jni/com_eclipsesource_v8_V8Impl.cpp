@@ -414,15 +414,16 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__ILjava_lang_String_2Z
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
-  (JNIEnv *env, jobject, jint handle, jstring key) {
-	Isolate* isolate = getIsolate(env, handle);
+ (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
 	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsInt32()) {
@@ -433,15 +434,16 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
-  (JNIEnv *env, jobject, jint handle, jstring key) {
-	Isolate* isolate = getIsolate(env, handle);
+ (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
 	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsNumber()) {
@@ -452,15 +454,16 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
-  (JNIEnv *env, jobject, jint handle, jstring key) {
-	Isolate* isolate = getIsolate(env, handle);
+ (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
 	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsString()) {
@@ -472,15 +475,16 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
-  (JNIEnv *env, jobject, jint handle, jstring key) {
-	Isolate* isolate = getIsolate(env, handle);
+ (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
 	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsBoolean()) {

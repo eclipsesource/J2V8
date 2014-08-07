@@ -130,34 +130,34 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getInteger
- * Signature: (ILjava/lang/String;)I
+ * Signature: (IILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getBoolean
- * Signature: (ILjava/lang/String;)Z
+ * Signature: (IILjava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getDouble
- * Signature: (ILjava/lang/String;)D
+ * Signature: (IILjava/lang/String;)D
  */
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getString
- * Signature: (ILjava/lang/String;)Ljava/lang/String;
+ * Signature: (IILjava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8

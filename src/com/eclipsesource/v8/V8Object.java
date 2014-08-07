@@ -59,22 +59,22 @@ public class V8Object {
 
     public int getInteger(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return v8._getInteger(v8.getV8RuntimeHandle(), key);
+        return v8._getInteger(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
     public boolean getBoolean(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return v8._getBoolean(v8.getV8RuntimeHandle(), key);
+        return v8._getBoolean(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
     public double getDouble(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return v8._getDouble(v8.getV8RuntimeHandle(), key);
+        return v8._getDouble(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
     public String getString(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return v8._getString(v8.getV8RuntimeHandle(), key);
+        return v8._getString(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
     public V8Array getArray(final String key) throws V8ResultUndefined {

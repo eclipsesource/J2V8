@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -27,7 +28,7 @@ public class V8ObjectTest {
 
     @Test
     public void testCreateReleaseObject() {
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) {
             V8Object persistentV8Object = new V8Object(v8);
             persistentV8Object.release();
         }
@@ -76,7 +77,7 @@ public class V8ObjectTest {
     public void testGetNestedV8Object() {
         v8.executeVoidScript("foo = {nested: {key : 'value'}}");
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000; i++) {
             V8Object fooObject = v8.getObject("foo");
             V8Object nested = fooObject.getObject("nested");
 
@@ -86,5 +87,94 @@ public class V8ObjectTest {
             fooObject.release();
             nested.release();
         }
+    }
+
+    /*** Get Primitives ***/
+    @Test
+    public void testGetIntegerV8Object() {
+        v8.executeVoidScript("foo = {bar: 7}");
+
+        V8Object foo = v8.getObject("foo");
+
+        assertEquals(7, foo.getInteger("bar"));
+        foo.release();
+    }
+
+    @Test
+    public void testNestedInteger() {
+        v8.executeVoidScript("foo = {bar: {key:6}}");
+
+        V8Object foo = v8.getObject("foo");
+        V8Object bar = foo.getObject("bar");
+
+        assertEquals(6, bar.getInteger("key"));
+        foo.release();
+        bar.release();
+    }
+
+    @Test
+    public void testGetDoubleV8Object() {
+        v8.executeVoidScript("foo = {bar: 7.1}");
+
+        V8Object foo = v8.getObject("foo");
+
+        assertEquals(7.1, foo.getDouble("bar"), 0.0001);
+        foo.release();
+    }
+
+    @Test
+    public void testNestedDouble() {
+        v8.executeVoidScript("foo = {bar: {key:6.1}}");
+
+        V8Object foo = v8.getObject("foo");
+        V8Object bar = foo.getObject("bar");
+
+        assertEquals(6.1, bar.getDouble("key"), 0.0001);
+        foo.release();
+        bar.release();
+    }
+
+    @Test
+    public void testGetBooleanV8Object() {
+        v8.executeVoidScript("foo = {bar: false}");
+
+        V8Object foo = v8.getObject("foo");
+
+        assertFalse(foo.getBoolean("bar"));
+        foo.release();
+    }
+
+    @Test
+    public void testNestedBoolean() {
+        v8.executeVoidScript("foo = {bar: {key:true}}");
+
+        V8Object foo = v8.getObject("foo");
+        V8Object bar = foo.getObject("bar");
+
+        assertTrue(bar.getBoolean("key"));
+        foo.release();
+        bar.release();
+    }
+
+    @Test
+    public void testGetStringV8Object() {
+        v8.executeVoidScript("foo = {bar: 'string'}");
+
+        V8Object foo = v8.getObject("foo");
+
+        assertEquals("string", foo.getString("bar"));
+        foo.release();
+    }
+
+    @Test
+    public void testNestedString() {
+        v8.executeVoidScript("foo = {bar: {key:'string'}}");
+
+        V8Object foo = v8.getObject("foo");
+        V8Object bar = foo.getObject("bar");
+
+        assertEquals("string", bar.getString("key"));
+        foo.release();
+        bar.release();
     }
 }
