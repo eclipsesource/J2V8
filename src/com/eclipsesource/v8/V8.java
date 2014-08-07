@@ -1,7 +1,7 @@
 package com.eclipsesource.v8;
 
 
-public class V8 extends PersistentV8Object {
+public class V8 extends V8Object {
 
     private static int v8InstanceCounter;
 

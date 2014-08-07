@@ -1,69 +1,168 @@
+
 package com.eclipsesource.v8;
 
+public class V8Object {
 
-public interface V8Object {
+    public final int   INTEGER                 = 1;
+    public final int   DOUBLE                  = 2;
+    public final int   BOOLEAN                 = 3;
+    public final int   STRING                  = 4;
+    public final int   INTEGER_ARRAY           = 5;
+    public final int   DOUBLE_ARRAY            = 6;
+    public final int   BOOLEAN_ARRAY           = 7;
+    public final int   STRING_ARRAY            = 8;
+    public final int   V8_ARRAY                = 9;
+    public final int   V8_OBJECT               = 10;
 
-    public final int INTEGER       = 1;
-    public final int DOUBLE        = 2;
-    public final int BOOLEAN       = 3;
-    public final int STRING        = 4;
-    public final int INTEGER_ARRAY = 5;
-    public final int DOUBLE_ARRAY  = 6;
-    public final int BOOLEAN_ARRAY = 7;
-    public final int STRING_ARRAY  = 8;
-    public final int V8_ARRAY      = 9;
-    public final int V8_OBJECT     = 10;
+    private static int v8ObjectInstanceCounter = 1;
 
-    public void release();
+    private V8         v8;
+    private int        objectHandle;
 
-    public boolean contains(String key);
+    protected V8Object() {
+        v8 = (V8) this;
+        objectHandle = 0;
+    }
 
-    public String[] getKeys();
+    public V8Object(final V8 v8) {
+        this.v8 = v8;
+        this.v8.checkThread();
+        objectHandle = v8ObjectInstanceCounter++;
+        this.v8._initNewV8Object(v8.getV8RuntimeHandle(), objectHandle);
+        this.v8.addObjRef();
+    }
 
-    public int getType(String key) throws V8ResultUndefined;
+    public int getHandle() {
+        return objectHandle;
+    }
 
-    public int getInteger(String key) throws V8ResultUndefined;
+    public void release() {
+        v8.checkThread();
+        v8._release(v8.getV8RuntimeHandle(), objectHandle);
+        v8.releaseObjRef();
+    }
 
-    public boolean getBoolean(String key) throws V8ResultUndefined;
+    public boolean contains(final String key) {
+        v8.checkThread();
+        return v8._contains(v8.getV8RuntimeHandle(), objectHandle, key);
+    }
 
-    public double getDouble(String key) throws V8ResultUndefined;
+    public String[] getKeys() {
+        v8.checkThread();
+        return v8._getKeys(v8.getV8RuntimeHandle());
+    }
 
-    public String getString(String key) throws V8ResultUndefined;
+    public int getType(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return 0;
+    }
 
-    public V8Array getArray(String key) throws V8ResultUndefined;
+    public int getInteger(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return v8._getInteger(v8.getV8RuntimeHandle(), key);
+    }
 
-    public V8Object getObject(String key) throws V8ResultUndefined;
+    public boolean getBoolean(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return v8._getBoolean(v8.getV8RuntimeHandle(), key);
+    }
 
-    public V8Array createParameterList(int size);
+    public double getDouble(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return v8._getDouble(v8.getV8RuntimeHandle(), key);
+    }
 
-    public int executeIntFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
+    public String getString(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return v8._getString(v8.getV8RuntimeHandle(), key);
+    }
 
-    public double executeDoubleFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
+    public V8Array getArray(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        return null;
+    }
 
-    public String executeStringFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
+    public V8Object getObject(final String key) throws V8ResultUndefined {
+        v8.checkThread();
+        V8Object result = new V8Object(v8);
+        v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
+        return result;
+    }
 
-    public boolean executeBooleanFunction(String name, V8Array parameters) throws V8ExecutionException,
-    V8ResultUndefined;
+    public V8Array createParameterList(final int size) {
+        v8.checkThread();
+        return null;
+    }
 
-    public V8Array executeArrayFunction(String name, V8Array parameters) throws V8ExecutionException, V8ResultUndefined;
+    public int executeIntFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+        v8.checkThread();
+        return v8._executeIntFunction(v8.getV8RuntimeHandle(), name, null);
+    }
 
-    public V8Object executeObjectFunction(String name, V8Array parameters) throws V8ExecutionException,
-    V8ResultUndefined;
+    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+        v8.checkThread();
+        return v8._executeDoubleFunction(v8.getV8RuntimeHandle(), name, null);
+    }
 
-    public void executeVoidFunction(String name, V8Array parameters) throws V8ExecutionException;
+    public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+        v8.checkThread();
+        return v8._executeStringFunction(v8.getV8RuntimeHandle(), name, null);
+    }
 
-    public void add(String key, int value);
+    public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
+        v8.checkThread();
+        return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), name, null);
+    }
 
-    public void add(String key, boolean value);
+    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+        v8.checkThread();
+        return null;
+    }
 
-    public void add(String key, double value);
+    public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
+        v8.checkThread();
+        return null;
+    }
 
-    public void add(String key, String value);
+    public void executeVoidFunction(final String name, final V8Array parameters) throws V8ExecutionException {
+        v8.checkThread();
+        v8._executeVoidFunction(v8.getV8RuntimeHandle(), name, null);
+    }
 
-    public V8Object addObject(String key);
+    public void add(final String key, final int value) {
+        v8.checkThread();
+        v8._add(v8.getV8RuntimeHandle(), key, value);
+    }
 
-    public V8Array addArray(String key, int size);
+    public void add(final String key, final boolean value) {
+        v8.checkThread();
+        v8._add(v8.getV8RuntimeHandle(), key, value);
+    }
 
-    public void registerJavaMethod(final Object object, final String methodName, final Class<?>[] parameterTypes);
+    public void add(final String key, final double value) {
+        v8.checkThread();
+        v8._add(v8.getV8RuntimeHandle(), key, value);
+    }
+
+    public void add(final String key, final String value) {
+        v8.checkThread();
+        v8._add(v8.getV8RuntimeHandle(), key, value);
+    }
+
+    public V8Object addObject(final String key) {
+        v8.checkThread();
+        return null;
+    }
+
+    public V8Array addArray(final String key, final int size) {
+        v8.checkThread();
+        return null;
+    }
+
+    public void registerJavaMethod(final Object object, final String methodName, final Class<?>[] parameterTypes) {
+        v8.checkThread();
+    }
 
 }

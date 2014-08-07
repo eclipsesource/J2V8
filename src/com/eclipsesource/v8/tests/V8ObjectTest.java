@@ -4,7 +4,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.PersistentV8Object;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 
@@ -29,7 +28,7 @@ public class V8ObjectTest {
     @Test
     public void testCreateReleaseObject() {
         for (int i = 0; i < 10000; i++) {
-            PersistentV8Object persistentV8Object = new PersistentV8Object(v8);
+            V8Object persistentV8Object = new V8Object(v8);
             persistentV8Object.release();
         }
     }
@@ -37,7 +36,7 @@ public class V8ObjectTest {
     @Test
     public void testDoesNotReleaseObject() {
         try {
-            new PersistentV8Object(v8);
+            new V8Object(v8);
             v8.release();
         } catch (IllegalStateException e) {
             v8 = new V8();
