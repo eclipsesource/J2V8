@@ -177,4 +177,15 @@ public class V8ObjectTest {
         foo.release();
         bar.release();
     }
+
+    /*** Execute Object Script ***/
+    @Test
+    public void testObjectScript() {
+        v8.executeVoidScript("function foo() { return { x : 7 }} ");
+
+        V8Object result = v8.executeObjectFunction("foo", null);
+
+        assertEquals(7, result.getInteger("x"));
+        result.release();
+    }
 }

@@ -59,7 +59,14 @@ public class V8 extends V8Object {
 
     public V8Object executeObjectScript(final String script) throws V8RuntimeException {
         checkThread();
-        return null;
+        V8Object result = new V8Object(this);
+        try {
+            _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public void executeVoidScript(final String script) throws V8RuntimeException {
@@ -92,7 +99,8 @@ public class V8 extends V8Object {
 
     protected native V8Array _executeArrayScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
 
-    protected native V8Object _executeObjectScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle)
+            throws V8RuntimeException;
 
     protected native void _executeVoidScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
 
@@ -133,8 +141,8 @@ public class V8 extends V8Object {
     protected native V8Array _executeArrayFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;
 
-    protected native V8Object _executeObjectFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native void _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name,
+            final V8Array parameters, int resultHandle) throws V8RuntimeException;
 
     protected native void _executeVoidFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;

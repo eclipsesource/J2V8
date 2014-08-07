@@ -264,6 +264,59 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 	return result->Int32Value();
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jstring jjstring, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	const char* js = env -> GetStringUTFChars(jjstring, NULL);
+	Local<String> source = String::NewFromUtf8(isolate, js);
+
+	TryCatch tryCatch;
+	Local<Script> script = Script::Compile(source);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, "");
+		return;
+	}
+	Local<Value> result = script->Run();
+
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsObject()) {
+		throwResultUndefinedException(env, "");
+		return;
+	}
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	env->ReleaseStringUTFChars(jjstring, js);
+	return;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jobject, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+	Handle<Value> result = func->Call(parentObject, 0, NULL);
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsObject()) {
+		throwResultUndefinedException(env, "");
+		return;
+	}
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+	return;
+}
+
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
   (JNIEnv * env, jobject, jint handle, jstring jfunctionName, jobject) {
 	Isolate* isolate = getIsolate(env, handle);

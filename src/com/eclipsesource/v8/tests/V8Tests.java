@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8ExecutionException;
+import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,11 @@ public class V8Tests {
 
     @After
     public void tearDown() {
-        v8.release();
+        try {
+            v8.release();
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Test
@@ -185,6 +190,41 @@ public class V8Tests {
         v8.executeStringScript("42");
     }
 
+    /*** Object Script ***/
+    @Test
+    public void testSimpleObjectScript() {
+        V8Object result = v8.executeObjectScript("foo = {hello:'world'}; foo;");
+
+        assertEquals("world", result.getString("hello"));
+        result.release();
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxErrorObjectScript() {
+        v8.executeObjectScript("'a");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionObjectScript() {
+        v8.executeObjectScript("");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnTypeObjectScript() {
+        v8.executeObjectScript("42");
+    }
+
+    @Test
+    public void testNestedObjectScript() {
+        V8Object result = v8.executeObjectScript("person = {name : {first : 'john', last:'smith'} }; person;");
+
+        V8Object name = result.getObject("name");
+        assertEquals("john", name.getString("first"));
+        assertEquals("smith", name.getString("last"));
+        result.release();
+        name.release();
+    }
+
     /*** Int Function ***/
     @Test
     public void testSimpleIntFunction() {
@@ -283,6 +323,31 @@ public class V8Tests {
         v8.executeVoidScript("function foo() {};");
 
         v8.executeBooleanFunction("foo", null);
+    }
+
+    /*** Object Function ***/
+    @Test
+    public void testSimpleObjectFunction() {
+        v8.executeVoidScript("function foo() {return {foo:true};}");
+
+        V8Object result = v8.executeObjectFunction("foo", null);
+
+        assertTrue(result.getBoolean("foo"));
+        result.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfObjectFunction() {
+        v8.executeVoidScript("function foo() {return 'foo';}");
+
+        v8.executeObjectFunction("foo", null);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInobjectFunction() {
+        v8.executeVoidScript("function foo() {};");
+
+        v8.executeObjectFunction("foo", null);
     }
 
     /*** Add Int ***/

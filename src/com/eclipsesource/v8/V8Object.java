@@ -123,7 +123,14 @@ public class V8Object {
     public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ExecutionException,
     V8ResultUndefined {
         v8.checkThread();
-        return null;
+        V8Object result = new V8Object(v8);
+        try {
+            v8._executeObjectFunction(v8.getV8RuntimeHandle(), objectHandle, name, null, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public void executeVoidFunction(final String name, final V8Array parameters) throws V8ExecutionException {

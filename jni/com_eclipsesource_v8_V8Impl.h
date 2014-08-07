@@ -82,10 +82,10 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeObjectScript
- * Signature: (ILjava/lang/String;)Lcom/eclipsesource/v8/V8Object;
+ * Signature: (ILjava/lang/String;I)V
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
-  (JNIEnv *, jobject, jint, jstring);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
+  (JNIEnv *, jobject, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -226,10 +226,10 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeObjectFunction
- * Signature: (ILjava/lang/String;Lcom/eclipsesource/v8/V8Array;)Lcom/eclipsesource/v8/V8Object;
+ * Signature: (IILjava/lang/String;Lcom/eclipsesource/v8/V8Array;I)V
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
-  (JNIEnv *, jobject, jint, jstring, jobject);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
+  (JNIEnv *, jobject, jint, jint, jstring, jobject, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
