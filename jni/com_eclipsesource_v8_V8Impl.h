@@ -327,6 +327,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
   (JNIEnv *, jobject, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetBoolean
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
+  (JNIEnv *, jobject, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

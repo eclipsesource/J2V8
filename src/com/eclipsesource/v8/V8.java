@@ -177,6 +177,8 @@ public class V8 extends V8Object {
 
     public native int _arrayGetInteger(int v8RuntimeHandle2, int handle, int index);
 
+    public native boolean _arrayGetBoolean(int v8RuntimeHandle2, int handle, int index);
+
     /**
      *
      */
@@ -190,5 +192,6 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
+
 
 }

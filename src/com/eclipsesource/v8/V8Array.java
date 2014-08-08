@@ -39,7 +39,7 @@ public class V8Array {
 
     public boolean getBoolean(final int index) {
         v8.checkThread();
-        return false;
+        return v8._arrayGetBoolean(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
     public double getDouble(final int index) {

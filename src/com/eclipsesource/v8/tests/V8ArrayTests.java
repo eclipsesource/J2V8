@@ -9,6 +9,8 @@ import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class V8ArrayTests {
 
@@ -68,7 +70,7 @@ public class V8ArrayTests {
         V8Array array = v8.executeArrayScript("foo = ['string']; foo");
 
         try {
-            assertEquals(1, array.getInteger(0));
+            array.getInteger(0);
         } finally {
             array.release();
         }
@@ -104,4 +106,44 @@ public class V8ArrayTests {
         array.release();
     }
 
+    /*** Get Boolean ***/
+    @Test
+    public void testArrayGetBoolean() {
+        V8Array array = v8.executeArrayScript("foo = [true,false,false]; foo");
+
+        assertTrue(array.getBoolean(0));
+        assertFalse(array.getBoolean(1));
+        assertFalse(array.getBoolean(2));
+        array.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetBooleanWrongType() {
+        V8Array array = v8.executeArrayScript("foo = ['string']; foo");
+
+        try {
+            array.getBoolean(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetBooleanIndexOutOfBounds() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+        try {
+            array.getBoolean(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testArrayGetBooleanChangeValue() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        v8.executeVoidScript("foo[0] = true");
+        assertTrue(array.getBoolean(0));
+        array.release();
+    }
 }
