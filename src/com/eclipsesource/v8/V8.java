@@ -175,6 +175,8 @@ public class V8 extends V8Object {
 
     protected native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
 
+    public native int _arrayGetInteger(int v8RuntimeHandle2, int handle, int index);
+
     /**
      *
      */

@@ -654,6 +654,25 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
 	return Array::Cast(*array)->Length();
 }
 
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+
+	Handle<Value> v8Value = array->Get(index);
+	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsInt32()) {
+		throwResultUndefinedException(env, "");
+		return 0;
+	}
+	return v8Value->Int32Value();
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");

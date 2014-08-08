@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,6 +49,58 @@ public class V8ArrayTests {
         V8Array array = v8.executeArrayScript("foo = []; foo");
 
         assertEquals(0, array.getSize());
+        array.release();
+    }
+
+    /*** Get Int ***/
+    @Test
+    public void testArrayGetInt() {
+        V8Array array = v8.executeArrayScript("foo = [1,2,8]; foo");
+
+        assertEquals(1, array.getInteger(0));
+        assertEquals(2, array.getInteger(1));
+        assertEquals(8, array.getInteger(2));
+        array.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetIntWrongType() {
+        V8Array array = v8.executeArrayScript("foo = ['string']; foo");
+
+        try {
+            assertEquals(1, array.getInteger(0));
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetIntIndexOutOfBounds() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+        try {
+            array.getInteger(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testArrayGetIntChangeValue() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        v8.executeVoidScript("foo[0] = 1");
+        assertEquals(1, array.getInteger(0));
+        array.release();
+    }
+
+    @Test
+    public void testLargeArrayGetInt() {
+        V8Array array = v8.executeArrayScript("foo = []; for ( var i = 0; i < 10000; i++) {foo[i] = i;}; foo");
+
+        assertEquals(10000, array.getSize());
+        for (int i = 0; i < 10000; i++) {
+            assertEquals(i, array.getInteger(i));
+        }
         array.release();
     }
 

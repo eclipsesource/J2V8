@@ -34,7 +34,7 @@ public class V8Array {
 
     public int getInteger(final int index) {
         v8.checkThread();
-        return 0;
+        return v8._arrayGetInteger(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
     public boolean getBoolean(final int index) {
