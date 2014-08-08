@@ -232,6 +232,29 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    @Test
+    public void testObjectChangedFromJS() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("world", "hello");
+        v8.add("object", v8Object);
+
+        v8.executeVoidScript("object.world = 'goodbye'");
+
+        assertEquals("goodbye", v8Object.getString("world"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testObjectChangedFromAPI() {
+        v8.executeVoidScript("object = {world : 'goodbye'}");
+
+        V8Object v8Object = v8.getObject("object");
+        v8Object.add("world", "hello");
+
+        assertEquals("hello", v8Object.getString("world"));
+        v8Object.release();
+    }
+
     /*** Add Object ***/
     @Test
     public void testAddObject() {
