@@ -163,9 +163,8 @@ public class V8Object {
         v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
     }
 
-    public V8Array addArray(final String key, final int size) {
+    public void add(final String key, final V8Array array) {
         v8.checkThread();
-        return null;
     }
 
     public void registerJavaMethod(final Object object, final String methodName, final Class<?>[] parameterTypes) {

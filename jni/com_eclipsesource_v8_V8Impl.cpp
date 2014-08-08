@@ -14,7 +14,7 @@ public:
     Persistent<ObjectTemplate> globalObjectTemplate;
     Persistent<Context> context_;
     std::map <int, Persistent<Object>* > objects;
-    std::map <int, Persistent<Array>* > arrays;
+    std::map <int, Persistent<Object>* > arrays;
 };
 
 std::map <int, V8Runtime*> v8Isolates;
@@ -61,7 +61,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Local<Array> array = Array::New(isolate);
-	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle] = new Persistent<Array>;
+	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle] = new Persistent<Object>;
 	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
 }
 
@@ -316,6 +316,35 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 		return;
 	}
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	env->ReleaseStringUTFChars(jjstring, js);
+	return;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jstring jjstring, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	const char* js = env -> GetStringUTFChars(jjstring, NULL);
+	Local<String> source = String::NewFromUtf8(isolate, js);
+
+	TryCatch tryCatch;
+	Local<Script> script = Script::Compile(source);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, "");
+		return;
+	}
+	Local<Value> result = script->Run();
+
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsArray()) {
+		throwResultUndefinedException(env, "");
+		return;
+	}
+	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jjstring, js);
 	return;
 }

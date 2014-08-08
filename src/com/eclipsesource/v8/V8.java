@@ -54,7 +54,14 @@ public class V8 extends V8Object {
 
     public V8Array executeArrayScript(final String script) throws V8RuntimeException {
         checkThread();
-        return null;
+        V8Array result = new V8Array(this);
+        try {
+            _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public V8Object executeObjectScript(final String script) throws V8RuntimeException {
@@ -97,12 +104,12 @@ public class V8 extends V8Object {
 
     protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
 
-    protected native V8Array _executeArrayScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
-
     protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle)
             throws V8RuntimeException;
 
     protected native void _executeVoidScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+
+    protected native void _executeArrayScript(int v8RuntimeHandle, String script, int resultHandle);
 
     protected native void _release(int v8RuntimeHandle, int objectHandle);
 

@@ -73,14 +73,6 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _executeArrayScript
- * Signature: (ILjava/lang/String;)Lcom/eclipsesource/v8/V8Array;
- */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
-  (JNIEnv *, jobject, jint, jstring);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _executeObjectScript
  * Signature: (ILjava/lang/String;I)V
  */
@@ -94,6 +86,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
   (JNIEnv *, jobject, jint, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _executeArrayScript
+ * Signature: (ILjava/lang/String;I)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
+  (JNIEnv *, jobject, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

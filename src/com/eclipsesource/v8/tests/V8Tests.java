@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ResultUndefined;
@@ -223,6 +224,30 @@ public class V8Tests {
         assertEquals("smith", name.getString("last"));
         result.release();
         name.release();
+    }
+
+    /*** Array Script ***/
+    @Test
+    public void testSimpleArrayScript() {
+        V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;");
+
+        assertNotNull(result);
+        result.release();
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testSimpleSyntaxErrorArrayScript() {
+        v8.executeArrayScript("'a");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionArrayScript() {
+        v8.executeArrayScript("");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedExceptionForWrongReturnTypeArrayScript() {
+        v8.executeArrayScript("42");
     }
 
     /*** Int Function ***/
@@ -468,6 +493,15 @@ public class V8Tests {
         assertFalse(result);
         v8ObjectFoo1.release();
         v8ObjectFoo2.release();
+    }
+
+    /*** Add Array ***/
+    @Test
+    public void testAddArray() {
+        V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;");
+
+        assertNotNull(result);
+        result.release();
     }
 
     /*** Get Int ***/

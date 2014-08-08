@@ -86,4 +86,8 @@ public class V8Array {
         v8.checkThread();
     }
 
+    public int getHandle() {
+        return arrayHandle;
+    }
+
 }
