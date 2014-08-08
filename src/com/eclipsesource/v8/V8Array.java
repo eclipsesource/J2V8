@@ -24,7 +24,7 @@ public class V8Array {
 
     public int getSize() {
         v8.checkThread();
-        return 0;
+        return v8._arrayGetSize(v8.getV8RuntimeHandle(), getHandle());
     }
 
     public int getValueType(final int index) {

@@ -636,6 +636,19 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
 	return v8Value->BooleanValue();
 }
 
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	return Array::Cast(*array)->Length();
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");

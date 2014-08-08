@@ -311,6 +311,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
   (JNIEnv *, jobject, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetSize
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
+  (JNIEnv *, jobject, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

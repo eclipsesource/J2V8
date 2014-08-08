@@ -173,6 +173,8 @@ public class V8 extends V8Object {
 
     public native void _releaseArray(int v8RuntimeHandle, int arrayHandle);
 
+    protected native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
+
     /**
      *
      */

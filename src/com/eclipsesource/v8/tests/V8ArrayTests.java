@@ -7,6 +7,8 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 
+import static org.junit.Assert.assertEquals;
+
 public class V8ArrayTests {
 
     private V8 v8;
@@ -31,6 +33,22 @@ public class V8ArrayTests {
             V8Array v8Array = new V8Array(v8);
             v8Array.release();
         }
+    }
+
+    @Test
+    public void testArraySize() {
+        V8Array array = v8.executeArrayScript("foo = [1,2,3]; foo");
+
+        assertEquals(3, array.getSize());
+        array.release();
+    }
+
+    @Test
+    public void testArraySizeZero() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        assertEquals(0, array.getSize());
+        array.release();
     }
 
 }
