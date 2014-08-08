@@ -229,4 +229,81 @@ public class V8ObjectTest {
         assertTrue(v8Object.getBoolean("hello"));
         v8Object.release();
     }
+
+    /*** Add Object ***/
+    @Test
+    public void testAddObject() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("hello", true);
+
+        v8.add("foo", v8Object);
+
+        V8Object foo = v8.getObject("foo");
+        assertTrue(foo.getBoolean("hello"));
+        foo.release();
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectWithString() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("hello", "world");
+
+        v8.add("foo", v8Object);
+
+        String result = v8.executeStringScript("foo.hello");
+        assertEquals("world", result);
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectWithBoolean() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("boolean", false);
+
+        v8.add("foo", v8Object);
+
+        boolean result = v8.executeBooleanScript("foo.boolean");
+        assertFalse(result);
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectWithInt() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("integer", 75);
+
+        v8.add("foo", v8Object);
+
+        int result = v8.executeIntScript("foo.integer");
+        assertEquals(75, result);
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectWithDouble() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("double", 75.5);
+
+        v8.add("foo", v8Object);
+
+        double result = v8.executeDoubleScript("foo.double");
+        assertEquals(75.5, result, 0.000001);
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectToObject() {
+        V8Object v8Object = new V8Object(v8);
+        V8Object nested = new V8Object(v8);
+        nested.add("foo", "bar");
+        v8Object.add("nested", nested);
+        v8.add("foo", v8Object);
+
+        String result = v8.executeStringScript("foo.nested.foo");
+
+        assertEquals("bar", result);
+        v8Object.release();
+        nested.release();
+    }
 }

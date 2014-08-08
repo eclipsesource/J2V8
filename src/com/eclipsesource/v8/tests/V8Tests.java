@@ -412,7 +412,7 @@ public class V8Tests {
 
     /*** Add Boolean ***/
     @Test
-    public void testBooleanString() {
+    public void testAddBoolean() {
         v8.add("foo", true);
 
         boolean result = v8.executeBooleanScript("foo");
@@ -438,6 +438,36 @@ public class V8Tests {
         String result = v8.executeStringScript("foo");
 
         assertEquals("test", result);
+    }
+
+    /*** Add Object ***/
+    @Test
+    public void testAddObject() {
+        V8Object v8Object = new V8Object(v8);
+        v8.add("foo", v8Object);
+
+        V8Object result = v8.executeObjectScript("foo");
+
+        assertNotNull(result);
+        result.release();
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddObjectReplaceValue() {
+        V8Object v8ObjectFoo1 = new V8Object(v8);
+        v8ObjectFoo1.add("test", true);
+        V8Object v8ObjectFoo2 = new V8Object(v8);
+        v8ObjectFoo2.add("test", false);
+
+        v8.add("foo", v8ObjectFoo1);
+        v8.add("foo", v8ObjectFoo2);
+
+        boolean result = v8.executeBooleanScript("foo.test");
+
+        assertFalse(result);
+        v8ObjectFoo1.release();
+        v8ObjectFoo2.release();
     }
 
     /*** Get Int ***/

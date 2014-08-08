@@ -149,6 +149,8 @@ public class V8 extends V8Object {
 
     protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final int value);
 
+    protected native void _addObject(int v8RuntimeHandle, int objectHandle, final String key, final int value);
+
     protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final boolean value);
 
     protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final double value);
