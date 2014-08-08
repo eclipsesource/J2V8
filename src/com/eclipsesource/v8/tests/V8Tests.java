@@ -498,9 +498,13 @@ public class V8Tests {
     /*** Add Array ***/
     @Test
     public void testAddArray() {
-        V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;");
+        V8Array array = new V8Array(v8);
+        v8.add("foo", array);
+
+        V8Array result = v8.executeArrayScript("foo");
 
         assertNotNull(result);
+        array.release();
         result.release();
     }
 

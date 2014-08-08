@@ -5,10 +5,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -305,5 +307,21 @@ public class V8ObjectTest {
         assertEquals("bar", result);
         v8Object.release();
         nested.release();
+    }
+
+    /*** Add Array ***/
+    @Test
+    public void testAddArrayToObject() {
+        V8Object v8Object = new V8Object(v8);
+        V8Array array = new V8Array(v8);
+        v8Object.add("array", array);
+        v8.add("foo", v8Object);
+
+        V8Array result = v8.executeArrayScript("foo.array");
+
+        assertNotNull(result);
+        v8Object.release();
+        array.release();
+        result.release();
     }
 }
