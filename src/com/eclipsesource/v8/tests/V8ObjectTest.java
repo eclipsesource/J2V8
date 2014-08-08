@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,7 +26,11 @@ public class V8ObjectTest {
 
     @After
     public void tearDown() {
-        v8.release();
+        try {
+            v8.release();
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Test
@@ -346,5 +351,11 @@ public class V8ObjectTest {
         v8Object.release();
         array.release();
         result.release();
+    }
+
+    /*** Object Errors ***/
+    @Test(expected = V8ResultUndefined.class)
+    public void testUndefinedObjectProperty() {
+        v8.getObject("object");
     }
 }

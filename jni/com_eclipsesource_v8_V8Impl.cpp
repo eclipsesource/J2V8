@@ -77,8 +77,13 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
+	Handle<Value> v8Value = parentObject->Get(v8Key);
 
-	Handle<Object> obj = parentObject->Get(v8Key)->ToObject();
+	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsObject()) {
+		throwResultUndefinedException(env, "");
+		return;
+	}
+	Handle<Object> obj = v8Value->ToObject();
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 	env->ReleaseStringUTFChars(objectKey, utf_string);
 }

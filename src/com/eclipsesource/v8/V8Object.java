@@ -85,7 +85,12 @@ public class V8Object {
     public V8Object getObject(final String key) throws V8ResultUndefined {
         v8.checkThread();
         V8Object result = new V8Object(v8);
-        v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
+        try {
+            v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
         return result;
     }
 
