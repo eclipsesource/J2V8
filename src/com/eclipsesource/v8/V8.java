@@ -179,19 +179,14 @@ public class V8 extends V8Object {
 
     public native boolean _arrayGetBoolean(int v8RuntimeHandle2, int handle, int index);
 
-    /**
-     *
-     */
+    public native double _arrayGetDouble(int v8RuntimeHandle2, int handle, int index);
+
     public void addObjRef() {
         objectReferences++;
     }
 
-    /**
-     *
-     */
     public void releaseObjRef() {
         objectReferences--;
     }
-
 
 }
