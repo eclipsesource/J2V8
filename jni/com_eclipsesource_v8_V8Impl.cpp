@@ -14,6 +14,7 @@ public:
     Persistent<ObjectTemplate> globalObjectTemplate;
     Persistent<Context> context_;
     std::map <int, Persistent<Object>* > objects;
+    std::map <int, Persistent<Array>* > arrays;
 };
 
 std::map <int, V8Runtime*> v8Isolates;
@@ -50,6 +51,20 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 	v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Local<Array> array = Array::New(isolate);
+	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle] = new Persistent<Array>;
+	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint parentHandle, jstring objectKey, jint resultHandle) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -78,6 +93,18 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
 	v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset();
 	delete(v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	v8Isolates[v8RuntimeHandle]->objects.erase(objectHandle);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
+	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
+		return;
+	}
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	HandleScope handle_scope(isolate);
+	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]->Reset();
+	delete(v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	v8Isolates[v8RuntimeHandle]->arrays.erase(arrayHandle);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime

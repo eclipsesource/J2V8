@@ -303,6 +303,22 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1addArray
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   (JNIEnv *, jobject, jint, jobject, jstring, jobjectArray);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Array
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _releaseArray
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
+  (JNIEnv *, jobject, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

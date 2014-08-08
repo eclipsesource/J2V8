@@ -1,36 +1,89 @@
 package com.eclipsesource.v8;
 
 
-public interface V8Array {
+public class V8Array {
 
-    public void release();
+    private static int v8ArrayInstanceCounter = 1;
 
-    public int getSize();
+    private V8         v8;
+    private int        arrayHandle;
 
-    public int getValueType(int index);
+    public V8Array(final V8 v8) {
+        this.v8 = v8;
+        this.v8.checkThread();
+        arrayHandle = v8ArrayInstanceCounter++;
+        this.v8._initNewV8Array(v8.getV8RuntimeHandle(), arrayHandle);
+        this.v8.addObjRef();
+    }
 
-    public int getInteger(int index);
+    public void release() {
+        v8.checkThread();
+        v8._releaseArray(v8.getV8RuntimeHandle(), arrayHandle);
+        v8.releaseObjRef();
+    }
 
-    public boolean getBoolean(int index);
+    public int getSize() {
+        v8.checkThread();
+        return 0;
+    }
 
-    public double getDouble(int index);
+    public int getValueType(final int index) {
+        v8.checkThread();
+        return 0;
+    }
 
-    public String getString(int index);
+    public int getInteger(final int index) {
+        v8.checkThread();
+        return 0;
+    }
 
-    public V8Array getArray(int index);
+    public boolean getBoolean(final int index) {
+        v8.checkThread();
+        return false;
+    }
 
-    public V8Object getObject(int index);
+    public double getDouble(final int index) {
+        v8.checkThread();
+        return 0.0;
+    }
 
-    public void add(int value);
+    public String getString(final int index) {
+        v8.checkThread();
+        return null;
+    }
 
-    public void add(boolean value);
+    public V8Array getArray(final int index) {
+        v8.checkThread();
+        return null;
+    }
 
-    public void add(double value);
+    public V8Object getObject(final int index) {
+        v8.checkThread();
+        return null;
+    }
 
-    public void add(String value);
+    public void add(final int value) {
+        v8.checkThread();
+    }
 
-    public V8Object addObject();
+    public void add(final boolean value) {
+        v8.checkThread();
+    }
 
-    public V8Array addArray(int size);
+    public void add(final double value) {
+        v8.checkThread();
+    }
+
+    public void add(final String value) {
+        v8.checkThread();
+    }
+
+    public void addObject(final V8Object value) {
+        v8.checkThread();
+    }
+
+    public void addArray(final int size, final V8Array value) {
+        v8.checkThread();
+    }
 
 }

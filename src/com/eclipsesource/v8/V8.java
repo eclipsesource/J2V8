@@ -164,6 +164,10 @@ public class V8 extends V8Object {
     protected native void _registerJavaMethod(int v8RuntimeHandle, final Object object, final String methodName,
             final Class<?>[] parameterTypes);
 
+    public native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
+
+    public native void _releaseArray(int v8RuntimeHandle, int arrayHandle);
+
     /**
      *
      */

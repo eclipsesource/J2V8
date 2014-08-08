@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ V8ObjectTest.class, V8Tests.class })
+@SuiteClasses({ V8ObjectTest.class, V8Tests.class, V8ArrayTests.class })
 public class AllTests {
 
 }
