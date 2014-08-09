@@ -79,7 +79,14 @@ public class V8Object {
 
     public V8Array getArray(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return null;
+        V8Array result = new V8Array(v8);
+        try {
+            v8._getArray(v8.getV8RuntimeHandle(), getHandle(), key, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public V8Object getObject(final String key) throws V8ResultUndefined {

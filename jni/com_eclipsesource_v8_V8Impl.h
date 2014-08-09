@@ -162,10 +162,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getArray
- * Signature: (ILjava/lang/String;)Lcom/eclipsesource/v8/V8Array;
+ * Signature: (IILjava/lang/String;I)V
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1getArray
-  (JNIEnv *, jobject, jint, jstring);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

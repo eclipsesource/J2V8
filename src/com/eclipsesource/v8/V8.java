@@ -127,7 +127,7 @@ public class V8 extends V8Object {
 
     protected native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native V8Array _getArray(int v8RuntimeHandle, final String key);
+    protected native void _getArray(int v8RuntimeHandle, int objectHandle, String key, int resultHandle);
 
     protected native void _getObject(int v8RuntimeHandle, final int objectHandle, final String key,  final int resultObjectHandle);
 
@@ -169,24 +169,24 @@ public class V8 extends V8Object {
     protected native void _registerJavaMethod(int v8RuntimeHandle, final Object object, final String methodName,
             final Class<?>[] parameterTypes);
 
-    public native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
+    protected native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
 
-    public native void _releaseArray(int v8RuntimeHandle, int arrayHandle);
+    protected native void _releaseArray(int v8RuntimeHandle, int arrayHandle);
 
     protected native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
 
-    public native int _arrayGetInteger(int v8RuntimeHandle, int arrayHandle, int index);
+    protected native int _arrayGetInteger(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native boolean _arrayGetBoolean(int v8RuntimeHandle, int arrayHandle, int index);
+    protected native boolean _arrayGetBoolean(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native double _arrayGetDouble(int v8RuntimeHandle, int arrayHandle, int index);
+    protected native double _arrayGetDouble(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
+    protected native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native void _arrayGetObject(final int v8RuntimeHandle, final int arrayHandle, final int index,
+    protected native void _arrayGetObject(final int v8RuntimeHandle, final int arrayHandle, final int index,
             final int resultHandle);
 
-    public native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
+    protected native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
 
     public void addObjRef() {
         objectReferences++;
@@ -195,7 +195,6 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
-
 
 
 }

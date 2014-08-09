@@ -88,6 +88,28 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 	env->ReleaseStringUTFChars(objectKey, utf_string);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint parentHandle, jstring objectKey, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	const char* utf_string = env -> GetStringUTFChars(objectKey, NULL);
+	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
+	Handle<Value> v8Value = parentObject->Get(v8Key);
+
+	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsArray()) {
+			throwResultUndefinedException(env, "");
+			return;
+	}
+	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
+	env->ReleaseStringUTFChars(objectKey, utf_string);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
 	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
