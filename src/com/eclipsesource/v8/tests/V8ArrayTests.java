@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
@@ -201,7 +202,7 @@ public class V8ArrayTests {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetStringWrongType() {
-        V8Array array = v8.executeArrayScript("foo = 42; foo");
+        V8Array array = v8.executeArrayScript("foo = [42]; foo");
 
         try {
             array.getString(0);
@@ -227,6 +228,50 @@ public class V8ArrayTests {
         v8.executeVoidScript("foo[0] = 'test'");
         assertEquals("test", array.getString(0));
         array.release();
+    }
+
+    /**** Object Array ****/
+    @Test
+    public void testArrayGetObject() {
+        V8Array array = v8.executeArrayScript("foo = [{name : 'joe', age : 38 }]; foo");
+
+        V8Object object = array.getObject(0);
+        assertEquals("joe", object.getString("name"));
+        assertEquals(38, object.getInteger("age"));
+        array.release();
+        object.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetObjectWrongType() {
+        V8Array array = v8.executeArrayScript("foo = [42]; foo");
+
+        try {
+            array.getObject(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetObjectIndexOutOfBounds() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+        try {
+            array.getObject(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testArrayGetObjectChangeValue() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        v8.executeVoidScript("foo[0] = {foo:'bar'}");
+        V8Object obj = array.getObject(0);
+        assertEquals("bar", obj.getString("foo"));
+        array.release();
+        obj.release();
     }
 
     /**** Mixed Array ****/
