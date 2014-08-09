@@ -228,4 +228,17 @@ public class V8ArrayTests {
         assertEquals("test", array.getString(0));
         array.release();
     }
+
+    /**** Mixed Array ****/
+    @Test
+    public void testMixedArray() {
+        V8Array array = v8.executeArrayScript("foo = ['a', 3, 3.1, true]; foo");
+
+        assertEquals(4, array.getSize());
+        assertEquals("a", array.getString(0));
+        assertEquals(3, array.getInteger(1));
+        assertEquals(3.1, array.getDouble(2), 0.00001);
+        assertTrue(array.getBoolean(3));
+        array.release();
+    }
 }
