@@ -652,6 +652,64 @@ public class V8Tests {
         assertTrue(v8.getBoolean("boolean"));
     }
 
+    /*** Get Array ***/
+    @Test
+    public void testGetV8Array() {
+        v8.executeVoidScript("foo = [1,2,3]");
+
+        V8Array array = v8.getArray("foo");
+
+        assertEquals(3, array.getSize());
+        assertEquals(1, array.getInteger(0));
+        assertEquals(2, array.getInteger(1));
+        assertEquals(3, array.getInteger(2));
+        array.release();
+    }
+
+    @Test
+    public void testGetMultipleV8Arrays() {
+        v8.executeVoidScript("foo = [1,2,3]; " + "bar=['first', 'second']");
+
+        V8Array fooArray = v8.getArray("foo");
+        V8Array barArray = v8.getArray("bar");
+
+        assertEquals(3, fooArray.getSize());
+        assertEquals(2, barArray.getSize());
+
+        fooArray.release();
+        barArray.release();
+    }
+
+    @Test
+    public void testGetNestedV8Array() {
+        v8.executeVoidScript("foo = [[1,2]]");
+
+        for (int i = 0; i < 1000; i++) {
+            V8Array fooArray = v8.getArray("foo");
+            V8Array nested = fooArray.getArray(0);
+
+            assertEquals(1, fooArray.getSize());
+            assertEquals(2, nested.getSize());
+
+            fooArray.release();
+            nested.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetArrayWrongType() {
+        v8.executeVoidScript("foo = 42");
+
+        v8.getArray("foo");
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetArrayDoesNotExist() {
+        v8.executeVoidScript("foo = 42");
+
+        v8.getArray("bar");
+    }
+
     /*** Contains ***/
     @Test
     public void testContainsKey() {
