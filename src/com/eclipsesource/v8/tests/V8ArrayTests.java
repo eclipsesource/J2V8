@@ -230,7 +230,7 @@ public class V8ArrayTests {
         array.release();
     }
 
-    /**** Object Array ****/
+    /**** Get Object ****/
     @Test
     public void testArrayGetObject() {
         V8Array array = v8.executeArrayScript("foo = [{name : 'joe', age : 38 }]; foo");
@@ -272,6 +272,56 @@ public class V8ArrayTests {
         assertEquals("bar", obj.getString("foo"));
         array.release();
         obj.release();
+    }
+
+    /*** Get Array ***/
+    @Test
+    public void testArrayGetArray() {
+        V8Array array = v8.executeArrayScript("foo = [[1,2,3],['first','second'],[true]]; foo");
+
+        V8Array array1 = array.getArray(0);
+        V8Array array2 = array.getArray(1);
+        V8Array array3 = array.getArray(2);
+        assertEquals(3, array1.getSize());
+        assertEquals(2, array2.getSize());
+        assertEquals(1, array3.getSize());
+
+        array.release();
+        array1.release();
+        array2.release();
+        array3.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetArrayWrongType() {
+        V8Array array = v8.executeArrayScript("foo = [42]; foo");
+
+        try {
+            array.getArray(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetArrayIndexOutOfBounds() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+        try {
+            array.getArray(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testArrayGetArrayChangeValue() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        v8.executeVoidScript("foo[0] = [1,2,3]");
+        V8Array array1 = array.getArray(0);
+        assertEquals(3, array1.getSize());
+        array.release();
+        array1.release();
     }
 
     /**** Mixed Array ****/

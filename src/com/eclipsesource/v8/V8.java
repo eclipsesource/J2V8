@@ -175,16 +175,18 @@ public class V8 extends V8Object {
 
     protected native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
 
-    public native int _arrayGetInteger(int v8RuntimeHandle, int handle, int index);
+    public native int _arrayGetInteger(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native boolean _arrayGetBoolean(int v8RuntimeHandle, int handle, int index);
+    public native boolean _arrayGetBoolean(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native double _arrayGetDouble(int v8RuntimeHandle, int handle, int index);
+    public native double _arrayGetDouble(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native String _arrayGetString(int v8RuntimeHandle, int handle, int index);
+    public native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
 
-    public native void _arrayGetObject(final int v8RuntimeHandle, final int objectHandle, final int index,
+    public native void _arrayGetObject(final int v8RuntimeHandle, final int arrayHandle, final int index,
             final int resultHandle);
+
+    public native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
 
     public void addObjRef() {
         objectReferences++;
@@ -193,6 +195,7 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
+
 
 
 }

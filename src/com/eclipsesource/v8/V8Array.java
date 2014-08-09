@@ -54,7 +54,14 @@ public class V8Array {
 
     public V8Array getArray(final int index) {
         v8.checkThread();
-        return null;
+        V8Array result = new V8Array(v8);
+        try {
+            v8._arrayGetArray(v8.getV8RuntimeHandle(), getHandle(), index, result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public V8Object getObject(final int index) {
