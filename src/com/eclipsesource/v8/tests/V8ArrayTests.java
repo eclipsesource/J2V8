@@ -187,4 +187,45 @@ public class V8ArrayTests {
         assertEquals(3.14159, array.getDouble(0), 0.000001);
         array.release();
     }
+
+    /*** Get String ***/
+    @Test
+    public void testArrayGetString() {
+        V8Array array = v8.executeArrayScript("foo = ['first','second','third']; foo");
+
+        assertEquals("first", array.getString(0));
+        assertEquals("second", array.getString(1));
+        assertEquals("third", array.getString(2));
+        array.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetStringWrongType() {
+        V8Array array = v8.executeArrayScript("foo = 42; foo");
+
+        try {
+            array.getString(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayGetStringIndexOutOfBounds() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+        try {
+            array.getString(0);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testArrayGetStringChangeValue() {
+        V8Array array = v8.executeArrayScript("foo = []; foo");
+
+        v8.executeVoidScript("foo[0] = 'test'");
+        assertEquals("test", array.getString(0));
+        array.release();
+    }
 }

@@ -49,7 +49,7 @@ public class V8Array {
 
     public String getString(final int index) {
         v8.checkThread();
-        return null;
+        return v8._arrayGetString(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
     public V8Array getArray(final int index) {

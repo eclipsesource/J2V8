@@ -343,6 +343,14 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDouble
   (JNIEnv *, jobject, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetString
+ * Signature: (III)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
+  (JNIEnv *, jobject, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -181,6 +181,8 @@ public class V8 extends V8Object {
 
     public native double _arrayGetDouble(int v8RuntimeHandle2, int handle, int index);
 
+    public native String _arrayGetString(int v8RuntimeHandle2, int handle, int index);
+
     public void addObjRef() {
         objectReferences++;
     }
@@ -188,5 +190,6 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
+
 
 }
