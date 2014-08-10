@@ -194,10 +194,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeDoubleFunction
- * Signature: (ILjava/lang/String;Lcom/eclipsesource/v8/V8Array;)D
+ * Signature: (IILjava/lang/String;I)D
  */
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
-  (JNIEnv *, jobject, jint, jstring, jobject);
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

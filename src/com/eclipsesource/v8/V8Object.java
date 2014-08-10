@@ -114,7 +114,8 @@ public class V8Object {
 
     public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
         v8.checkThread();
-        return v8._executeDoubleFunction(v8.getV8RuntimeHandle(), name, null);
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        return v8._executeDoubleFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
     public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {

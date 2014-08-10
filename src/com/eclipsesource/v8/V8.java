@@ -135,8 +135,8 @@ public class V8 extends V8Object {
 
     protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
-    protected native double _executeDoubleFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name,
+            int parametersHandle);
 
     protected native String _executeStringFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;
