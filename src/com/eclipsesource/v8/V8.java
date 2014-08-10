@@ -133,8 +133,7 @@ public class V8 extends V8Object {
 
     protected native V8Array _createParameterList(int v8RuntimeHandle, final int size);
 
-    protected native int _executeIntFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
     protected native double _executeDoubleFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;
@@ -188,13 +187,13 @@ public class V8 extends V8Object {
 
     protected native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
 
-    public native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
+    protected native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
 
-    public native void _addArrayBooleanItem(int v8RuntimeHandle, int arrayHandle, boolean value);
+    protected native void _addArrayBooleanItem(int v8RuntimeHandle, int arrayHandle, boolean value);
 
-    public native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
+    protected native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
 
-    public native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
+    protected native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
 
     public void addObjRef() {
         objectReferences++;

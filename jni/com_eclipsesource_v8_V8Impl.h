@@ -186,10 +186,10 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1createParameterList
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeIntFunction
- * Signature: (ILjava/lang/String;Lcom/eclipsesource/v8/V8Array;)I
+ * Signature: (IILjava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
-  (JNIEnv *, jobject, jint, jstring, jobject);
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
