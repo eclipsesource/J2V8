@@ -792,6 +792,68 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetArray
 	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint value) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Local<Value> v8Value = v8::Int32::New(isolate, value);
+	int index = Array::Cast(*array)->Length();
+	array->Set(index, v8Value);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jdouble value) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Local<Value> v8Value = v8::Number::New(isolate, value);
+	int index = Array::Cast(*array)->Length();
+	array->Set(index, v8Value);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jboolean value) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Local<Value> v8Value = v8::Boolean::New(isolate, value);
+	int index = Array::Cast(*array)->Length();
+	array->Set(index, v8Value);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jstring value) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	int index = Array::Cast(*array)->Length();
+	const char* utfString = env -> GetStringUTFChars(value, NULL);
+	Local<String> v8Value = String::NewFromUtf8(isolate, utfString);
+	array->Set(index, v8Value);
+	env->ReleaseStringUTFChars(value, utfString);
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");

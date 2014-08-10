@@ -336,4 +336,98 @@ public class V8ArrayTests {
         assertTrue(array.getBoolean(3));
         array.release();
     }
+
+    /*** Add Primitives ***/
+    @Test
+    public void testAddInt() {
+        V8Array array = new V8Array(v8);
+
+        array.add(7);
+        array.add(8);
+        array.add(9);
+
+        assertEquals(3, array.getSize());
+        assertEquals(7, array.getInteger(0));
+        assertEquals(8, array.getInteger(1));
+        assertEquals(9, array.getInteger(2));
+        array.release();
+    }
+
+    @Test
+    public void testAddString() {
+        V8Array array = new V8Array(v8);
+
+        array.add("first");
+        array.add("second");
+        array.add("third");
+        array.add("forth");
+
+        assertEquals(4, array.getSize());
+        assertEquals("first", array.getString(0));
+        assertEquals("second", array.getString(1));
+        assertEquals("third", array.getString(2));
+        assertEquals("forth", array.getString(3));
+        array.release();
+    }
+
+    @Test
+    public void testAddDouble() {
+        V8Array array = new V8Array(v8);
+
+        array.add(1.1);
+        array.add(2.2);
+        array.add(3.3);
+        array.add(4.9);
+
+        assertEquals(4, array.getSize());
+        assertEquals(1.1, array.getDouble(0), 0.000001);
+        assertEquals(2.2, array.getDouble(1), 0.000001);
+        assertEquals(3.3, array.getDouble(2), 0.000001);
+        assertEquals(4.9, array.getDouble(3), 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testAddBoolean() {
+        V8Array array = new V8Array(v8);
+
+        array.add(true);
+        array.add(false);
+
+        assertEquals(2, array.getSize());
+        assertTrue(array.getBoolean(0));
+        assertFalse(array.getBoolean(1));
+        array.release();
+    }
+
+    @Test
+    public void testAddMixedValues() {
+        V8Array array = new V8Array(v8);
+
+        array.add(true);
+        array.add(false);
+        array.add(1);
+        array.add("string");
+        array.add(false);
+
+        assertEquals(5, array.getSize());
+        assertTrue(array.getBoolean(0));
+        assertFalse(array.getBoolean(1));
+        assertEquals(1, array.getInteger(2));
+        assertEquals("string", array.getString(3));
+        assertFalse(array.getBoolean(4));
+        array.release();
+    }
+
+    @Test
+    public void testAddToExistingArray() {
+        V8Array array = v8.executeArrayScript("foo = [1,2,3,,5]; foo;");
+
+        array.add(false);
+
+        assertEquals(6, array.getSize());
+        assertFalse(array.getBoolean(5));
+        array.release();
+    }
+
 }

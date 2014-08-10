@@ -367,6 +367,38 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetObject
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetArray
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayIntItem
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayBooleanItem
+ * Signature: (IIZ)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
+  (JNIEnv *, jobject, jint, jint, jboolean);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayDoubleItem
+ * Signature: (IID)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
+  (JNIEnv *, jobject, jint, jint, jdouble);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayStringItem
+ * Signature: (IILjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
+  (JNIEnv *, jobject, jint, jint, jstring);
+
 #ifdef __cplusplus
 }
 #endif

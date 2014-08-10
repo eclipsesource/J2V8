@@ -188,6 +188,14 @@ public class V8 extends V8Object {
 
     protected native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
 
+    public native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    public native void _addArrayBooleanItem(int v8RuntimeHandle, int arrayHandle, boolean value);
+
+    public native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
+
+    public native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
+
     public void addObjRef() {
         objectReferences++;
     }
@@ -195,6 +203,5 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
-
 
 }

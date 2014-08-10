@@ -78,18 +78,22 @@ public class V8Array {
 
     public void add(final int value) {
         v8.checkThread();
+        v8._addArrayIntItem(v8.getV8RuntimeHandle(), getHandle(), value);
     }
 
     public void add(final boolean value) {
         v8.checkThread();
+        v8._addArrayBooleanItem(v8.getV8RuntimeHandle(), getHandle(), value);
     }
 
     public void add(final double value) {
         v8.checkThread();
+        v8._addArrayDoubleItem(v8.getV8RuntimeHandle(), getHandle(), value);
     }
 
     public void add(final String value) {
         v8.checkThread();
+        v8._addArrayStringItem(v8.getV8RuntimeHandle(), getHandle(), value);
     }
 
     public void addObject(final V8Object value) {
