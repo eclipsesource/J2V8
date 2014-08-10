@@ -138,8 +138,7 @@ public class V8 extends V8Object {
     protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name,
             int parametersHandle);
 
-    protected native String _executeStringFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native String _executeStringFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
     protected native boolean _executeBooleanFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;
@@ -202,5 +201,4 @@ public class V8 extends V8Object {
     public void releaseObjRef() {
         objectReferences--;
     }
-
 }

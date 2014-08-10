@@ -120,7 +120,8 @@ public class V8Object {
 
     public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
         v8.checkThread();
-        return v8._executeStringFunction(v8.getV8RuntimeHandle(), name, null);
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        return v8._executeStringFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
     public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ExecutionException,
