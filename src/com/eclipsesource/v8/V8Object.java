@@ -127,7 +127,8 @@ public class V8Object {
     public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ExecutionException,
     V8ResultUndefined {
         v8.checkThread();
-        return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), name, null);
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
     public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {

@@ -9,6 +9,8 @@ import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class V8JSFunctionCallTest {
 
@@ -68,6 +70,19 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testBooleanFunctionCall() {
+        v8.executeVoidScript("function add(x, y) {return x&&y;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.add(true);
+        parameters.add(true);
+
+        boolean result = v8.executeBooleanFunction("add", parameters);
+
+        assertTrue(result);
+        parameters.release();
+    }
+
+    @Test
     public void testIntFunctionCallNoParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
         V8Array parameters = new V8Array(v8);
@@ -101,6 +116,17 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testBooleanFunctionCallNoParameters() {
+        v8.executeVoidScript("function foo() {return true;}");
+        V8Array parameters = new V8Array(v8);
+
+        boolean result = v8.executeBooleanFunction("foo", parameters);
+
+        assertTrue(result);
+        parameters.release();
+    }
+
+    @Test
     public void testIntFunctionCallNullParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
 
@@ -125,6 +151,15 @@ public class V8JSFunctionCallTest {
         String result = v8.executeStringFunction("foo", null);
 
         assertEquals("hello", result);
+    }
+
+    @Test
+    public void testBooleanFunctionCallNullParameters() {
+        v8.executeVoidScript("function foo() {return true;}");
+
+        boolean result = v8.executeBooleanFunction("foo", null);
+
+        assertTrue(result);
     }
 
     @Test
@@ -175,6 +210,23 @@ public class V8JSFunctionCallTest {
         parameters.release();
 
         assertEquals("hello, world!", result);
+        object.release();
+    }
+
+    @Test
+    public void testBooleanFunctionCallOnObject() {
+        v8.executeVoidScript("function add(x, y) {return x && y;}");
+        v8.executeVoidScript("adder = {};");
+        v8.executeVoidScript("adder.addFuction = add;");
+        V8Object object = v8.getObject("adder");
+
+        V8Array parameters = new V8Array(v8);
+        parameters.add(true);
+        parameters.add(false);
+        boolean result = object.executeBooleanFunction("addFuction", parameters);
+        parameters.release();
+
+        assertFalse(result);
         object.release();
     }
 

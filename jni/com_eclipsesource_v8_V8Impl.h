@@ -210,10 +210,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeBooleanFunction
- * Signature: (ILjava/lang/String;Lcom/eclipsesource/v8/V8Array;)Z
+ * Signature: (IILjava/lang/String;I)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
-  (JNIEnv *, jobject, jint, jstring, jobject);
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
