@@ -376,6 +376,42 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	return;
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle, jint resultHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
+	int size = 0;
+	Handle<Value>* args = NULL;
+	if ( parameterHandle >= 0 ) {
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		size = Array::Cast(*parameters)->Length();
+		args = new Handle<Value> [size];
+		for (int i = 0; i < size; i++) {
+			args[i] = parameters->Get(i);
+		}
+	}
+
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+	Handle<Value> result = func->Call(parentObject, size, args);
+	if (result.IsEmpty() || result->IsUndefined() || !result->IsArray()) {
+		throwResultUndefinedException(env, "");
+		return;
+	}
+
+	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+	return;
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jobject, jint resultHandle) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);

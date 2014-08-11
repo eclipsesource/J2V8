@@ -375,6 +375,31 @@ public class V8Tests {
         v8.executeObjectFunction("foo", null);
     }
 
+    /*** Array Function ***/
+    @Test
+    public void testSimpleArrayFunction() {
+        v8.executeVoidScript("function foo() {return [1,2,3];}");
+
+        V8Array result = v8.executeArrayFunction("foo", null);
+
+        assertEquals(3, result.getSize());
+        result.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForWrongReturnTypeOfArrayFunction() {
+        v8.executeVoidScript("function foo() {return 'foo';}");
+
+        v8.executeArrayFunction("foo", null);
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testResultUndefinedForNoReturnInArrayFunction() {
+        v8.executeVoidScript("function foo() {};");
+
+        v8.executeArrayFunction("foo", null);
+    }
+
     /*** Add Int ***/
     @Test
     public void testAddInt() {

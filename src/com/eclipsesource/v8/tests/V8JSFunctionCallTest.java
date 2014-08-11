@@ -83,6 +83,25 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testArrayFunctionCall() {
+        v8.executeVoidScript("function add(a,b,c,d) {return [a,b,c,d];}");
+        V8Array parameters = new V8Array(v8);
+        parameters.add(true);
+        parameters.add(false);
+        parameters.add(7);
+        parameters.add("foo");
+
+        V8Array result = v8.executeArrayFunction("add", parameters);
+
+        assertTrue(result.getBoolean(0));
+        assertFalse(result.getBoolean(1));
+        assertEquals(7, result.getInteger(2));
+        assertEquals("foo", result.getString(3));
+        parameters.release();
+        result.release();
+    }
+
+    @Test
     public void testIntFunctionCallNoParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
         V8Array parameters = new V8Array(v8);
@@ -127,6 +146,18 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testArrayFunctionCallNoParameters() {
+        v8.executeVoidScript("function foo() {return [];}");
+        V8Array parameters = new V8Array(v8);
+
+        V8Array result = v8.executeArrayFunction("foo", parameters);
+
+        assertEquals(0, result.getSize());
+        parameters.release();
+        result.release();
+    }
+
+    @Test
     public void testIntFunctionCallNullParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
 
@@ -160,6 +191,16 @@ public class V8JSFunctionCallTest {
         boolean result = v8.executeBooleanFunction("foo", null);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void testArrayFunctionCallNullParameters() {
+        v8.executeVoidScript("function foo() {return [1,2];}");
+
+        V8Array result = v8.executeArrayFunction("foo", null);
+
+        assertEquals(2, result.getSize());
+        result.release();
     }
 
     @Test
@@ -227,6 +268,25 @@ public class V8JSFunctionCallTest {
         parameters.release();
 
         assertFalse(result);
+        object.release();
+    }
+
+    @Test
+    public void testArrayFunctionCallOnObject() {
+        v8.executeVoidScript("function add(x, y) {return [x,y];}");
+        v8.executeVoidScript("adder = {};");
+        v8.executeVoidScript("adder.addFuction = add;");
+        V8Object object = v8.getObject("adder");
+
+        V8Array parameters = new V8Array(v8);
+        parameters.add(true);
+        parameters.add(false);
+        V8Array result = object.executeArrayFunction("addFuction", parameters);
+        parameters.release();
+
+        assertFalse(result.getBoolean(1));
+        assertTrue(result.getBoolean(0));
+        result.release();
         object.release();
     }
 

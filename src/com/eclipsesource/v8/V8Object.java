@@ -133,7 +133,16 @@ public class V8Object {
 
     public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
         v8.checkThread();
-        return null;
+        V8Array result = new V8Array(v8);
+        try {
+            int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+            v8._executeArrayFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle,
+                    result.getHandle());
+        } catch (Exception e) {
+            result.release();
+            throw e;
+        }
+        return result;
     }
 
     public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ExecutionException,

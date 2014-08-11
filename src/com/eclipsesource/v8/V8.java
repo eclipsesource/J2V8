@@ -142,8 +142,8 @@ public class V8 extends V8Object {
 
     protected native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
-    protected native V8Array _executeArrayFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native void _executeArrayFunction(int v8RuntimeHandle, int objectHandle, String name,
+            int parametersHandle, int resultHandle);
 
     protected native void _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name,
             final V8Array parameters, int resultHandle) throws V8RuntimeException;

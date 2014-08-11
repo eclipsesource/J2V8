@@ -218,10 +218,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeArrayFunction
- * Signature: (ILjava/lang/String;Lcom/eclipsesource/v8/V8Array;)Lcom/eclipsesource/v8/V8Array;
+ * Signature: (IILjava/lang/String;II)V
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
-  (JNIEnv *, jobject, jint, jstring, jobject);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
+  (JNIEnv *, jobject, jint, jint, jstring, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
