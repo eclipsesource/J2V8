@@ -150,7 +150,8 @@ public class V8Object {
         v8.checkThread();
         V8Object result = new V8Object(v8);
         try {
-            v8._executeObjectFunction(v8.getV8RuntimeHandle(), objectHandle, name, null, result.getHandle());
+            int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+            v8._executeObjectFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle, result.getHandle());
         } catch (Exception e) {
             result.release();
             throw e;

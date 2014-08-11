@@ -146,7 +146,7 @@ public class V8 extends V8Object {
             int parametersHandle, int resultHandle);
 
     protected native void _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name,
-            final V8Array parameters, int resultHandle) throws V8RuntimeException;
+            final int parametersHandle, int resultHandle);
 
     protected native void _executeVoidFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
             throws V8RuntimeException;

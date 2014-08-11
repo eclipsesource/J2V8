@@ -226,10 +226,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeObjectFunction
- * Signature: (IILjava/lang/String;Lcom/eclipsesource/v8/V8Array;I)V
+ * Signature: (IILjava/lang/String;II)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
-  (JNIEnv *, jobject, jint, jint, jstring, jobject, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

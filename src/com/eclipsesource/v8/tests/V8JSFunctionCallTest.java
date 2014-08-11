@@ -102,6 +102,23 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testObjectFunctionCall() {
+        v8.executeVoidScript("function getPerson(first, last, age) {return {'first':first, 'last':last, 'age':age};}");
+        V8Array parameters = new V8Array(v8);
+        parameters.add("John");
+        parameters.add("Smith");
+        parameters.add(7);
+
+        V8Object result = v8.executeObjectFunction("getPerson", parameters);
+
+        assertEquals("John", result.getString("first"));
+        assertEquals("Smith", result.getString("last"));
+        assertEquals(7, result.getInteger("age"));
+        parameters.release();
+        result.release();
+    }
+
+    @Test
     public void testIntFunctionCallNoParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
         V8Array parameters = new V8Array(v8);
@@ -158,6 +175,18 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testObjectFunctionCallNoParameters() {
+        v8.executeVoidScript("function foo() {return {bar:8};}");
+        V8Array parameters = new V8Array(v8);
+
+        V8Object result = v8.executeObjectFunction("foo", parameters);
+
+        assertEquals(8, result.getInteger("bar"));
+        parameters.release();
+        result.release();
+    }
+
+    @Test
     public void testIntFunctionCallNullParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
 
@@ -200,6 +229,16 @@ public class V8JSFunctionCallTest {
         V8Array result = v8.executeArrayFunction("foo", null);
 
         assertEquals(2, result.getSize());
+        result.release();
+    }
+
+    @Test
+    public void testObjectFunctionCallNullParameters() {
+        v8.executeVoidScript("function foo() {return {a:'b'};}");
+
+        V8Object result = v8.executeObjectFunction("foo", null);
+
+        assertEquals("b", result.getString("a"));
         result.release();
     }
 
@@ -286,6 +325,25 @@ public class V8JSFunctionCallTest {
 
         assertFalse(result.getBoolean(1));
         assertTrue(result.getBoolean(0));
+        result.release();
+        object.release();
+    }
+
+    @Test
+    public void testObjectFunctionCallOnObject() {
+        v8.executeVoidScript("function getPoint(x, y) {return {'x':x, 'y':y};}");
+        v8.executeVoidScript("pointer = {};");
+        v8.executeVoidScript("pointer.pointGetter = getPoint;");
+        V8Object object = v8.getObject("pointer");
+
+        V8Array parameters = new V8Array(v8);
+        parameters.add(8);
+        parameters.add(9);
+        V8Object result = object.executeObjectFunction("pointGetter", parameters);
+        parameters.release();
+
+        assertEquals(8, result.getInteger("x"));
+        assertEquals(9, result.getInteger("y"));
         result.release();
         object.release();
     }
