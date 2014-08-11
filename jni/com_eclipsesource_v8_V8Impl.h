@@ -399,6 +399,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
   (JNIEnv *, jobject, jint, jint, jstring);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayArrayItem
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
+  (JNIEnv *, jobject, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

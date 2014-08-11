@@ -193,6 +193,8 @@ public class V8 extends V8Object {
 
     protected native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
 
+    protected native void _addArrayArrayItem(int v8RuntimeHandle, int arrayHandle, int value);
+
     public void addObjRef() {
         objectReferences++;
     }

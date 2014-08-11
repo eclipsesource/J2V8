@@ -96,12 +96,13 @@ public class V8Array {
         v8._addArrayStringItem(v8.getV8RuntimeHandle(), getHandle(), value);
     }
 
-    public void addObject(final V8Object value) {
+    public void add(final V8Object value) {
         v8.checkThread();
     }
 
-    public void addArray(final int size, final V8Array value) {
+    public void add(final V8Array value) {
         v8.checkThread();
+        v8._addArrayArrayItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
     }
 
     public int getHandle() {

@@ -430,4 +430,36 @@ public class V8ArrayTests {
         array.release();
     }
 
+    @Test
+    public void testCreateMatrix() {
+        V8Array a1 = new V8Array(v8);
+        V8Array a2 = new V8Array(v8);
+        V8Array a3 = new V8Array(v8);
+        a1.add(1);
+        a1.add(2);
+        a1.add(3);
+        a2.add(4);
+        a2.add(5);
+        a2.add(6);
+        a3.add(7);
+        a3.add(8);
+        a3.add(9);
+        V8Array array = new V8Array(v8);
+        array.add(a1);
+        array.add(a2);
+        array.add(a3);
+        V8Array parameters = new V8Array(v8);
+        parameters.add(array);
+
+        v8.executeVoidScript("var total = 0; function add(matrix) { for(var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) { total = total + matrix[i][j]; }}};");
+        v8.executeVoidFunction("add", parameters);
+        int result = v8.getInteger("total");
+
+        assertEquals(45, result);
+        a1.release();
+        a2.release();
+        a3.release();
+        array.release();
+        parameters.release();
+    }
 }

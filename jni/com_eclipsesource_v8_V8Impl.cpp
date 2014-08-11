@@ -980,6 +980,22 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
 	env->ReleaseStringUTFChars(value, utfString);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint valueHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	int index = Array::Cast(*array)->Length();
+	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[valueHandle]);
+	array->Set(index, v8Value);
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");
