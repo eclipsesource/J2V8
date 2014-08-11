@@ -583,6 +583,34 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 	return env->NewStringUTF(*utf);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
+	int size = 0;
+	Handle<Value>* args = NULL;
+	if ( parameterHandle >= 0 ) {
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		size = Array::Cast(*parameters)->Length();
+		args = new Handle<Value> [size];
+		for (int i = 0; i < size; i++) {
+			args[i] = parameters->Get(i);
+		}
+	}
+
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+	Handle<Value> result = func->Call(parentObject, size, args);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
   (JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint value) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);

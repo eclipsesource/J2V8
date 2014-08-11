@@ -148,8 +148,8 @@ public class V8 extends V8Object {
     protected native void _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name,
             final int parametersHandle, int resultHandle);
 
-    protected native void _executeVoidFunction(int v8RuntimeHandle, final String name, final V8Array parameters)
-            throws V8RuntimeException;
+    protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name,
+            final int parametersHandle);
 
     protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final int value);
 

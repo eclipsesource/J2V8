@@ -400,6 +400,16 @@ public class V8Tests {
         v8.executeArrayFunction("foo", null);
     }
 
+    /*** Void Function ***/
+    @Test
+    public void testSimpleVoidFunction() {
+        v8.executeVoidScript("function foo() {x=1}");
+
+        v8.executeVoidFunction("foo", null);
+
+        assertEquals(1, v8.getInteger("x"));
+    }
+
     /*** Add Int ***/
     @Test
     public void testAddInt() {

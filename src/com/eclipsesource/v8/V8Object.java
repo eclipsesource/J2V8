@@ -161,7 +161,8 @@ public class V8Object {
 
     public void executeVoidFunction(final String name, final V8Array parameters) throws V8ExecutionException {
         v8.checkThread();
-        v8._executeVoidFunction(v8.getV8RuntimeHandle(), name, null);
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        v8._executeVoidFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle);
     }
 
     public void add(final String key, final int value) {

@@ -119,6 +119,24 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testVoidFunctionCall() {
+        v8.executeVoidScript("function setPerson(first, last, age) {person = {'first':first, 'last':last, 'age':age};}");
+        V8Array parameters = new V8Array(v8);
+        parameters.add("John");
+        parameters.add("Smith");
+        parameters.add(7);
+
+        v8.executeVoidFunction("setPerson", parameters);
+        V8Object result = v8.getObject("person");
+
+        assertEquals("John", result.getString("first"));
+        assertEquals("Smith", result.getString("last"));
+        assertEquals(7, result.getInteger("age"));
+        parameters.release();
+        result.release();
+    }
+
+    @Test
     public void testIntFunctionCallNoParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
         V8Array parameters = new V8Array(v8);
@@ -187,6 +205,17 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testVoidFunctionCallNoParameters() {
+        v8.executeVoidScript("function foo() {x=7;}");
+        V8Array parameters = new V8Array(v8);
+
+        v8.executeVoidFunction("foo", parameters);
+
+        assertEquals(7, v8.getInteger("x"));
+        parameters.release();
+    }
+
+    @Test
     public void testIntFunctionCallNullParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
 
@@ -240,6 +269,15 @@ public class V8JSFunctionCallTest {
 
         assertEquals("b", result.getString("a"));
         result.release();
+    }
+
+    @Test
+    public void testVoidFunctionCallNullParameters() {
+        v8.executeVoidScript("function foo() {x=7;}");
+
+        v8.executeVoidFunction("foo", null);
+
+        assertEquals(7, v8.getInteger("x"));
     }
 
     @Test
@@ -345,6 +383,24 @@ public class V8JSFunctionCallTest {
         assertEquals(8, result.getInteger("x"));
         assertEquals(9, result.getInteger("y"));
         result.release();
+        object.release();
+    }
+
+    @Test
+    public void testVoidFunctionCallOnObject() {
+        v8.executeVoidScript("pointer = {'x':0,'y':0};");
+        v8.executeVoidScript("function setPoint(x, y) {pointer.x = x;pointer.y=y;}");
+        v8.executeVoidScript("pointer.pointSetter = setPoint;");
+        V8Object object = v8.getObject("pointer");
+
+        V8Array parameters = new V8Array(v8);
+        parameters.add(8);
+        parameters.add(9);
+        object.executeVoidFunction("pointSetter", parameters);
+        parameters.release();
+
+        assertEquals(8, object.getInteger("x"));
+        assertEquals(9, object.getInteger("y"));
         object.release();
     }
 
