@@ -7,6 +7,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_eclipsesource_v8_V8_INTEGER
+#define com_eclipsesource_v8_V8_INTEGER 1L
+#undef com_eclipsesource_v8_V8_DOUBLE
+#define com_eclipsesource_v8_V8_DOUBLE 2L
+#undef com_eclipsesource_v8_V8_BOOLEAN
+#define com_eclipsesource_v8_V8_BOOLEAN 3L
+#undef com_eclipsesource_v8_V8_STRING
+#define com_eclipsesource_v8_V8_STRING 4L
+#undef com_eclipsesource_v8_V8_V8_ARRAY
+#define com_eclipsesource_v8_V8_V8_ARRAY 5L
+#undef com_eclipsesource_v8_V8_V8_OBJECT
+#define com_eclipsesource_v8_V8_V8_OBJECT 6L
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _initExistingV8Object
@@ -118,14 +130,6 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1contains
  */
 JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
   (JNIEnv *, jobject, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
- * Method:    _getType
- * Signature: (ILjava/lang/String;)I
- */
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType
-  (JNIEnv *, jobject, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -405,6 +409,22 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
  * Signature: (III)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _getType
+ * Signature: (IILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_String_2
+  (JNIEnv *, jobject, jint, jint, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _getType
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
   (JNIEnv *, jobject, jint, jint, jint);
 
 #ifdef __cplusplus

@@ -1012,6 +1012,73 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 	array->Set(index, v8Value);
 }
 
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_String_2
+ (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	const char* utf_string = env -> GetStringUTFChars(key, NULL);
+
+	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	Handle<v8::Value> v8Value = global->Get(v8Key);
+	env->ReleaseStringUTFChars(key, utf_string);
+	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
+		throwResultUndefinedException(env, "");
+		return 0;
+	} else if ( v8Value->IsInt32() ) {
+		return com_eclipsesource_v8_V8_INTEGER;
+	} else if ( v8Value->IsNumber() ) {
+		return com_eclipsesource_v8_V8_DOUBLE;
+	} else if (v8Value->IsBoolean() ) {
+		return com_eclipsesource_v8_V8_BOOLEAN;
+	} else if (v8Value->IsString() ) {
+		return com_eclipsesource_v8_V8_STRING;
+	} else if ( v8Value->IsArray() ) {
+		return com_eclipsesource_v8_V8_V8_ARRAY;
+	} else if ( v8Value->IsObject() ) {
+		return com_eclipsesource_v8_V8_V8_OBJECT;
+	}
+	throwResultUndefinedException(env, "");
+	return 0;
+}
+
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint index) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[objectHandle]);
+
+	Handle<Value> v8Value = array->Get(index);
+	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
+		throwResultUndefinedException(env, "");
+		return 0;
+	} else if ( v8Value->IsInt32() ) {
+		return com_eclipsesource_v8_V8_INTEGER;
+	} else if ( v8Value->IsNumber() ) {
+		return com_eclipsesource_v8_V8_DOUBLE;
+	} else if (v8Value->IsBoolean() ) {
+		return com_eclipsesource_v8_V8_BOOLEAN;
+	} else if (v8Value->IsString() ) {
+		return com_eclipsesource_v8_V8_STRING;
+	} else if ( v8Value->IsArray() ) {
+		return com_eclipsesource_v8_V8_V8_ARRAY;
+	} else if ( v8Value->IsObject() ) {
+		return com_eclipsesource_v8_V8_V8_OBJECT;
+	}
+	throwResultUndefinedException(env, "");
+	return 0;
+}
+
 Isolate* getIsolate(JNIEnv *env, int handle) {
 	if ( v8Isolates.find(handle) == v8Isolates.end() ) {
 		throwError(env, "V8 isolate not found.");

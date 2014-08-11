@@ -493,4 +493,80 @@ public class V8ArrayTests {
         result2.release();
     }
 
+    /*** Test Types ***/
+    @Test
+    public void testGetTypeInt() {
+        V8Array v8Array = new V8Array(v8);
+
+        v8Array.add(1);
+
+        assertEquals(V8Object.INTEGER, v8Array.getType(0));
+        v8Array.release();
+    }
+
+    @Test
+    public void testGetTypeDouble() {
+        V8Array v8Array = new V8Array(v8);
+
+        v8Array.add(1.1);
+
+        assertEquals(V8Object.DOUBLE, v8Array.getType(0));
+        v8Array.release();
+    }
+
+    @Test
+    public void testGetTypeString() {
+        V8Array v8Array = new V8Array(v8);
+
+        v8Array.add("String");
+
+        assertEquals(V8Object.STRING, v8Array.getType(0));
+        v8Array.release();
+    }
+
+    @Test
+    public void testGetTypeBoolean() {
+        V8Array v8Array = new V8Array(v8);
+
+        v8Array.add(false);
+
+        assertEquals(V8Object.BOOLEAN, v8Array.getType(0));
+        v8Array.release();
+    }
+
+    @Test
+    public void testGetTypeArray() {
+        V8Array v8Array = new V8Array(v8);
+        V8Array value = new V8Array(v8);
+
+        v8Array.add(value);
+
+        assertEquals(V8Object.V8_ARRAY, v8Array.getType(0));
+        v8Array.release();
+        value.release();
+    }
+
+    @Test
+    public void testGetTypeObject() {
+        V8Array v8Array = new V8Array(v8);
+        V8Object value = new V8Object(v8);
+
+        v8Array.add(value);
+
+        assertEquals(V8Object.V8_OBJECT, v8Array.getType(0));
+        v8Array.release();
+        value.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetTypeIndexOutOfBounds() {
+        V8Array v8Array = new V8Array(v8);
+
+        try {
+            v8Array.getType(0);
+        } finally {
+            v8Array.release();
+        }
+    }
+
 }

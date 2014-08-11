@@ -117,8 +117,6 @@ public class V8 extends V8Object {
 
     protected native String[] _getKeys(int v8RuntimeHandle);
 
-    protected native int _getType(int v8RuntimeHandle, final String key);
-
     protected native int _getInteger(int v8RuntimeHandle, int objectHandle, final String key);
 
     protected native boolean _getBoolean(int v8RuntimeHandle, int objectHandle, final String key);
@@ -194,6 +192,10 @@ public class V8 extends V8Object {
     protected native void _addArrayArrayItem(int v8RuntimeHandle, int arrayHandle, int value);
 
     protected native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    protected native int _getType(int v8RuntimeHandle, int objectHandle, final String key);
+
+    protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
 
     public void addObjRef() {
         objectReferences++;

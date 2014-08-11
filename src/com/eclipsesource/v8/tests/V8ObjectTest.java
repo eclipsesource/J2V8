@@ -374,4 +374,80 @@ public class V8ObjectTest {
     public void testUndefinedObjectProperty() {
         v8.getObject("object");
     }
+
+    /*** Test Types ***/
+    @Test
+    public void testGetTypeInt() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("key", 1);
+
+        assertEquals(V8Object.INTEGER, v8Object.getType("key"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetTypeDouble() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("key", 1.1);
+
+        assertEquals(V8Object.DOUBLE, v8Object.getType("key"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetTypeString() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("key", "String");
+
+        assertEquals(V8Object.STRING, v8Object.getType("key"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetTypeBoolean() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.add("key", false);
+
+        assertEquals(V8Object.BOOLEAN, v8Object.getType("key"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetTypeArray() {
+        V8Object v8Object = new V8Object(v8);
+        V8Array value = new V8Array(v8);
+
+        v8Object.add("key", value);
+
+        assertEquals(V8Object.V8_ARRAY, v8Object.getType("key"));
+        v8Object.release();
+        value.release();
+    }
+
+    @Test
+    public void testGetTypeObject() {
+        V8Object v8Object = new V8Object(v8);
+        V8Object value = new V8Object(v8);
+
+        v8Object.add("key", value);
+
+        assertEquals(V8Object.V8_OBJECT, v8Object.getType("key"));
+        v8Object.release();
+        value.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetTypeKeyDoesNotExist() {
+        V8Object v8Object = new V8Object(v8);
+
+        try {
+            v8Object.getType("key");
+        } finally {
+            v8Object.release();
+        }
+    }
 }

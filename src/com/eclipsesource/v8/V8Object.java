@@ -3,16 +3,12 @@ package com.eclipsesource.v8;
 
 public class V8Object {
 
-    public final int   INTEGER                 = 1;
-    public final int   DOUBLE                  = 2;
-    public final int   BOOLEAN                 = 3;
-    public final int   STRING                  = 4;
-    public final int   INTEGER_ARRAY           = 5;
-    public final int   DOUBLE_ARRAY            = 6;
-    public final int   BOOLEAN_ARRAY           = 7;
-    public final int   STRING_ARRAY            = 8;
-    public final int   V8_ARRAY                = 9;
-    public final int   V8_OBJECT               = 10;
+    public static final int INTEGER                 = 1;
+    public static final int DOUBLE                  = 2;
+    public static final int BOOLEAN                 = 3;
+    public static final int STRING                  = 4;
+    public static final int V8_ARRAY                = 5;
+    public static final int V8_OBJECT               = 6;
 
     private static int v8ObjectInstanceCounter = 1;
 
@@ -54,7 +50,7 @@ public class V8Object {
 
     public int getType(final String key) throws V8ResultUndefined {
         v8.checkThread();
-        return 0;
+        return v8._getType(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
     public int getInteger(final String key) throws V8ResultUndefined {
