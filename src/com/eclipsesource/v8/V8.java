@@ -131,8 +131,6 @@ public class V8 extends V8Object {
 
     protected native void _getObject(int v8RuntimeHandle, final int objectHandle, final String key,  final int resultObjectHandle);
 
-    protected native V8Array _createParameterList(int v8RuntimeHandle, final int size);
-
     protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
     protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name,
@@ -194,6 +192,8 @@ public class V8 extends V8Object {
     protected native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
 
     protected native void _addArrayArrayItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    protected native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
 
     public void addObjRef() {
         objectReferences++;

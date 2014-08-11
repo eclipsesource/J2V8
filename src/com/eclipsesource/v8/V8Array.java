@@ -98,6 +98,7 @@ public class V8Array {
 
     public void add(final V8Object value) {
         v8.checkThread();
+        v8._addArrayObjectItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
     }
 
     public void add(final V8Array value) {

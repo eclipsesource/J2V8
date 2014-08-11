@@ -415,4 +415,27 @@ public class V8JSFunctionCallTest {
         parameters.release();
     }
 
+    @Test
+    public void testObjectParameter() {
+        V8Object obj1 = new V8Object(v8);
+        V8Object obj2 = new V8Object(v8);
+        obj1.add("first", "John");
+        obj1.add("last", "Smith");
+        obj1.add("age", 7);
+        obj2.add("first", "Tim");
+        obj2.add("last", "Jones");
+        obj2.add("age", 8);
+        V8Array parameters = new V8Array(v8);
+        parameters.add(obj1);
+        parameters.add(obj2);
+
+        v8.executeVoidScript("function add(p1, p2) {return p1.age + p2['age'];}");
+        int result = v8.executeIntFunction("add", parameters);
+
+        assertEquals(15, result);
+        obj1.release();
+        obj2.release();
+        parameters.release();
+    }
+
 }

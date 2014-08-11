@@ -177,14 +177,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _createParameterList
- * Signature: (II)Lcom/eclipsesource/v8/V8Array;
- */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1createParameterList
-  (JNIEnv *, jobject, jint, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _executeIntFunction
  * Signature: (IILjava/lang/String;I)I
  */
@@ -405,6 +397,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
  * Signature: (III)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayObjectItem
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
   (JNIEnv *, jobject, jint, jint, jint);
 
 #ifdef __cplusplus

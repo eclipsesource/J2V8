@@ -462,4 +462,35 @@ public class V8ArrayTests {
         array.release();
         parameters.release();
     }
+
+    @Test
+    public void testCreateArrayOfObjects() {
+        V8Object obj1 = new V8Object(v8);
+        V8Object obj2 = new V8Object(v8);
+        obj1.add("first", "John");
+        obj1.add("last", "Smith");
+        obj1.add("age", 7);
+        obj2.add("first", "Tim");
+        obj2.add("last", "Jones");
+        obj2.add("age", 8);
+        V8Array array = new V8Array(v8);
+        array.add(obj1);
+        array.add(obj2);
+
+        V8Object result1 = array.getObject(0);
+        V8Object result2 = array.getObject(1);
+
+        assertEquals("John", result1.getString("first"));
+        assertEquals("Smith", result1.getString("last"));
+        assertEquals(7, result1.getInteger("age"));
+        assertEquals("Tim", result2.getString("first"));
+        assertEquals("Jones", result2.getString("last"));
+        assertEquals(8, result2.getInteger("age"));
+        obj1.release();
+        obj2.release();
+        array.release();
+        result1.release();
+        result2.release();
+    }
+
 }
