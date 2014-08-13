@@ -45,7 +45,7 @@ public class V8Object {
 
     public String[] getKeys() {
         v8.checkThread();
-        return v8._getKeys(v8.getV8RuntimeHandle());
+        return v8._getKeys(v8.getV8RuntimeHandle(), objectHandle);
     }
 
     public int getType(final String key) throws V8ResultUndefined {

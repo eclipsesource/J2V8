@@ -126,10 +126,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1contains
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getKeys
- * Signature: (I)[Ljava/lang/String;
+ * Signature: (II)[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

@@ -440,6 +440,21 @@ public class V8ObjectTest {
         value.release();
     }
 
+    @Test
+    public void testGetKeysOnObject() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("integer", 1);
+        v8Object.add("double", 1.1);
+        v8Object.add("boolean", true);
+        v8Object.add("string", "hello, world!");
+
+        String[] keys = v8Object.getKeys();
+
+        assertEquals(4, keys.length);
+        V8Tests.arrayContains(keys, "integer", "double", "boolean", "string");
+        v8Object.release();
+    }
+
     @Test(expected = V8ResultUndefined.class)
     public void testGetTypeKeyDoesNotExist() {
         V8Object v8Object = new V8Object(v8);

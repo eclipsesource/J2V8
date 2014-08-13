@@ -115,7 +115,7 @@ public class V8 extends V8Object {
 
     protected native boolean _contains(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native String[] _getKeys(int v8RuntimeHandle);
+    protected native String[] _getKeys(int v8RuntimeHandle, int objectHandle);
 
     protected native int _getInteger(int v8RuntimeHandle, int objectHandle, final String key);
 

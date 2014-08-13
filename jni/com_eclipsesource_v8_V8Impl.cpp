@@ -167,15 +167,15 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1contains
 }
 
 JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
-  (JNIEnv *env, jobject, jint handle) {
-	Isolate* isolate = getIsolate(env, handle);
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return NULL;
 	}
 	HandleScope handle_scope(isolate);
-	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[handle]->context_);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> global = context->Global();
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	Local<Array> properties = global->GetPropertyNames();
 
 	int size = properties->Length();

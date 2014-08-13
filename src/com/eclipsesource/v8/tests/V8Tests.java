@@ -802,7 +802,7 @@ public class V8Tests {
         assertTrue(arrayContains(v8.getKeys(), "true", "test", "one", "pi"));
     }
 
-    private boolean arrayContains(final String[] keys, final String... strings) {
+    static boolean arrayContains(final String[] keys, final String... strings) {
         List<String> keyList = Arrays.asList(keys);
         for (String s : strings) {
             if (!keyList.contains(s)) {
