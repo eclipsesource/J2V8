@@ -286,10 +286,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _registerJavaMethod
- * Signature: (ILjava/lang/Object;Ljava/lang/String;[Ljava/lang/Class;)V
+ * Signature: (IILjava/lang/String;II)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
-  (JNIEnv *, jobject, jint, jobject, jstring, jobjectArray);
+  (JNIEnv *, jobject, jint, jint, jstring, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

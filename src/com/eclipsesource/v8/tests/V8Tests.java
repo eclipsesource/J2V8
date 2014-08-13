@@ -42,9 +42,27 @@ public class V8Tests {
     }
 
     @Test(expected = Error.class)
-    public void testCannotAccessDisposedIsolate() {
+    public void testCannotAccessDisposedIsolateVoid() {
         v8.release();
         v8.executeVoidScript("");
+    }
+
+    @Test(expected = Error.class)
+    public void testCannotAccessDisposedIsolateInt() {
+        v8.release();
+        v8.executeIntScript("7");
+    }
+
+    @Test(expected = Error.class)
+    public void testCannotAccessDisposedIsolateString() {
+        v8.release();
+        v8.executeStringScript("'foo'");
+    }
+
+    @Test(expected = Error.class)
+    public void testCannotAccessDisposedIsolateBoolean() {
+        v8.release();
+        v8.executeBooleanScript("true");
     }
 
     @Test

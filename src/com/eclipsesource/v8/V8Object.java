@@ -1,8 +1,11 @@
 
 package com.eclipsesource.v8;
 
+import java.lang.reflect.Method;
+
 public class V8Object {
 
+    public static final int VOID                    = 0;
     public static final int INTEGER                 = 1;
     public static final int DOUBLE                  = 2;
     public static final int BOOLEAN                 = 3;
@@ -191,7 +194,16 @@ public class V8Object {
         v8._addArray(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
     }
 
-    public void registerJavaMethod(final Object object, final String methodName, final Class<?>[] parameterTypes) {
+    public void registerJavaMethod(final Object object, final String methodName, final String jsFunctionName,
+            final Class<?>[] parameterTypes) {
+        try {
+            Method method = object.getClass().getMethod(methodName, parameterTypes);
+            v8.registerCallback(object, method, 0, getHandle(), jsFunctionName);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(e);
+        } catch (SecurityException e) {
+            throw new IllegalStateException(e);
+        }
         v8.checkThread();
     }
 

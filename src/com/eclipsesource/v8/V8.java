@@ -1,13 +1,25 @@
 package com.eclipsesource.v8;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 public class V8 extends V8Object {
 
     private static int v8InstanceCounter;
+    private int        methodReferenceCounter = 0;
 
     private int        v8RuntimeHandle;
     Thread             thread = null;
     long               objectReferences = 0;
+
+    class MethodDescriptor {
+        Object object;
+        Method method;
+    }
+
+    Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
     static {
         System.loadLibrary("j2v8"); // Load native library at runtime
@@ -87,6 +99,58 @@ public class V8 extends V8Object {
         }
     }
 
+    public void registerCallback(final Object object, final Method method, final int methodType, final int objectHandle,
+            final String jsFunctionName) {
+        MethodDescriptor methodDescriptor = new MethodDescriptor();
+        methodDescriptor.object = object;
+        methodDescriptor.method = method;
+        int methodID = methodReferenceCounter++;
+        functions.put(methodID, methodDescriptor);
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, V8Object.VOID);
+    }
+
+    protected void callVoidJavaMethod(final int methodID, final V8Array parameters) {
+        MethodDescriptor methodDescriptor = functions.get(methodID);
+        int size = parameters == null ? 0 : parameters.getSize();
+        Object[] args = new Object[size];
+        for (int i = 0; i < size; i++) {
+            args[i] = getArrayItem(parameters, i);
+        }
+        try {
+            methodDescriptor.method.invoke(methodDescriptor.object, args);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            e.printStackTrace();
+            // TODO: Handle exception
+        } finally {
+            for (int i = 0; i < size; i++) {
+                if (args[i] instanceof V8Array) {
+                    ((V8Array) args[i]).release();
+                } else if (args[i] instanceof V8Object) {
+                    ((V8Object) args[i]).release();
+                }
+            }
+        }
+    }
+
+    private Object getArrayItem(final V8Array array, final int index) {
+        int type = array.getType(index);
+        switch (type) {
+            case INTEGER:
+                return array.getInteger(index);
+            case DOUBLE:
+                return array.getDouble(index);
+            case BOOLEAN:
+                return array.getBoolean(index);
+            case STRING:
+                return array.getString(index);
+            case V8_ARRAY:
+                return array.getArray(index);
+            case V8_OBJECT:
+                return array.getObject(index);
+        }
+        return null;
+    }
+
     protected native void _initExistingV8Object(int v8RuntimeHandle, int parentHandle, String objectKey,
             int objectHandle);
 
@@ -159,8 +223,8 @@ public class V8 extends V8Object {
 
     protected native void _addArray(int v8RuntimeHandle, int objectHandle, final String key, final int value);
 
-    protected native void _registerJavaMethod(int v8RuntimeHandle, final Object object, final String methodName,
-            final Class<?>[] parameterTypes);
+    protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName,
+            final int methodID, final int methodType);
 
     protected native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
 
