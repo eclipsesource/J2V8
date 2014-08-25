@@ -109,7 +109,7 @@ public class V8 extends V8Object {
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, V8Object.VOID);
     }
 
-    protected void callVoidJavaMethod(final int methodID, final V8Array parameters) {
+    protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
         int size = parameters == null ? 0 : parameters.getSize();
         Object[] args = new Object[size];
@@ -118,9 +118,10 @@ public class V8 extends V8Object {
         }
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            e.printStackTrace();
-            // TODO: Handle exception
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new V8ExecutionException(e);
         } finally {
             for (int i = 0; i < size; i++) {
                 if (args[i] instanceof V8Array) {

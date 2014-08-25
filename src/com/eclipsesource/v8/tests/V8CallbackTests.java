@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
@@ -211,5 +212,44 @@ public class V8CallbackTests {
         String result = obj.getResult();
 
         assertEquals("johnsmith7", result);
+    }
+
+    public class ThrowsSomething {
+        public void foo() {
+            throw new RuntimeException("My Runtime Exception");
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testThrowsJavaException() {
+        ThrowsSomething obj = new ThrowsSomething();
+        v8.registerJavaMethod(obj, "foo", "foo", new Class<?>[] {});
+
+        try {
+            v8.executeVoidScript("foo()");
+        } catch (Exception e) {
+            assertEquals("My Runtime Exception", e.getMessage());
+            throw e;
+        }
+    }
+
+    public class NoParameters {
+
+        public void add(final V8Object object) {
+        }
+
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testVoidMethodCallWithMissingArgsThrowsException() {
+        NoParameters obj = new NoParameters();
+        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
+
+        try {
+            v8.executeVoidScript("foo()");
+        } catch (V8ExecutionException e) {
+            assertTrue(e.getCause() instanceof IllegalArgumentException);
+            throw e;
+        }
     }
 }

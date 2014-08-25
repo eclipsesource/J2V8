@@ -8,4 +8,8 @@ public class V8RuntimeException extends RuntimeException {
         super(message);
     }
 
+    public V8RuntimeException(final Throwable source) {
+        super(source);
+    }
+
 }

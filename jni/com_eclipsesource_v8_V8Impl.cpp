@@ -1139,6 +1139,10 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	jmethodID callVoidMethod = (env)->GetMethodID(cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)V");
 
 	env->CallVoidMethod(v8, callVoidMethod, md->methodID, parameters);
+	if ( env -> ExceptionCheck() ) {
+		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+	}
 
 	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
 	jmethodID release = env->GetMethodID(arrayCls, "release", "()V");
