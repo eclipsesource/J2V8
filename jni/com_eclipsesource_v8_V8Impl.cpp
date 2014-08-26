@@ -211,7 +211,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 		throwExecutionException(env, "");
 		return;
 	}
-	Local<Value> result = script->Run();
+	script->Run();
 	env->ReleaseStringUTFChars(jjstring, js);
 }
 
@@ -627,7 +627,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
-	Handle<Value> result = func->Call(parentObject, size, args);
+	func->Call(parentObject, size, args);
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
 }
 
