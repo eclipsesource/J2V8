@@ -201,7 +201,7 @@ public class V8ObjectTest {
         bar.release();
     }
 
-    /*** Execute Object Script ***/
+    /*** Execute Object Function ***/
     @Test
     public void testObjectScript() {
         v8.executeVoidScript("function foo() { return { x : 7 }} ");
