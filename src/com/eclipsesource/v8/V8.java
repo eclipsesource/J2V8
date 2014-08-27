@@ -262,11 +262,13 @@ public class V8 extends V8Object {
 
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
 
-    public void addObjRef() {
+    protected native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
+
+    void addObjRef() {
         objectReferences++;
     }
 
-    public void releaseObjRef() {
+    void releaseObjRef() {
         objectReferences--;
     }
 

@@ -849,4 +849,44 @@ public class V8Tests {
         assertEquals("foo", v8.getKeys()[0]);
     }
 
+    /*** Global Object Prototype Manipulation ***/
+    private void setupWindowAlias() {
+        v8.add("window", v8);
+        v8.executeVoidScript("function Window(){};");
+        V8Object prototype = v8.executeObjectScript("Window.prototype");
+        v8.setPrototype(prototype);
+        prototype.release();
+    }
+
+    @Test
+    public void testwindowIsInstanceOfWindow() {
+        setupWindowAlias();
+
+        assertTrue(v8.executeBooleanScript("window instanceof Window"));
+    }
+
+    @Test
+    public void testChangeToWindowPrototypeAppearsInGlobalScope() {
+        setupWindowAlias();
+        V8Object prototype = v8.executeObjectScript("Window.prototype");
+
+        prototype.add("foo", "bar");
+        v8.executeVoidScript("delete window.foo");
+
+        assertEquals("bar", v8.getString("foo"));
+        assertEquals("bar", v8.executeStringScript("window.foo;"));
+        prototype.release();
+    }
+
+    @Test
+    public void testWindowAliasForGlobalScope() {
+        setupWindowAlias();
+
+        v8.executeVoidScript("a = 1; window.b = 2;");
+
+        assertEquals(1, v8.executeIntScript("window.a;"));
+        assertEquals(2, v8.executeIntScript("b;"));
+        assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
+    }
+
 }

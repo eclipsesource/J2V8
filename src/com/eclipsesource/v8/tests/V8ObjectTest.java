@@ -465,4 +465,53 @@ public class V8ObjectTest {
             v8Object.release();
         }
     }
+
+    /*** Manipulate Prototypes ***/
+    @Test
+    public void testSetPrototypeOfObject() {
+        v8.executeVoidScript("function Mammal(){}; Mammal.prototype.breathe=function(){return 'breathe';};");
+        V8Object mammal = v8.executeObjectScript("new Mammal();");
+        V8Object cat = new V8Object(v8);
+
+        cat.setPrototype(mammal);
+        v8.add("cat", cat);
+
+        assertTrue(v8.executeBooleanScript("cat instanceof Mammal"));
+        assertEquals("breathe", cat.executeStringFunction("breathe", null));
+        cat.release();
+        mammal.release();
+    }
+
+    @Test
+    public void testChangePrototypeAfterCreation() {
+        v8.executeVoidScript("function Mammal(){};");
+        V8Object mammal = v8.executeObjectScript("new Mammal();");
+        V8Object cat = new V8Object(v8);
+        v8.add("cat", cat);
+        v8.add("mammal", mammal);
+        assertFalse(v8.executeBooleanScript("cat instanceof Mammal"));
+
+        cat.setPrototype(mammal);
+
+        assertTrue(v8.executeBooleanScript("cat instanceof Mammal"));
+        assertTrue(v8.executeBooleanScript("cat.__proto__ === mammal"));
+        cat.release();
+        mammal.release();
+    }
+
+    @Test
+    public void testChangePrototypePropertiesAfterCreation() {
+        v8.executeVoidScript("function Mammal(){};");
+        V8Object mammal = v8.executeObjectScript("new Mammal();");
+        V8Object cat = new V8Object(v8);
+        cat.setPrototype(mammal);
+        v8.add("cat", cat);
+        assertFalse(v8.executeBooleanScript("'breathe' in cat"));
+
+        v8.executeVoidScript("Mammal.prototype.breathe=function(){return 'breathe';};");
+
+        assertTrue(v8.executeBooleanScript("'breathe' in cat"));
+        cat.release();
+        mammal.release();
+    }
 }
