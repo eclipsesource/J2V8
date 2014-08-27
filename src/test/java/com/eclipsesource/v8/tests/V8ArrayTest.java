@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class V8ArrayTests {
+public class V8ArrayTest {
 
     private V8 v8;
 

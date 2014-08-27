@@ -2,6 +2,7 @@ package com.eclipsesource.v8.tests;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
@@ -13,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class V8CallbackTests {
+public class V8CallbackTest {
 
     private V8 v8;
 
@@ -235,18 +236,35 @@ public class V8CallbackTests {
 
     public class NoParameters {
 
+        boolean called = false;
+
         public void add(final V8Object object) {
+            called = true;
         }
 
+        public boolean isCalled() {
+            return called;
+        }
+    }
+
+    @Test
+    public void testVoidMethodCallWithMissingArgs() {
+        NoParameters obj = new NoParameters();
+        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
+
+        v8.executeVoidScript("foo()");
+
+        assertTrue(obj.isCalled());
     }
 
     @Test(expected = V8ExecutionException.class)
-    public void testVoidMethodCallWithMissingArgsThrowsException() {
+    @Ignore
+    public void testIntMethodCallWithMissingArgsThrowsException() {
         NoParameters obj = new NoParameters();
         v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
 
         try {
-            v8.executeVoidScript("foo()");
+            v8.executeIntScript("foo()");
         } catch (V8ExecutionException e) {
             assertTrue(e.getCause() instanceof IllegalArgumentException);
             throw e;

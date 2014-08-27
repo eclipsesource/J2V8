@@ -99,7 +99,7 @@ public class V8 extends V8Object {
         }
     }
 
-    public void registerCallback(final Object object, final Method method, final int methodType, final int objectHandle,
+    void registerCallback(final Object object, final Method method, final int methodType, final int objectHandle,
             final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.object = object;
@@ -111,7 +111,7 @@ public class V8 extends V8Object {
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
-        int size = parameters == null ? 0 : parameters.getSize();
+        int size = methodDescriptor.method.getParameterTypes().length;
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
             args[i] = getArrayItem(parameters, i);
@@ -134,20 +134,24 @@ public class V8 extends V8Object {
     }
 
     private Object getArrayItem(final V8Array array, final int index) {
-        int type = array.getType(index);
-        switch (type) {
-            case INTEGER:
-                return array.getInteger(index);
-            case DOUBLE:
-                return array.getDouble(index);
-            case BOOLEAN:
-                return array.getBoolean(index);
-            case STRING:
-                return array.getString(index);
-            case V8_ARRAY:
-                return array.getArray(index);
-            case V8_OBJECT:
-                return array.getObject(index);
+        try {
+            int type = array.getType(index);
+            switch (type) {
+                case INTEGER:
+                    return array.getInteger(index);
+                case DOUBLE:
+                    return array.getDouble(index);
+                case BOOLEAN:
+                    return array.getBoolean(index);
+                case STRING:
+                    return array.getString(index);
+                case V8_ARRAY:
+                    return array.getArray(index);
+                case V8_OBJECT:
+                    return array.getObject(index);
+            }
+        } catch (V8ResultUndefined e) {
+            // do nothing
         }
         return null;
     }

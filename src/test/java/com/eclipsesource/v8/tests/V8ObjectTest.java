@@ -451,7 +451,7 @@ public class V8ObjectTest {
         String[] keys = v8Object.getKeys();
 
         assertEquals(4, keys.length);
-        V8Tests.arrayContains(keys, "integer", "double", "boolean", "string");
+        V8Test.arrayContains(keys, "integer", "double", "boolean", "string");
         v8Object.release();
     }
 
