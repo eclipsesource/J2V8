@@ -38,7 +38,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 	Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, Local<ObjectTemplate>::New(v8Isolates[handle]->isolate, v8Isolates[handle]->globalObjectTemplate));
 	v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
 	v8Isolates[handle]->objects[0] = new Persistent<Object>;
-	v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global());
+	v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
@@ -1173,6 +1173,19 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 	global->Set(String::NewFromUtf8(isolate, utf_string), Function::New(isolate, voidCallback, External::New(isolate, md)));
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint prototypeHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	Handle<v8::Object> prototype = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[prototypeHandle]);
+	global->SetPrototype(prototype);
+}
 
 void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 ) {
 	v8Isolates[v8RuntimeHandle]->env = env;
