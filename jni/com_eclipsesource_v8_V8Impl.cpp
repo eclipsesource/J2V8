@@ -644,7 +644,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = v8::Int32::New(isolate, value);
-	global->Set(v8Key,  v8Value);
+	global->Set(v8Key,  v8Value, None);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2D
@@ -660,7 +660,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = v8::Number::New(isolate, value);
-	global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value, None);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Ljava_lang_String_2
@@ -676,7 +676,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<String> v8Value = String::NewFromUtf8(isolate, env -> GetStringUTFChars(value, NULL));
-	global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value, None);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Z
@@ -692,7 +692,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = v8::Boolean::New(isolate, value);
-	global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value, None);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addObject
@@ -708,7 +708,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addObject
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
-	global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value, None);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
@@ -724,7 +724,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[valueHandle]);
-	global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value, None);
 }
 
 
