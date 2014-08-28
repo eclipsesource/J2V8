@@ -11,8 +11,10 @@ import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 
 public class V8CallbackTest {
 
@@ -32,139 +34,95 @@ public class V8CallbackTest {
         }
     }
 
-    public class ObjNoParameters {
-        boolean methodCalled = false;
 
-        public void voidMethod() {
-            methodCalled = true;
-        }
+    public interface ICallback {
+        public void voidMethodNoParameters();
 
-        public boolean isMethodCalled() {
-            return methodCalled;
-        }
+        public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d);
     }
 
     @Test
     public void testVoidMethodCalledFromVoidScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeVoidScript("foo();");
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testFunctionCallOnJSObject() {
-        ObjNoParameters obj = new ObjNoParameters();
+        ICallback callback = mock(ICallback.class);
         V8Object v8Object = new V8Object(v8);
-        v8Object.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        v8Object.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8Object.executeVoidFunction("foo", null);
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
         v8Object.release();
     }
 
     @Test
     public void testVoidMethodCalledFromIntScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeIntScript("foo();1");
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testVoidMethodCalledFromDoubleScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeDoubleScript("foo();1.1");
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testVoidMethodCalledFromStringScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeStringScript("foo();'test'");
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testVoidMethodCalledFromArrayScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeArrayScript("foo();[]").release();
 
-        assertTrue(obj.isMethodCalled());
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testVoidMethodCalledFromObjectScript() {
-        ObjNoParameters obj = new ObjNoParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[0]);
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
         v8.executeObjectScript("foo(); bar={}; bar;").release();
 
-        assertTrue(obj.isMethodCalled());
-    }
-
-    public class ObjParameters {
-        boolean methodCalled = false;
-        int     a;
-        double  b;
-        boolean c;
-        String  d;
-
-        public void voidMethod(final int a, final double b, final boolean c, final String d) {
-            methodCalled = true;
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-
-        public boolean isMethodCalled() {
-            return methodCalled;
-        }
-
-        public int getA() {
-            return a;
-        }
-
-        public double getB() {
-            return b;
-        }
-
-        public boolean getC() {
-            return c;
-        }
-
-        public String getD() {
-            return d;
-        }
+        verify(callback).voidMethodNoParameters();
     }
 
     @Test
     public void testVoidMethodCalledWithParameters() {
-        ObjParameters obj = new ObjParameters();
-        v8.registerJavaMethod(obj, "voidMethod", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE, Boolean.TYPE,
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
+                Boolean.TYPE,
                 String.class });
 
         v8.executeVoidScript("foo(1,1.1, false, 'string');");
 
-        assertTrue(obj.isMethodCalled());
-        assertEquals(1, obj.getA());
-        assertEquals(1.1, obj.getB(), 0.000001);
-        assertFalse(obj.getC());
-        assertEquals("string", obj.getD());
+        verify(callback).voidMethodWithParameters(1, 1.1, false, "string");
     }
 
     public class ArrayParameters {
