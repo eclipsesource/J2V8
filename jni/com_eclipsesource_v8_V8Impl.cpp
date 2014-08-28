@@ -724,7 +724,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[valueHandle]);
-	//global->Set( v8Key,  v8Value);
+	global->Set( v8Key,  v8Value);
 }
 
 
@@ -1170,7 +1170,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 	MethodDescriptor* md = new MethodDescriptor();
 	md ->  methodID = methodID;
 	md -> v8RuntimeHandle = v8RuntimeHandle;
-	//global->Set(String::NewFromUtf8(isolate, utf_string), Function::New(isolate, voidCallback, External::New(isolate, md)));
+	global->Set(String::NewFromUtf8(isolate, utf_string), Function::New(isolate, voidCallback, External::New(isolate, md)));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
