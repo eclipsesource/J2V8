@@ -18,7 +18,7 @@ public class V8JSFunctionCallTest {
 
     @Before
     public void seutp() {
-        v8 = new V8();
+        v8 = V8.createV8Runtime();
     }
 
     @After

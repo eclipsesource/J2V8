@@ -21,7 +21,7 @@ public class V8ObjectTest {
 
     @Before
     public void seutp() {
-        v8 = new V8();
+        v8 = V8.createV8Runtime();
     }
 
     @After
@@ -42,12 +42,12 @@ public class V8ObjectTest {
     }
 
     @Test
-    public void testDoesNotReleaseObject() {
+    public void testReleaseRuntimeDoesNotReleaseObject() {
         try {
             new V8Object(v8);
             v8.release();
         } catch (IllegalStateException e) {
-            v8 = new V8();
+            v8 = V8.createV8Runtime();
             return;
         }
         fail("Illegal State Exception not thrown.");

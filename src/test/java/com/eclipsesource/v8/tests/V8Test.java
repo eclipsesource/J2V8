@@ -24,7 +24,7 @@ public class V8Test {
 
     @Before
     public void seutp() {
-        v8 = new V8();
+        v8 = V8.createV8Runtime();
     }
 
     @After

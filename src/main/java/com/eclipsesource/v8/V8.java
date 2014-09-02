@@ -11,7 +11,7 @@ public class V8 extends V8Object {
     private int        methodReferenceCounter = 0;
 
     private int        v8RuntimeHandle;
-    Thread             thread = null;
+    static Thread      thread                 = null;
     long               objectReferences = 0;
 
     class MethodDescriptor {
@@ -25,8 +25,15 @@ public class V8 extends V8Object {
         System.loadLibrary("j2v8"); // Load native library at runtime
     }
 
-    public V8() {
-        thread = Thread.currentThread();
+    public synchronized static V8 createV8Runtime() {
+        if (thread == null) {
+            thread = Thread.currentThread();
+        }
+        return new V8();
+    }
+
+    private V8() {
+        checkThread();
         v8RuntimeHandle = v8InstanceCounter++;
         _createIsolate(v8RuntimeHandle);
     }
