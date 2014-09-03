@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
@@ -12,6 +14,8 @@ import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -39,6 +43,9 @@ public class V8CallbackTest {
         public void voidMethodNoParameters();
 
         public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d);
+
+        public void voidMethodWithArrayParameter(final V8Array array);
+
     }
 
     @Test
@@ -125,29 +132,25 @@ public class V8CallbackTest {
         verify(callback).voidMethodWithParameters(1, 1.1, false, "string");
     }
 
-    public class ArrayParameters {
-        int result = 0;
-
-        public void add(final V8Array array) {
-            for (int i = 0; i < array.getSize(); i++) {
-                result += array.getInteger(i);
-            }
-        }
-
-        public int getResult() {
-            return result;
-        }
-    }
-
     @Test
     public void testVoidMethodCalledWithArrayParameters() {
-        ArrayParameters obj = new ArrayParameters();
-        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Array.class });
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(final InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                assertEquals(1, args.length);
+                assertEquals(1, ((V8Array) args[0]).getInteger(0));
+                assertEquals(2, ((V8Array) args[0]).getInteger(1));
+                assertEquals(3, ((V8Array) args[0]).getInteger(2));
+                assertEquals(4, ((V8Array) args[0]).getInteger(3));
+                assertEquals(5, ((V8Array) args[0]).getInteger(4));
+                return null;
+            }
+        }).when(callback).voidMethodWithArrayParameter(any(V8Array.class));
+        v8.registerJavaMethod(callback, "voidMethodWithArrayParameter", "foo", new Class<?>[] { V8Array.class });
 
         v8.executeVoidScript("foo([1,2,3,4,5]);");
-        int result = obj.getResult();
-
-        assertEquals(15, result);
     }
 
     public class ObjectParameters {
