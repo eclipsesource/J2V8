@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -175,16 +176,11 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo({first:'john', last:'smith', age:7});");
     }
 
-    public class ThrowsSomething {
-        public void foo() {
-            throw new RuntimeException("My Runtime Exception");
-        }
-    }
-
     @Test(expected = RuntimeException.class)
     public void testThrowsJavaException() {
-        ThrowsSomething obj = new ThrowsSomething();
-        v8.registerJavaMethod(obj, "foo", "foo", new Class<?>[] {});
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).voidMethodNoParameters();
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
 
         try {
             v8.executeVoidScript("foo()");
