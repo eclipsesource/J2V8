@@ -100,7 +100,7 @@ public class V8 extends V8Object {
         _executeVoidScript(v8RuntimeHandle, script);
     }
 
-    void checkThread() {
+    static void checkThread() {
         if (thread != Thread.currentThread()) {
             throw new Error("Invalid V8 thread access.");
         }
