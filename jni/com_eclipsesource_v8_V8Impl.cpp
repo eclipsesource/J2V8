@@ -52,6 +52,7 @@ void debugHandler() {
 		g_env->ExceptionDescribe();
 	}
 
+	g_env->DeleteLocalRef(cls);
 	jvm->DetachCurrentThread();
 }
 
@@ -148,7 +149,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 	}
 	HandleScope handle_scope(isolate);
 	const char* utf_string = env -> GetStringUTFChars(objectKey, NULL);
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, utf_string);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
@@ -171,7 +172,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
 	}
 	HandleScope handle_scope(isolate);
 	const char* utf_string = env -> GetStringUTFChars(objectKey, NULL);
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, utf_string);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
@@ -483,7 +484,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsArray()) {
@@ -520,7 +521,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsObject()) {
@@ -556,7 +557,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
@@ -590,7 +591,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 
@@ -625,7 +626,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 
@@ -660,7 +661,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 		}
 	}
 
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	Handle<Value> result = func->Call(parentObject, size, args);
 
@@ -808,7 +809,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
 	Context::Scope context_scope(context);
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsInt32()) {
 		throwResultUndefinedException(env, "");
@@ -828,7 +829,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
 	Context::Scope context_scope(context);
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsNumber()) {
 		throwResultUndefinedException(env, "");
@@ -848,7 +849,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
 	Context::Scope context_scope(context);
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsString()) {
 		throwResultUndefinedException(env, "");
@@ -869,7 +870,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
 	Context::Scope context_scope(context);
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), env -> GetStringUTFChars(key, NULL));
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsBoolean()) {
 		throwResultUndefinedException(env, "");
@@ -1113,7 +1114,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_Stri
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	const char* utf_string = env -> GetStringUTFChars(key, NULL);
 
-	Local<String> v8Key = v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), utf_string);
+	Local<String> v8Key = v8::String::NewFromUtf8(isolate, utf_string);
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	env->ReleaseStringUTFChars(key, utf_string);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
