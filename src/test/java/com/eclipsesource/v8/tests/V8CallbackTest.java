@@ -46,6 +46,8 @@ public class V8CallbackTest {
 
         public void voidMethodWithArrayParameter(final V8Array array);
 
+        public void voidMethodWithObjectParameter(final V8Object object);
+
     }
 
     @Test
@@ -153,27 +155,24 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo([1,2,3,4,5]);");
     }
 
-    public class ObjectParameters {
-        String result;
-
-        public void add(final V8Object object) {
-            result = object.getString("first") + object.getString("last") + object.getInteger("age");
-        }
-
-        public String getResult() {
-            return result;
-        }
-    }
-
     @Test
     public void testVoidMethodCalledWithObjectParameters() {
-        ObjectParameters obj = new ObjectParameters();
-        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(final InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                assertEquals(1, args.length);
+                assertEquals("john", ((V8Object) args[0]).getString("first"));
+                assertEquals("smith", ((V8Object) args[0]).getString("last"));
+                assertEquals(7, ((V8Object) args[0]).getInteger("age"));
+                return null;
+            }
+        }).when(callback).voidMethodWithArrayParameter(any(V8Array.class));
+
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
 
         v8.executeVoidScript("foo({first:'john', last:'smith', age:7});");
-        String result = obj.getResult();
-
-        assertEquals("johnsmith7", result);
     }
 
     public class ThrowsSomething {
