@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <iostream>
+#include <v8-debug.h>
 #include <v8.h>
 #include <map>
 #include "com_eclipsesource_v8_V8Impl.h"
@@ -20,6 +21,7 @@ public:
 };
 
 std::map <int, V8Runtime*> v8Isolates;
+JavaVM* jvm = NULL;
 
 void throwError( JNIEnv *env, const char *message );
 void throwExecutionException( JNIEnv *env, const char *message );
@@ -27,9 +29,78 @@ void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 );
 
+void debugHandler() {
+	JNIEnv * g_env;
+	// double check it's all ok
+	int getEnvStat = jvm->GetEnv((void **) &g_env, JNI_VERSION_1_6);
+	if (getEnvStat == JNI_EDETACHED) {
+		if (jvm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
+			std::cout << "Failed to attach" << std::endl;
+		}
+	} else if (getEnvStat == JNI_OK) {
+		//
+	} else if (getEnvStat == JNI_EVERSION) {
+		std::cout << "GetEnv: version not supported" << std::endl;
+	}
+
+	jclass cls = g_env->FindClass("com/eclipsesource/v8/V8");
+	jmethodID processDebugMessage = g_env->GetStaticMethodID(cls, "debugMessageReceived", "()V");
+
+	g_env->CallStaticVoidMethod(cls, processDebugMessage);
+
+	if (g_env->ExceptionCheck()) {
+		g_env->ExceptionDescribe();
+	}
+
+	jvm->DetachCurrentThread();
+}
+
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint port, jboolean waitForConnection) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return false;
+	}
+	v8::Isolate::Scope isolateScope(isolate);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	bool result = v8::Debug::EnableAgent("j2v8", port, waitForConnection);
+	v8::Debug::SetDebugMessageDispatchHandler(&debugHandler);
+	return result;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
+  (JNIEnv *env, jobject, jint v8RuntimeHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	v8::Isolate::Scope isolateScope(isolate);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	v8::Debug::DisableAgent();
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
+  (JNIEnv *env, jobject, jint v8RuntimeHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	v8::Isolate::Scope isolateScope(isolate);
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	v8::Debug::ProcessDebugMessages();
+}
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-  (JNIEnv *, jobject, jint handle) {
+  (JNIEnv *env, jobject, jint handle) {
+	if (jvm == NULL ) {
+		env->GetJavaVM(&jvm);
+	}
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
 	v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
@@ -613,7 +684,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
@@ -624,8 +694,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 			args[i] = parameters->Get(i);
 		}
 	}
-
-	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), functionName));
+	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
 	func->Call(parentObject, size, args);
 	env->ReleaseStringUTFChars(jfunctionName, functionName);

@@ -437,6 +437,30 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
   (JNIEnv *, jobject, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _enableDebugSupport
+ * Signature: (IIZ)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
+  (JNIEnv *, jobject, jint, jint, jboolean);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _disableDebugSupport
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _processDebugMessages
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
+  (JNIEnv *, jobject, jint);
+
 #ifdef __cplusplus
 }
 #endif

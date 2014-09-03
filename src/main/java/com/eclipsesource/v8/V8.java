@@ -2,17 +2,22 @@ package com.eclipsesource.v8;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class V8 extends V8Object {
 
     private static int v8InstanceCounter;
-    private int        methodReferenceCounter = 0;
+    private static Thread   thread                 = null;
+    private static List<V8> runtimes               = new ArrayList<>();
+    private static Runnable debugHandler           = null;
 
-    private int        v8RuntimeHandle;
-    static Thread      thread                 = null;
-    long               objectReferences = 0;
+    private int             methodReferenceCounter = 0;
+    private int             v8RuntimeHandle;
+    private boolean         debugEnabled           = false;
+    long                    objectReferences       = 0;
 
     class MethodDescriptor {
         Object object;
@@ -29,13 +34,49 @@ public class V8 extends V8Object {
         if (thread == null) {
             thread = Thread.currentThread();
         }
-        return new V8();
+        V8 runtime = new V8();
+        runtimes.add(runtime);
+        return runtime;
     }
 
-    private V8() {
+    protected V8() {
         checkThread();
         v8RuntimeHandle = v8InstanceCounter++;
         _createIsolate(v8RuntimeHandle);
+    }
+
+    public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
+        checkThread();
+        debugEnabled = _enableDebugSupport(getHandle(), port, waitForConnection);
+        return debugEnabled;
+    }
+
+    public boolean enableDebugSupport(final int port) {
+        checkThread();
+        debugEnabled = true;
+        debugEnabled = _enableDebugSupport(getV8RuntimeHandle(), port, false);
+        return debugEnabled;
+    }
+
+    public void disableDebugSupport() {
+        checkThread();
+        _disableDebugSupport(getV8RuntimeHandle());
+        debugEnabled = false;
+    }
+
+    public static void processDebugMessages() {
+        checkThread();
+        for (V8 v8 : runtimes) {
+            v8._processDebugMessages(v8.getV8RuntimeHandle());
+        }
+    }
+
+    public static int getActiveRuntimes() {
+        return runtimes.size();
+    }
+
+    public static void registerDebugHandler(final Runnable handler) {
+        debugHandler = handler;
     }
 
     public int getV8RuntimeHandle() {
@@ -45,11 +86,16 @@ public class V8 extends V8Object {
     @Override
     public void release() {
         checkThread();
+        if (debugEnabled) {
+            disableDebugSupport();
+        }
+        runtimes.remove(this);
+        _releaseRuntime(v8RuntimeHandle);
         if (objectReferences > 0) {
             throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
         }
-        _releaseRuntime(v8RuntimeHandle);
     }
+
 
     public int executeIntScript(final String script) throws V8RuntimeException {
         checkThread();
@@ -101,7 +147,7 @@ public class V8 extends V8Object {
     }
 
     static void checkThread() {
-        if (thread != Thread.currentThread()) {
+        if ((thread != null) && (thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access.");
         }
     }
@@ -161,6 +207,12 @@ public class V8 extends V8Object {
             // do nothing
         }
         return null;
+    }
+
+    protected static void debugMessageReceived() {
+        if (debugHandler != null) {
+            debugHandler.run();
+        }
     }
 
     protected native void _initExistingV8Object(int v8RuntimeHandle, int parentHandle, String objectKey,
@@ -274,6 +326,12 @@ public class V8 extends V8Object {
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
 
     protected native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
+
+    protected native boolean _enableDebugSupport(int v8RuntimeHandle, int port, boolean waitForConnection);
+
+    protected native void _disableDebugSupport(int v8RuntimeHandle);
+
+    protected native void _processDebugMessages(int v8RuntimeHandle);
 
     void addObjRef() {
         objectReferences++;

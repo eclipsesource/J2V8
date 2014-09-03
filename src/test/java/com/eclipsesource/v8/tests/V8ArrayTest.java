@@ -26,6 +26,9 @@ public class V8ArrayTest {
     public void tearDown() {
         try {
             v8.release();
+            if (V8.getActiveRuntimes() != 0) {
+                throw new IllegalStateException("V8Runtimes not properly released.");
+            }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }

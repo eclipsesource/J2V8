@@ -1,5 +1,8 @@
 package com.eclipsesource.v8.tests;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class V8Test {
 
@@ -31,6 +36,9 @@ public class V8Test {
     public void tearDown() {
         try {
             v8.release();
+            if (V8.getActiveRuntimes() != 0) {
+                throw new IllegalStateException("V8Runtimes not properly released.");
+            }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }
@@ -692,6 +700,7 @@ public class V8Test {
 
         v8.getBoolean("x");
     }
+
     @Test
     public void testAddGet() {
         v8.add("string", "string");
@@ -887,6 +896,75 @@ public class V8Test {
         assertEquals(1, v8.executeIntScript("window.a;"));
         assertEquals(2, v8.executeIntScript("b;"));
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
+    }
+
+    /*** Debug Tests ***/
+    @Test
+    public void testSetupDebugHandler() {
+        int port = 9991;
+
+        v8.enableDebugSupport(port);
+
+        assertTrue(debugEnabled(port));
+    }
+
+    @Test
+    public void testRemoveDebugHandler() {
+        int port = 9991;
+        v8.enableDebugSupport(port);
+
+        v8.disableDebugSupport();
+
+        assertFalse(debugEnabled(port));
+    }
+
+    @Test
+    public void testMultipleDebugHandlers() {
+        V8 v8_2 = V8.createV8Runtime();
+
+        v8.enableDebugSupport(9991);
+        v8_2.enableDebugSupport(9992);
+
+        assertTrue(debugEnabled(9991));
+        assertTrue(debugEnabled(9992));
+        v8_2.disableDebugSupport();
+        v8_2.release();
+        assertTrue(debugEnabled(9991));
+    }
+
+    static class SubV8 extends V8 {
+        public static void debugMessageReceived() {
+            V8.debugMessageReceived();
+        }
+    }
+
+    @Test
+    public void testHandlerCalled() {
+        Runnable runnable = mock(Runnable.class);
+        V8.registerDebugHandler(runnable);
+
+        SubV8.debugMessageReceived();
+
+        verify(runnable).run();
+        V8.registerDebugHandler(null);
+    }
+
+    private boolean debugEnabled(final int port) {
+        Socket socket = new Socket();
+        InetSocketAddress endPoint = new InetSocketAddress("localhost", port);
+        try {
+            socket.connect(endPoint);
+            return true;
+        } catch (IOException e) {
+            return false;
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
     }
 
 }
