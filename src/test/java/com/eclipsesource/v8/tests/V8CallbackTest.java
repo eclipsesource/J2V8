@@ -2,18 +2,15 @@ package com.eclipsesource.v8.tests;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -190,40 +187,14 @@ public class V8CallbackTest {
         }
     }
 
-    public class NoParameters {
-
-        boolean called = false;
-
-        public void add(final V8Object object) {
-            called = true;
-        }
-
-        public boolean isCalled() {
-            return called;
-        }
-    }
-
     @Test
-    public void testVoidMethodCallWithMissingArgs() {
-        NoParameters obj = new NoParameters();
-        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
+    public void testVoidMethodCallWithMissingObjectArgs() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
 
         v8.executeVoidScript("foo()");
 
-        assertTrue(obj.isCalled());
+        verify(callback).voidMethodWithObjectParameter(null);
     }
 
-    @Test(expected = V8ExecutionException.class)
-    @Ignore
-    public void testIntMethodCallWithMissingArgsThrowsException() {
-        NoParameters obj = new NoParameters();
-        v8.registerJavaMethod(obj, "add", "foo", new Class<?>[] { V8Object.class });
-
-        try {
-            v8.executeIntScript("foo()");
-        } catch (V8ExecutionException e) {
-            assertTrue(e.getCause() instanceof IllegalArgumentException);
-            throw e;
-        }
-    }
 }
