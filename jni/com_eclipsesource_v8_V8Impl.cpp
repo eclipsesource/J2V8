@@ -35,7 +35,7 @@ void debugHandler() {
 	// double check it's all ok
 	int getEnvStat = jvm->GetEnv((void **) &g_env, JNI_VERSION_1_6);
 	if (getEnvStat == JNI_EDETACHED) {
-		if (jvm->AttachCurrentThread((JNIEnv **) &g_env, NULL) != 0) {
+		if (jvm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
 			std::cout << "Failed to attach" << std::endl;
 		}
 	} else if (getEnvStat == JNI_OK) {
@@ -1224,12 +1224,49 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	env->DeleteLocalRef(cls);
 }
 
+void intCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	int size = args.Length();
+	Local<External> data = Local<External>::Cast(args.Data());
+	void *methodDescriptorPtr = data->Value();
+	MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
+
+	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
+	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+	jstring jstrMethodName = env->NewStringUTF("callIntJavaMethod");
+
+	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+
+	jclass cls = (env)->FindClass("com/eclipsesource/v8/V8");
+	jmethodID callIntMethod = (env)->GetMethodID(cls, "callIntJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)I");
+
+	jint result = env->CallIntMethod(v8, callIntMethod, md->methodID, parameters);
+	if ( env -> ExceptionCheck() ) {
+		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+	}
+
+	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
+	jmethodID release = env->GetMethodID(arrayCls, "release", "()V");
+	env->CallVoidMethod(parameters, release);
+
+	env->DeleteLocalRef(parameters);
+	env->DeleteLocalRef(jstrMethodName);
+	env->DeleteLocalRef(arrayCls);
+	env->DeleteLocalRef(cls);
+	args.GetReturnValue().Set(result);
+}
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring functionName, jint methodID, jint methodType) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
+	}
+	FunctionCallback callback = voidCallback;
+	if ( methodType == com_eclipsesource_v8_V8_VOID ) {
+		callback = voidCallback;
+	} else if (methodType == com_eclipsesource_v8_V8_INTEGER ) {
+		callback = intCallback;
 	}
 
 	HandleScope handle_scope(isolate);
@@ -1240,7 +1277,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 	MethodDescriptor* md = new MethodDescriptor();
 	md ->  methodID = methodID;
 	md -> v8RuntimeHandle = v8RuntimeHandle;
-	global->Set(String::NewFromUtf8(isolate, utf_string), Function::New(isolate, voidCallback, External::New(isolate, md)));
+	global->Set(String::NewFromUtf8(isolate, utf_string), Function::New(isolate, callback, External::New(isolate, md)));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype

@@ -53,7 +53,6 @@ public class V8 extends V8Object {
 
     public boolean enableDebugSupport(final int port) {
         checkThread();
-        debugEnabled = true;
         debugEnabled = _enableDebugSupport(getV8RuntimeHandle(), port, false);
         return debugEnabled;
     }
@@ -159,16 +158,35 @@ public class V8 extends V8Object {
         methodDescriptor.method = method;
         int methodID = methodReferenceCounter++;
         functions.put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, V8Object.VOID);
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, getReturnType(method));
+    }
+
+    private int getReturnType(final Method method) {
+        if (method.getReturnType().equals(Integer.TYPE)) {
+            return INTEGER;
+        } else if (method.getReturnType().equals(Void.TYPE)) {
+            return VOID;
+        }
+        throw new IllegalStateException("Unsupported Return Type");
+    }
+
+    protected int callIntJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functions.get(methodID);
+        Object[] args = getArgs(methodDescriptor, parameters);
+        try {
+            return (int) methodDescriptor.method.invoke(methodDescriptor.object, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new V8ExecutionException(e);
+        } finally {
+            releaseArguments(args);
+        }
     }
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
-        int size = methodDescriptor.method.getParameterTypes().length;
-        Object[] args = new Object[size];
-        for (int i = 0; i < size; i++) {
-            args[i] = getArrayItem(parameters, i);
-        }
+        Object[] args = getArgs(methodDescriptor, parameters);
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
         } catch (InvocationTargetException e) {
@@ -176,14 +194,27 @@ public class V8 extends V8Object {
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new V8ExecutionException(e);
         } finally {
-            for (int i = 0; i < size; i++) {
-                if (args[i] instanceof V8Array) {
-                    ((V8Array) args[i]).release();
-                } else if (args[i] instanceof V8Object) {
-                    ((V8Object) args[i]).release();
-                }
+            releaseArguments(args);
+        }
+    }
+
+    private void releaseArguments(final Object[] args) {
+        for (Object arg : args) {
+            if (arg instanceof V8Array) {
+                ((V8Array) arg).release();
+            } else if (arg instanceof V8Object) {
+                ((V8Object) arg).release();
             }
         }
+    }
+
+    private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters) {
+        int size = methodDescriptor.method.getParameterTypes().length;
+        Object[] args = new Object[size];
+        for (int i = 0; i < size; i++) {
+            args[i] = getArrayItem(parameters, i);
+        }
+        return args;
     }
 
     private Object getArrayItem(final V8Array array, final int index) {
