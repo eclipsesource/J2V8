@@ -22,6 +22,7 @@ public:
 
 std::map <int, V8Runtime*> v8Isolates;
 JavaVM* jvm = NULL;
+jclass v8cls = NULL;
 
 void throwError( JNIEnv *env, const char *message );
 void throwExecutionException( JNIEnv *env, const char *message );
@@ -34,7 +35,7 @@ void debugHandler() {
 	// double check it's all ok
 	int getEnvStat = jvm->GetEnv((void **) &g_env, JNI_VERSION_1_6);
 	if (getEnvStat == JNI_EDETACHED) {
-		if (jvm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
+		if (jvm->AttachCurrentThread((JNIEnv **) &g_env, NULL) != 0) {
 			std::cout << "Failed to attach" << std::endl;
 		}
 	} else if (getEnvStat == JNI_OK) {
@@ -43,16 +44,13 @@ void debugHandler() {
 		std::cout << "GetEnv: version not supported" << std::endl;
 	}
 
-	jclass cls = g_env->FindClass("com/eclipsesource/v8/V8");
-	jmethodID processDebugMessage = g_env->GetStaticMethodID(cls, "debugMessageReceived", "()V");
-
-	g_env->CallStaticVoidMethod(cls, processDebugMessage);
+	jmethodID processDebugMessage = g_env->GetStaticMethodID(v8cls, "debugMessageReceived", "()V");
+	g_env->CallStaticVoidMethod(v8cls, processDebugMessage);
 
 	if (g_env->ExceptionCheck()) {
 		g_env->ExceptionDescribe();
 	}
 
-	g_env->DeleteLocalRef(cls);
 	jvm->DetachCurrentThread();
 }
 
@@ -100,7 +98,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
   (JNIEnv *env, jobject, jint handle) {
 	if (jvm == NULL ) {
+		// on first creation, store the JVM and a handle to V8.class
 		env->GetJavaVM(&jvm);
+		v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
 	}
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
