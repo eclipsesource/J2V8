@@ -1201,7 +1201,6 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
 	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
-	jstring jstrMethodName = env->NewStringUTF("callVoidJavaMethod");
 
 	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
 
@@ -1219,7 +1218,6 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	env->CallVoidMethod(parameters, release);
 
 	env->DeleteLocalRef(parameters);
-	env->DeleteLocalRef(jstrMethodName);
 	env->DeleteLocalRef(arrayCls);
 	env->DeleteLocalRef(cls);
 }
@@ -1232,7 +1230,6 @@ void intCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
 	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
-	jstring jstrMethodName = env->NewStringUTF("callIntJavaMethod");
 
 	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
 
@@ -1250,11 +1247,41 @@ void intCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	env->CallVoidMethod(parameters, release);
 
 	env->DeleteLocalRef(parameters);
-	env->DeleteLocalRef(jstrMethodName);
 	env->DeleteLocalRef(arrayCls);
 	env->DeleteLocalRef(cls);
 	args.GetReturnValue().Set(result);
 }
+
+void doubleCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	int size = args.Length();
+	Local<External> data = Local<External>::Cast(args.Data());
+	void *methodDescriptorPtr = data->Value();
+	MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
+
+	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
+	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+
+	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+
+	jclass cls = (env)->FindClass("com/eclipsesource/v8/V8");
+	jmethodID callDoubleMethod = (env)->GetMethodID(cls, "callDoubleJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)D");
+
+	jdouble result = env->CallDoubleMethod(v8, callDoubleMethod, md->methodID, parameters);
+	if ( env -> ExceptionCheck() ) {
+		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+	}
+
+	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
+	jmethodID release = env->GetMethodID(arrayCls, "release", "()V");
+	env->CallVoidMethod(parameters, release);
+
+	env->DeleteLocalRef(parameters);
+	env->DeleteLocalRef(arrayCls);
+	env->DeleteLocalRef(cls);
+	args.GetReturnValue().Set(result);
+}
+
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring functionName, jint methodID, jint methodType) {
@@ -1267,6 +1294,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 		callback = voidCallback;
 	} else if (methodType == com_eclipsesource_v8_V8_INTEGER ) {
 		callback = intCallback;
+	} else if (methodType == com_eclipsesource_v8_V8_DOUBLE ) {
+		callback = doubleCallback;
 	}
 
 	HandleScope handle_scope(isolate);

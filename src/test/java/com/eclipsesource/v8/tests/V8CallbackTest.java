@@ -11,6 +11,7 @@ import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -18,7 +19,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-
 
 public class V8CallbackTest {
 
@@ -41,8 +41,10 @@ public class V8CallbackTest {
         }
     }
 
-
     public interface ICallback {
+
+        public Object unsupportedMethod();
+
         public void voidMethodNoParameters();
 
         public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d);
@@ -53,10 +55,28 @@ public class V8CallbackTest {
 
         public int intMethodNoParameters();
 
+        public Integer integerMethod();
+
         public int intMethodWithParameters(final int x, final int b);
 
         public int intMethodWithArrayParameter(final V8Array array);
 
+        public double doubleMethodNoParameters();
+
+        public double doubleMethodWithParameters(final double x, final double y);
+
+    }
+
+    @Test
+    public void testUnsupportedReturnType() {
+        ICallback callback = mock(ICallback.class);
+        try {
+            v8.registerJavaMethod(callback, "unsupportedMethod", "foo", new Class<?>[0]);
+        } catch (IllegalStateException e) {
+            assertEquals("Unsupported Return Type", e.getMessage());
+            return;
+        }
+        fail("Exception should have been thrown.");
     }
 
     @Test
@@ -91,6 +111,38 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testIntegerMethodCalledFromIntScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(8).when(callback).integerMethod();
+        v8.registerJavaMethod(callback, "integerMethod", "foo", new Class<?>[0]);
+
+        int result = v8.executeIntScript("foo();");
+
+        assertEquals(8, result);
+    }
+
+    @Test
+    public void testDoubleMethodCalledFromVoidScript() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "doubleMethodNoParameters", "foo", new Class<?>[0]);
+
+        v8.executeVoidScript("foo();");
+
+        verify(callback).doubleMethodNoParameters();
+    }
+
+    @Test
+    public void testDoubleMethodCalledFromDoubleScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(3.14159).when(callback).doubleMethodNoParameters();
+        v8.registerJavaMethod(callback, "doubleMethodNoParameters", "foo", new Class<?>[0]);
+
+        double result = v8.executeDoubleScript("foo();");
+
+        assertEquals(3.14159, result, 0.0000001);
+    }
+
+    @Test
     public void testVoidFunctionCallOnJSObject() {
         ICallback callback = mock(ICallback.class);
         V8Object v8Object = new V8Object(v8);
@@ -113,6 +165,20 @@ public class V8CallbackTest {
 
         verify(callback).intMethodNoParameters();
         assertEquals(99, result);
+        v8Object.release();
+    }
+
+    @Test
+    public void testDoubleFunctionCallOnJSObject() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(99.9).when(callback).doubleMethodNoParameters();
+        V8Object v8Object = new V8Object(v8);
+        v8Object.registerJavaMethod(callback, "doubleMethodNoParameters", "foo", new Class<?>[0]);
+
+        double result = v8Object.executeDoubleFunction("foo", null);
+
+        verify(callback).doubleMethodNoParameters();
+        assertEquals(99.9, result, 0.000001);
         v8Object.release();
     }
 
@@ -170,8 +236,7 @@ public class V8CallbackTest {
     public void testVoidMethodCalledWithParameters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
-                Boolean.TYPE,
-                String.class });
+                Boolean.TYPE, String.class });
 
         v8.executeVoidScript("foo(1,1.1, false, 'string');");
 
@@ -198,6 +263,29 @@ public class V8CallbackTest {
 
         verify(callback).intMethodWithParameters(8, 7);
         assertEquals(15, result);
+    }
+
+    @Test
+    public void testDoubleMethodCalledWithParameters() {
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<Double>() {
+
+            @Override
+            public Double answer(final InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                double x = (double) args[0];
+                double y = (double) args[1];
+                return x + y;
+            }
+
+        }).when(callback).doubleMethodWithParameters(anyInt(), anyInt());
+        v8.registerJavaMethod(callback, "doubleMethodWithParameters", "foo",
+                new Class<?>[] { Double.TYPE, Double.TYPE });
+
+        double result = v8.executeDoubleScript("foo(8.3,7.1);");
+
+        verify(callback).doubleMethodWithParameters(8.3, 7.1);
+        assertEquals(15.4, result, 0.000001);
     }
 
     @Test

@@ -162,12 +162,29 @@ public class V8 extends V8Object {
     }
 
     private int getReturnType(final Method method) {
-        if (method.getReturnType().equals(Integer.TYPE)) {
+        Class<?> returnType = method.getReturnType();
+        if (returnType.equals(Integer.TYPE) || returnType.equals(Integer.class)) {
             return INTEGER;
-        } else if (method.getReturnType().equals(Void.TYPE)) {
+        } else if (returnType.equals(Double.TYPE) || returnType.equals(Double.class)) {
+            return DOUBLE;
+        } else if (returnType.equals(Void.TYPE)) {
             return VOID;
         }
         throw new IllegalStateException("Unsupported Return Type");
+    }
+
+    protected double callDoubleJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functions.get(methodID);
+        Object[] args = getArgs(methodDescriptor, parameters);
+        try {
+            return (double) methodDescriptor.method.invoke(methodDescriptor.object, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new V8ExecutionException(e);
+        } finally {
+            releaseArguments(args);
+        }
     }
 
     protected int callIntJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
