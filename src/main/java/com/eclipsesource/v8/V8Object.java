@@ -17,10 +17,12 @@ public class V8Object {
 
     private V8         v8;
     private int        objectHandle;
+    private boolean         released;
 
     protected V8Object() {
         v8 = (V8) this;
         objectHandle = 0;
+        released = false;
     }
 
     public V8Object(final V8 v8) {
@@ -29,6 +31,7 @@ public class V8Object {
         objectHandle = v8ObjectInstanceCounter++;
         this.v8._initNewV8Object(v8.getV8RuntimeHandle(), objectHandle);
         this.v8.addObjRef();
+        released = false;
     }
 
     public int getHandle() {
@@ -37,8 +40,13 @@ public class V8Object {
 
     public void release() {
         V8.checkThread();
+        released = true;
         v8._release(v8.getV8RuntimeHandle(), objectHandle);
         v8.releaseObjRef();
+    }
+
+    public boolean isReleased() {
+        return released;
     }
 
     public boolean contains(final String key) {
