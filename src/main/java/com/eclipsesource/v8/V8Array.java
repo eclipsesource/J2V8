@@ -1,12 +1,12 @@
 package com.eclipsesource.v8;
 
-
 public class V8Array {
 
     private static int v8ArrayInstanceCounter = 1;
 
     private V8         v8;
     private int        arrayHandle;
+    private boolean    released               = false;
 
     public V8Array(final V8 v8) {
         this.v8 = v8;
@@ -14,10 +14,12 @@ public class V8Array {
         arrayHandle = v8ArrayInstanceCounter++;
         this.v8._initNewV8Array(v8.getV8RuntimeHandle(), arrayHandle);
         this.v8.addObjRef();
+        released = false;
     }
 
     public void release() {
         V8.checkThread();
+        released = true;
         v8._releaseArray(v8.getV8RuntimeHandle(), arrayHandle);
         v8.releaseObjRef();
     }
@@ -108,6 +110,10 @@ public class V8Array {
 
     public int getHandle() {
         return arrayHandle;
+    }
+
+    public boolean isReleased() {
+        return released;
     }
 
 }

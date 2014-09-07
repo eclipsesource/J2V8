@@ -79,6 +79,10 @@ public class V8CallbackTest {
 
         public V8Object v8ObjectMethodWithObjectParameter(final V8Object person);
 
+        public V8Array v8ArrayMethodNoParameters();
+
+        public V8Array v8ArrayMethodWithStringParameter(final String string);
+
     }
 
     @Test
@@ -257,6 +261,53 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testV8ArrayMethodCalledFromVoidScript() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        v8.executeVoidScript("foo();");
+
+        verify(callback).v8ArrayMethodNoParameters();
+    }
+
+    @Test
+    public void testV8ArrayMethodReturnsUndefined() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(null).when(callback).v8ArrayMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testV8ArrayMethodCalledFromScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        V8Array array = new V8Array(v8);
+        array.add("john");
+        doReturn(array).when(callback).v8ArrayMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        V8Array result = v8.executeArrayScript("foo();");
+
+        assertEquals("john", result.getString(0));
+        result.release();
+    }
+
+    @Test
+    public void testV8ArrayMethodReleasesResults() {
+        ICallback callback = mock(ICallback.class);
+        V8Array object = new V8Array(v8);
+        doReturn(object).when(callback).v8ArrayMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        v8.executeVoidScript("foo();");
+
+        assertTrue(object.isReleased());
+    }
+
+    @Test
     public void testVoidFunctionCallOnJSObject() {
         ICallback callback = mock(ICallback.class);
         V8Object v8Object = new V8Object(v8);
@@ -335,6 +386,24 @@ public class V8CallbackTest {
 
         verify(callback).v8ObjectMethodNoParameters();
         assertEquals("bob", result.getString("first"));
+        v8Object.release();
+        result.release();
+    }
+
+    @Test
+    public void testV8ArrayFunctionCallOnJSObject() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(v8.executeArrayScript("x = ['a','b','c']; x")).when(callback).v8ArrayMethodNoParameters();
+        V8Object v8Object = new V8Object(v8);
+        v8Object.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        V8Array result = v8Object.executeArrayFunction("foo", null);
+
+        verify(callback).v8ArrayMethodNoParameters();
+        assertEquals(3, result.getSize());
+        assertEquals("a", result.getString(0));
+        assertEquals("b", result.getString(1));
+        assertEquals("c", result.getString(2));
         v8Object.release();
         result.release();
     }
@@ -511,7 +580,7 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testArrayMethodCalledWithArrayParameters() {
+    public void testStringMethodCalledWithArrayParameters() {
         ICallback callback = mock(ICallback.class);
         doAnswer(new Answer<String>() {
             @Override
@@ -530,6 +599,34 @@ public class V8CallbackTest {
         String result = v8.executeStringScript("foo(['a', 'b', 'c', 'd', 'e']);");
 
         assertEquals("abcde", result);
+    }
+
+    @Test
+    public void testArrayMethodCalledWithParameters() {
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<V8Array>() {
+            @Override
+            public V8Array answer(final InvocationOnMock invocation) {
+                V8Array result = new V8Array(v8);
+                String arg = (String) invocation.getArguments()[0];
+                String[] split = arg.split(" ");
+                for (String string : split) {
+                    result.add(string);
+                }
+                return result;
+            }
+        }).when(callback).v8ArrayMethodWithStringParameter(any(String.class));
+        v8.registerJavaMethod(callback, "v8ArrayMethodWithStringParameter", "foo", new Class<?>[] { String.class });
+
+        V8Array result = v8.executeArrayScript("foo('hello world how are you');");
+
+        assertEquals(5, result.getSize());
+        assertEquals("hello", result.getString(0));
+        assertEquals("world", result.getString(1));
+        assertEquals("how", result.getString(2));
+        assertEquals("are", result.getString(3));
+        assertEquals("you", result.getString(4));
+        result.release();
     }
 
     @Test
@@ -651,6 +748,20 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         doThrow(new RuntimeException("My Runtime Exception")).when(callback).v8ObjectMethodNoParameters();
         v8.registerJavaMethod(callback, "v8ObjectMethodNoParameters", "foo", new Class<?>[] {});
+
+        try {
+            v8.executeVoidScript("foo()");
+        } catch (Exception e) {
+            assertEquals("My Runtime Exception", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testV8ArrayMethodThrowsJavaException() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).v8ArrayMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[] {});
 
         try {
             v8.executeVoidScript("foo()");
