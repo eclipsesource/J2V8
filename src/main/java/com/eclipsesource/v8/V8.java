@@ -169,6 +169,8 @@ public class V8 extends V8Object {
             return DOUBLE;
         } else if (returnType.equals(Boolean.TYPE) || returnType.equals(Boolean.class)) {
             return BOOLEAN;
+        } else if (returnType.equals(String.class)) {
+            return STRING;
         } else if (returnType.equals(V8Object.class)) {
             return V8_OBJECT;
         } else if (returnType.equals(Void.TYPE)) {
@@ -196,6 +198,20 @@ public class V8 extends V8Object {
         Object[] args = getArgs(methodDescriptor, parameters);
         try {
             return (boolean) methodDescriptor.method.invoke(methodDescriptor.object, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new V8ExecutionException(e);
+        } finally {
+            releaseArguments(args);
+        }
+    }
+
+    protected String callStringJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functions.get(methodID);
+        Object[] args = getArgs(methodDescriptor, parameters);
+        try {
+            return (String) methodDescriptor.method.invoke(methodDescriptor.object, args);
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
         } catch (IllegalAccessException | IllegalArgumentException e) {

@@ -355,6 +355,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 	Context::Scope context_scope(context);
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source);
@@ -1328,6 +1329,44 @@ void booleanCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(result);
 }
 
+void stringCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	int size = args.Length();
+	Local<External> data = Local<External>::Cast(args.Data());
+	void *methodDescriptorPtr = data->Value();
+	MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
+
+	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
+	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+
+	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+
+	jclass cls = (env)->FindClass("com/eclipsesource/v8/V8");
+	jmethodID callStringMethod = (env)->GetMethodID(cls, "callStringJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)Ljava/lang/String;");
+
+	jstring j_result = (jstring) env->CallObjectMethod(v8, callStringMethod, md->methodID, parameters);
+
+	if ( env -> ExceptionCheck() ) {
+		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+	}
+	if ( j_result == NULL ) {
+		args.GetReturnValue().SetUndefined();
+	} else {
+		const char* utf_string = env -> GetStringUTFChars(j_result, NULL);
+		Local<Value> result = String::NewFromUtf8(v8Isolates[md->v8RuntimeHandle]->isolate, utf_string);
+		args.GetReturnValue().Set(result);
+		env->ReleaseStringUTFChars(j_result, utf_string);
+	}
+
+	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
+	jmethodID release = env->GetMethodID(arrayCls, "release", "()V");
+	env->CallVoidMethod(parameters, release);
+
+	env->DeleteLocalRef(parameters);
+	env->DeleteLocalRef(arrayCls);
+	env->DeleteLocalRef(cls);
+}
+
 void v8ObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	int size = args.Length();
 	Local<External> data = Local<External>::Cast(args.Data());
@@ -1382,6 +1421,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 		callback = doubleCallback;
 	} else if (methodType == com_eclipsesource_v8_V8_BOOLEAN ) {
 		callback = booleanCallback;
+	} else if (methodType == com_eclipsesource_v8_V8_STRING ) {
+		callback = stringCallback;
 	} else if (methodType == com_eclipsesource_v8_V8_V8_OBJECT) {
 		callback = v8ObjectCallback;
 	}

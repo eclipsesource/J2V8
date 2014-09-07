@@ -71,6 +71,10 @@ public class V8CallbackTest {
 
         public boolean booleanMethodWithArrayParameter(final V8Array array);
 
+        public String stringMethodNoParameters();
+
+        public String stringMethodWithArrayParameter(final V8Array array);
+
         public V8Object v8ObjectMethodNoParameters();
 
         public V8Object v8ObjectMethodWithObjectParameter(final V8Object person);
@@ -110,7 +114,7 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testIntMethodCalledFromIntScriptWithResult() {
+    public void testIntMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         doReturn(7).when(callback).intMethodNoParameters();
         v8.registerJavaMethod(callback, "intMethodNoParameters", "foo", new Class<?>[0]);
@@ -121,7 +125,7 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testIntegerMethodCalledFromIntScriptWithResult() {
+    public void testIntegerMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         doReturn(8).when(callback).integerMethod();
         v8.registerJavaMethod(callback, "integerMethod", "foo", new Class<?>[0]);
@@ -142,7 +146,7 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testDoubleMethodCalledFromDoubleScriptWithResult() {
+    public void testDoubleMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         doReturn(3.14159).when(callback).doubleMethodNoParameters();
         v8.registerJavaMethod(callback, "doubleMethodNoParameters", "foo", new Class<?>[0]);
@@ -163,12 +167,44 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testBooleanMethodCalledFromDoubleScriptWithResult() {
+    public void testBooleanMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         doReturn(true).when(callback).booleanMethodNoParameters();
         v8.registerJavaMethod(callback, "booleanMethodNoParameters", "foo", new Class<?>[0]);
 
         boolean result = v8.executeBooleanScript("foo();");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testStringMethodCalledFromVoidScript() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[0]);
+
+        v8.executeVoidScript("foo();");
+
+        verify(callback).stringMethodNoParameters();
+    }
+
+    @Test
+    public void testStringMethodCalledFromScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        doReturn("bar").when(callback).stringMethodNoParameters();
+        v8.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[0]);
+
+        String result = v8.executeStringScript("foo();");
+
+        assertEquals("bar", result);
+    }
+
+    @Test
+    public void testStringMethodCalledFromScriptWithUndefined() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(null).when(callback).stringMethodNoParameters();
+        v8.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[0]);
+
+        boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
 
         assertTrue(result);
     }
@@ -186,6 +222,7 @@ public class V8CallbackTest {
     @Test
     public void testV8ObjectMethodReturnsUndefined() {
         ICallback callback = mock(ICallback.class);
+        doReturn(null).when(callback).v8ObjectMethodNoParameters();
         v8.registerJavaMethod(callback, "v8ObjectMethodNoParameters", "foo", new Class<?>[0]);
 
         boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
@@ -194,7 +231,7 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testV8ObjectMethodCalledFromObjectScriptWithResult() {
+    public void testV8ObjectMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         V8Object object = new V8Object(v8);
         object.add("name", "john");
@@ -270,6 +307,20 @@ public class V8CallbackTest {
 
         verify(callback).booleanMethodNoParameters();
         assertFalse(result);
+        v8Object.release();
+    }
+
+    @Test
+    public void testStringFunctionCallOnJSObject() {
+        ICallback callback = mock(ICallback.class);
+        doReturn("mystring").when(callback).stringMethodNoParameters();
+        V8Object v8Object = new V8Object(v8);
+        v8Object.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[0]);
+
+        String result = v8Object.executeStringFunction("foo", null);
+
+        verify(callback).stringMethodNoParameters();
+        assertEquals("mystring", result);
         v8Object.release();
     }
 
@@ -460,6 +511,28 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testArrayMethodCalledWithArrayParameters() {
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<String>() {
+            @Override
+            public String answer(final InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                int arrayLength = ((V8Array) args[0]).getSize();
+                StringBuilder result = new StringBuilder();
+                for (int i = 0; i < arrayLength; i++) {
+                    result.append(((V8Array) args[0]).getString(i));
+                }
+                return result.toString();
+            }
+        }).when(callback).stringMethodWithArrayParameter(any(V8Array.class));
+        v8.registerJavaMethod(callback, "stringMethodWithArrayParameter", "foo", new Class<?>[] { V8Array.class });
+
+        String result = v8.executeStringScript("foo(['a', 'b', 'c', 'd', 'e']);");
+
+        assertEquals("abcde", result);
+    }
+
+    @Test
     public void testVoidMethodCalledWithObjectParameters() {
         ICallback callback = mock(ICallback.class);
         doAnswer(new Answer<Object>() {
@@ -550,6 +623,20 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         doThrow(new RuntimeException("My Runtime Exception")).when(callback).booleanMethodNoParameters();
         v8.registerJavaMethod(callback, "booleanMethodNoParameters", "foo", new Class<?>[] {});
+
+        try {
+            v8.executeVoidScript("foo()");
+        } catch (Exception e) {
+            assertEquals("My Runtime Exception", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testStringMethodThrowsJavaException() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).stringMethodNoParameters();
+        v8.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[] {});
 
         try {
             v8.executeVoidScript("foo()");
