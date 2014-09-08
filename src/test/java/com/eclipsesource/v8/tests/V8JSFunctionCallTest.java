@@ -37,8 +37,8 @@ public class V8JSFunctionCallTest {
     public void testIntFunction() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Array parameters = new V8Array(v8);
-        parameters.add(7);
-        parameters.add(8);
+        parameters.push(7);
+        parameters.push(8);
 
         int result = v8.executeIntFunction("add", parameters);
 
@@ -50,8 +50,8 @@ public class V8JSFunctionCallTest {
     public void testDoubleFunctionCall() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Array parameters = new V8Array(v8);
-        parameters.add(1.1);
-        parameters.add(2.2);
+        parameters.push(1.1);
+        parameters.push(2.2);
 
         double result = v8.executeDoubleFunction("add", parameters);
 
@@ -63,8 +63,8 @@ public class V8JSFunctionCallTest {
     public void testStringFunctionCall() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Array parameters = new V8Array(v8);
-        parameters.add("hello, ");
-        parameters.add("world!");
+        parameters.push("hello, ");
+        parameters.push("world!");
 
         String result = v8.executeStringFunction("add", parameters);
 
@@ -76,8 +76,8 @@ public class V8JSFunctionCallTest {
     public void testBooleanFunctionCall() {
         v8.executeVoidScript("function add(x, y) {return x&&y;}");
         V8Array parameters = new V8Array(v8);
-        parameters.add(true);
-        parameters.add(true);
+        parameters.push(true);
+        parameters.push(true);
 
         boolean result = v8.executeBooleanFunction("add", parameters);
 
@@ -89,10 +89,10 @@ public class V8JSFunctionCallTest {
     public void testArrayFunctionCall() {
         v8.executeVoidScript("function add(a,b,c,d) {return [a,b,c,d];}");
         V8Array parameters = new V8Array(v8);
-        parameters.add(true);
-        parameters.add(false);
-        parameters.add(7);
-        parameters.add("foo");
+        parameters.push(true);
+        parameters.push(false);
+        parameters.push(7);
+        parameters.push("foo");
 
         V8Array result = v8.executeArrayFunction("add", parameters);
 
@@ -108,9 +108,9 @@ public class V8JSFunctionCallTest {
     public void testObjectFunctionCall() {
         v8.executeVoidScript("function getPerson(first, last, age) {return {'first':first, 'last':last, 'age':age};}");
         V8Array parameters = new V8Array(v8);
-        parameters.add("John");
-        parameters.add("Smith");
-        parameters.add(7);
+        parameters.push("John");
+        parameters.push("Smith");
+        parameters.push(7);
 
         V8Object result = v8.executeObjectFunction("getPerson", parameters);
 
@@ -125,9 +125,9 @@ public class V8JSFunctionCallTest {
     public void testVoidFunctionCall() {
         v8.executeVoidScript("function setPerson(first, last, age) {person = {'first':first, 'last':last, 'age':age};}");
         V8Array parameters = new V8Array(v8);
-        parameters.add("John");
-        parameters.add("Smith");
-        parameters.add(7);
+        parameters.push("John");
+        parameters.push("Smith");
+        parameters.push(7);
 
         v8.executeVoidFunction("setPerson", parameters);
         V8Object result = v8.getObject("person");
@@ -291,8 +291,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("adder");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(7);
-        parameters.add(8);
+        parameters.push(7);
+        parameters.push(8);
         int result = object.executeIntFunction("addFuction", parameters);
         parameters.release();
 
@@ -308,8 +308,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("adder");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(7.1);
-        parameters.add(8.1);
+        parameters.push(7.1);
+        parameters.push(8.1);
         double result = object.executeDoubleFunction("addFuction", parameters);
         parameters.release();
 
@@ -325,8 +325,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("adder");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add("hello, ");
-        parameters.add("world!");
+        parameters.push("hello, ");
+        parameters.push("world!");
         String result = object.executeStringFunction("addFuction", parameters);
         parameters.release();
 
@@ -342,8 +342,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("adder");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(true);
-        parameters.add(false);
+        parameters.push(true);
+        parameters.push(false);
         boolean result = object.executeBooleanFunction("addFuction", parameters);
         parameters.release();
 
@@ -359,8 +359,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("adder");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(true);
-        parameters.add(false);
+        parameters.push(true);
+        parameters.push(false);
         V8Array result = object.executeArrayFunction("addFuction", parameters);
         parameters.release();
 
@@ -378,8 +378,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("pointer");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(8);
-        parameters.add(9);
+        parameters.push(8);
+        parameters.push(9);
         V8Object result = object.executeObjectFunction("pointGetter", parameters);
         parameters.release();
 
@@ -397,8 +397,8 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.getObject("pointer");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add(8);
-        parameters.add(9);
+        parameters.push(8);
+        parameters.push(9);
         object.executeVoidFunction("pointSetter", parameters);
         parameters.release();
 
@@ -412,7 +412,7 @@ public class V8JSFunctionCallTest {
         v8.executeVoidScript("function countLength(str) {return str.length;}");
 
         V8Array parameters = new V8Array(v8);
-        parameters.add("abcdefghijklmnopqrstuvwxyz");
+        parameters.push("abcdefghijklmnopqrstuvwxyz");
 
         assertEquals(26, v8.executeIntFunction("countLength", parameters));
         parameters.release();
@@ -429,8 +429,8 @@ public class V8JSFunctionCallTest {
         obj2.add("last", "Jones");
         obj2.add("age", 8);
         V8Array parameters = new V8Array(v8);
-        parameters.add(obj1);
-        parameters.add(obj2);
+        parameters.push(obj1);
+        parameters.push(obj2);
 
         v8.executeVoidScript("function add(p1, p2) {return p1.age + p2['age'];}");
         int result = v8.executeIntFunction("add", parameters);

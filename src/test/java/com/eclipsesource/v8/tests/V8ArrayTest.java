@@ -36,7 +36,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayElementFromProperties() {
-        V8Array v8Array = new V8Array(v8).add("1").add(2).add(3.3);
+        V8Array v8Array = new V8Array(v8).push("1").push(2).push(3.3);
 
         String result1 = v8Array.getString("0");
         int result2 = v8Array.getInteger("1");
@@ -376,9 +376,9 @@ public class V8ArrayTest {
     public void testAddInt() {
         V8Array array = new V8Array(v8);
 
-        array.add(7);
-        array.add(8);
-        array.add(9);
+        array.push(7);
+        array.push(8);
+        array.push(9);
 
         assertEquals(3, array.getSize());
         assertEquals(7, array.getInteger(0));
@@ -391,10 +391,10 @@ public class V8ArrayTest {
     public void testAddString() {
         V8Array array = new V8Array(v8);
 
-        array.add("first");
-        array.add("second");
-        array.add("third");
-        array.add("forth");
+        array.push("first");
+        array.push("second");
+        array.push("third");
+        array.push("forth");
 
         assertEquals(4, array.getSize());
         assertEquals("first", array.getString(0));
@@ -408,10 +408,10 @@ public class V8ArrayTest {
     public void testAddDouble() {
         V8Array array = new V8Array(v8);
 
-        array.add(1.1);
-        array.add(2.2);
-        array.add(3.3);
-        array.add(4.9);
+        array.push(1.1);
+        array.push(2.2);
+        array.push(3.3);
+        array.push(4.9);
 
         assertEquals(4, array.getSize());
         assertEquals(1.1, array.getDouble(0), 0.000001);
@@ -425,8 +425,8 @@ public class V8ArrayTest {
     public void testAddBoolean() {
         V8Array array = new V8Array(v8);
 
-        array.add(true);
-        array.add(false);
+        array.push(true);
+        array.push(false);
 
         assertEquals(2, array.getSize());
         assertTrue(array.getBoolean(0));
@@ -438,11 +438,11 @@ public class V8ArrayTest {
     public void testAddMixedValues() {
         V8Array array = new V8Array(v8);
 
-        array.add(true);
-        array.add(false);
-        array.add(1);
-        array.add("string");
-        array.add(false);
+        array.push(true);
+        array.push(false);
+        array.push(1);
+        array.push("string");
+        array.push(false);
 
         assertEquals(5, array.getSize());
         assertTrue(array.getBoolean(0));
@@ -457,7 +457,7 @@ public class V8ArrayTest {
     public void testAddToExistingArray() {
         V8Array array = v8.executeArrayScript("foo = [1,2,3,,5]; foo;");
 
-        array.add(false);
+        array.push(false);
 
         assertEquals(6, array.getSize());
         assertFalse(array.getBoolean(5));
@@ -469,21 +469,21 @@ public class V8ArrayTest {
         V8Array a1 = new V8Array(v8);
         V8Array a2 = new V8Array(v8);
         V8Array a3 = new V8Array(v8);
-        a1.add(1);
-        a1.add(2);
-        a1.add(3);
-        a2.add(4);
-        a2.add(5);
-        a2.add(6);
-        a3.add(7);
-        a3.add(8);
-        a3.add(9);
+        a1.push(1);
+        a1.push(2);
+        a1.push(3);
+        a2.push(4);
+        a2.push(5);
+        a2.push(6);
+        a3.push(7);
+        a3.push(8);
+        a3.push(9);
         V8Array array = new V8Array(v8);
-        array.add(a1);
-        array.add(a2);
-        array.add(a3);
+        array.push(a1);
+        array.push(a2);
+        array.push(a3);
         V8Array parameters = new V8Array(v8);
-        parameters.add(array);
+        parameters.push(array);
 
         v8.executeVoidScript("var total = 0; function add(matrix) { for(var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) { total = total + matrix[i][j]; }}};");
         v8.executeVoidFunction("add", parameters);
@@ -508,8 +508,8 @@ public class V8ArrayTest {
         obj2.add("last", "Jones");
         obj2.add("age", 8);
         V8Array array = new V8Array(v8);
-        array.add(obj1);
-        array.add(obj2);
+        array.push(obj1);
+        array.push(obj2);
 
         V8Object result1 = array.getObject(0);
         V8Object result2 = array.getObject(1);
@@ -532,7 +532,7 @@ public class V8ArrayTest {
     public void testGetTypeInt() {
         V8Array v8Array = new V8Array(v8);
 
-        v8Array.add(1);
+        v8Array.push(1);
 
         assertEquals(V8Object.INTEGER, v8Array.getType(0));
         v8Array.release();
@@ -542,7 +542,7 @@ public class V8ArrayTest {
     public void testGetTypeDouble() {
         V8Array v8Array = new V8Array(v8);
 
-        v8Array.add(1.1);
+        v8Array.push(1.1);
 
         assertEquals(V8Object.DOUBLE, v8Array.getType(0));
         v8Array.release();
@@ -552,7 +552,7 @@ public class V8ArrayTest {
     public void testGetTypeString() {
         V8Array v8Array = new V8Array(v8);
 
-        v8Array.add("String");
+        v8Array.push("String");
 
         assertEquals(V8Object.STRING, v8Array.getType(0));
         v8Array.release();
@@ -562,7 +562,7 @@ public class V8ArrayTest {
     public void testGetTypeBoolean() {
         V8Array v8Array = new V8Array(v8);
 
-        v8Array.add(false);
+        v8Array.push(false);
 
         assertEquals(V8Object.BOOLEAN, v8Array.getType(0));
         v8Array.release();
@@ -573,7 +573,7 @@ public class V8ArrayTest {
         V8Array v8Array = new V8Array(v8);
         V8Array value = new V8Array(v8);
 
-        v8Array.add(value);
+        v8Array.push(value);
 
         assertEquals(V8Object.V8_ARRAY, v8Array.getType(0));
         v8Array.release();
@@ -585,7 +585,7 @@ public class V8ArrayTest {
         V8Array v8Array = new V8Array(v8);
         V8Object value = new V8Object(v8);
 
-        v8Array.add(value);
+        v8Array.push(value);
 
         assertEquals(V8Object.V8_OBJECT, v8Array.getType(0));
         v8Array.release();

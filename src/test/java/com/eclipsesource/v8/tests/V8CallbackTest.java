@@ -285,7 +285,7 @@ public class V8CallbackTest {
     public void testV8ArrayMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         V8Array array = new V8Array(v8);
-        array.add("john");
+        array.push("john");
         doReturn(array).when(callback).v8ArrayMethodNoParameters();
         v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
 
@@ -712,7 +712,7 @@ public class V8CallbackTest {
                 String arg = (String) invocation.getArguments()[0];
                 String[] split = arg.split(" ");
                 for (String string : split) {
-                    result.add(string);
+                    result.push(string);
                 }
                 return result;
             }
