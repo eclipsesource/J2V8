@@ -1,4 +1,3 @@
-
 package com.eclipsesource.v8;
 
 import java.lang.reflect.Method;
@@ -13,10 +12,10 @@ public class V8Object {
     public static final int V8_ARRAY                = 5;
     public static final int V8_OBJECT               = 6;
 
-    private static int v8ObjectInstanceCounter = 1;
+    private static int      v8ObjectInstanceCounter = 1;
 
-    private V8         v8;
-    private int        objectHandle;
+    protected V8            v8;
+    private int             objectHandle;
     private boolean         released;
 
     protected V8Object() {
@@ -29,9 +28,13 @@ public class V8Object {
         this.v8 = v8;
         V8.checkThread();
         objectHandle = v8ObjectInstanceCounter++;
-        this.v8._initNewV8Object(v8.getV8RuntimeHandle(), objectHandle);
+        initialize(v8.getV8RuntimeHandle(), objectHandle);
         this.v8.addObjRef();
         released = false;
+    }
+
+    protected void initialize(final int runtimeHandle, final int objectHandle) {
+        v8._initNewV8Object(runtimeHandle, objectHandle);
     }
 
     public int getHandle() {
@@ -113,19 +116,22 @@ public class V8Object {
         return null;
     }
 
-    public int executeIntFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+    public int executeIntFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
         V8.checkThread();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8._executeIntFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
         V8.checkThread();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8._executeDoubleFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+    public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
         V8.checkThread();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8._executeStringFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
@@ -138,13 +144,13 @@ public class V8Object {
         return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException, V8ResultUndefined {
+    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    V8ResultUndefined {
         V8.checkThread();
         V8Array result = new V8Array(v8);
         try {
             int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-            v8._executeArrayFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle,
-                    result.getHandle());
+            v8._executeArrayFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle, result.getHandle());
         } catch (Exception e) {
             result.release();
             throw e;

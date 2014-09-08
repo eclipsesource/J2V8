@@ -35,6 +35,43 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testGetArrayElementFromProperties() {
+        V8Array v8Array = new V8Array(v8);
+        v8Array.add("1");
+        v8Array.add(2);
+        v8Array.add(3.3);
+
+        String result1 = v8Array.getString("0");
+        int result2 = v8Array.getInteger("1");
+        double result3 = v8Array.getDouble("2");
+
+        assertEquals("1", result1);
+        assertEquals(2, result2);
+        assertEquals(3.3, result3, 0.000001);
+        v8Array.release();
+    }
+
+    @Test
+    public void testSetArrayElementsWithProperties() {
+        V8Array v8Array = new V8Array(v8);
+        v8Array.add("1");
+        v8Array.add(2);
+        v8Array.add(3.3);
+
+        v8Array.add("0", 1);
+        v8Array.add("10", 2);
+        v8Array.add("19", 3);
+        v8Array.add("bob", 4);
+
+        assertEquals(20, v8Array.getSize());
+        assertEquals(1, v8Array.getInteger(0));
+        assertEquals(2, v8Array.getInteger(10));
+        assertEquals(3, v8Array.getInteger(19));
+        assertEquals(4, v8Array.getInteger("bob"));
+        v8Array.release();
+    }
+
+    @Test
     public void testCreateAndReleaseArray() {
         for (int i = 0; i < 10000; i++) {
             V8Array v8Array = new V8Array(v8);

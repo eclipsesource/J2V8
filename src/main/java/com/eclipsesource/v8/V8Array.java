@@ -1,27 +1,15 @@
 package com.eclipsesource.v8;
 
-public class V8Array {
-
-    private static int v8ArrayInstanceCounter = 1;
-
-    private V8         v8;
-    private int        arrayHandle;
-    private boolean    released               = false;
+public class V8Array extends V8Object {
 
     public V8Array(final V8 v8) {
-        this.v8 = v8;
+        super(v8);
         V8.checkThread();
-        arrayHandle = v8ArrayInstanceCounter++;
-        this.v8._initNewV8Array(v8.getV8RuntimeHandle(), arrayHandle);
-        this.v8.addObjRef();
-        released = false;
     }
 
-    public void release() {
-        V8.checkThread();
-        released = true;
-        v8._releaseArray(v8.getV8RuntimeHandle(), arrayHandle);
-        v8.releaseObjRef();
+    @Override
+    protected void initialize(final int runtimeHandle, final int objectHandle) {
+        v8._initNewV8Array(runtimeHandle, objectHandle);
     }
 
     public int getSize() {
@@ -106,14 +94,6 @@ public class V8Array {
     public void add(final V8Array value) {
         V8.checkThread();
         v8._addArrayArrayItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
-    }
-
-    public int getHandle() {
-        return arrayHandle;
-    }
-
-    public boolean isReleased() {
-        return released;
     }
 
 }

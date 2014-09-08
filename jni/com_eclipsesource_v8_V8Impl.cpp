@@ -15,7 +15,6 @@ public:
     Persistent<ObjectTemplate> globalObjectTemplate;
     Persistent<Context> context_;
     std::map <int, Persistent<Object>* > objects;
-    std::map <int, Persistent<Object>* > arrays;
     JNIEnv* env;
     jobject v8;
 };
@@ -137,8 +136,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Local<Array> array = Array::New(isolate);
-	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle] = new Persistent<Object>;
-	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
+	v8Isolates[v8RuntimeHandle]->objects[arrayHandle] = new Persistent<Object>;
+	v8Isolates[v8RuntimeHandle]->objects[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
@@ -182,7 +181,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
 			throwResultUndefinedException(env, "");
 			return;
 	}
-	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 	env->ReleaseStringUTFChars(objectKey, utf_string);
 }
 
@@ -205,9 +204,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
 	}
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	HandleScope handle_scope(isolate);
-	v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]->Reset();
-	delete(v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
-	v8Isolates[v8RuntimeHandle]->arrays.erase(arrayHandle);
+	v8Isolates[v8RuntimeHandle]->objects[arrayHandle]->Reset();
+	delete(v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+	v8Isolates[v8RuntimeHandle]->objects.erase(arrayHandle);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
@@ -456,7 +455,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 		throwResultUndefinedException(env, "");
 		return;
 	}
-	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jjstring, js);
 	return;
 }
@@ -477,7 +476,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -493,7 +492,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 		return;
 	}
 
-	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
 	return;
 }
@@ -514,7 +513,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -550,7 +549,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -584,7 +583,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -619,7 +618,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -654,7 +653,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -689,7 +688,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
-		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+		Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 		size = Array::Cast(*parameters)->Length();
 		args = new Handle<Value> [size];
 		for (int i = 0; i < size; i++) {
@@ -794,7 +793,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
 	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
-	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[valueHandle]);
+	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
 	global->Set( v8Key,  v8Value);
 }
 
@@ -889,7 +888,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	return Array::Cast(*array)->Length();
 }
 
@@ -902,7 +901,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsInt32()) {
@@ -921,7 +920,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsBoolean()) {
@@ -940,7 +939,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDouble
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsNumber()) {
@@ -959,7 +958,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsString()) {
@@ -979,7 +978,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetObject
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Handle<Value> v8Value = array->Get(index);
 
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsObject()) {
@@ -999,14 +998,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetArray
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Handle<Value> v8Value = array->Get(index);
 
 	if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsArray()) {
 		throwResultUndefinedException(env, "");
 		return;
 	}
-	v8Isolates[v8RuntimeHandle]->arrays[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
+	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
@@ -1018,7 +1017,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Local<Value> v8Value = v8::Int32::New(isolate, value);
 	int index = Array::Cast(*array)->Length();
 	array->Set(index, v8Value);
@@ -1033,7 +1032,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Local<Value> v8Value = v8::Number::New(isolate, value);
 	int index = Array::Cast(*array)->Length();
 	array->Set(index, v8Value);
@@ -1048,7 +1047,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Local<Value> v8Value = v8::Boolean::New(isolate, value);
 	int index = Array::Cast(*array)->Length();
 	array->Set(index, v8Value);
@@ -1063,7 +1062,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	int index = Array::Cast(*array)->Length();
 	const char* utfString = env -> GetStringUTFChars(value, NULL);
 	Local<String> v8Value = String::NewFromUtf8(isolate, utfString);
@@ -1081,9 +1080,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	int index = Array::Cast(*array)->Length();
-	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[valueHandle]);
+	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
 	array->Set(index, v8Value);
 }
 
@@ -1097,7 +1096,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[arrayHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	int index = Array::Cast(*array)->Length();
 	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
 	array->Set(index, v8Value);
@@ -1147,7 +1146,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[objectHandle]);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
@@ -1214,7 +1213,7 @@ jobject createParameterArray(JNIEnv* env, int v8RuntimeHandle, jobject v8, int s
 	jobject result = env->NewObject(cls, methodID, v8);
 	jint parameterHandle = env->CallIntMethod(result, getHandle);
 
-	Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->arrays[parameterHandle]);
+	Handle<v8::Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
 
 	for ( int i = 0; i < size; i++) {
 		parameters->Set(i, args[i]);
@@ -1446,7 +1445,7 @@ void v8ArrayCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		args.GetReturnValue().SetUndefined();
 	} else {
 		int resultHandle = getArrayHandle(env, resultObject);
-		Handle<v8::Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->arrays[resultHandle]);
+		Handle<v8::Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
 		releaseArray(env, resultObject);
 		args.GetReturnValue().Set(result);
 	}
