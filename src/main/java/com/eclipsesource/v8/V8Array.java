@@ -66,34 +66,40 @@ public class V8Array extends V8Object {
         return result;
     }
 
-    public void add(final int value) {
+    public V8Array add(final int value) {
         V8.checkThread();
         v8._addArrayIntItem(v8.getV8RuntimeHandle(), getHandle(), value);
+        return this;
     }
 
-    public void add(final boolean value) {
+    public V8Array add(final boolean value) {
         V8.checkThread();
         v8._addArrayBooleanItem(v8.getV8RuntimeHandle(), getHandle(), value);
+        return this;
     }
 
-    public void add(final double value) {
+    public V8Array add(final double value) {
         V8.checkThread();
         v8._addArrayDoubleItem(v8.getV8RuntimeHandle(), getHandle(), value);
+        return this;
     }
 
-    public void add(final String value) {
+    public V8Array add(final String value) {
         V8.checkThread();
         v8._addArrayStringItem(v8.getV8RuntimeHandle(), getHandle(), value);
+        return this;
     }
 
-    public void add(final V8Object value) {
+    public V8Array add(final V8Object value) {
         V8.checkThread();
         v8._addArrayObjectItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
+        return this;
     }
 
-    public void add(final V8Array value) {
+    public V8Array add(final V8Array value) {
         V8.checkThread();
         v8._addArrayArrayItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
+        return this;
     }
 
 }

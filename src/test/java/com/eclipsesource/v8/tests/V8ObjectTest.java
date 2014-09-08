@@ -218,9 +218,7 @@ public class V8ObjectTest {
     /*** Add Primitives ***/
     @Test
     public void testAddString() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("hello", "world");
+        V8Object v8Object = new V8Object(v8).add("hello", "world");
 
         assertEquals("world", v8Object.getString("hello"));
         v8Object.release();
@@ -228,9 +226,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddInt() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("hello", 7);
+        V8Object v8Object = new V8Object(v8).add("hello", 7);
 
         assertEquals(7, v8Object.getInteger("hello"));
         v8Object.release();
@@ -238,9 +234,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddDouble() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("hello", 3.14159);
+        V8Object v8Object = new V8Object(v8).add("hello", 3.14159);
 
         assertEquals(3.14159, v8Object.getDouble("hello"), 0.000001);
         v8Object.release();
@@ -248,9 +242,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddBoolean() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("hello", true);
+        V8Object v8Object = new V8Object(v8).add("hello", true);
 
         assertTrue(v8Object.getBoolean("hello"));
         v8Object.release();
@@ -258,8 +250,7 @@ public class V8ObjectTest {
 
     @Test
     public void testObjectChangedFromJS() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("world", "hello");
+        V8Object v8Object = new V8Object(v8).add("hello", "world");
         v8.add("object", v8Object);
 
         v8.executeVoidScript("object.world = 'goodbye'");
@@ -272,8 +263,7 @@ public class V8ObjectTest {
     public void testObjectChangedFromAPI() {
         v8.executeVoidScript("object = {world : 'goodbye'}");
 
-        V8Object v8Object = v8.getObject("object");
-        v8Object.add("world", "hello");
+        V8Object v8Object = v8.getObject("object").add("world", "hello");
 
         assertEquals("hello", v8Object.getString("world"));
         v8Object.release();
@@ -282,8 +272,7 @@ public class V8ObjectTest {
     /*** Add Object ***/
     @Test
     public void testAddObject() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("hello", true);
+        V8Object v8Object = new V8Object(v8).add("hello", true);
 
         v8.add("foo", v8Object);
 
@@ -295,8 +284,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddObjectWithString() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("hello", "world");
+        V8Object v8Object = new V8Object(v8).add("hello", "world");
 
         v8.add("foo", v8Object);
 
@@ -307,8 +295,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddObjectWithBoolean() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("boolean", false);
+        V8Object v8Object = new V8Object(v8).add("boolean", false);
 
         v8.add("foo", v8Object);
 
@@ -319,8 +306,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddObjectWithInt() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("integer", 75);
+        V8Object v8Object = new V8Object(v8).add("integer", 75);
 
         v8.add("foo", v8Object);
 
@@ -331,8 +317,7 @@ public class V8ObjectTest {
 
     @Test
     public void testAddObjectWithDouble() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("double", 75.5);
+        V8Object v8Object = new V8Object(v8).add("double", 75.5);
 
         v8.add("foo", v8Object);
 
@@ -343,10 +328,8 @@ public class V8ObjectTest {
 
     @Test
     public void testAddObjectToObject() {
-        V8Object v8Object = new V8Object(v8);
-        V8Object nested = new V8Object(v8);
-        nested.add("foo", "bar");
-        v8Object.add("nested", nested);
+        V8Object nested = new V8Object(v8).add("foo", "bar");
+        V8Object v8Object = new V8Object(v8).add("nested", nested);
         v8.add("foo", v8Object);
 
         String result = v8.executeStringScript("foo.nested.foo");
@@ -359,9 +342,8 @@ public class V8ObjectTest {
     /*** Add Array ***/
     @Test
     public void testAddArrayToObject() {
-        V8Object v8Object = new V8Object(v8);
         V8Array array = new V8Array(v8);
-        v8Object.add("array", array);
+        V8Object v8Object = new V8Object(v8).add("array", array);
         v8.add("foo", v8Object);
 
         V8Array result = v8.executeArrayScript("foo.array");
@@ -381,9 +363,7 @@ public class V8ObjectTest {
     /*** Test Types ***/
     @Test
     public void testGetTypeInt() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("key", 1);
+        V8Object v8Object = new V8Object(v8).add("key", 1);
 
         assertEquals(V8Object.INTEGER, v8Object.getType("key"));
         v8Object.release();
@@ -391,9 +371,7 @@ public class V8ObjectTest {
 
     @Test
     public void testGetTypeDouble() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("key", 1.1);
+        V8Object v8Object = new V8Object(v8).add("key", 1.1);
 
         assertEquals(V8Object.DOUBLE, v8Object.getType("key"));
         v8Object.release();
@@ -401,9 +379,7 @@ public class V8ObjectTest {
 
     @Test
     public void testGetTypeString() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("key", "String");
+        V8Object v8Object = new V8Object(v8).add("key", "String");
 
         assertEquals(V8Object.STRING, v8Object.getType("key"));
         v8Object.release();
@@ -411,9 +387,7 @@ public class V8ObjectTest {
 
     @Test
     public void testGetTypeBoolean() {
-        V8Object v8Object = new V8Object(v8);
-
-        v8Object.add("key", false);
+        V8Object v8Object = new V8Object(v8).add("key", false);
 
         assertEquals(V8Object.BOOLEAN, v8Object.getType("key"));
         v8Object.release();
@@ -421,10 +395,8 @@ public class V8ObjectTest {
 
     @Test
     public void testGetTypeArray() {
-        V8Object v8Object = new V8Object(v8);
         V8Array value = new V8Array(v8);
-
-        v8Object.add("key", value);
+        V8Object v8Object = new V8Object(v8).add("key", value);
 
         assertEquals(V8Object.V8_ARRAY, v8Object.getType("key"));
         v8Object.release();
@@ -433,10 +405,8 @@ public class V8ObjectTest {
 
     @Test
     public void testGetTypeObject() {
-        V8Object v8Object = new V8Object(v8);
         V8Object value = new V8Object(v8);
-
-        v8Object.add("key", value);
+        V8Object v8Object = new V8Object(v8).add("key", value);
 
         assertEquals(V8Object.V8_OBJECT, v8Object.getType("key"));
         v8Object.release();
@@ -445,11 +415,9 @@ public class V8ObjectTest {
 
     @Test
     public void testGetKeysOnObject() {
-        V8Object v8Object = new V8Object(v8);
-        v8Object.add("integer", 1);
-        v8Object.add("double", 1.1);
-        v8Object.add("boolean", true);
-        v8Object.add("string", "hello, world!");
+        V8Object v8Object =
+                new V8Object(v8).add("integer", 1).add("double", 1.1).add("boolean", true)
+                .add("string", "hello, world!");
 
         String[] keys = v8Object.getKeys();
 
@@ -474,9 +442,8 @@ public class V8ObjectTest {
     public void testSetPrototypeOfObject() {
         v8.executeVoidScript("function Mammal(){}; Mammal.prototype.breathe=function(){return 'breathe';};");
         V8Object mammal = v8.executeObjectScript("new Mammal();");
-        V8Object cat = new V8Object(v8);
+        V8Object cat = new V8Object(v8).setPrototype(mammal);
 
-        cat.setPrototype(mammal);
         v8.add("cat", cat);
 
         assertTrue(v8.executeBooleanScript("cat instanceof Mammal"));
@@ -506,8 +473,7 @@ public class V8ObjectTest {
     public void testChangePrototypePropertiesAfterCreation() {
         v8.executeVoidScript("function Mammal(){};");
         V8Object mammal = v8.executeObjectScript("new Mammal();");
-        V8Object cat = new V8Object(v8);
-        cat.setPrototype(mammal);
+        V8Object cat = new V8Object(v8).setPrototype(mammal);
         v8.add("cat", cat);
         assertFalse(v8.executeBooleanScript("'breathe' in cat"));
 

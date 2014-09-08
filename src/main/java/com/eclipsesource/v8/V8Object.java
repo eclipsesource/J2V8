@@ -178,42 +178,49 @@ public class V8Object {
         v8._executeVoidFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle);
     }
 
-    public void add(final String key, final int value) {
+    public V8Object add(final String key, final int value) {
         V8.checkThread();
         v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        return this;
     }
 
-    public void add(final String key, final boolean value) {
+    public V8Object add(final String key, final boolean value) {
         V8.checkThread();
         v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        return this;
     }
 
-    public void add(final String key, final double value) {
+    public V8Object add(final String key, final double value) {
         V8.checkThread();
         v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        return this;
     }
 
-    public void add(final String key, final String value) {
+    public V8Object add(final String key, final String value) {
         V8.checkThread();
         v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        return this;
     }
 
-    public void add(final String key, final V8Object value) {
+    public V8Object add(final String key, final V8Object value) {
         V8.checkThread();
         v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
+        return this;
     }
 
-    public void add(final String key, final V8Array value) {
+    public V8Object add(final String key, final V8Array value) {
         V8.checkThread();
         v8._addArray(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
+        return this;
     }
 
-    public void setPrototype(final V8Object value) {
+    public V8Object setPrototype(final V8Object value) {
         V8.checkThread();
         v8._setPrototype(v8.getV8RuntimeHandle(), objectHandle, value.getHandle());
+        return this;
     }
 
-    public void registerJavaMethod(final Object object, final String methodName, final String jsFunctionName,
+    public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName,
             final Class<?>[] parameterTypes) {
         V8.checkThread();
         try {
@@ -224,6 +231,7 @@ public class V8Object {
         } catch (SecurityException e) {
             throw new IllegalStateException(e);
         }
+        return this;
     }
 
 }

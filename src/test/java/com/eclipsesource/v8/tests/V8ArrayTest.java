@@ -36,10 +36,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayElementFromProperties() {
-        V8Array v8Array = new V8Array(v8);
-        v8Array.add("1");
-        v8Array.add(2);
-        v8Array.add(3.3);
+        V8Array v8Array = new V8Array(v8).add("1").add(2).add(3.3);
 
         String result1 = v8Array.getString("0");
         int result2 = v8Array.getInteger("1");
@@ -54,9 +51,6 @@ public class V8ArrayTest {
     @Test
     public void testSetArrayElementsWithProperties() {
         V8Array v8Array = new V8Array(v8);
-        v8Array.add("1");
-        v8Array.add(2);
-        v8Array.add(3.3);
 
         v8Array.add("0", 1);
         v8Array.add("10", 2);
