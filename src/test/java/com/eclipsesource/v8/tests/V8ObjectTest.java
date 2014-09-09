@@ -11,7 +11,9 @@ import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -483,4 +485,115 @@ public class V8ObjectTest {
         cat.release();
         mammal.release();
     }
+
+    /*** Equals ***/
+    @Test
+    public void testEquals() {
+        v8.executeVoidScript("o = {}");
+        V8Object o1 = v8.executeObjectScript("o");
+        V8Object o2 = v8.executeObjectScript("o");
+
+        assertEquals(o1, o2);
+        assertNotSame(o1, o2);
+        
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testEqualsPassByReference() {
+        v8.executeVoidScript("o = {}");
+        v8.executeVoidScript("function ident(x){return x;}");
+        V8Object o1 = v8.executeObjectScript("o");
+        V8Array parameters = new V8Array(v8).push(o1);
+        V8Object o2 = v8.executeObjectFunction("ident", parameters);
+
+        assertEquals(o1, o2);
+        assertNotSame(o1, o2);
+        
+        o1.release();
+        o2.release();
+        parameters.release();
+    }
+
+    @Test
+    public void testEqualsDifferenceReference() {
+        v8.executeVoidScript("a = {}; b=a;");
+        v8.executeVoidScript("function ident(x){return x;}");
+        V8Object o1 = v8.executeObjectScript("a");
+        V8Object o2 = v8.executeObjectScript("b");
+
+        assertEquals(o1, o2);
+        assertNotSame(o1, o2);
+        
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testEqualHash() {
+        v8.executeVoidScript("o = {}");
+        V8Object o1 = v8.executeObjectScript("o");
+        V8Object o2 = v8.executeObjectScript("o");
+
+        assertEquals(o1.hashCode(), o2.hashCode());
+        
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testNotEquals() {
+        v8.executeVoidScript("a = {}; b = {};");
+        V8Object o1 = v8.executeObjectScript("a");
+        V8Object o2 = v8.executeObjectScript("b");
+
+        assertNotEquals(o1, o2);
+        
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testNotEqualsNull() {
+        v8.executeVoidScript("a = {};");
+        V8Object o1 = v8.executeObjectScript("a");
+
+        assertNotEquals(o1, null);
+        
+        o1.release();
+    }
+
+    @Test
+    public void testNotEqualsNull2() {
+        v8.executeVoidScript("a = {};");
+        V8Object o1 = v8.executeObjectScript("a");
+
+        assertNotEquals(null, o1);
+        
+        o1.release();
+    }
+
+    @Test
+    public void testNotEqualHash() {
+        v8.executeVoidScript("a = {}; b = {};");
+        V8Object o1 = v8.executeObjectScript("a");
+        V8Object o2 = v8.executeObjectScript("b");
+
+        assertNotEquals(o1.hashCode(), o2.hashCode());
+       
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testHashStable() {
+        V8Object a = v8.executeObjectScript("a = []; a");
+        int hash1 = a.hashCode();
+        int hash2 = a.add("1", true).add("2", false).add("3", 123).hashCode();
+
+        assertEquals(hash1, hash2);
+        a.release();
+    }
+
 }

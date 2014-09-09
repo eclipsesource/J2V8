@@ -387,6 +387,14 @@ public class V8 extends V8Object {
     protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name,
             final int parametersHandle);
 
+    protected native boolean _equals(int v8RuntimeHandle, int objectHandle, int that);
+
+    protected native boolean _strictEquals(int v8RuntimeHandle, int objectHandle, int that);
+
+    protected native boolean _sameValue(int v8RuntimeHandle, int objectHandle, int that);
+
+    protected native int _identityHash(int v8RuntimeHandle, int objectHandle);
+
     protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final int value);
 
     protected native void _addObject(int v8RuntimeHandle, int objectHandle, final String key, final int value);

@@ -48,6 +48,19 @@ public class V8Object {
         v8.releaseObjRef();
     }
 
+    @Override
+    public boolean equals(final Object that) {
+        if ((that instanceof V8Object)) {
+            return v8._equals(v8.getV8RuntimeHandle(), getHandle(), ((V8Object) that).getHandle());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return v8._identityHash(v8.getV8RuntimeHandle(), getHandle());
+    }
+
     public boolean isReleased() {
         return released;
     }

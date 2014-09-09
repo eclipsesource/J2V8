@@ -11,6 +11,7 @@ import com.eclipsesource.v8.V8ResultUndefined;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class V8ArrayTest {
@@ -603,4 +604,71 @@ public class V8ArrayTest {
         }
     }
 
+    /*** Equals ***/
+    @Test
+    public void testEqualsArray() {
+        v8.executeVoidScript("a = [];");
+        V8Array o1 = v8.executeArrayScript("a");
+        V8Array o2 = v8.executeArrayScript("a");
+
+        assertEquals(o1, o2);
+
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testEqualsArrayAndObject() {
+        v8.executeVoidScript("a = [];");
+        V8Array o1 = v8.executeArrayScript("a");
+        V8Object o2 = v8.executeObjectScript("a");
+
+        assertEquals(o1, o2);
+
+        o1.release();
+        o2.release();
+    }
+
+    @Test
+    public void testNotEqualsArray() {
+        V8Array a = v8.executeArrayScript("a = []; a");
+        V8Array b = v8.executeArrayScript("b = []; b");
+
+        assertNotEquals(a, b);
+
+        a.release();
+        b.release();
+    }
+
+    @Test
+    public void testHashEqualsArray() {
+        V8Array a = v8.executeArrayScript("a = []; a");
+        V8Array b = v8.executeArrayScript("a");
+
+        assertEquals(a.hashCode(), b.hashCode());
+
+        a.release();
+        b.release();
+    }
+
+    @Test
+    public void testNotEqualsNull() {
+        V8Array a = v8.executeArrayScript("a = []; a");
+
+        assertNotEquals(a, null);
+        assertNotEquals(null, a);
+
+        a.release();
+    }
+
+    @Test
+    public void testHashStable() {
+        V8Array a = v8.executeArrayScript("a = []; a");
+        int hash1 = a.hashCode();
+        int hash2 = a.push(true).push(false).push(123).hashCode();
+
+        assertEquals(hash1, hash2);
+
+        a.release();
+    }
 }

@@ -239,6 +239,38 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _equals
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _strictEquals
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1strictEquals
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _sameValue
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1sameValue
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _identityHash
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1identityHash
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _add
  * Signature: (IILjava/lang/String;I)V
  */
