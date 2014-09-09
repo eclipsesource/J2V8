@@ -29,6 +29,12 @@ void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 );
 
+#define SCRIPT_ORIGIN_PTR(result, name, number) result = NULL;\
+		if ( name != NULL ) { \
+			ScriptOrigin scriptOrigin = createScriptOrigin(env, isolate, name, number); \
+			scriptOriginPtr = &scriptOrigin; \
+		}
+
 void debugHandler() {
 	JNIEnv * g_env;
 	// double check it's all ok
@@ -263,8 +269,17 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 	return keys;
 }
 
+ScriptOrigin createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring jscriptName, jint jlineNumber = 0) {
+	const char* cscriptName = env -> GetStringUTFChars(jscriptName, NULL);
+	Local<String> scriptName = String::NewFromUtf8(isolate, cscriptName);
+	Local<Integer> lineNumber = v8::Int32::New(isolate, jlineNumber);
+	env->ReleaseStringUTFChars(jscriptName, cscriptName);
+	ScriptOrigin scriptOrigin(scriptName, lineNumber);
+	return scriptOrigin;
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
@@ -276,8 +291,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;
@@ -287,7 +304,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -299,8 +316,10 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -315,7 +334,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -327,8 +346,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -343,7 +364,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return NULL;
@@ -356,8 +377,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 	env->ReleaseStringUTFChars(jjstring, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -373,7 +396,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -385,8 +408,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -401,7 +426,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
@@ -413,8 +438,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;
@@ -431,7 +458,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName, jint jlineNumber) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
@@ -443,8 +470,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
+	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
+
 	TryCatch tryCatch;
-	Local<Script> script = Script::Compile(source);
+	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;

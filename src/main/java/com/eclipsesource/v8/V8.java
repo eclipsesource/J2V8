@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class V8 extends V8Object {
 
-    private static int v8InstanceCounter;
+    private static int      v8InstanceCounter;
     private static Thread   thread                 = null;
     private static List<V8> runtimes               = new ArrayList<>();
     private static Runnable debugHandler           = null;
@@ -95,32 +95,51 @@ public class V8 extends V8Object {
         }
     }
 
-
-    public int executeIntScript(final String script) throws V8RuntimeException {
-        checkThread();
-        return _executeIntScript(v8RuntimeHandle, script);
+    public int executeIntScript(final String script) {
+        return executeIntScript(script, null, 0);
     }
 
-    public double executeDoubleScript(final String script) throws V8RuntimeException {
+    public int executeIntScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        return _executeDoubleScript(v8RuntimeHandle, script);
+        return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
-    public String executeStringScript(final String script) throws V8RuntimeException {
-        checkThread();
-        return _executeStringScript(v8RuntimeHandle, script);
+    public double executeDoubleScript(final String script) {
+        return executeDoubleScript(script, null, 0);
     }
 
-    public boolean executeBooleanScript(final String script) throws V8RuntimeException {
+    public double executeDoubleScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        return _executeBooleanScript(v8RuntimeHandle, script);
+        return _executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
-    public V8Array executeArrayScript(final String script) throws V8RuntimeException {
+    public String executeStringScript(final String script) {
+        return executeStringScript(script, null, 0);
+    }
+
+    public String executeStringScript(final String script, final String scriptName, final int lineNumber) {
+        checkThread();
+        return _executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
+    }
+
+    public boolean executeBooleanScript(final String script) {
+        return executeBooleanScript(script, null, 0);
+    }
+
+    public boolean executeBooleanScript(final String script, final String scriptName, final int lineNumber) {
+        checkThread();
+        return _executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
+    }
+
+    public V8Array executeArrayScript(final String script) {
+        return this.executeArrayScript(script, null, 0);
+    }
+
+    public V8Array executeArrayScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         V8Array result = new V8Array(this);
         try {
-            _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle());
+            _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();
             throw e;
@@ -128,11 +147,15 @@ public class V8 extends V8Object {
         return result;
     }
 
-    public V8Object executeObjectScript(final String script) throws V8RuntimeException {
+    public V8Object executeObjectScript(final String script) {
+        return this.executeObjectScript(script, null, 0);
+    }
+
+    public V8Object executeObjectScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         V8Object result = new V8Object(this);
         try {
-            _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle());
+            _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();
             throw e;
@@ -140,9 +163,13 @@ public class V8 extends V8Object {
         return result;
     }
 
-    public void executeVoidScript(final String script) throws V8RuntimeException {
+    public void executeVoidScript(final String script) {
+        this.executeVoidScript(script, null, 0);
+    }
+
+    public void executeVoidScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        _executeVoidScript(v8RuntimeHandle, script);
+        _executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     static void checkThread() {
@@ -336,20 +363,26 @@ public class V8 extends V8Object {
 
     protected native void _createIsolate(int v8RuntimeHandle);
 
-    protected native int _executeIntScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName,
+            final int lineNumber);
 
-    protected native double _executeDoubleScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName,
+            final int lineNumber);
 
-    protected native String _executeStringScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native String _executeStringScript(int v8RuntimeHandle, final String script, final String scriptName,
+            final int lineNumber);
 
-    protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName,
+            final int lineNumber);
 
-    protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle)
-            throws V8RuntimeException;
+    protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle,
+            final String scriptName, final int lineNumber);
 
-    protected native void _executeVoidScript(int v8RuntimeHandle, final String script) throws V8RuntimeException;
+    protected native void _executeVoidScript(int v8RuntimeHandle, final String script, final String scriptName,
+            final int lineNumber);
 
-    protected native void _executeArrayScript(int v8RuntimeHandle, String script, int resultHandle);
+    protected native void _executeArrayScript(int v8RuntimeHandle, String script, int resultHandle,
+            final String scriptName, final int lineNumber);
 
     protected native void _release(int v8RuntimeHandle, int objectHandle);
 
@@ -367,7 +400,8 @@ public class V8 extends V8Object {
 
     protected native void _getArray(int v8RuntimeHandle, int objectHandle, String key, int resultHandle);
 
-    protected native void _getObject(int v8RuntimeHandle, final int objectHandle, final String key,  final int resultObjectHandle);
+    protected native void _getObject(int v8RuntimeHandle, final int objectHandle, final String key,
+            final int resultObjectHandle);
 
     protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 

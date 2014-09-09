@@ -119,6 +119,15 @@ public class V8Test {
         v8.executeVoidScript("'a");
     }
 
+    @Test
+    public void testVoidScriptWithName() {
+        v8.executeVoidScript("function foo() {return 1+1}", "name", 1);
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(2, result);
+    }
+
     /*** Int Script ***/
     @Test
     public void testSimpleIntScript() {
@@ -140,6 +149,13 @@ public class V8Test {
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionForWrongReturnTypeIntScript() {
         v8.executeIntScript("'test'");
+    }
+
+    @Test
+    public void testIntScriptWithName() {
+        int result = v8.executeIntScript("1+2;", "name", 2);
+
+        assertEquals(3, result);
     }
 
     /*** Double Script ***/
@@ -165,10 +181,18 @@ public class V8Test {
         v8.executeDoubleScript("'test'");
     }
 
+    @Test
     public void testDoubleScriptHandlesInts() {
         int result = (int) v8.executeDoubleScript("1");
 
         assertEquals(1, result);
+    }
+
+    @Test
+    public void testDoubleScriptWithName() {
+        double result = v8.executeDoubleScript("3.14159;", "name", 3);
+
+        assertEquals(3.14159, result, 0.00001);
     }
 
     /*** Boolean Script ***/
@@ -194,6 +218,13 @@ public class V8Test {
         v8.executeBooleanScript("'test'");
     }
 
+    @Test
+    public void testBooleanScriptWithName() {
+        boolean result = v8.executeBooleanScript("true", "name", 4);
+
+        assertTrue(result);
+    }
+
     /*** String Script ***/
     @Test
     public void testSimpleStringScript() {
@@ -215,6 +246,13 @@ public class V8Test {
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionForWrongReturnTypeStringScript() {
         v8.executeStringScript("42");
+    }
+
+    @Test
+    public void testStringScriptWithName() {
+        String result = v8.executeStringScript("'hello, world'", "name", 5);
+
+        assertEquals("hello, world", result);
     }
 
     /*** Object Script ***/
@@ -252,6 +290,14 @@ public class V8Test {
         name.release();
     }
 
+    @Test
+    public void testObjectScriptWithName() {
+        V8Object result = v8.executeObjectScript("foo = {hello:'world'}; foo;", "name", 6);
+
+        assertEquals("world", result.getString("hello"));
+        result.release();
+    }
+
     /*** Array Script ***/
     @Test
     public void testSimpleArrayScript() {
@@ -274,6 +320,14 @@ public class V8Test {
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionForWrongReturnTypeArrayScript() {
         v8.executeArrayScript("42");
+    }
+
+    @Test
+    public void testArrayScriptWithName() {
+        V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;", "name", 7);
+
+        assertNotNull(result);
+        result.release();
     }
 
     /*** Int Function ***/

@@ -56,58 +56,58 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeIntScript
- * Signature: (ILjava/lang/String;)I
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeDoubleScript
- * Signature: (ILjava/lang/String;)D
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)D
  */
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeStringScript
- * Signature: (ILjava/lang/String;)Ljava/lang/String;
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeBooleanScript
- * Signature: (ILjava/lang/String;)Z
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeObjectScript
- * Signature: (ILjava/lang/String;I)V
+ * Signature: (ILjava/lang/String;ILjava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
-  (JNIEnv *, jobject, jint, jstring, jint);
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeVoidScript
- * Signature: (ILjava/lang/String;)V
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeArrayScript
- * Signature: (ILjava/lang/String;I)V
+ * Signature: (ILjava/lang/String;ILjava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
-  (JNIEnv *, jobject, jint, jstring, jint);
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
