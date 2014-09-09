@@ -439,6 +439,23 @@ public class V8ObjectTest {
         }
     }
 
+    @Test
+    public void testUnaccessibleMethod() {
+        final boolean[] called = new boolean[] { false };
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                called[0] = true;
+            }
+        };
+        v8.registerJavaMethod(r, "run", "run", new Class<?>[0]);
+
+        v8.executeVoidFunction("run", null);
+
+        assertTrue(called[0]);
+    }
+
     /*** Manipulate Prototypes ***/
     @Test
     public void testSetPrototypeOfObject() {
@@ -495,7 +512,7 @@ public class V8ObjectTest {
 
         assertEquals(o1, o2);
         assertNotSame(o1, o2);
-        
+
         o1.release();
         o2.release();
     }
@@ -510,7 +527,7 @@ public class V8ObjectTest {
 
         assertEquals(o1, o2);
         assertNotSame(o1, o2);
-        
+
         o1.release();
         o2.release();
         parameters.release();
@@ -525,7 +542,7 @@ public class V8ObjectTest {
 
         assertEquals(o1, o2);
         assertNotSame(o1, o2);
-        
+
         o1.release();
         o2.release();
     }
@@ -537,7 +554,7 @@ public class V8ObjectTest {
         V8Object o2 = v8.executeObjectScript("o");
 
         assertEquals(o1.hashCode(), o2.hashCode());
-        
+
         o1.release();
         o2.release();
     }
@@ -549,7 +566,7 @@ public class V8ObjectTest {
         V8Object o2 = v8.executeObjectScript("b");
 
         assertNotEquals(o1, o2);
-        
+
         o1.release();
         o2.release();
     }
@@ -560,7 +577,7 @@ public class V8ObjectTest {
         V8Object o1 = v8.executeObjectScript("a");
 
         assertNotEquals(o1, null);
-        
+
         o1.release();
     }
 
@@ -570,7 +587,7 @@ public class V8ObjectTest {
         V8Object o1 = v8.executeObjectScript("a");
 
         assertNotEquals(null, o1);
-        
+
         o1.release();
     }
 
@@ -581,7 +598,7 @@ public class V8ObjectTest {
         V8Object o2 = v8.executeObjectScript("b");
 
         assertNotEquals(o1.hashCode(), o2.hashCode());
-       
+
         o1.release();
         o2.release();
     }

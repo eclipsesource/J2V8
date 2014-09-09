@@ -238,6 +238,7 @@ public class V8Object {
         V8.checkThread();
         try {
             Method method = object.getClass().getMethod(methodName, parameterTypes);
+            method.setAccessible(true);
             v8.registerCallback(object, method, 0, getHandle(), jsFunctionName);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
