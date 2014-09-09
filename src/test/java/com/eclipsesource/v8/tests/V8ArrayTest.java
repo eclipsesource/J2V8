@@ -58,7 +58,7 @@ public class V8ArrayTest {
         v8Array.add("19", 3);
         v8Array.add("bob", 4);
 
-        assertEquals(20, v8Array.getSize());
+        assertEquals(20, v8Array.length());
         assertEquals(1, v8Array.getInteger(0));
         assertEquals(2, v8Array.getInteger(10));
         assertEquals(3, v8Array.getInteger(19));
@@ -78,7 +78,7 @@ public class V8ArrayTest {
     public void testArraySize() {
         V8Array array = v8.executeArrayScript("foo = [1,2,3]; foo");
 
-        assertEquals(3, array.getSize());
+        assertEquals(3, array.length());
         array.release();
     }
 
@@ -86,7 +86,7 @@ public class V8ArrayTest {
     public void testArraySizeZero() {
         V8Array array = v8.executeArrayScript("foo = []; foo");
 
-        assertEquals(0, array.getSize());
+        assertEquals(0, array.length());
         array.release();
     }
 
@@ -135,7 +135,7 @@ public class V8ArrayTest {
     public void testLargeArrayGetInt() {
         V8Array array = v8.executeArrayScript("foo = []; for ( var i = 0; i < 10000; i++) {foo[i] = i;}; foo");
 
-        assertEquals(10000, array.getSize());
+        assertEquals(10000, array.length());
         for (int i = 0; i < 10000; i++) {
             assertEquals(i, array.getInteger(i));
         }
@@ -317,9 +317,9 @@ public class V8ArrayTest {
         V8Array array1 = array.getArray(0);
         V8Array array2 = array.getArray(1);
         V8Array array3 = array.getArray(2);
-        assertEquals(3, array1.getSize());
-        assertEquals(2, array2.getSize());
-        assertEquals(1, array3.getSize());
+        assertEquals(3, array1.length());
+        assertEquals(2, array2.length());
+        assertEquals(1, array3.length());
 
         array.release();
         array1.release();
@@ -354,7 +354,7 @@ public class V8ArrayTest {
 
         v8.executeVoidScript("foo[0] = [1,2,3]");
         V8Array array1 = array.getArray(0);
-        assertEquals(3, array1.getSize());
+        assertEquals(3, array1.length());
         array.release();
         array1.release();
     }
@@ -364,7 +364,7 @@ public class V8ArrayTest {
     public void testMixedArray() {
         V8Array array = v8.executeArrayScript("foo = ['a', 3, 3.1, true]; foo");
 
-        assertEquals(4, array.getSize());
+        assertEquals(4, array.length());
         assertEquals("a", array.getString(0));
         assertEquals(3, array.getInteger(1));
         assertEquals(3.1, array.getDouble(2), 0.00001);
@@ -381,7 +381,7 @@ public class V8ArrayTest {
         array.push(8);
         array.push(9);
 
-        assertEquals(3, array.getSize());
+        assertEquals(3, array.length());
         assertEquals(7, array.getInteger(0));
         assertEquals(8, array.getInteger(1));
         assertEquals(9, array.getInteger(2));
@@ -397,7 +397,7 @@ public class V8ArrayTest {
         array.push("third");
         array.push("forth");
 
-        assertEquals(4, array.getSize());
+        assertEquals(4, array.length());
         assertEquals("first", array.getString(0));
         assertEquals("second", array.getString(1));
         assertEquals("third", array.getString(2));
@@ -414,7 +414,7 @@ public class V8ArrayTest {
         array.push(3.3);
         array.push(4.9);
 
-        assertEquals(4, array.getSize());
+        assertEquals(4, array.length());
         assertEquals(1.1, array.getDouble(0), 0.000001);
         assertEquals(2.2, array.getDouble(1), 0.000001);
         assertEquals(3.3, array.getDouble(2), 0.000001);
@@ -429,7 +429,7 @@ public class V8ArrayTest {
         array.push(true);
         array.push(false);
 
-        assertEquals(2, array.getSize());
+        assertEquals(2, array.length());
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
         array.release();
@@ -445,7 +445,7 @@ public class V8ArrayTest {
         array.push("string");
         array.push(false);
 
-        assertEquals(5, array.getSize());
+        assertEquals(5, array.length());
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
         assertEquals(1, array.getInteger(2));
@@ -460,7 +460,7 @@ public class V8ArrayTest {
 
         array.push(false);
 
-        assertEquals(6, array.getSize());
+        assertEquals(6, array.length());
         assertFalse(array.getBoolean(5));
         array.release();
     }

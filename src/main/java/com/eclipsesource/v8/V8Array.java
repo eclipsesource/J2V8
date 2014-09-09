@@ -12,7 +12,7 @@ public class V8Array extends V8Object {
         v8._initNewV8Array(runtimeHandle, objectHandle);
     }
 
-    public int getSize() {
+    public int length() {
         V8.checkThread();
         return v8._arrayGetSize(v8.getV8RuntimeHandle(), getHandle());
     }

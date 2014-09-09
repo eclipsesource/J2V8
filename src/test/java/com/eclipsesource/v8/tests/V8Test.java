@@ -721,7 +721,7 @@ public class V8Test {
 
         V8Array array = v8.getArray("foo");
 
-        assertEquals(3, array.getSize());
+        assertEquals(3, array.length());
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
         assertEquals(3, array.getInteger(2));
@@ -735,8 +735,8 @@ public class V8Test {
         V8Array fooArray = v8.getArray("foo");
         V8Array barArray = v8.getArray("bar");
 
-        assertEquals(3, fooArray.getSize());
-        assertEquals(2, barArray.getSize());
+        assertEquals(3, fooArray.length());
+        assertEquals(2, barArray.length());
 
         fooArray.release();
         barArray.release();
@@ -750,8 +750,8 @@ public class V8Test {
             V8Array fooArray = v8.getArray("foo");
             V8Array nested = fooArray.getArray(0);
 
-            assertEquals(1, fooArray.getSize());
-            assertEquals(2, nested.getSize());
+            assertEquals(1, fooArray.length());
+            assertEquals(2, nested.length());
 
             fooArray.release();
             nested.release();

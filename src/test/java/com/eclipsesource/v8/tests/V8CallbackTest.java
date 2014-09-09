@@ -483,7 +483,7 @@ public class V8CallbackTest {
         V8Array result = v8Object.executeArrayFunction("foo", null);
 
         verify(callback).v8ArrayMethodNoParameters();
-        assertEquals(3, result.getSize());
+        assertEquals(3, result.length());
         assertEquals("a", result.getString(0));
         assertEquals("b", result.getString(1));
         assertEquals("c", result.getString(2));
@@ -501,7 +501,7 @@ public class V8CallbackTest {
         V8Array result = v8Array.executeArrayFunction("foo", null);
 
         verify(callback).v8ArrayMethodNoParameters();
-        assertEquals(3, result.getSize());
+        assertEquals(3, result.length());
         assertEquals("a", result.getString(0));
         assertEquals("b", result.getString(1));
         assertEquals("c", result.getString(2));
@@ -643,7 +643,7 @@ public class V8CallbackTest {
             @Override
             public Integer answer(final InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                int arrayLength = ((V8Array) args[0]).getSize();
+                int arrayLength = ((V8Array) args[0]).length();
                 int result = 0;
                 for (int i = 0; i < arrayLength; i++) {
                     result += ((V8Array) args[0]).getInteger(i);
@@ -665,7 +665,7 @@ public class V8CallbackTest {
             @Override
             public Boolean answer(final InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                int arrayLength = ((V8Array) args[0]).getSize();
+                int arrayLength = ((V8Array) args[0]).length();
                 int result = 0;
                 for (int i = 0; i < arrayLength; i++) {
                     result += ((V8Array) args[0]).getInteger(i);
@@ -687,7 +687,7 @@ public class V8CallbackTest {
             @Override
             public String answer(final InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                int arrayLength = ((V8Array) args[0]).getSize();
+                int arrayLength = ((V8Array) args[0]).length();
                 StringBuilder result = new StringBuilder();
                 for (int i = 0; i < arrayLength; i++) {
                     result.append(((V8Array) args[0]).getString(i));
@@ -721,7 +721,7 @@ public class V8CallbackTest {
 
         V8Array result = v8.executeArrayScript("foo('hello world how are you');");
 
-        assertEquals(5, result.getSize());
+        assertEquals(5, result.length());
         assertEquals("hello", result.getString(0));
         assertEquals("world", result.getString(1));
         assertEquals("how", result.getString(2));

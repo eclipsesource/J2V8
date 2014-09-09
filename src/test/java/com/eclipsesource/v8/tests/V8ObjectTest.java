@@ -109,7 +109,7 @@ public class V8ObjectTest {
         V8Object object = v8.getObject("foo");
         V8Array array = object.getArray("array");
 
-        assertEquals(3, array.getSize());
+        assertEquals(3, array.length());
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
         assertEquals(3, array.getInteger(2));

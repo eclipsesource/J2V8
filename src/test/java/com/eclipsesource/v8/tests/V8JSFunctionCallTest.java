@@ -190,7 +190,7 @@ public class V8JSFunctionCallTest {
 
         V8Array result = v8.executeArrayFunction("foo", parameters);
 
-        assertEquals(0, result.getSize());
+        assertEquals(0, result.length());
         parameters.release();
         result.release();
     }
@@ -260,7 +260,7 @@ public class V8JSFunctionCallTest {
 
         V8Array result = v8.executeArrayFunction("foo", null);
 
-        assertEquals(2, result.getSize());
+        assertEquals(2, result.length());
         result.release();
     }
 
