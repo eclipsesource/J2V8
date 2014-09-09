@@ -296,9 +296,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;
