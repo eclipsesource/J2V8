@@ -279,7 +279,7 @@ ScriptOrigin createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring jscriptN
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber = 0) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
@@ -304,7 +304,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -334,7 +334,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -364,7 +364,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return NULL;
@@ -396,7 +396,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
-  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return 0;
@@ -426,7 +426,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
@@ -458,7 +458,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName, jint jlineNumber) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jint resultHandle, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
 	if ( isolate == NULL ) {
 		return;
