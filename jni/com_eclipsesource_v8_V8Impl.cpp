@@ -29,10 +29,14 @@ void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 );
 
+#define DELETE_SCRIPT_ORIGIN_PTR(ptr)\
+		if ( ptr != NULL ) { \
+			delete(ptr); \
+		}
+
 #define SCRIPT_ORIGIN_PTR(result, name, number) result = NULL;\
 		if ( name != NULL ) { \
-			ScriptOrigin scriptOrigin = createScriptOrigin(env, isolate, name, number); \
-			scriptOriginPtr = &scriptOrigin; \
+			result = createScriptOrigin(env, isolate, name, number); \
 		}
 
 void debugHandler() {
@@ -269,13 +273,13 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 	return keys;
 }
 
-ScriptOrigin createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring jscriptName, jint jlineNumber = 0) {
+ScriptOrigin* createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring jscriptName, jint jlineNumber = 0) {
 	const char* cscriptName = env -> GetStringUTFChars(jscriptName, NULL);
 	Local<String> scriptName = String::NewFromUtf8(isolate, cscriptName);
-	Local<Integer> lineNumber = v8::Int32::New(isolate, jlineNumber);
+	Local<Integer> lineNumber = v8::Integer::New(isolate, jlineNumber);
+	ScriptOrigin* result =  new v8::ScriptOrigin(scriptName, lineNumber);
 	env->ReleaseStringUTFChars(jscriptName, cscriptName);
-	ScriptOrigin scriptOrigin(scriptName, lineNumber);
-	return scriptOrigin;
+	return result;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
@@ -317,9 +321,10 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -347,9 +352,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -378,9 +384,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 	env->ReleaseStringUTFChars(jjstring, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -409,9 +416,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return 0;
@@ -439,9 +447,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;
@@ -471,9 +480,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	Local<String> source = String::NewFromUtf8(isolate, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
-
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
+	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+
 	if ( tryCatch.HasCaught() ) {
 		throwExecutionException(env, "");
 		return;
