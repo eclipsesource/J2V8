@@ -408,7 +408,7 @@ public class V8Test {
 
         V8Array result = v8.executeArrayFunction("foo", null);
 
-        assertEquals(3, result.getSize());
+        assertEquals(3, result.length());
         result.release();
     }
 
