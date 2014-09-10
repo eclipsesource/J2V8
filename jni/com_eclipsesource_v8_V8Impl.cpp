@@ -741,6 +741,21 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+
+	Local<String> v8Key = String::NewFromUtf8(isolate, env -> GetStringUTFChars(key, NULL));
+	global->Set(v8Key, v8::Undefined(isolate));
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
   (JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint value) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -1047,6 +1062,21 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetArray
 	}
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 }
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+	int index = Array::Cast(*array)->Length();
+	array->Set(index, v8::Undefined(isolate));
+}
+
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint value) {

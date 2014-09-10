@@ -102,4 +102,10 @@ public class V8Array extends V8Object {
         return this;
     }
 
+    public V8Array pushUndefined() {
+        V8.checkThread();
+        v8._addArrayUndefinedItem(v8.getV8RuntimeHandle(), getHandle());
+        return this;
+    }
+
 }

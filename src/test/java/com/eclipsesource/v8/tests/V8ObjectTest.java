@@ -271,6 +271,16 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    /*** Add Undefined ***/
+    @Test
+    public void testAddUndefined() {
+        V8Object v8Object = new V8Object(v8).addUndefined("foo");
+
+        assertEquals("foo", v8Object.getKeys()[0]);
+        assertEquals(V8Object.UNDEFINED, v8Object.getType("foo"));
+        v8Object.release();
+    }
+
     /*** Add Object ***/
     @Test
     public void testAddObject() {

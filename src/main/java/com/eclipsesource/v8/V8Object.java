@@ -228,6 +228,12 @@ public class V8Object {
         return this;
     }
 
+    public V8Object addUndefined(final String key) {
+        V8.checkThread();
+        v8._addUndefined(v8.getV8RuntimeHandle(), objectHandle, key);
+        return this;
+    }
+
     public V8Object setPrototype(final V8Object value) {
         V8.checkThread();
         v8._setPrototype(v8.getV8RuntimeHandle(), objectHandle, value.getHandle());

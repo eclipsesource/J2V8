@@ -444,13 +444,16 @@ public class V8ArrayTest {
         array.push(1);
         array.push("string");
         array.push(false);
+        array.pushUndefined();
 
-        assertEquals(5, array.length());
+        assertEquals(6, array.length());
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
         assertEquals(1, array.getInteger(2));
         assertEquals("string", array.getString(3));
         assertFalse(array.getBoolean(4));
+        assertEquals(V8Object.UNDEFINED, array.getType(5));
+
         array.release();
     }
 
@@ -463,6 +466,15 @@ public class V8ArrayTest {
         assertEquals(6, array.length());
         assertFalse(array.getBoolean(5));
         array.release();
+    }
+
+    @Test
+    public void testAddUndefined() {
+        V8Array v8Array = new V8Array(v8).pushUndefined();
+
+        assertEquals(1, v8Array.length());
+        assertEquals(V8Object.UNDEFINED, v8Array.getType(0));
+        v8Array.release();
     }
 
     @Test

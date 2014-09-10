@@ -441,6 +441,8 @@ public class V8 extends V8Object {
 
     protected native void _addArray(int v8RuntimeHandle, int objectHandle, final String key, final int value);
 
+    protected native void _addUndefined(int v8RuntimeHandle, int objectHandle, final String key);
+
     protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName,
             final int methodID, final int methodType);
 
@@ -474,6 +476,8 @@ public class V8 extends V8Object {
     protected native void _addArrayArrayItem(int v8RuntimeHandle, int arrayHandle, int value);
 
     protected native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    protected native void _addArrayUndefinedItem(int v8RuntimeHandle, int arrayHandle);
 
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final String key);
 
