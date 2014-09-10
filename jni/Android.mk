@@ -14,24 +14,24 @@ LOCAL_MODULE	:= v8_nosnapshot
 LOCAL_SRC_FILES :=  /data/jenkins/v8_3_26/out/android_arm.release/obj.target/tools/gyp/libv8_nosnapshot.arm.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE	:= libicuuc
+#include $(CLEAR_VARS)
+#LOCAL_MODULE	:= libicuuc
 #LOCAL_SRC_FILES :=  ../support/android/libs/libicuuc.a
 #LOCAL_SRC_FILES :=  ../libicuuc.a
-LOCAL_SRC_FILES :=  /data/jenkins/v8_3_26/out/android_arm.release/obj.target/tools/gyp/libicuuc.a
-include $(PREBUILT_STATIC_LIBRARY)
+#LOCAL_SRC_FILES :=  /data/jenkins/v8_3_26/out/android_arm.release/obj.target/tools/gyp/libicuuc.a
+#include $(PREBUILT_STATIC_LIBRARY)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE	:= libicui18n
+#include $(CLEAR_VARS)
+#LOCAL_MODULE	:= libicui18n
 #LOCAL_SRC_FILES :=  ../support/android/libs/libicui18n.a
-LOCAL_SRC_FILES :=  ../libicui18n.a
-include $(PREBUILT_STATIC_LIBRARY)
+#LOCAL_SRC_FILES :=  ../libicui18n.a
+#include $(PREBUILT_STATIC_LIBRARY)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE	:= libicudata
+#include $(CLEAR_VARS)
+#LOCAL_MODULE	:= libicudata
 #LOCAL_SRC_FILES :=  ../support/android/libs/libicudata.a
-LOCAL_SRC_FILES :=  ../libicudata.a
-include $(PREBUILT_STATIC_LIBRARY)
+#LOCAL_SRC_FILES :=  ../libicudata.a
+#include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := j2v8
