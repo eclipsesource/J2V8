@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 public class V8Object {
 
+    public static final int UNDEFINED               = 0;
     public static final int VOID                    = 0;
     public static final int INTEGER                 = 1;
     public static final int DOUBLE                  = 2;

@@ -1158,8 +1158,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_Stri
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	env->ReleaseStringUTFChars(key, utf_string);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
-		throwResultUndefinedException(env, "");
-		return 0;
+		return com_eclipsesource_v8_V8_UNDEFINED;
 	} else if ( v8Value->IsInt32() ) {
 		return com_eclipsesource_v8_V8_INTEGER;
 	} else if ( v8Value->IsNumber() ) {
@@ -1190,8 +1189,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
 
 	Handle<Value> v8Value = array->Get(index);
 	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
-		throwResultUndefinedException(env, "");
-		return 0;
+		return com_eclipsesource_v8_V8_UNDEFINED;
 	} else if ( v8Value->IsInt32() ) {
 		return com_eclipsesource_v8_V8_INTEGER;
 	} else if ( v8Value->IsNumber() ) {

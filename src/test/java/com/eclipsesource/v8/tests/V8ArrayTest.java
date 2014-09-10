@@ -593,15 +593,14 @@ public class V8ArrayTest {
         value.release();
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testGetTypeIndexOutOfBounds() {
         V8Array v8Array = new V8Array(v8);
 
-        try {
-            v8Array.getType(0);
-        } finally {
-            v8Array.release();
-        }
+        int result = v8Array.getType(0);
+
+        assertEquals(V8Object.UNDEFINED, result);
+        v8Array.release();
     }
 
     /*** Equals ***/

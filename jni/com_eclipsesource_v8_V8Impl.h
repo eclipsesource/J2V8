@@ -7,6 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_eclipsesource_v8_V8_UNDEFINED
+#define com_eclipsesource_v8_V8_UNDEFINED 0L
 #undef com_eclipsesource_v8_V8_VOID
 #define com_eclipsesource_v8_V8_VOID 0L
 #undef com_eclipsesource_v8_V8_INTEGER

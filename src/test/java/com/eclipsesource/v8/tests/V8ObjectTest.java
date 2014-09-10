@@ -428,15 +428,14 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testGetTypeKeyDoesNotExist() {
         V8Object v8Object = new V8Object(v8);
 
-        try {
-            v8Object.getType("key");
-        } finally {
-            v8Object.release();
-        }
+        int result = v8Object.getType("key");
+
+        assertEquals(V8Object.UNDEFINED, result);
+        v8Object.release();
     }
 
     @Test
