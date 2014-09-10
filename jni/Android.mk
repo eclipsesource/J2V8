@@ -35,8 +35,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := j2v8
-LOCAL_SRC_FILES := com_eclipsesource_v8_V8Impl.cpp $(wildcard $(LOCAL_PATH)/../support/v8/src/*.cpp)
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../support/include
+LOCAL_SRC_FILES := com_eclipsesource_v8_V8Impl.cpp 
+LOCAL_C_INCLUDES := /data/jenkins/v8_3_26/include/
 LOCAL_CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive
 #LOCAL_STATIC_LIBRARIES := v8_base v8_nosnapshot libicui18n libicuuc libicudata
 LOCAL_STATIC_LIBRARIES := v8_base v8_nosnapshot
