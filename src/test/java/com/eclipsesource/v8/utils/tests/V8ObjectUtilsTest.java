@@ -223,11 +223,39 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testCreateV8ObjectFromLongMap() {
+        Map<String, Long> map = new HashMap<>();
+        map.put("a", 1L);
+        map.put("b", 3L);
+
+        int size = registerAndRelease("result", map);
+
+        assertEquals(2, size);
+        assertEquals(1, v8.executeIntScript("result.a"));
+        assertEquals(3, v8.executeIntScript("result['b']"));
+    }
+
+    @Test
     public void testCreateV8ObjectFromDoubleMap() {
         Map<String, Double> map = new HashMap<>();
         map.put("a", 1.1);
         map.put("b", 3.14159);
         map.put("c", 4.999);
+
+        int size = registerAndRelease("result", map);
+
+        assertEquals(3, size);
+        assertEquals(1.1, v8.executeDoubleScript("result.a"), 0.000001);
+        assertEquals(3.14159, v8.executeDoubleScript("result['b']"), 0.000001);
+        assertEquals(4.999, v8.executeDoubleScript("result['c']"), 0.000001);
+    }
+
+    @Test
+    public void testCreateV8ObjectFromFloatMap() {
+        Map<String, Float> map = new HashMap<>();
+        map.put("a", 1.1f);
+        map.put("b", 3.14159f);
+        map.put("c", 4.999f);
 
         int size = registerAndRelease("result", map);
 
@@ -308,6 +336,28 @@ public class V8ObjectUtilsTest {
         assertEquals(21, v8.executeIntScript("result[7]"));
         assertEquals(34, v8.executeIntScript("result[8]"));
         assertEquals(55, v8.executeIntScript("result[9]"));
+    }
+
+    @Test
+    public void testCreateV8ArrayFromLongList() {
+        List<Long> list = new ArrayList<>();
+        list.add((long) 1);
+
+        int size = registerAndRelease("result", list);
+
+        assertEquals(1, size);
+        assertEquals(1, v8.executeIntScript("result[0]"));
+    }
+
+    @Test
+    public void testCreateV8ArrayFromFloatList() {
+        List<Float> list = new ArrayList<>();
+        list.add(1.1f);
+
+        int size = registerAndRelease("result", list);
+
+        assertEquals(1, size);
+        assertEquals(1.1, v8.executeDoubleScript("result[0]"), 0.0000001);
     }
 
     @Test

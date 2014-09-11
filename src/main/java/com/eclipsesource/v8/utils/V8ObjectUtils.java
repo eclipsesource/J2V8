@@ -63,8 +63,12 @@ public class V8ObjectUtils {
             result.addUndefined(key);
         } else if (value instanceof Integer) {
             result.add(key, (int) value);
+        } else if (value instanceof Long) {
+            result.add(key, (int) (long) value);
         } else if (value instanceof Double) {
             result.add(key, (double) value);
+        } else if (value instanceof Float) {
+            result.add(key, (float) value);
         } else if (value instanceof String) {
             result.add(key, (String) value);
         } else if (value instanceof Boolean) {
