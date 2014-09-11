@@ -88,6 +88,8 @@ public class V8CallbackTest {
 
         public Object objectMethodNoParameter();
 
+        public void voidMethodVarArgs(final Object... args);
+
     }
 
     @Test
@@ -964,6 +966,16 @@ public class V8CallbackTest {
         v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
 
         v8.executeVoidScript("foo()");
+    }
+
+    @Test
+    public void testVarArgParameters() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgs", "foo", new Class<?>[] { Object[].class });
+
+        v8.executeVoidScript("foo('foo', 7)");
+
+        verify(callback).voidMethodVarArgs("foo", 7);
     }
 
 }

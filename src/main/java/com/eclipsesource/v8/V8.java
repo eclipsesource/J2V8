@@ -342,12 +342,21 @@ public class V8 extends V8Object {
     }
 
     private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters) {
-        int size = methodDescriptor.method.getParameterTypes().length;
+        int size = 0;
+        if (methodDescriptor.method.isVarArgs()) {
+            size = parameters.length();
+        } else {
+            size = methodDescriptor.method.getParameterTypes().length;
+        }
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
             args[i] = getArrayItem(parameters, i);
         }
-        return args;
+        if (methodDescriptor.method.isVarArgs()) {
+            return new Object[] { args };
+        } else {
+            return args;
+        }
     }
 
     private Object getArrayItem(final V8Array array, final int index) {
