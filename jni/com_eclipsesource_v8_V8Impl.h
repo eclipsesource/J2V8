@@ -23,6 +23,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_ARRAY 5L
 #undef com_eclipsesource_v8_V8_V8_OBJECT
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
+#undef com_eclipsesource_v8_V8_UNKNOWN
+#define com_eclipsesource_v8_V8_UNKNOWN 7L
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _initExistingV8Object

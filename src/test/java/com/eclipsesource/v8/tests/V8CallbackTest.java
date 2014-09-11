@@ -1,5 +1,7 @@
 package com.eclipsesource.v8.tests;
 
+import java.awt.Rectangle;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ExecutionException;
 import com.eclipsesource.v8.V8Object;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +48,7 @@ public class V8CallbackTest {
 
     public interface ICallback {
 
-        public Object unsupportedMethod();
+        public Rectangle unsupportedMethod();
 
         public void voidMethodNoParameters();
 
@@ -82,6 +85,8 @@ public class V8CallbackTest {
         public V8Array v8ArrayMethodNoParameters();
 
         public V8Array v8ArrayMethodWithStringParameter(final String string);
+
+        public Object objectMethodNoParameter();
 
     }
 
@@ -880,6 +885,85 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo()");
 
         verify(callback).voidMethodWithObjectParameter(null);
+    }
+
+    @Test
+    public void testObjectMethodReturnsInteger() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(7).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testObjectMethodReturnsBoolean() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(true).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        boolean result = v8.executeBooleanFunction("foo", null);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testObjectMethodReturnsDouble() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(7.7).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        double result = v8.executeDoubleFunction("foo", null);
+
+        assertEquals(7.7, result, 0.000001);
+    }
+
+    @Test
+    public void testObjectMethodReturnsString() {
+        ICallback callback = mock(ICallback.class);
+        doReturn("foobar").when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        String result = v8.executeStringFunction("foo", null);
+
+        assertEquals("foobar", result);
+    }
+
+    @Test
+    public void testObjectMethodReturnsV8Object() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(new V8Object(v8).add("foo", "bar")).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        V8Object result = v8.executeObjectFunction("foo", null);
+
+        assertEquals("bar", result.getString("foo"));
+        result.release();
+    }
+
+    @Test
+    public void testObjectMethodReturnsV8Array() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(new V8Array(v8).push(1).push("a")).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        V8Array result = v8.executeArrayFunction("foo", null);
+
+        assertEquals(2, result.length());
+        assertEquals(1, result.getInteger(0));
+        assertEquals("a", result.getString(1));
+        result.release();
+    }
+
+    @Test(expected = V8ExecutionException.class)
+    public void testObjectMethodReturnsIncompatibleType() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(new Rectangle()).when(callback).objectMethodNoParameter();
+        v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
+
+        v8.executeVoidScript("foo()");
     }
 
 }

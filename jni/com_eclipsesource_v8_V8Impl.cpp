@@ -1527,6 +1527,119 @@ void v8ArrayCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	env->DeleteLocalRef(cls);
 }
 
+int getReturnType(JNIEnv* env, jobject &object) {
+	jclass integerCls = (env)->FindClass("java/lang/Integer");
+	jclass doubleCls = (env)->FindClass("java/lang/Double");
+	jclass booleanCls = (env)->FindClass("java/lang/Boolean");
+	jclass stringCls = (env)->FindClass("java/lang/String");
+	jclass v8ObjectCls = (env)->FindClass("com/eclipsesource/v8/V8Object");
+	jclass v8ArrayCls = (env)->FindClass("com/eclipsesource/v8/V8Array");
+	int result = com_eclipsesource_v8_V8_VOID;
+	if ( env->IsInstanceOf(object,integerCls) ) {
+		result = com_eclipsesource_v8_V8_INTEGER;
+	} else if ( env->IsInstanceOf(object, doubleCls)) {
+		result = com_eclipsesource_v8_V8_DOUBLE;
+	} else if ( env->IsInstanceOf(object, booleanCls)) {
+		result = com_eclipsesource_v8_V8_BOOLEAN;
+	} else if ( env->IsInstanceOf(object, stringCls)) {
+		result = com_eclipsesource_v8_V8_STRING;
+	} else if ( env->IsInstanceOf(object,v8ArrayCls)) {
+		result = com_eclipsesource_v8_V8_V8_ARRAY;
+	} else if ( env->IsInstanceOf(object,v8ObjectCls)) {
+		result = com_eclipsesource_v8_V8_V8_OBJECT;
+	}
+	env->DeleteLocalRef(integerCls);
+	env->DeleteLocalRef(doubleCls);
+	env->DeleteLocalRef(booleanCls);
+	env->DeleteLocalRef(stringCls);
+	env->DeleteLocalRef(v8ObjectCls);
+	env->DeleteLocalRef(v8ArrayCls);
+	return result;
+}
+
+int getInteger(JNIEnv* env, jobject &object) {
+	jclass integerCls = (env)->FindClass("java/lang/Integer");
+	jmethodID intValueMethod = env->GetMethodID(integerCls, "intValue", "()I");
+	int result = env->CallIntMethod(object, intValueMethod);
+	env->DeleteLocalRef(integerCls);
+	return result;
+}
+
+bool getBoolean(JNIEnv* env, jobject &object) {
+	jclass booleanCls = (env)->FindClass("java/lang/Boolean");
+	jmethodID boolValueMethod = env->GetMethodID(booleanCls, "booleanValue", "()Z");
+	bool result = env->CallBooleanMethod(object, boolValueMethod);
+	env->DeleteLocalRef(booleanCls);
+	return result;
+}
+
+double getDouble(JNIEnv* env, jobject &object) {
+	jclass doubleCls = (env)->FindClass("java/lang/Double");
+	jmethodID doubleValueMethod = env->GetMethodID(doubleCls, "doubleValue", "()D");
+	double result = env->CallDoubleMethod(object, doubleValueMethod);
+	env->DeleteLocalRef(doubleCls);
+	return result;
+}
+
+void unknownCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	int size = args.Length();
+	Local<External> data = Local<External>::Cast(args.Data());
+	void *methodDescriptorPtr = data->Value();
+	MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
+
+	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
+	Isolate* isolate = v8Isolates[md->v8RuntimeHandle]->isolate;
+	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+
+	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+
+	jclass cls = (env)->FindClass("com/eclipsesource/v8/V8");
+	jmethodID callObjectMethod = (env)->GetMethodID(cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
+
+	jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, parameters);
+
+	if ( env -> ExceptionCheck() ) {
+		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+	} else if ( resultObject == NULL ) {
+		args.GetReturnValue().SetUndefined();
+	} else {
+		int returnType = getReturnType(env, resultObject);
+		if ( returnType == com_eclipsesource_v8_V8_INTEGER) {
+			args.GetReturnValue().Set(getInteger(env, resultObject));
+		} else if ( returnType == com_eclipsesource_v8_V8_BOOLEAN ) {
+			args.GetReturnValue().Set(getBoolean(env, resultObject));
+		} else if ( returnType == com_eclipsesource_v8_V8_DOUBLE ) {
+			args.GetReturnValue().Set(getDouble(env, resultObject));
+		} else if ( returnType == com_eclipsesource_v8_V8_STRING ) {
+			const char* utf_string = env -> GetStringUTFChars((jstring)resultObject, NULL);
+			Local<Value> result = String::NewFromUtf8(v8Isolates[md->v8RuntimeHandle]->isolate, utf_string);
+			args.GetReturnValue().Set(result);
+			env->ReleaseStringUTFChars((jstring) resultObject, utf_string);
+		} else if ( returnType == com_eclipsesource_v8_V8_V8_ARRAY ) {
+			int resultHandle = getArrayHandle(env, resultObject);
+			Handle<v8::Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+			releaseArray(env, resultObject);
+			args.GetReturnValue().Set(result);
+		} else if ( returnType == com_eclipsesource_v8_V8_V8_OBJECT ) {
+			int resultHandle = getHandle(env, resultObject);
+			Handle<v8::Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+			release(env, resultObject);
+			args.GetReturnValue().Set(result);
+		} else {
+			args.GetReturnValue().SetUndefined();
+		}
+	}
+
+	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
+	jmethodID release = env->GetMethodID(arrayCls, "release", "()V");
+	env->CallVoidMethod(parameters, release);
+
+	env->DeleteLocalRef(parameters);
+	env->DeleteLocalRef(arrayCls);
+	env->DeleteLocalRef(cls);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring functionName, jint methodID, jint methodType) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -1548,6 +1661,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 		callback = v8ObjectCallback;
 	} else if (methodType == com_eclipsesource_v8_V8_V8_ARRAY ) {
 		callback = v8ArrayCallback;
+	} else if (methodType == com_eclipsesource_v8_V8_UNKNOWN ) {
+		callback = unknownCallback;
 	}
 
 	HandleScope handle_scope(isolate);

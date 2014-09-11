@@ -202,10 +202,35 @@ public class V8 extends V8Object {
             return V8_OBJECT;
         } else if (returnType.equals(V8Array.class)) {
             return V8_ARRAY;
+        } else if (returnType.equals(Object.class)) {
+            return UNKNOWN;
         } else if (returnType.equals(Void.TYPE)) {
             return VOID;
         }
         throw new IllegalStateException("Unsupported Return Type");
+    }
+
+    protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functions.get(methodID);
+        Object[] args = getArgs(methodDescriptor, parameters);
+        try {
+            Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
+            return checkResult(result);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new V8ExecutionException(e);
+        } finally {
+            releaseArguments(args);
+        }
+    }
+
+    private Object checkResult(final Object result) {
+        if ((result instanceof Integer) || (result instanceof Double) || (result instanceof Boolean)
+                || (result instanceof String) || (result instanceof V8Object) || (result instanceof V8Array)) {
+            return result;
+        }
+        throw new V8ExecutionException("Unknown return type: " + result.getClass());
     }
 
     protected V8Array callV8ArrayJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
