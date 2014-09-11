@@ -190,24 +190,40 @@ public class V8 extends V8Object {
 
     private int getReturnType(final Method method) {
         Class<?> returnType = method.getReturnType();
-        if (returnType.equals(Integer.TYPE) || returnType.equals(Integer.class)) {
+        return getType(returnType);
+    }
+
+    private int getType(final Class<?> type) {
+        if (type.equals(Integer.TYPE) || type.equals(Integer.class)) {
             return INTEGER;
-        } else if (returnType.equals(Double.TYPE) || returnType.equals(Double.class)) {
+        } else if (type.equals(Double.TYPE) || type.equals(Double.class)) {
             return DOUBLE;
-        } else if (returnType.equals(Boolean.TYPE) || returnType.equals(Boolean.class)) {
+        } else if (type.equals(Boolean.TYPE) || type.equals(Boolean.class)) {
             return BOOLEAN;
-        } else if (returnType.equals(String.class)) {
+        } else if (type.equals(String.class)) {
             return STRING;
-        } else if (returnType.equals(V8Object.class)) {
+        } else if (type.equals(V8Object.class)) {
             return V8_OBJECT;
-        } else if (returnType.equals(V8Array.class)) {
+        } else if (type.equals(V8Array.class)) {
             return V8_ARRAY;
-        } else if (returnType.equals(Object.class)) {
+        } else if (type.equals(Object.class)) {
             return UNKNOWN;
-        } else if (returnType.equals(Void.TYPE)) {
+        } else if (type.equals(Void.TYPE)) {
             return VOID;
         }
         throw new IllegalStateException("Unsupported Return Type");
+    }
+
+    private Object getDefaultValue(final Class<?> type) {
+        if (type.equals(Integer.TYPE) || type.equals(Integer.class)) {
+            return 0;
+        } else if (type.equals(Double.TYPE) || type.equals(Double.class)) {
+            return 0d;
+        } else if (type.equals(Boolean.TYPE) || type.equals(Boolean.class)) {
+            return false;
+        } else {
+            return null;
+        }
     }
 
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
@@ -342,21 +358,35 @@ public class V8 extends V8Object {
     }
 
     private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters) {
-        int size = 0;
-        if (methodDescriptor.method.isVarArgs()) {
-            size = parameters.length();
-        } else {
-            size = methodDescriptor.method.getParameterTypes().length;
+        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+        int numberOfParameters = methodDescriptor.method.getParameterTypes().length;
+        int varArgIndex = hasVarArgs ? numberOfParameters-1 : numberOfParameters;
+        Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes());
+        List<Object> varArgs = populateParamters(parameters, varArgIndex, args);
+        if (hasVarArgs) {
+            args[varArgIndex] = varArgs.toArray();
         }
-        Object[] args = new Object[size];
-        for (int i = 0; i < size; i++) {
-            args[i] = getArrayItem(parameters, i);
+        return args;
+    }
+
+    private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args) {
+        List<Object> varArgs = new ArrayList<>();
+        for (int i = 0; i < parameters.length(); i++) {
+            if ( i >= varArgIndex ) {
+                varArgs.add(getArrayItem(parameters, i));
+            }
+            else {
+                args[i] = getArrayItem(parameters, i);
+            }
         }
-        if (methodDescriptor.method.isVarArgs()) {
-            return new Object[] { args };
-        } else {
-            return args;
+        return varArgs;
+    }
+
+    private Object[] setDefaultValues(final Object[] parameters, final Class<?>[] parameterTypes) {
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = getDefaultValue(parameterTypes[i]);
         }
+        return parameters;
     }
 
     private Object getArrayItem(final V8Array array, final int index) {
