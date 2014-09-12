@@ -185,33 +185,15 @@ public class V8 extends V8Object {
         methodDescriptor.method = method;
         int methodID = methodReferenceCounter++;
         functions.put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, getReturnType(method));
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, voidMethod(method));
     }
 
-    private int getReturnType(final Method method) {
+    private boolean voidMethod(final Method method) {
         Class<?> returnType = method.getReturnType();
-        return getType(returnType);
-    }
-
-    private int getType(final Class<?> type) {
-        if (type.equals(Integer.TYPE) || type.equals(Integer.class)) {
-            return INTEGER;
-        } else if (type.equals(Double.TYPE) || type.equals(Double.class)) {
-            return DOUBLE;
-        } else if (type.equals(Boolean.TYPE) || type.equals(Boolean.class)) {
-            return BOOLEAN;
-        } else if (type.equals(String.class)) {
-            return STRING;
-        } else if (type.equals(V8Object.class)) {
-            return V8_OBJECT;
-        } else if (type.equals(V8Array.class)) {
-            return V8_ARRAY;
-        } else if (type.equals(Object.class)) {
-            return UNKNOWN;
-        } else if (type.equals(Void.TYPE)) {
-            return VOID;
+        if (returnType.equals(Void.TYPE)) {
+            return true;
         }
-        throw new IllegalStateException("Unsupported Return Type");
+        return false;
     }
 
     private Object getDefaultValue(final Class<?> type) {
@@ -242,95 +224,14 @@ public class V8 extends V8Object {
     }
 
     private Object checkResult(final Object result) {
+        if (result == null) {
+            return result;
+        }
         if ((result instanceof Integer) || (result instanceof Double) || (result instanceof Boolean)
                 || (result instanceof String) || (result instanceof V8Object) || (result instanceof V8Array)) {
             return result;
         }
         throw new V8ExecutionException("Unknown return type: " + result.getClass());
-    }
-
-    protected V8Array callV8ArrayJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (V8Array) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
-    }
-
-    protected V8Object callV8ObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (V8Object) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
-    }
-
-    protected boolean callBooleanJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (boolean) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
-    }
-
-    protected String callStringJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (String) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
-    }
-
-    protected double callDoubleJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (double) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
-    }
-
-    protected int callIntJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
-        Object[] args = getArgs(methodDescriptor, parameters);
-        try {
-            return (int) methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
-        } finally {
-            releaseArguments(args);
-        }
     }
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
@@ -508,7 +409,7 @@ public class V8 extends V8Object {
     protected native void _addUndefined(int v8RuntimeHandle, int objectHandle, final String key);
 
     protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName,
-            final int methodID, final int methodType);
+            final int methodID, final boolean voidMethod);
 
     protected native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
 

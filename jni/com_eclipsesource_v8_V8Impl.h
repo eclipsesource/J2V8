@@ -23,8 +23,6 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_ARRAY 5L
 #undef com_eclipsesource_v8_V8_V8_OBJECT
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
-#undef com_eclipsesource_v8_V8_UNKNOWN
-#define com_eclipsesource_v8_V8_UNKNOWN 7L
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _initExistingV8Object
@@ -332,10 +330,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _registerJavaMethod
- * Signature: (IILjava/lang/String;II)V
+ * Signature: (IILjava/lang/String;IZ)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
-  (JNIEnv *, jobject, jint, jint, jstring, jint, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jint, jboolean);
 
 /*
  * Class:     com_eclipsesource_v8_V8

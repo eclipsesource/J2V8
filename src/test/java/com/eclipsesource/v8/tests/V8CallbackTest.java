@@ -48,8 +48,6 @@ public class V8CallbackTest {
 
     public interface ICallback {
 
-        public Rectangle unsupportedMethod();
-
         public void voidMethodNoParameters();
 
         public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d);
@@ -94,18 +92,6 @@ public class V8CallbackTest {
 
         public void voidMethodVarArgsAndOthers(int x, int y, final Object... args);
 
-    }
-
-    @Test
-    public void testUnsupportedReturnType() {
-        ICallback callback = mock(ICallback.class);
-        try {
-            v8.registerJavaMethod(callback, "unsupportedMethod", "foo", new Class<?>[0]);
-        } catch (IllegalStateException e) {
-            assertEquals("Unsupported Return Type", e.getMessage());
-            return;
-        }
-        fail("Exception should have been thrown.");
     }
 
     @Test
