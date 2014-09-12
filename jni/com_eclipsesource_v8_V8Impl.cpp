@@ -22,6 +22,7 @@ public:
 std::map <int, V8Runtime*> v8Isolates;
 JavaVM* jvm = NULL;
 jclass v8cls = NULL;
+jclass stringCls = NULL;
 
 void throwError( JNIEnv *env, const char *message );
 void throwExecutionException( JNIEnv *env, const char *message );
@@ -110,6 +111,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 		// on first creation, store the JVM and a handle to V8.class
 		env->GetJavaVM(&jvm);
 		v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
+		stringCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/String"));
+
 	}
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
@@ -264,8 +267,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 	Local<Array> properties = global->GetPropertyNames();
 
 	int size = properties->Length();
-	jclass jStringObject = (env)->FindClass("java/lang/String");
-	jobjectArray keys = (env)->NewObjectArray(size, jStringObject, NULL);
+	jobjectArray keys = (env)->NewObjectArray(size, stringCls, NULL);
 	for ( int i = 0; i < size; i++ ) {
 		jobject key = (env)->NewStringUTF( *String::Utf8Value( properties->Get(i)->ToString() ) );
 		(env)->SetObjectArrayElement(keys, i, key);
@@ -1324,7 +1326,6 @@ int getReturnType(JNIEnv* env, jobject &object) {
 	jclass integerCls = (env)->FindClass("java/lang/Integer");
 	jclass doubleCls = (env)->FindClass("java/lang/Double");
 	jclass booleanCls = (env)->FindClass("java/lang/Boolean");
-	jclass stringCls = (env)->FindClass("java/lang/String");
 	jclass v8ObjectCls = (env)->FindClass("com/eclipsesource/v8/V8Object");
 	jclass v8ArrayCls = (env)->FindClass("com/eclipsesource/v8/V8Array");
 	int result = com_eclipsesource_v8_V8_VOID;
@@ -1344,7 +1345,6 @@ int getReturnType(JNIEnv* env, jobject &object) {
 	env->DeleteLocalRef(integerCls);
 	env->DeleteLocalRef(doubleCls);
 	env->DeleteLocalRef(booleanCls);
-	env->DeleteLocalRef(stringCls);
 	env->DeleteLocalRef(v8ObjectCls);
 	env->DeleteLocalRef(v8ArrayCls);
 	return result;
