@@ -1,4 +1,4 @@
-package com.eclipsesource.v8.tests;
+package com.eclipsesource.v8;
 
 import org.junit.After;
 import org.junit.Before;

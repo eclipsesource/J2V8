@@ -1,4 +1,4 @@
-package com.eclipsesource.v8.tests;
+package com.eclipsesource.v8;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

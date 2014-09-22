@@ -1,4 +1,4 @@
-package com.eclipsesource.v8.tests;
+package com.eclipsesource.v8;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
