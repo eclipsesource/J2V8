@@ -682,4 +682,65 @@ public class V8ArrayTest {
 
         a.release();
     }
+
+    @Test
+    public void testGetArrayOfInts() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        int[] result = a.getInts(0, 5);
+
+        assertEquals(5, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        assertEquals(5, result[4]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfInts() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        int[] result = a.getInts(4, 1);
+
+        assertEquals(1, result.length);
+        assertEquals(5, result[0]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfInts2() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        int[] result = a.getInts(3, 2);
+
+        assertEquals(2, result.length);
+        assertEquals(4, result[0]);
+        assertEquals(5, result[1]);
+        a.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetIntsWithoutInts() {
+        V8Array a = v8.executeArrayScript("a = [1,'a',3,4,5]; a");
+
+        try {
+            a.getInts(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetSubArrayOfIntsOutOfBounds() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        try {
+            a.getInts(3, 3);
+        } finally {
+            a.release();
+        }
+
+    }
 }

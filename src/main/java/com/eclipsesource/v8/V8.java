@@ -456,6 +456,8 @@ public class V8 extends V8Object {
 
     protected native void _processDebugMessages(int v8RuntimeHandle);
 
+    public native int[] _arrayGetInts(final int v8RuntimeHandle2, final int handle, final int index, final int length);
+
     void addObjRef() {
         objectReferences++;
     }

@@ -513,6 +513,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
   (JNIEnv *, jobject, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetInts
+ * Signature: (IIII)[I
+ */
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

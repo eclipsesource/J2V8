@@ -42,6 +42,11 @@ public class V8Array extends V8Object {
         return v8._arrayGetString(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
+    public int[] getInts(final int index, final int length) {
+        V8.checkThread();
+        return v8._arrayGetInts(v8.getV8RuntimeHandle(), getHandle(), index, length);
+    }
+
     public V8Array getArray(final int index) {
         V8.checkThread();
         V8Array result = new V8Array(v8);
