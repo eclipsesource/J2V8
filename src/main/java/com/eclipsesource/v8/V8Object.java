@@ -12,7 +12,6 @@ public class V8Object {
     public static final int STRING                  = 4;
     public static final int V8_ARRAY                = 5;
     public static final int V8_OBJECT               = 6;
-    public static final int UNKNOWN                 = 7;
 
     private static int      v8ObjectInstanceCounter = 1;
 
