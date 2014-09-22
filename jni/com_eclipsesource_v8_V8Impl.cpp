@@ -1032,6 +1032,32 @@ JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles
 	(env)->SetDoubleArrayRegion(result, 0, length, fill);
 	return result;
 }
+
+JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+
+	jbooleanArray result = env->NewBooleanArray(length);
+	jboolean fill[length];
+	for (int i = start; i < start+length; i++) {
+		Handle<Value> v8Value = array->Get(i);
+		if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsBoolean()) {
+			throwResultUndefinedException(env, "");
+			return NULL;
+		}
+		fill[i-start] = v8Value->BooleanValue();
+	}
+	(env)->SetBooleanArrayRegion(result, 0, length, fill);
+	return result;
+}
+
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);

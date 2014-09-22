@@ -463,6 +463,9 @@ public class V8 extends V8Object {
     public native double[] _arrayGetDoubles(final int v8RuntimeHandle2, final int handle, final int index,
             final int length);
 
+    public native boolean[] _arrayGetBooleans(final int v8RuntimeHandle2, final int handle, final int index,
+            final int length);
+
     void addObjRef() {
         objectReferences++;
     }

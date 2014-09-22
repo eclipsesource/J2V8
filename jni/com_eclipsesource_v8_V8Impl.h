@@ -527,6 +527,14 @@ JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
 JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetBooleans
+ * Signature: (IIII)[Z
+ */
+JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -822,4 +822,64 @@ public class V8ArrayTest {
             a.release();
         }
     }
+
+    @Test
+    public void testGetArrayOfBooleans() {
+        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+
+        boolean[] result = a.getBooleans(0, 5);
+
+        assertEquals(5, result.length);
+        assertTrue(result[0]);
+        assertFalse(result[1]);
+        assertTrue(result[2]);
+        assertTrue(result[3]);
+        assertFalse(result[4]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfBooleans() {
+        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+
+        boolean[] result = a.getBooleans(4, 1);
+
+        assertEquals(1, result.length);
+        assertFalse(result[0]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfBooleans2() {
+        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+
+        boolean[] result = a.getBooleans(3, 2);
+
+        assertEquals(2, result.length);
+        assertTrue(result[0]);
+        assertFalse(result[1]);
+        a.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetBooleansWithoutBooleans() {
+        V8Array a = v8.executeArrayScript("a = [true, 'a', false, false, true]; a");
+
+        try {
+            a.getBooleans(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetSubArrayOfBooleansOutOfBounds() {
+        V8Array a = v8.executeArrayScript("a = [true, true, true, true, false]; a");
+
+        try {
+            a.getBooleans(3, 3);
+        } finally {
+            a.release();
+        }
+    }
 }
