@@ -3,7 +3,11 @@ package com.eclipsesource.v8;
 public class V8Array extends V8Object {
 
     public V8Array(final V8 v8) {
-        super(v8);
+        this(v8, true);
+    }
+
+    protected V8Array(final V8 v8, final boolean initialize) {
+        super(v8, initialize);
         V8.checkThread();
     }
 

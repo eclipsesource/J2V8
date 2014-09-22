@@ -17,7 +17,7 @@ public class V8Object {
 
     protected V8            v8;
     private int             objectHandle;
-    private boolean         released;
+    private boolean         released                = true;
 
     protected V8Object() {
         v8 = (V8) this;
@@ -26,16 +26,22 @@ public class V8Object {
     }
 
     public V8Object(final V8 v8) {
+        this(v8, true);
+    }
+
+    protected V8Object(final V8 v8, final boolean initialize) {
         this.v8 = v8;
         V8.checkThread();
         objectHandle = v8ObjectInstanceCounter++;
-        initialize(v8.getV8RuntimeHandle(), objectHandle);
-        this.v8.addObjRef();
-        released = false;
+        if (initialize) {
+            initialize(v8.getV8RuntimeHandle(), objectHandle);
+        }
     }
 
     protected void initialize(final int runtimeHandle, final int objectHandle) {
         v8._initNewV8Object(runtimeHandle, objectHandle);
+        v8.addObjRef();
+        released = false;
     }
 
     public int getHandle() {
@@ -44,9 +50,11 @@ public class V8Object {
 
     public void release() {
         V8.checkThread();
-        released = true;
-        v8._release(v8.getV8RuntimeHandle(), objectHandle);
-        v8.releaseObjRef();
+        if ( !released ) {
+            released = true;
+            v8._release(v8.getV8RuntimeHandle(), objectHandle);
+            v8.releaseObjRef();
+        }
     }
 
     @Override

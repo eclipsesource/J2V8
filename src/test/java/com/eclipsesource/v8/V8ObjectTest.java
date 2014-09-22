@@ -4,11 +4,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ResultUndefined;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -56,6 +51,20 @@ public class V8ObjectTest {
             return;
         }
         fail("Illegal State Exception not thrown.");
+    }
+
+    @Test
+    public void testCreateV8ObjectWithNativeResource() {
+        V8Object v8Object = new V8Object(v8, false);
+
+        assertTrue(v8Object.isReleased());
+    }
+
+    @Test
+    public void testReleaseV8ObjectWithoutNativeResources() {
+        V8Object v8Object = new V8Object(v8, false);
+
+        v8Object.release();
     }
 
     @Test
