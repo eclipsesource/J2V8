@@ -137,8 +137,9 @@ public class V8 extends V8Object {
 
     public V8Array executeArrayScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        V8Array result = new V8Array(this);
+        V8Array result = new V8Array(this, false);
         try {
+            result.released = false;
             _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();
@@ -153,8 +154,9 @@ public class V8 extends V8Object {
 
     public V8Object executeObjectScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        V8Object result = new V8Object(this);
+        V8Object result = new V8Object(this, false);
         try {
+            result.released = false;
             _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();

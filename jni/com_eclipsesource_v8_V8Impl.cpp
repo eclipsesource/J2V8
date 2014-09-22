@@ -125,6 +125,12 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 	v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
 }
 
+void createPersistentContainer(V8Runtime* runtime, int handle) {
+	if ( runtime->objects.find(handle) == runtime->objects.end() ) {
+		runtime->objects[handle] = new Persistent<Object>;
+	}
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -135,7 +141,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Local<Object> obj = Object::New(isolate);
-	v8Isolates[v8RuntimeHandle]->objects[objectHandle] = new Persistent<Object>;
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], objectHandle);
 	v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 }
 
@@ -149,7 +155,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Local<Array> array = Array::New(isolate);
-	v8Isolates[v8RuntimeHandle]->objects[arrayHandle] = new Persistent<Object>;
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], arrayHandle);
 	v8Isolates[v8RuntimeHandle]->objects[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
 }
 
@@ -171,6 +177,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	Handle<Object> obj = v8Value->ToObject();
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 	env->ReleaseStringUTFChars(objectKey, utf_string);
@@ -194,13 +201,16 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
 			throwResultUndefinedException(env, "");
 			return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 	env->ReleaseStringUTFChars(objectKey, utf_string);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
+	if ( v8Isolates.count(v8RuntimeHandle) == 0  ) {
+		return;
+	} else if ( v8Isolates[v8RuntimeHandle]->objects.find(objectHandle) == v8Isolates[v8RuntimeHandle]->objects.end() ) {
 		return;
 	}
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -213,6 +223,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
 	if ( v8Isolates.count(v8RuntimeHandle) == 0 ) {
+		return;
+	} else if ( v8Isolates[v8RuntimeHandle]->objects.find(arrayHandle) == v8Isolates[v8RuntimeHandle]->objects.end() ) {
 		return;
 	}
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -464,6 +476,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jjstring, js);
 	return;
@@ -497,6 +510,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jjstring, js);
 	return;
@@ -533,7 +547,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 		throwResultUndefinedException(env, "");
 		return;
 	}
-
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
 	return;
@@ -570,6 +584,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
 	return;
@@ -1091,6 +1106,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetObject
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	Handle<Object> obj = v8Value->ToObject();
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
 }
@@ -1111,6 +1127,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1arrayGetArray
 		throwResultUndefinedException(env, "");
 		return;
 	}
+	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
 }
 

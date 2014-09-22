@@ -17,7 +17,7 @@ public class V8Object {
 
     protected V8            v8;
     private int             objectHandle;
-    private boolean         released                = true;
+    protected boolean       released                = true;
 
     protected V8Object() {
         v8 = (V8) this;
@@ -111,8 +111,9 @@ public class V8Object {
 
     public V8Array getArray(final String key) throws V8ResultUndefined {
         V8.checkThread();
-        V8Array result = new V8Array(v8);
+        V8Array result = new V8Array(v8, false);
         try {
+            result.released = false;
             v8._getArray(v8.getV8RuntimeHandle(), getHandle(), key, result.getHandle());
         } catch (Exception e) {
             result.release();
@@ -123,8 +124,9 @@ public class V8Object {
 
     public V8Object getObject(final String key) throws V8ResultUndefined {
         V8.checkThread();
-        V8Object result = new V8Object(v8);
+        V8Object result = new V8Object(v8, false);
         try {
+            result.released = false;
             v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
         } catch (Exception e) {
             result.release();
