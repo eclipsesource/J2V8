@@ -882,4 +882,64 @@ public class V8ArrayTest {
             a.release();
         }
     }
+
+    @Test
+    public void testGetArrayOfStrings() {
+        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+
+        String[] result = a.getStrings(0, 5);
+
+        assertEquals(5, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("b", result[1]);
+        assertEquals("c", result[2]);
+        assertEquals("d", result[3]);
+        assertEquals("e", result[4]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfStrings() {
+        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+
+        String[] result = a.getStrings(4, 1);
+
+        assertEquals(1, result.length);
+        assertEquals("e", result[0]);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfStrings2() {
+        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+
+        String[] result = a.getStrings(3, 2);
+
+        assertEquals(2, result.length);
+        assertEquals("d", result[0]);
+        assertEquals("e", result[1]);
+        a.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetStringsWithoutStrings() {
+        V8Array a = v8.executeArrayScript("a = ['a', 7, 'c', 'd', 'e']; a");
+
+        try {
+            a.getStrings(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetSubArrayOfStringsOutOfBounds() {
+        V8Array a = v8.executeArrayScript("a = ['a', 7, 'c', 'd', 'e']; a");
+
+        try {
+            a.getStrings(3, 3);
+        } finally {
+            a.release();
+        }
+    }
 }

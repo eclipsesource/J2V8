@@ -458,12 +458,15 @@ public class V8 extends V8Object {
 
     protected native void _processDebugMessages(int v8RuntimeHandle);
 
-    public native int[] _arrayGetInts(final int v8RuntimeHandle2, final int handle, final int index, final int length);
+    public native int[] _arrayGetInts(final int v8RuntimeHandle, final int handle, final int index, final int length);
 
-    public native double[] _arrayGetDoubles(final int v8RuntimeHandle2, final int handle, final int index,
+    public native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int handle, final int index,
             final int length);
 
-    public native boolean[] _arrayGetBooleans(final int v8RuntimeHandle2, final int handle, final int index,
+    public native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int handle, final int index,
+            final int length);
+
+    public native String[] _arrayGetStrings(final int v8RuntimeHandle, final int handle, final int index,
             final int length);
 
     void addObjRef() {
