@@ -693,6 +693,119 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testGetTypeRangeOfInts() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        int result = a.getType(0, 5);
+
+        assertEquals(V8Object.INTEGER, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfDoubles() {
+        V8Array a = v8.executeArrayScript("a = [1.1,2.2,3.3,4.4,5.5]; a");
+
+        int result = a.getType(1, 3);
+
+        assertEquals(V8Object.DOUBLE, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfStrings() {
+        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 1, 2]; a");
+
+        int result = a.getType(0, 3);
+
+        assertEquals(V8Object.STRING, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfBooleans() {
+        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+
+        int result = a.getType(1, 3);
+
+        assertEquals(V8Object.BOOLEAN, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfUndefined() {
+        V8Array a = v8.executeArrayScript("a = [1, undefined, undefined, undefined, 2]; a");
+
+        int result = a.getType(1, 3);
+
+        assertEquals(V8Object.UNDEFINED, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfArrays() {
+        V8Array a = v8.executeArrayScript("a = [1, [1], [false], ['string'], 2]; a");
+
+        int result = a.getType(1, 3);
+
+        assertEquals(V8Object.V8_ARRAY, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeRangeOfObjects() {
+        V8Array a = v8.executeArrayScript("a = [1, {foo:1}, {foo:false}, {foo:'string'}, 2]; a");
+
+        int result = a.getType(1, 3);
+
+        assertEquals(V8Object.V8_OBJECT, result);
+        a.release();
+    }
+
+    @Test
+    public void testGetTypeSubRangeOfInts() {
+        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+
+        int result = a.getType(4, 1);
+
+        assertEquals(V8Object.INTEGER, result);
+        a.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetMixedTypeRangeThrowsUndefinedException() {
+        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+
+        try {
+            a.getType(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetTypeRangeSizeZeroThrowsUndefinedException() {
+        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+
+        try {
+            a.getType(0, 0);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetTypeOutOfBoundsThrowsUndefinedException() {
+        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+
+        try {
+            a.getType(5, 0);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test
     public void testGetArrayOfInts() {
         V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
 

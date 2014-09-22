@@ -114,6 +114,7 @@ public class V8Object {
         V8Array result = new V8Array(v8, false);
         try {
             result.released = false;
+            v8.addObjRef();
             v8._getArray(v8.getV8RuntimeHandle(), getHandle(), key, result.getHandle());
         } catch (Exception e) {
             result.release();
@@ -127,6 +128,7 @@ public class V8Object {
         V8Object result = new V8Object(v8, false);
         try {
             result.released = false;
+            v8.addObjRef();
             v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
         } catch (Exception e) {
             result.release();

@@ -481,6 +481,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _getType
+ * Signature: (IIII)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _setPrototype
  * Signature: (III)V
  */

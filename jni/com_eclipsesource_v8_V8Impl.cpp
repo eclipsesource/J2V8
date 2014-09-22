@@ -1290,6 +1290,25 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 	array->Set(index, v8Value);
 }
 
+int getType(Handle<Value> v8Value) {
+	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
+		return com_eclipsesource_v8_V8_UNDEFINED;
+	} else if ( v8Value->IsInt32() ) {
+		return com_eclipsesource_v8_V8_INTEGER;
+	} else if ( v8Value->IsNumber() ) {
+		return com_eclipsesource_v8_V8_DOUBLE;
+	} else if (v8Value->IsBoolean() ) {
+		return com_eclipsesource_v8_V8_BOOLEAN;
+	} else if (v8Value->IsString() ) {
+		return com_eclipsesource_v8_V8_STRING;
+	} else if ( v8Value->IsArray() ) {
+		return com_eclipsesource_v8_V8_V8_ARRAY;
+	} else if ( v8Value->IsObject() ) {
+		return com_eclipsesource_v8_V8_V8_OBJECT;
+	}
+	return -1;
+}
+
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_String_2
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
@@ -1305,23 +1324,11 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_Stri
 	Local<String> v8Key = v8::String::NewFromUtf8(isolate, utf_string);
 	Handle<v8::Value> v8Value = global->Get(v8Key);
 	env->ReleaseStringUTFChars(key, utf_string);
-	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
-		return com_eclipsesource_v8_V8_UNDEFINED;
-	} else if ( v8Value->IsInt32() ) {
-		return com_eclipsesource_v8_V8_INTEGER;
-	} else if ( v8Value->IsNumber() ) {
-		return com_eclipsesource_v8_V8_DOUBLE;
-	} else if (v8Value->IsBoolean() ) {
-		return com_eclipsesource_v8_V8_BOOLEAN;
-	} else if (v8Value->IsString() ) {
-		return com_eclipsesource_v8_V8_STRING;
-	} else if ( v8Value->IsArray() ) {
-		return com_eclipsesource_v8_V8_V8_ARRAY;
-	} else if ( v8Value->IsObject() ) {
-		return com_eclipsesource_v8_V8_V8_OBJECT;
+	int type = getType(v8Value);
+	if ( type < 0 ) {
+		throwResultUndefinedException(env, "");
 	}
-	throwResultUndefinedException(env, "");
-	return 0;
+	return type;
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
@@ -1336,23 +1343,41 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
 	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 
 	Handle<Value> v8Value = array->Get(index);
-	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
-		return com_eclipsesource_v8_V8_UNDEFINED;
-	} else if ( v8Value->IsInt32() ) {
-		return com_eclipsesource_v8_V8_INTEGER;
-	} else if ( v8Value->IsNumber() ) {
-		return com_eclipsesource_v8_V8_DOUBLE;
-	} else if (v8Value->IsBoolean() ) {
-		return com_eclipsesource_v8_V8_BOOLEAN;
-	} else if (v8Value->IsString() ) {
-		return com_eclipsesource_v8_V8_STRING;
-	} else if ( v8Value->IsArray() ) {
-		return com_eclipsesource_v8_V8_V8_ARRAY;
-	} else if ( v8Value->IsObject() ) {
-		return com_eclipsesource_v8_V8_V8_OBJECT;
+	int type = getType(v8Value);
+	if ( type < 0 ) {
+		throwResultUndefinedException(env, "");
 	}
-	throwResultUndefinedException(env, "");
-	return 0;
+	return type;
+}
+
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return 0;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+
+	int result = -1;
+	for (int i = start; i < start+length; i++) {
+		Handle<Value> v8Value = array->Get(i);
+		int type = getType(v8Value);
+		if ( result >= 0 && result != type ) {
+			throwResultUndefinedException(env, "");
+			return -1;
+		} else if ( type < 0 ) {
+			throwResultUndefinedException(env, "");
+			return -1;
+		}
+		result = type;
+	}
+	if ( result < 0 ) {
+		throwResultUndefinedException(env, "");
+	}
+	return result;
 }
 
 class MethodDescriptor {

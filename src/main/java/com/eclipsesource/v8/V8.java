@@ -140,6 +140,7 @@ public class V8 extends V8Object {
         V8Array result = new V8Array(this, false);
         try {
             result.released = false;
+            v8.addObjRef();
             _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();
@@ -157,6 +158,7 @@ public class V8 extends V8Object {
         V8Object result = new V8Object(this, false);
         try {
             result.released = false;
+            v8.addObjRef();
             _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
         } catch (Exception e) {
             result.release();
@@ -449,6 +451,8 @@ public class V8 extends V8Object {
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final String key);
 
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
+
+    protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index, final int length);
 
     protected native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
 
