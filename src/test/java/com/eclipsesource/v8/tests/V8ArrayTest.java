@@ -733,6 +733,17 @@ public class V8ArrayTest {
     }
 
     @Test(expected = V8ResultUndefined.class)
+    public void testGetIntsWithDoublesThrowsExceptions() {
+        V8Array a = v8.executeArrayScript("a = [1,1.1,3,4,5]; a");
+
+        try {
+            a.getInts(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
     public void testGetSubArrayOfIntsOutOfBounds() {
         V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
 
@@ -741,6 +752,65 @@ public class V8ArrayTest {
         } finally {
             a.release();
         }
+    }
 
+    @Test
+    public void testGetArrayOfDoubles() {
+        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+
+        double[] result = a.getDoubles(0, 5);
+
+        assertEquals(5, result.length);
+        assertEquals(1.1, result[0], 000001);
+        assertEquals(2.1, result[1], 000001);
+        assertEquals(3.1, result[2], 000001);
+        assertEquals(4.1, result[3], 000001);
+        assertEquals(5.1, result[4], 000001);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfDoubles() {
+        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+
+        double[] result = a.getDoubles(4, 1);
+
+        assertEquals(1, result.length);
+        assertEquals(5.1, result[0], 0.000001);
+        a.release();
+    }
+
+    @Test
+    public void testGetSubArrayOfDoubles2() {
+        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+
+        double[] result = a.getDoubles(3, 2);
+
+        assertEquals(2, result.length);
+        assertEquals(4.1, result[0], 0.000001);
+        assertEquals(5.1, result[1], 0.000001);
+        a.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetDoublesWithoutDoubles() {
+        V8Array a = v8.executeArrayScript("a = [1.1,'a',3.1,4.1,5.1]; a");
+
+        try {
+            a.getInts(0, 5);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetSubArrayOfDoublesOutOfBounds() {
+        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+
+        try {
+            a.getInts(3, 3);
+        } finally {
+            a.release();
+        }
     }
 }

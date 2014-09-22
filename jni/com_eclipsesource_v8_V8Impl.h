@@ -521,6 +521,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetDoubles
+ * Signature: (IIII)[D
+ */
+JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif
