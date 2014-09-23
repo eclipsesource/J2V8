@@ -1,6 +1,6 @@
 package com.eclipsesource.v8;
 
-public class V8Array extends V8Object {
+public class V8Array extends V8Object implements V8ArrayAccessor {
 
     public V8Array(final V8 v8) {
         this(v8, true);
@@ -21,6 +21,7 @@ public class V8Array extends V8Object {
         return v8._arrayGetSize(v8.getV8RuntimeHandle(), getHandle());
     }
 
+    @Override
     public int getType(final int index) {
         V8.checkThread();
         return v8._getType(v8.getV8RuntimeHandle(), getHandle(), index);
@@ -31,21 +32,25 @@ public class V8Array extends V8Object {
         return v8._getType(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
+    @Override
     public int getInteger(final int index) {
         V8.checkThread();
         return v8._arrayGetInteger(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
+    @Override
     public boolean getBoolean(final int index) {
         V8.checkThread();
         return v8._arrayGetBoolean(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
+    @Override
     public double getDouble(final int index) {
         V8.checkThread();
         return v8._arrayGetDouble(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
+    @Override
     public String getString(final int index) {
         V8.checkThread();
         return v8._arrayGetString(v8.getV8RuntimeHandle(), getHandle(), index);
@@ -71,6 +76,7 @@ public class V8Array extends V8Object {
         return v8._arrayGetStrings(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
+    @Override
     public V8Array getArray(final int index) {
         V8.checkThread();
         V8Array result = new V8Array(v8, false);
@@ -85,6 +91,7 @@ public class V8Array extends V8Object {
         return result;
     }
 
+    @Override
     public V8Object getObject(final int index) {
         V8.checkThread();
         V8Object result = new V8Object(v8, false);

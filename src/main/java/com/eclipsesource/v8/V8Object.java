@@ -2,7 +2,7 @@ package com.eclipsesource.v8;
 
 import java.lang.reflect.Method;
 
-public class V8Object {
+public class V8Object implements V8ObjectAccessor {
 
     public static final int UNDEFINED               = 0;
     public static final int VOID                    = 0;
@@ -79,36 +79,43 @@ public class V8Object {
         return v8._contains(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public String[] getKeys() {
         V8.checkThread();
         return v8._getKeys(v8.getV8RuntimeHandle(), objectHandle);
     }
 
+    @Override
     public int getType(final String key) throws V8ResultUndefined {
         V8.checkThread();
         return v8._getType(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public int getInteger(final String key) throws V8ResultUndefined {
         V8.checkThread();
         return v8._getInteger(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public boolean getBoolean(final String key) throws V8ResultUndefined {
         V8.checkThread();
         return v8._getBoolean(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public double getDouble(final String key) throws V8ResultUndefined {
         V8.checkThread();
         return v8._getDouble(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public String getString(final String key) throws V8ResultUndefined {
         V8.checkThread();
         return v8._getString(v8.getV8RuntimeHandle(), objectHandle, key);
     }
 
+    @Override
     public V8Array getArray(final String key) throws V8ResultUndefined {
         V8.checkThread();
         V8Array result = new V8Array(v8, false);
@@ -123,6 +130,7 @@ public class V8Object {
         return result;
     }
 
+    @Override
     public V8Object getObject(final String key) throws V8ResultUndefined {
         V8.checkThread();
         V8Object result = new V8Object(v8, false);
