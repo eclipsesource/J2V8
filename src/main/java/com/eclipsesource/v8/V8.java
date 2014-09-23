@@ -22,6 +22,7 @@ public class V8 extends V8Object {
     class MethodDescriptor {
         Object object;
         Method method;
+        JavaCallback callback;
     }
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
@@ -182,17 +183,24 @@ public class V8 extends V8Object {
         }
     }
 
-    void registerCallback(final Object object, final Method method, final int methodType, final int objectHandle,
-            final String jsFunctionName) {
+    void registerCallback(final Object object, final Method method, final int objectHandle, final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.object = object;
         methodDescriptor.method = method;
         int methodID = methodReferenceCounter++;
         functions.put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, voidMethod(method));
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
     }
 
-    private boolean voidMethod(final Method method) {
+    void registerCallback(final JavaCallback callback, final int objectHandle, final String jsFunctionName) {
+        MethodDescriptor methodDescriptor = new MethodDescriptor();
+        methodDescriptor.callback = callback;
+        int methodID = methodReferenceCounter++;
+        functions.put(methodID, methodDescriptor);
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, false);
+    }
+
+    private boolean isVoidMethod(final Method method) {
         Class<?> returnType = method.getReturnType();
         if (returnType.equals(Void.TYPE)) {
             return true;
@@ -214,6 +222,9 @@ public class V8 extends V8Object {
 
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
+        if (methodDescriptor.callback != null) {
+            return methodDescriptor.callback.invoke(parameters);
+        }
         Object[] args = getArgs(methodDescriptor, parameters);
         try {
             Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);

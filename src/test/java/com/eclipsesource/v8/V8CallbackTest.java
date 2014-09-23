@@ -8,11 +8,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8ExecutionException;
-import com.eclipsesource.v8.V8Object;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1041,6 +1036,74 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo()");
 
         verify(callback).voidMethodWithObjectParameters(0);
+    }
+
+    @Test
+    public void testRegisterJavaCallback() {
+        JavaCallback callback = mock(JavaCallback.class);
+        v8.registerJavaMethod(callback, "foo");
+
+        v8.executeVoidScript("foo()");
+
+        verify(callback).invoke(any(V8Array.class));
+    }
+
+    @Test
+    public void testRegisterJavaCallbackExecuteFunction() {
+        JavaCallback callback = mock(JavaCallback.class);
+        v8.registerJavaMethod(callback, "foo");
+
+        v8.executeVoidFunction("foo", null);
+
+        verify(callback).invoke(any(V8Array.class));
+    }
+
+    @Test
+    public void testInvokeCallbackWithParameters() {
+        JavaCallback callback = mock(JavaCallback.class);
+        v8.registerJavaMethod(callback, "foo");
+        V8Object object = new V8Object(v8).add("foo", "bar");
+        V8Array array = new V8Array(v8).push(1).push(2).push(3);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push("test");
+        parameters.push(3.14159);
+        parameters.push(true);
+        parameters.push(object);
+        parameters.push(array);
+        doAnswer(constructAnswer(parameters, null)).when(callback).invoke(any(V8Array.class));
+
+        v8.executeVoidFunction("foo", parameters);
+        parameters.release();
+        object.release();
+    }
+
+    @Test
+    public void testInvokeCallbackWithReturnValue() {
+        JavaCallback callback = mock(JavaCallback.class);
+        v8.registerJavaMethod(callback, "foo");
+        doAnswer(constructAnswer(null, 77)).when(callback).invoke(any(V8Array.class));
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(77, result);
+    }
+
+    private Answer<Object> constructAnswer(final V8Array parameters, final Object result) {
+        return new Answer<Object>() {
+
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                if (parameters != null) {
+                    assertEquals(parameters.length(), ((V8Array) args[0]).length());
+                    for (int i = 0; i < args.length; i++) {
+                        assertEquals(parameters.get(i), ((V8Array) args[0]).get(i));
+                    }
+                }
+                return result;
+            }
+        };
     }
 
 }

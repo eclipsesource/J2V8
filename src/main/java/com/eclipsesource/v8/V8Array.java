@@ -76,6 +76,25 @@ public class V8Array extends V8Object implements V8ArrayAccessor {
         return v8._arrayGetStrings(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
+    public Object get(final int index) {
+        int type = getType(index);
+        switch (type) {
+            case INTEGER:
+                return getInteger(index);
+            case DOUBLE:
+                return getDouble(index);
+            case BOOLEAN:
+                return getBoolean(index);
+            case STRING:
+                return getString(index);
+            case V8_ARRAY:
+                return getArray(index);
+            case V8_OBJECT:
+                return getObject(index);
+        }
+        return null;
+    }
+
     @Override
     public V8Array getArray(final int index) {
         V8.checkThread();

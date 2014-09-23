@@ -260,13 +260,20 @@ public class V8Object implements V8ObjectAccessor {
         return this;
     }
 
+    public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
+        V8.checkThread();
+        v8.registerCallback(callback, getHandle(), jsFunctionName);
+        return this;
+
+    }
+
     public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName,
             final Class<?>[] parameterTypes) {
         V8.checkThread();
         try {
             Method method = object.getClass().getMethod(methodName, parameterTypes);
             method.setAccessible(true);
-            v8.registerCallback(object, method, 0, getHandle(), jsFunctionName);
+            v8.registerCallback(object, method, getHandle(), jsFunctionName);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         } catch (SecurityException e) {
