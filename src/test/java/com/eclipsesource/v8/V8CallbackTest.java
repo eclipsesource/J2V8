@@ -1079,6 +1079,46 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testRegisterJavaVoidCallback() {
+        JavaVoidCallback callback = mock(JavaVoidCallback.class);
+        v8.registerVoidJavaMethod(callback, "foo");
+
+        v8.executeVoidScript("foo()");
+
+        verify(callback).invoke(any(V8Array.class));
+    }
+
+    @Test
+    public void testRegisterJavaVoidCallbackExecuteFunction() {
+        JavaVoidCallback callback = mock(JavaVoidCallback.class);
+        v8.registerVoidJavaMethod(callback, "foo");
+
+        v8.executeVoidFunction("foo", null);
+
+        verify(callback).invoke(any(V8Array.class));
+    }
+
+    @Test
+    public void testInvokeVoidCallbackWithParameters() {
+        JavaVoidCallback callback = mock(JavaVoidCallback.class);
+        v8.registerVoidJavaMethod(callback, "foo");
+        V8Object object = new V8Object(v8).add("foo", "bar");
+        V8Array array = new V8Array(v8).push(1).push(2).push(3);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push("test");
+        parameters.push(3.14159);
+        parameters.push(true);
+        parameters.push(object);
+        parameters.push(array);
+        doAnswer(constructAnswer(parameters, null)).when(callback).invoke(any(V8Array.class));
+
+        v8.executeVoidFunction("foo", parameters);
+        parameters.release();
+        object.release();
+    }
+
+    @Test
     public void testInvokeCallbackWithReturnValue() {
         JavaCallback callback = mock(JavaCallback.class);
         v8.registerJavaMethod(callback, "foo");

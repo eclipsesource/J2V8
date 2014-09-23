@@ -23,6 +23,7 @@ public class V8 extends V8Object {
         Object object;
         Method method;
         JavaCallback callback;
+        JavaVoidCallback voidCallback;
     }
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
@@ -192,6 +193,14 @@ public class V8 extends V8Object {
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
     }
 
+    void registerVoidCallback(final JavaVoidCallback callback, final int objectHandle, final String jsFunctionName) {
+        MethodDescriptor methodDescriptor = new MethodDescriptor();
+        methodDescriptor.voidCallback = callback;
+        int methodID = methodReferenceCounter++;
+        functions.put(methodID, methodDescriptor);
+        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, true);
+    }
+
     void registerCallback(final JavaCallback callback, final int objectHandle, final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.callback = callback;
@@ -251,6 +260,10 @@ public class V8 extends V8Object {
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
+        if (methodDescriptor.voidCallback != null) {
+            methodDescriptor.voidCallback.invoke(parameters);
+            return;
+        }
         Object[] args = getArgs(methodDescriptor, parameters);
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
