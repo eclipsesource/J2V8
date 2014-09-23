@@ -266,7 +266,7 @@ public class V8Object implements V8ObjectAccessor {
         return this;
     }
 
-    public V8Object registerVoidJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
+    public V8Object registerJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
         V8.checkThread();
         v8.registerVoidCallback(callback, getHandle(), jsFunctionName);
         return this;
