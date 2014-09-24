@@ -8,11 +8,13 @@ import java.util.Map.Entry;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ArrayAccessor;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8ObjectAccessor;
 
 public class V8ObjectUtils {
 
-    public static Map<String, ? super Object> toMap(final V8Object object) {
+    public static Map<String, ? super Object> toMap(final V8ObjectAccessor object) {
         Map<String, ? super Object> result = new HashMap<>();
         String[] keys = object.getKeys();
         for (String key : keys) {
@@ -21,7 +23,7 @@ public class V8ObjectUtils {
         return result;
     }
 
-    public static List<? super Object> toList(final V8Array array) {
+    public static List<? super Object> toList(final V8ArrayAccessor array) {
         List<? super Object> result = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             result.add(getValue(array, "" + i));
@@ -86,7 +88,7 @@ public class V8ObjectUtils {
         }
     }
 
-    private static Object getValue(final V8Object object, final String key) {
+    private static Object getValue(final V8ObjectAccessor object, final String key) {
         int valueType = object.getType(key);
         switch (valueType) {
             case V8Object.INTEGER:
@@ -98,18 +100,22 @@ public class V8ObjectUtils {
             case V8Object.STRING:
                 return object.getString(key);
             case V8Object.V8_ARRAY:
-                V8Array array = object.getArray(key);
+                V8ArrayAccessor array = object.getArray(key);
                 try {
                     return toList(array);
                 } finally {
-                    array.release();
+                    if (array instanceof V8Array) {
+                        ((V8Array) array).release();
+                    }
                 }
             case V8Object.V8_OBJECT:
-                V8Object child = object.getObject(key);
+                V8ObjectAccessor child = object.getObject(key);
                 try {
                     return toMap(child);
                 } finally {
-                    child.release();
+                    if (child instanceof V8Object) {
+                        ((V8Object) child).release();
+                    }
                 }
             case V8Object.VOID:
                 return null;
