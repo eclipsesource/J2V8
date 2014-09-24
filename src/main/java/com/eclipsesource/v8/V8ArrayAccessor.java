@@ -2,9 +2,9 @@ package com.eclipsesource.v8;
 
 public interface V8ArrayAccessor extends V8ObjectAccessor {
 
-    public V8Object getObject(final int index);
+    public V8ObjectAccessor getObject(final int index);
 
-    public V8Array getArray(final int index);
+    public V8ArrayAccessor getArray(final int index);
 
     public String getString(final int index);
 
@@ -15,5 +15,15 @@ public interface V8ArrayAccessor extends V8ObjectAccessor {
     public int getInteger(final int index);
 
     public int getType(final int index);
+
+    public int length();
+
+    public String[] getStrings(final int index, final int length);
+
+    public boolean[] getBooleans(final int index, final int length);
+
+    public double[] getDoubles(final int index, final int length);
+
+    public int[] getInts(final int index, final int length);
 
 }
