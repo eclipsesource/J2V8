@@ -37,16 +37,11 @@ public class V8ParseException extends V8ExecutionException {
         return endColumn;
     }
 
-    public String getExceptionMessage() {
-        return message;
-    }
-
     public String getSourceLine() {
         return sourceLine;
     }
 
-    @Override
-    public String toString() {
+    public String getSyntaxError() {
         StringBuilder result = new StringBuilder();
         result.append(createMessageLine());
         result.append('\n');
@@ -55,8 +50,17 @@ public class V8ParseException extends V8ExecutionException {
     }
 
     @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(getSyntaxError());
+        result.append('\n');
+        result.append(getMessage());
+        return result.toString();
+    }
+
+    @Override
     public String getMessage() {
-        return toString();
+        return message;
     }
 
     private String createMessageLine() {

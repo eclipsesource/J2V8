@@ -10,12 +10,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8ExecutionException;
-import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ResultUndefined;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -1001,6 +995,19 @@ public class V8Test {
 
         verify(runnable).run();
         V8.registerDebugHandler(null);
+    }
+
+    @Test(expected = V8ParseException.class)
+    public void testInvalidJSScript() {
+        String script = "x = [1,2,3];\n"
+                + "y = 0;\n"
+                + "\n"
+                + "//A JS Script that has a compile error, int should be var\n"
+                + "for (int i = 0; i < x.length; i++) {\n"
+                + "  y = y + x[i];\n"
+                + "}";
+
+        v8.executeVoidScript(script, "example.js", 0);
     }
 
     private boolean debugEnabled(final int port) {
