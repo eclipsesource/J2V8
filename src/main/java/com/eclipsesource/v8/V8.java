@@ -9,15 +9,19 @@ import java.util.Map;
 
 public class V8 extends V8Object {
 
-    private static int      v8InstanceCounter;
-    private static Thread   thread                 = null;
-    private static List<V8> runtimes               = new ArrayList<>();
-    private static Runnable debugHandler           = null;
+    private static int       v8InstanceCounter;
+    private static Thread    thread                 = null;
+    private static List<V8>  runtimes               = new ArrayList<>();
+    private static Runnable  debugHandler           = null;
 
-    private int             methodReferenceCounter = 0;
-    private int             v8RuntimeHandle;
-    private boolean         debugEnabled           = false;
-    long                    objectReferences       = 0;
+    private int              methodReferenceCounter = 0;
+    private int              v8RuntimeHandle;
+    private boolean          debugEnabled           = false;
+    long                     objectReferences       = 0;
+
+    private static boolean   nativeLibraryLoaded    = false;
+    private static Error     nativeLoadError        = null;
+    private static Exception nativeLoadException    = null;
 
     class MethodDescriptor {
         Object object;
@@ -29,16 +33,40 @@ public class V8 extends V8Object {
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
     static {
-        System.loadLibrary("j2v8"); // Load native library at runtime
+        try {
+            System.loadLibrary("j2v8"); // Load native library at runtime
+            nativeLibraryLoaded = true;
+        } catch (Error e) {
+            nativeLoadError = e;
+        } catch (Exception e) {
+            nativeLoadException = e;
+        }
+    }
+
+    public static boolean isEnabled() {
+        return nativeLibraryLoaded;
     }
 
     public synchronized static V8 createV8Runtime() {
+        checkNativeLibraryLoaded();
         if (thread == null) {
             thread = Thread.currentThread();
         }
         V8 runtime = new V8();
         runtimes.add(runtime);
         return runtime;
+    }
+
+    private static void checkNativeLibraryLoaded() {
+        if (!nativeLibraryLoaded) {
+            if (nativeLoadError != null) {
+                throw new IllegalStateException("J2V8 native library not loaded.", nativeLoadError);
+            } else if (nativeLoadException != null) {
+                throw new IllegalStateException("J2V8 native library not loaded.", nativeLoadException);
+            } else {
+                throw new IllegalStateException("J2V8 native library not loaded.");
+            }
+        }
     }
 
     protected V8() {

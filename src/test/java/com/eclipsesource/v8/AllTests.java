@@ -7,8 +7,10 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.eclipsesource.v8.utils.tests.V8ObjectUtilsTest;
 
 @RunWith(Suite.class)
-@SuiteClasses({ V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
-    V8CallbackTest.class, V8ParseExceptionTest.class, V8ObjectUtilsTest.class })
+// V8RuntimeNotLoadedTest must be run first. This is because we need to test when the natives are not loaded
+// and once the V8 class is loaded we cannot unload it.
+@SuiteClasses({ V8RuntimeNotLoadedTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
+        V8CallbackTest.class, V8ParseExceptionTest.class, V8ObjectUtilsTest.class })
 public class AllTests {
 
 }
