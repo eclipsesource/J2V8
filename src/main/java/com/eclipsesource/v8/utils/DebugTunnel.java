@@ -42,19 +42,14 @@ public class DebugTunnel {
         }
     }
 
-    private void setupSockets() {
-        try {
-            ss = new ServerSocket();
-            ss.setReuseAddress(true);
-            ss.bind(new InetSocketAddress(hostPort));
-            host = ss.accept();
-            host.setKeepAlive(true);
-            target = new Socket(LOCALHOST, targetPort);
-            target.setKeepAlive(true);
-        } catch (IOException e) {
-            // Print the exception if we cannot setup the sockets
-            e.printStackTrace();
-        }
+    private void setupSockets() throws IOException {
+        ss = new ServerSocket();
+        ss.setReuseAddress(true);
+        ss.bind(new InetSocketAddress(hostPort));
+        host = ss.accept();
+        host.setKeepAlive(true);
+        target = new Socket(LOCALHOST, targetPort);
+        target.setKeepAlive(true);
     }
 
     private void createSocketTunnel() {
@@ -64,8 +59,8 @@ public class DebugTunnel {
             public void run() {
                 InputStream inputStream;
                 OutputStream outputStream;
-                setupSockets();
                 try {
+                    setupSockets();
                     createReverseTunnle(host, target);
                     inputStream = host.getInputStream();
                     outputStream = target.getOutputStream();
