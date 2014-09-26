@@ -26,7 +26,7 @@ public class DebugTunnel {
         createSocketTunnel();
     }
 
-    private synchronized void stop() {
+    public synchronized void stop() {
         close(ss);
         close(host);
         close(target);

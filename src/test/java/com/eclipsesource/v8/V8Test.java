@@ -957,6 +957,28 @@ public class V8Test {
     }
 
     @Test
+    public void testEnableTunnel() {
+        int port = 9991;
+        v8.enableDebugSupport(port);
+
+        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
+
+        assertNotNull(debugTunnel);
+    }
+
+    @Test
+    public void testEnableDisableTunnel() {
+        int port = 9991;
+        v8.enableDebugSupport(port);
+
+        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
+        debugTunnel.stop();
+        debugTunnel = new DebugTunnel(9992, 9991);
+
+        assertNotNull(debugTunnel);
+    }
+
+    @Test
     public void testRemoveDebugHandler() {
         int port = 9991;
         v8.enableDebugSupport(port);
