@@ -1,4 +1,4 @@
-package com.eclipsesource.v8;
+package com.eclipsesource.v8.utils;
 
 import java.io.Closeable;
 import java.io.IOException;
