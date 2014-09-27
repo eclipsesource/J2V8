@@ -54,7 +54,7 @@ public class V8ObjectUtils {
         try {
             for (int i = 0; i < list.size(); i++) {
                 Object value = list.get(i);
-                setValue(v8, result, "" + i, value);
+                pushValue(v8, result, value);
             }
         } catch (IllegalStateException e) {
             result.release();
@@ -62,6 +62,35 @@ public class V8ObjectUtils {
         }
 
         return result;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static void pushValue(final V8 v8, final V8Array result, final Object value) {
+        if (value == null) {
+            result.pushUndefined();
+        } else if (value instanceof Integer) {
+            result.push((int) value);
+        } else if (value instanceof Long) {
+            result.push((int) (long) value);
+        } else if (value instanceof Double) {
+            result.push((double) value);
+        } else if (value instanceof Float) {
+            result.push((float) value);
+        } else if (value instanceof String) {
+            result.push((String) value);
+        } else if (value instanceof Boolean) {
+            result.push((boolean) value);
+        } else if (value instanceof Map) {
+            V8Object object = toV8Object(v8, (Map) value);
+            result.push(object);
+            object.release();
+        } else if (value instanceof List) {
+            V8Array array = toV8Array(v8, (List) value);
+            result.push(array);
+            array.release();
+        } else {
+            throw new IllegalStateException("Unsupported Object of type: " + value.getClass());
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
