@@ -31,7 +31,7 @@ public class V8ObjectUtils {
         }
         List<? super Object> result = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
-            result.add(getValue(array, "" + i));
+            result.add(getValue(array, i));
         }
         return result;
     }
@@ -93,7 +93,43 @@ public class V8ObjectUtils {
         }
     }
 
-    private static Object getValue(final V8Object object, final String key) {
+    public static Object getValue(final V8Array array, final int index) {
+        int valueType = array.getType(index);
+        switch (valueType) {
+            case V8Object.INTEGER:
+                return array.getInteger(index);
+            case V8Object.DOUBLE:
+                return array.getDouble(index);
+            case V8Object.BOOLEAN:
+                return array.getBoolean(index);
+            case V8Object.STRING:
+                return array.getString(index);
+            case V8Object.V8_ARRAY:
+                V8Array arrayValue = array.getArray(index);
+                try {
+                    return toList(arrayValue);
+                } finally {
+                    if (arrayValue instanceof V8Array) {
+                        arrayValue.release();
+                    }
+                }
+            case V8Object.V8_OBJECT:
+                V8Object objectValue = array.getObject(index);
+                try {
+                    return toMap(objectValue);
+                } finally {
+                    if (objectValue instanceof V8Object) {
+                        objectValue.release();
+                    }
+                }
+            case V8Object.VOID:
+                return null;
+            default:
+                throw new IllegalStateException("Cannot find type for index: " + index);
+        }
+    }
+
+    public static Object getValue(final V8Object object, final String key) {
         int valueType = object.getType(key);
         switch (valueType) {
             case V8Object.INTEGER:

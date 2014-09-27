@@ -555,6 +555,58 @@ public class V8ObjectUtilsTest {
         assertEquals(0, list.size());
     }
 
+    @Test
+    public void testGetIntValueFromArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4,5]");
+
+        assertEquals(1, V8ObjectUtils.getValue(array, 0));
+        array.release();
+    }
+
+    @Test
+    public void testGetDoubleValueFromArray() {
+        V8Array array = v8.executeArrayScript("[1.2,2.2,3.3,4.4,5.5]");
+
+        assertEquals(4.4, V8ObjectUtils.getValue(array, 3));
+        array.release();
+    }
+
+    @Test
+    public void testGetStringValueFromArray() {
+        V8Array array = v8.executeArrayScript("['string']");
+
+        assertEquals("string", V8ObjectUtils.getValue(array, 0));
+        array.release();
+    }
+
+    @Test
+    public void testGetBooleanValueFromArray() {
+        V8Array array = v8.executeArrayScript("[true, false]");
+
+        assertEquals(Boolean.TRUE, V8ObjectUtils.getValue(array, 0));
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGetMapValueFromArray() {
+        V8Array array = v8.executeArrayScript("[{a:'b', c:'d'}]");
+
+        assertTrue(V8ObjectUtils.getValue(array, 0) instanceof Map<?, ?>);
+        assertEquals("b", ((Map<String, Object>) V8ObjectUtils.getValue(array, 0)).get("a"));
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGetArrayValueFromArray() {
+        V8Array array = v8.executeArrayScript("[[1,2,3]]");
+
+        assertTrue(V8ObjectUtils.getValue(array, 0) instanceof List<?>);
+        assertEquals(1, ((List<Object>) V8ObjectUtils.getValue(array, 0)).get(0));
+        array.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
