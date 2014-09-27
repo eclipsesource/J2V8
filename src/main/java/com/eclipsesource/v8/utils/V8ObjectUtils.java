@@ -75,7 +75,7 @@ public class V8ObjectUtils {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static void pushValue(final V8 v8, final V8Array result, final Object value) {
+    public static void pushValue(final V8 v8, final V8Array result, final Object value) {
         if (value == null) {
             result.pushUndefined();
         } else if (value instanceof Integer) {

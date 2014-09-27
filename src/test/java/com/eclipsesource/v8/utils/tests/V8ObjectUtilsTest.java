@@ -660,6 +660,74 @@ public class V8ObjectUtilsTest {
         ((V8Object) result).release();
     }
 
+    @Test
+    public void testPushInteger() {
+        V8Array array = new V8Array(v8);
+
+        V8ObjectUtils.pushValue(v8, array, 7);
+
+        assertEquals(7, array.getInteger(0));
+        array.release();
+    }
+
+    @Test
+    public void testPushDouble() {
+        V8Array array = new V8Array(v8);
+
+        V8ObjectUtils.pushValue(v8, array, 7.8);
+
+        assertEquals(7.8, array.getDouble(0), 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testPushBoolean() {
+        V8Array array = new V8Array(v8);
+
+        V8ObjectUtils.pushValue(v8, array, true);
+
+        assertTrue(array.getBoolean(0));
+        array.release();
+    }
+
+    @Test
+    public void testPushString() {
+        V8Array array = new V8Array(v8);
+
+        V8ObjectUtils.pushValue(v8, array, "string");
+
+        assertEquals("string", array.getString(0));
+        array.release();
+    }
+
+    @Test
+    public void testPushMap() {
+        V8Array array = new V8Array(v8);
+        Map<String, String> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        V8ObjectUtils.pushValue(v8, array, map);
+
+        V8Object result = array.getObject(0);
+        assertEquals("bar", result.getString("foo"));
+        result.release();
+        array.release();
+    }
+
+    @Test
+    public void testPushList() {
+        V8Array array = new V8Array(v8);
+        List<String> list = new ArrayList<>();
+        list.add("one");
+
+        V8ObjectUtils.pushValue(v8, array, list);
+
+        V8Array result = array.getArray(0);
+        assertEquals("one", result.getString(0));
+        result.release();
+        array.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
