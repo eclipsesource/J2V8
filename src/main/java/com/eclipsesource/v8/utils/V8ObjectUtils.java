@@ -64,6 +64,16 @@ public class V8ObjectUtils {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    public static Object getV8Result(final V8 v8, final Object value) {
+        if (value instanceof Map<?, ?>) {
+            return toV8Object(v8, (Map<String, ? extends Object>) value);
+        } else if (value instanceof List<?>) {
+            return toV8Array(v8, (List<? extends Object>) value);
+        }
+        return value;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void pushValue(final V8 v8, final V8Array result, final Object value) {
         if (value == null) {

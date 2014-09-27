@@ -607,6 +607,59 @@ public class V8ObjectUtilsTest {
         array.release();
     }
 
+    @Test
+    public void testGetV8ResultInteger() {
+        Object result = V8ObjectUtils.getV8Result(v8, new Integer(77));
+
+        assertEquals(77, result);
+    }
+
+    @Test
+    public void testGetV8ResultDouble() {
+        Object result = V8ObjectUtils.getV8Result(v8, new Double(77.7));
+
+        assertEquals(77.7, result);
+    }
+
+    @Test
+    public void testGetV8ResultString() {
+        Object result = V8ObjectUtils.getV8Result(v8, "Seven");
+
+        assertEquals("Seven", result);
+    }
+
+    @Test
+    public void testGetV8ResultTrue() {
+        Object result = V8ObjectUtils.getV8Result(v8, Boolean.TRUE);
+
+        assertEquals(true, result);
+    }
+
+    @Test
+    public void testGetV8ResultObject() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+        Object result = V8ObjectUtils.getV8Result(v8, map);
+
+        assertTrue(result instanceof V8Object);
+        assertEquals("bar", ((V8Object) result).getString("foo"));
+        ((V8Object) result).release();
+    }
+
+    @Test
+    public void testGetV8ResultArray() {
+        List<Object> list = new ArrayList<>();
+        list.add(1);
+        list.add("two");
+        Object result = V8ObjectUtils.getV8Result(v8, list);
+
+        assertTrue(result instanceof V8Array);
+        assertEquals(2, ((V8Array) result).length());
+        assertEquals(1, ((V8Array) result).getInteger(0));
+        assertEquals("two", ((V8Array) result).getString(1));
+        ((V8Object) result).release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
