@@ -17,6 +17,7 @@ import com.eclipsesource.v8.utils.V8ObjectUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -536,6 +537,22 @@ public class V8ObjectUtilsTest {
         list.add(new Rectangle());
 
         registerAndRelease("result", list);
+    }
+
+    @Test
+    public void testNullObjectGivesEmptyMap() {
+        Map<String, Object> map = V8ObjectUtils.toMap(null);
+
+        assertNotNull(map);
+        assertEquals(0, map.size());
+    }
+
+    @Test
+    public void testNullArrayGivesEmptyMap() {
+        List<Object> list = V8ObjectUtils.toList(null);
+
+        assertNotNull(list);
+        assertEquals(0, list.size());
     }
 
     private int registerAndRelease(final String name, final List<? extends Object> list) {

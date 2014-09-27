@@ -1,6 +1,7 @@
 package com.eclipsesource.v8.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,9 @@ import com.eclipsesource.v8.V8Object;
 public class V8ObjectUtils {
 
     public static Map<String, ? super Object> toMap(final V8Object object) {
+        if (object == null) {
+            return Collections.emptyMap();
+        }
         Map<String, ? super Object> result = new HashMap<>();
         String[] keys = object.getKeys();
         for (String key : keys) {
@@ -22,6 +26,9 @@ public class V8ObjectUtils {
     }
 
     public static List<? super Object> toList(final V8Array array) {
+        if (array == null) {
+            return Collections.emptyList();
+        }
         List<? super Object> result = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             result.add(getValue(array, "" + i));
