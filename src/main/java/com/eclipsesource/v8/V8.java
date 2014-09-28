@@ -262,7 +262,8 @@ public class V8 extends V8Object {
         if (methodDescriptor.callback != null) {
             return methodDescriptor.callback.invoke(parameters);
         }
-        Object[] args = getArgs(methodDescriptor, parameters);
+        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
         try {
             Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
             return checkResult(result);
@@ -271,7 +272,7 @@ public class V8 extends V8Object {
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new V8ExecutionException(e);
         } finally {
-            releaseArguments(args);
+            releaseArguments(args, hasVarArgs);
         }
     }
 
@@ -292,7 +293,8 @@ public class V8 extends V8Object {
             methodDescriptor.voidCallback.invoke(parameters);
             return;
         }
-        Object[] args = getArgs(methodDescriptor, parameters);
+        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
         } catch (InvocationTargetException e) {
@@ -300,22 +302,27 @@ public class V8 extends V8Object {
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new V8ExecutionException(e);
         } finally {
-            releaseArguments(args);
+            releaseArguments(args, hasVarArgs);
         }
     }
 
-    private void releaseArguments(final Object[] args) {
+    private void releaseArguments(final Object[] args, final boolean hasVarArgs) {
+        if (hasVarArgs && ((args.length > 0) && (args[args.length - 1] instanceof Object[]))) {
+            Object[] varArgs = (Object[]) args[args.length - 1];
+            for (Object object : varArgs) {
+                if (object instanceof V8Object) {
+                    ((V8Object) object).release();
+                }
+            }
+        }
         for (Object arg : args) {
-            if (arg instanceof V8Array) {
-                ((V8Array) arg).release();
-            } else if (arg instanceof V8Object) {
+            if (arg instanceof V8Object) {
                 ((V8Object) arg).release();
             }
         }
     }
 
-    private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters) {
-        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+    private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters, final boolean hasVarArgs) {
         int numberOfParameters = methodDescriptor.method.getParameterTypes().length;
         int varArgIndex = hasVarArgs ? numberOfParameters-1 : numberOfParameters;
         Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes());

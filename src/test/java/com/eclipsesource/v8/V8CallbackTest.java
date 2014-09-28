@@ -13,6 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -961,6 +962,28 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo(1, 2, 'foo', 'bar')");
 
         verify(callback).voidMethodVarArgsAndOthers(1, 2, "foo", "bar");
+    }
+
+    @Test
+    public void testVarArgParametersObject() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsAndOthers", "foo", new Class<?>[] { Integer.TYPE,
+                Integer.TYPE, Object[].class });
+
+        v8.executeVoidScript("foo(1, 2, {}, {foo:'bar'})");
+
+        verify(callback).voidMethodVarArgsAndOthers(eq(1), eq(2), any(V8Object.class), any(V8Object.class));
+    }
+
+    @Test
+    public void testVarArgParametersArray() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsAndOthers", "foo", new Class<?>[] { Integer.TYPE,
+                Integer.TYPE, Object[].class });
+
+        v8.executeVoidScript("foo(1, 2, [], [1,2,3])");
+
+        verify(callback).voidMethodVarArgsAndOthers(eq(1), eq(2), any(V8Object.class), any(V8Object.class));
     }
 
     @Test
