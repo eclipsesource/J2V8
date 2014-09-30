@@ -1697,7 +1697,7 @@ void throwResultUndefinedException( JNIEnv *env, const char *message ) {
 
 void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
 		const char* sourceLine, int startColumn, int endColumn) {
-    const char *className = "com/eclipsesource/v8/V8ParseException";
+    const char *className = "com/eclipsesource/v8/V8ScriptCompilationException";
     jclass exClass = (env)->FindClass(className);
     jmethodID methodID = env->GetMethodID(exClass, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V");
     jstring jfileName = env->NewStringUTF(fileName);

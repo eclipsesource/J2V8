@@ -10,17 +10,17 @@ import static org.junit.Assert.fail;
 
 public class V8ParseExceptionTest {
 
-    private V8ParseException exception;
+    private V8ScriptCompilationException exception;
 
-    private V8               v8;
+    private V8                           v8;
 
-    String                   script = "x = [1,2,3];\n"
-                                            + "y = 0;\n"
-                                            + "\n"
-                                            + "//A JS Script that has a compile error, int should be var\n"
-                                            + "for (int i = 0; i < x.length; i++) {\n"
-                                            + "  y = y + x[i];\n"
-                                            + "}";
+    String                               script = "x = [1,2,3];\n"
+                                                        + "y = 0;\n"
+                                                        + "\n"
+                                                        + "//A JS Script that has a compile error, int should be var\n"
+                                                        + "for (int i = 0; i < x.length; i++) {\n"
+                                                        + "  y = y + x[i];\n"
+                                                        + "}";
 
     @Before
     public void seutp() {
@@ -72,7 +72,7 @@ public class V8ParseExceptionTest {
 
     @Test
     public void testGetSytaxErrorWithNulls() {
-        V8ParseException exceptionWithNulls = new V8ParseException(null, 4, null, null, 4, 6);
+        V8ScriptCompilationException exceptionWithNulls = new V8ScriptCompilationException(null, 4, null, null, 4, 6);
 
         assertNotNull(exceptionWithNulls.getSyntaxError());
     }
@@ -93,20 +93,20 @@ public class V8ParseExceptionTest {
 
     @Test
     public void testToStringWithNull() {
-        V8ParseException exceptionWithNulls = new V8ParseException(null, 4, null, null, 4, 6);
+        V8ScriptCompilationException exceptionWithNulls = new V8ScriptCompilationException(null, 4, null, null, 4, 6);
 
         assertNotNull(exceptionWithNulls.toString());
     }
 
-    private V8ParseException createParseException() {
-        return new V8ParseException("filename.js", 4, "the message", "line of JS", 4, 6);
+    private V8ScriptCompilationException createParseException() {
+        return new V8ScriptCompilationException("filename.js", 4, "the message", "line of JS", 4, 6);
     }
 
     @Test
     public void testV8ParseExceptionCreated() {
         try {
             v8.executeVoidScript(script, "file", 0);
-        } catch (V8ParseException e) {
+        } catch (V8ScriptCompilationException e) {
             assertEquals("file", e.getFileName());
             assertEquals(5, e.getLineNumber());
             assertEquals("for (int i = 0; i < x.length; i++) {", e.getSourceLine());
@@ -122,7 +122,7 @@ public class V8ParseExceptionTest {
     public void testV8ParseExceptionCreatedUndefinedFile() {
         try {
             v8.executeVoidScript(script);
-        } catch (V8ParseException e) {
+        } catch (V8ScriptCompilationException e) {
             assertEquals("undefined", e.getFileName());
             return;
         }
@@ -144,44 +144,44 @@ public class V8ParseExceptionTest {
     public void testV8ParseExceptionUnexpectedEnd() {
         try {
             v8.executeVoidScript("for (i");
-        } catch (V8ParseException e) {
+        } catch (V8ScriptCompilationException e) {
             assertEquals("SyntaxError: Unexpected end of input", e.getMessage());
             return;
         }
         fail("Exception should have been thrown.");
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForVoidScript() {
         v8.executeVoidScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForIntScript() {
         v8.executeIntScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForDoubleScript() {
         v8.executeDoubleScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForBooleanScript() {
         v8.executeBooleanScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForStringScript() {
         v8.executeStringScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForObjectScript() {
         v8.executeObjectScript(script);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testParseExceptionForArrayScript() {
         v8.executeArrayScript(script);
     }

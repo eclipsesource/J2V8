@@ -110,7 +110,7 @@ public class V8Test {
         assertEquals(3, bar);
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSyntaxErrorInVoidScript() {
         v8.executeVoidScript("'a");
     }
@@ -132,7 +132,7 @@ public class V8Test {
         assertEquals(3, result);
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxError() {
         v8.executeIntScript("return 1+2");
     }
@@ -162,7 +162,7 @@ public class V8Test {
         assertEquals(3.14159, result, 0.00001);
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxErrorInDoubleScript() {
         v8.executeDoubleScript("return 1+2");
     }
@@ -199,7 +199,7 @@ public class V8Test {
         assertTrue(result);
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxErrorInBooleanScript() {
         v8.executeBooleanScript("return 1+2");
     }
@@ -229,7 +229,7 @@ public class V8Test {
         assertEquals("hello, world", result);
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxErrorStringScript() {
         v8.executeStringScript("'a");
     }
@@ -260,7 +260,7 @@ public class V8Test {
         result.release();
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxErrorObjectScript() {
         v8.executeObjectScript("'a");
     }
@@ -303,7 +303,7 @@ public class V8Test {
         result.release();
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxErrorArrayScript() {
         v8.executeArrayScript("'a");
     }
@@ -1021,7 +1021,7 @@ public class V8Test {
         V8.registerDebugHandler(null);
     }
 
-    @Test(expected = V8ParseException.class)
+    @Test(expected = V8ScriptCompilationException.class)
     public void testInvalidJSScript() {
         String script = "x = [1,2,3];\n"
                 + "y = 0;\n"

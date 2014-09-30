@@ -1,7 +1,7 @@
 package com.eclipsesource.v8;
 
 @SuppressWarnings("serial")
-public class V8ParseException extends V8ExecutionException {
+public class V8ScriptCompilationException extends V8RuntimeException {
 
     private String fileName;
     private int    lineNumber;
@@ -10,7 +10,7 @@ public class V8ParseException extends V8ExecutionException {
     private int    startColumn;
     private int    endColumn;
 
-    public V8ParseException(final String fileName, final int lineNumber,
+    public V8ScriptCompilationException(final String fileName, final int lineNumber,
             final String message, final String sourceLine, final int startColumn, final int endColumn) {
         super(message);
         this.fileName = fileName;
