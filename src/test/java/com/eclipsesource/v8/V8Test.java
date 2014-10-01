@@ -910,11 +910,66 @@ public class V8Test {
 
     /*** Global Object Prototype Manipulation ***/
     private void setupWindowAlias() {
-        v8.add("window", v8);
+        v8.release();
+        v8 = V8.createV8Runtime("window");
         v8.executeVoidScript("function Window(){};");
         V8Object prototype = v8.executeObjectScript("Window.prototype");
         v8.setPrototype(prototype);
         prototype.release();
+    }
+
+    @Test
+    public void testAccessWindowObjectInStrictMode() {
+        setupWindowAlias();
+        String script = "'use strict';\n"
+                + "window.foo = 7;\n"
+                + "true\n";
+
+        boolean result = v8.executeBooleanScript(script);
+
+        assertTrue(result);
+        assertEquals(7, v8.executeIntScript("window.foo"));
+    }
+
+    @Test
+    public void testWindowWindowWindowWindow() {
+        setupWindowAlias();
+
+        assertTrue(v8.executeBooleanScript("window.window.window === window"));
+    }
+
+    @Test
+    public void testGlobalIsWindow() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        assertTrue(v8.executeBooleanScript("global === window"));
+    }
+
+    @Test
+    public void testWindowIsGlobal() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        assertTrue(v8.executeBooleanScript("window === global"));
+    }
+
+    @Test
+    public void testAlternateGlobalAlias() {
+        v8.release();
+        v8 = V8.createV8Runtime("document");
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        assertTrue(v8.executeBooleanScript("global === document"));
+    }
+
+    @Test
+    public void testAccessGlobalViaWindow() {
+        setupWindowAlias();
+        String script = "var global = {data: 0};\n" +
+                "global === window.global";
+
+        assertTrue(v8.executeBooleanScript(script));
     }
 
     @Test

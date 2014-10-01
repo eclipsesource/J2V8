@@ -12,7 +12,6 @@ class V8Runtime {
 public:
     Isolate* isolate;
     Isolate::Scope* isolate_scope;
-    Persistent<ObjectTemplate> globalObjectTemplate;
     Persistent<Context> context_;
     std::map <int, Persistent<Object>* > objects;
     JNIEnv* env;
@@ -110,24 +109,38 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 	v8::Debug::ProcessDebugMessages();
 }
 
+static void jsWindowObjectAccessor(Local<String> property,
+		const PropertyCallbackInfo<Value>& info) {
+	info.GetReturnValue().Set(info.GetIsolate()->GetCurrentContext()->Global());
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-  (JNIEnv *env, jobject, jint handle) {
+  (JNIEnv *env, jobject, jint handle, jstring globalAlias) {
 	if (jvm == NULL ) {
 		// on first creation, store the JVM and a handle to V8.class
 		env->GetJavaVM(&jvm);
 		v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
 		stringCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/String"));
-
 	}
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
 	v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
 	HandleScope handle_scope(v8Isolates[handle]->isolate);
-	v8Isolates[handle]->globalObjectTemplate.Reset(v8Isolates[handle]->isolate, ObjectTemplate::New(v8Isolates[handle]->isolate));
-	Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, Local<ObjectTemplate>::New(v8Isolates[handle]->isolate, v8Isolates[handle]->globalObjectTemplate));
-	v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
-	v8Isolates[handle]->objects[0] = new Persistent<Object>;
-	v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
+	Handle<ObjectTemplate> globalObject = ObjectTemplate::New();
+	if ( globalAlias == NULL ) {
+		Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, globalObject);
+		v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
+		v8Isolates[handle]->objects[0] = new Persistent<Object>;
+		v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
+	} else {
+		const char* utf_string = env -> GetStringUTFChars(globalAlias, NULL);
+		globalObject->SetAccessor(String::NewFromUtf8(v8Isolates[handle]->isolate, utf_string), jsWindowObjectAccessor);
+		Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, globalObject);
+		v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
+		v8Isolates[handle]->objects[0] = new Persistent<Object>;
+		v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
+		env->ReleaseStringUTFChars(globalAlias, utf_string);
+	}
 }
 
 void createPersistentContainer(V8Runtime* runtime, int handle) {

@@ -25,14 +25,6 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _initExistingV8Object
- * Signature: (IILjava/lang/String;I)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initExistingV8Object
-  (JNIEnv *, jobject, jint, jint, jstring, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _initNewV8Object
  * Signature: (II)V
  */
@@ -50,10 +42,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _createIsolate
- * Signature: (I)V
+ * Signature: (ILjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8

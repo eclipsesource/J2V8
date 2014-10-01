@@ -24,9 +24,9 @@ public class V8 extends V8Object {
     private static Exception nativeLoadException    = null;
 
     class MethodDescriptor {
-        Object object;
-        Method method;
-        JavaCallback callback;
+        Object           object;
+        Method           method;
+        JavaCallback     callback;
         JavaVoidCallback voidCallback;
     }
 
@@ -48,11 +48,15 @@ public class V8 extends V8Object {
     }
 
     public synchronized static V8 createV8Runtime() {
+        return createV8Runtime(null);
+    }
+
+    public synchronized static V8 createV8Runtime(final String globalAlias) {
         checkNativeLibraryLoaded();
         if (thread == null) {
             thread = Thread.currentThread();
         }
-        V8 runtime = new V8();
+        V8 runtime = new V8(globalAlias);
         runtimes.add(runtime);
         return runtime;
     }
@@ -70,9 +74,13 @@ public class V8 extends V8Object {
     }
 
     protected V8() {
+        this(null);
+    }
+
+    protected V8(final String globalAlias) {
         checkThread();
         v8RuntimeHandle = v8InstanceCounter++;
-        _createIsolate(v8RuntimeHandle);
+        _createIsolate(v8RuntimeHandle, globalAlias);
     }
 
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
@@ -324,7 +332,7 @@ public class V8 extends V8Object {
 
     private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters, final boolean hasVarArgs) {
         int numberOfParameters = methodDescriptor.method.getParameterTypes().length;
-        int varArgIndex = hasVarArgs ? numberOfParameters-1 : numberOfParameters;
+        int varArgIndex = hasVarArgs ? numberOfParameters - 1 : numberOfParameters;
         Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes());
         List<Object> varArgs = populateParamters(parameters, varArgIndex, args);
         if (hasVarArgs) {
@@ -336,7 +344,7 @@ public class V8 extends V8Object {
     private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args) {
         List<Object> varArgs = new ArrayList<>();
         for (int i = 0; i < parameters.length(); i++) {
-            if ( i >= varArgIndex ) {
+            if (i >= varArgIndex) {
                 varArgs.add(getArrayItem(parameters, i));
             }
             else {
@@ -382,14 +390,11 @@ public class V8 extends V8Object {
         }
     }
 
-    protected native void _initExistingV8Object(int v8RuntimeHandle, int parentHandle, String objectKey,
-            int objectHandle);
-
     protected native void _initNewV8Object(int v8RuntimeHandle, int objectHandle);
 
     protected native void _releaseRuntime(int v8RuntimeHandle);
 
-    protected native void _createIsolate(int v8RuntimeHandle);
+    protected native void _createIsolate(int v8RuntimeHandle, String globalAlias);
 
     protected native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName,
             final int lineNumber);
