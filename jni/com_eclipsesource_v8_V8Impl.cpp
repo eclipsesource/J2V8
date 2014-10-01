@@ -1311,7 +1311,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 }
 
 int getType(Handle<Value> v8Value) {
-	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
+	if (v8Value.IsEmpty() || v8Value->IsUndefined() || v8Value->IsNull()) {
 		return com_eclipsesource_v8_V8_UNDEFINED;
 	} else if ( v8Value->IsInt32() ) {
 		return com_eclipsesource_v8_V8_INTEGER;

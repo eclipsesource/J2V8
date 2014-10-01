@@ -487,6 +487,14 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testGetNull() {
+        V8Array v8Array = v8.executeArrayScript("x = [null]; x;");
+
+        assertEquals(V8Object.UNDEFINED, v8Array.getType(0));
+        v8Array.release();
+    }
+
+    @Test
     public void testCreateMatrix() {
         V8Array a1 = new V8Array(v8);
         V8Array a2 = new V8Array(v8);

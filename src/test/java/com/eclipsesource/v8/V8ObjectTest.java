@@ -280,13 +280,28 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
-    /*** Add Undefined ***/
     @Test
     public void testAddUndefined() {
         V8Object v8Object = new V8Object(v8).addUndefined("foo");
 
         assertEquals("foo", v8Object.getKeys()[0]);
         assertEquals(V8Object.UNDEFINED, v8Object.getType("foo"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetUndefined() {
+        V8Object v8Object = v8.executeObjectScript("x = {a : undefined}; x;");
+
+        assertEquals(V8Object.UNDEFINED, v8Object.getType("a"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetNull() {
+        V8Object v8Object = v8.executeObjectScript("x = {a : null}; x;");
+
+        assertEquals(V8Object.UNDEFINED, v8Object.getType("a"));
         v8Object.release();
     }
 
@@ -438,7 +453,7 @@ public class V8ObjectTest {
     public void testGetKeysOnObject() {
         V8Object v8Object =
                 new V8Object(v8).add("integer", 1).add("double", 1.1).add("boolean", true)
-                .add("string", "hello, world!");
+                        .add("string", "hello, world!");
 
         String[] keys = v8Object.getKeys();
 

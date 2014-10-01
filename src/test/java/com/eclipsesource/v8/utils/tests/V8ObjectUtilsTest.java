@@ -138,7 +138,7 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
-    public void testCreateListWithNullsFromV8Array() {
+    public void testCreateListWithUndefinedFromV8Array() {
         V8Array array = v8.executeArrayScript("x = [1,2,3]; x[9] = 10; x");
 
         List<Object> list = V8ObjectUtils.toList(array);
@@ -154,6 +154,17 @@ public class V8ObjectUtilsTest {
         assertNull(list.get(7));
         assertNull(list.get(8));
         assertEquals(10, list.get(9));
+        array.release();
+    }
+
+    @Test
+    public void testCreateListWithNullFromV8Array() {
+        V8Array array = v8.executeArrayScript("x = [null]; x");
+
+        List<Object> list = V8ObjectUtils.toList(array);
+
+        assertEquals(1, list.size());
+        assertNull(list.get(0));
         array.release();
     }
 
@@ -194,6 +205,17 @@ public class V8ObjectUtilsTest {
         assertEquals(4, ((List) map.get("b")).get(0));
         assertEquals(5, ((List) map.get("b")).get(1));
         assertEquals(6, ((List) map.get("b")).get(2));
+        object.release();
+    }
+
+    @Test
+    public void testCreateMapWithNulls() {
+        V8Object object = v8.executeObjectScript("x = {a:null}; x;");
+
+        Map<String, Object> map = V8ObjectUtils.toMap(object);
+
+        assertEquals(1, map.size());
+        assertNull(map.get(0));
         object.release();
     }
 
