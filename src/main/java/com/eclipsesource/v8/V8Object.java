@@ -70,6 +70,11 @@ public class V8Object {
         return v8._identityHash(v8.getV8RuntimeHandle(), getHandle());
     }
 
+    @Override
+    public String toString() {
+        return v8._toString(v8.getV8RuntimeHandle(), getHandle());
+    }
+
     public boolean isReleased() {
         return released;
     }

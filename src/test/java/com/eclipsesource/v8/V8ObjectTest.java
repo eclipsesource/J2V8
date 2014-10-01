@@ -646,4 +646,39 @@ public class V8ObjectTest {
         a.release();
     }
 
+    @Test
+    public void testFunctionToString() {
+        String result = "function (){\n  1+2;\n}";
+        String script = "var func = " + result + "\n"
+                + "func;\n";
+        V8Object function = v8.executeObjectScript(script);
+
+        assertEquals(result, function.toString());
+        function.release();
+    }
+
+    @Test
+    public void testDateToString() {
+        V8Object a = v8.executeObjectScript("new Date(2014, 9, 1, 10, 0, 0, 0)");
+
+        assertTrue(a.toString().startsWith("Wed Oct 01 2014 10:00:00"));
+        a.release();
+    }
+
+    @Test
+    public void testArrayToString() {
+        V8Object a = v8.executeObjectScript("x = [1,2,3]; x;");
+
+        assertEquals("1,2,3", a.toString());
+        a.release();
+    }
+
+    @Test
+    public void testToString() {
+        V8Object a = v8.executeObjectScript("x = {a:'b'}; x;");
+
+        assertEquals("[object Object]", a.toString());
+        a.release();
+    }
+
 }

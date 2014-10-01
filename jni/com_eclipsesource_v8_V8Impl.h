@@ -233,6 +233,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _toString
+ * Signature: (II)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1toString
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _equals
  * Signature: (III)Z
  */

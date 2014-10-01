@@ -1646,6 +1646,20 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
 	return global->Equals(that);
 }
 
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1toString
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	if ( isolate == NULL ) {
+		return NULL;
+	}
+	HandleScope handle_scope(isolate);
+	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
+	Context::Scope context_scope(context);
+	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	String::Utf8Value utf(Object::Cast(*global)->ToString());
+	return env->NewStringUTF(*utf);
+}
+
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1strictEquals
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint thatHandle) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
