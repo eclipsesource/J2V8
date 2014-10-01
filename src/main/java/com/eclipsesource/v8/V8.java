@@ -454,8 +454,6 @@ public class V8 extends V8Object {
     protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name,
             final int parametersHandle);
 
-    protected native String _toString(int v8RuntimeHandle, int objectHandle);
-
     protected native boolean _equals(int v8RuntimeHandle, int objectHandle, int that);
 
     protected native boolean _strictEquals(int v8RuntimeHandle, int objectHandle, int that);

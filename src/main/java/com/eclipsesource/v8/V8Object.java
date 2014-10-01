@@ -72,7 +72,7 @@ public class V8Object {
 
     @Override
     public String toString() {
-        return v8._toString(v8.getV8RuntimeHandle(), getHandle());
+        return executeStringFunction("toString", null);
     }
 
     public boolean isReleased() {
