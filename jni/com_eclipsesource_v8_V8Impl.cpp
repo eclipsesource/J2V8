@@ -27,8 +27,9 @@ jclass v8cls = NULL;
 jclass stringCls = NULL;
 
 void throwParseException( JNIEnv *env, Isolate* isolate, TryCatch* tryCatch);
+void throwExecutionException( JNIEnv *env, Isolate* isolate, TryCatch* tryCatch);
 void throwError( JNIEnv *env, const char *message );
-void throwExecutionException( JNIEnv *env, const char *message );
+void throwV8RuntimeException( JNIEnv *env, const char *message );
 void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 
@@ -331,13 +332,17 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
 		return;
 	}
 	script->Run();
-	env->ReleaseStringUTFChars(jjstring, js);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
@@ -356,12 +361,18 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
 		return 0;
 	}
 	Local<Value> result = script->Run();
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsNumber() ) {
 		throwResultUndefinedException(env, "");
@@ -386,12 +397,18 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
 		return 0;
 	}
 	Local<Value> result = script->Run();
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsBoolean() ) {
 		throwResultUndefinedException(env, "");
@@ -411,18 +428,23 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 	Context::Scope context_scope(context);
 	const char* js = env -> GetStringUTFChars(jjstring, NULL);
 	Local<String> source = String::NewFromUtf8(isolate, js);
-	env->ReleaseStringUTFChars(jjstring, js);
 
 	ScriptOrigin* SCRIPT_ORIGIN_PTR(scriptOriginPtr, jscriptName, jlineNumber);
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
 		return 0;
 	}
 	Local<Value> result = script->Run();
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsString()) {
 		throwResultUndefinedException(env, "");
@@ -448,12 +470,18 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
 		return 0;
 	}
 	Local<Value> result = script->Run();
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
 		throwResultUndefinedException(env, "");
@@ -478,6 +506,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
@@ -485,13 +514,17 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 	}
 	Local<Value> result = script->Run();
 
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
+
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsObject()) {
 		throwResultUndefinedException(env, "");
 		return;
 	}
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
-	env->ReleaseStringUTFChars(jjstring, js);
 	return;
 }
 
@@ -511,6 +544,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	TryCatch tryCatch;
 	Local<Script> script = Script::Compile(source, scriptOriginPtr);
 	DELETE_SCRIPT_ORIGIN_PTR(scriptOriginPtr);
+	env->ReleaseStringUTFChars(jjstring, js);
 
 	if ( tryCatch.HasCaught() ) {
 		throwParseException(env, isolate, &tryCatch);
@@ -518,13 +552,17 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	}
 	Local<Value> result = script->Run();
 
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
+
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsArray()) {
 		throwResultUndefinedException(env, "");
 		return;
 	}
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
-	env->ReleaseStringUTFChars(jjstring, js);
 	return;
 }
 
@@ -553,14 +591,21 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+
+	TryCatch tryCatch;
 	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsArray()) {
 		throwResultUndefinedException(env, "");
 		return;
 	}
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
-	env->ReleaseStringUTFChars(jfunctionName, functionName);
 	return;
 }
 
@@ -589,14 +634,21 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+
+	TryCatch tryCatch;
 	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsObject()) {
 		throwResultUndefinedException(env, "");
 		return;
 	}
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
-	env->ReleaseStringUTFChars(jfunctionName, functionName);
 	return;
 }
 
@@ -625,7 +677,15 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+
+	TryCatch tryCatch;
 	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsInt32()) {
 		throwResultUndefinedException(env, "");
 		return 0;
@@ -658,8 +718,15 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
-	Handle<Value> result = func->Call(parentObject, size, args);
 
+	TryCatch tryCatch;
+	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsNumber()) {
 		throwResultUndefinedException(env, "");
 		return 0;
@@ -692,8 +759,15 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
-	Handle<Value> result = func->Call(parentObject, size, args);
 
+	TryCatch tryCatch;
+	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsBoolean()) {
 		throwResultUndefinedException(env, "");
 		return 0;
@@ -725,8 +799,15 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
-	Handle<Value> result = func->Call(parentObject, size, args);
 
+	TryCatch tryCatch;
+	Handle<Value> result = func->Call(parentObject, size, args);
+	env->ReleaseStringUTFChars(jfunctionName, functionName);
+
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return 0;
+	}
 	if (result.IsEmpty() || result->IsUndefined() || !result->IsString()) {
 		throwResultUndefinedException(env, "");
 		return NULL;
@@ -758,8 +839,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 	}
 	Handle<v8::Value> value = parentObject->Get(v8::String::NewFromUtf8(isolate, functionName));
 	Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+
+	TryCatch tryCatch;
 	func->Call(parentObject, size, args);
 	env->ReleaseStringUTFChars(jfunctionName, functionName);
+	if ( tryCatch.HasCaught() ) {
+		throwExecutionException(env, isolate, &tryCatch);
+		return;
+	}
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
@@ -1465,7 +1552,7 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	env->CallVoidMethod(v8, callVoidMethod, md->methodID, parameters);
 	if ( env -> ExceptionCheck() ) {
 		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unhandled Java Exception"));
 	}
 
 	jclass arrayCls = env->FindClass("com/eclipsesource/v8/V8Array");
@@ -1558,7 +1645,7 @@ void unknownCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 	if ( env -> ExceptionCheck() ) {
 		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Java Exception Caught"));
+		isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unhandled Java Exception"));
 	} else if ( resultObject == NULL ) {
 		args.GetReturnValue().SetUndefined();
 	} else {
@@ -1719,13 +1806,33 @@ void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, cons
     (env)->Throw( result );
 }
 
+void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
+		const char* sourceLine, int startColumn, int endColumn, const char* stackTrace) {
+    const char *className = "com/eclipsesource/v8/V8ScriptExecutionException";
+    jclass exClass = (env)->FindClass(className);
+    jmethodID methodID = env->GetMethodID(exClass, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
+    jstring jfileName = env->NewStringUTF(fileName);
+    jstring jmessage = env->NewStringUTF(message);
+    jstring jsourceLine = env->NewStringUTF(sourceLine);
+    jstring jstackTrace = NULL;
+    if ( stackTrace != NULL ) {
+    	jstackTrace = env->NewStringUTF(stackTrace);
+    }
+    jthrowable wrappedException = NULL;
+    if ( env -> ExceptionCheck() ) {
+    	wrappedException = env->ExceptionOccurred();
+    }
+    jthrowable result = (jthrowable) env->NewObject(exClass, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
+    (env)->Throw( result );
+}
+
 void throwParseException( JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
 	v8::HandleScope handle_scope(isolate);
 	v8::String::Utf8Value exception(tryCatch->Exception());
 	const char* exceptionString = ToCString(exception);
 	v8::Handle<v8::Message> message = tryCatch->Message();
 	if (message.IsEmpty()) {
-		throwExecutionException(env, exceptionString);
+		throwV8RuntimeException(env, exceptionString);
 	} else {
 	    v8::String::Utf8Value filename(message->GetScriptResourceName());
 	    int lineNumber = message->GetLineNumber();
@@ -1738,8 +1845,32 @@ void throwParseException( JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
 	}
 }
 
-void throwExecutionException( JNIEnv *env, const char *message ) {
-    const char *className = "com/eclipsesource/v8/V8ExecutionException";
+void throwExecutionException( JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
+	v8::HandleScope handle_scope(isolate);
+	v8::String::Utf8Value exception(tryCatch->Exception());
+	const char* exceptionString = ToCString(exception);
+	v8::Handle<v8::Message> message = tryCatch->Message();
+	if (message.IsEmpty()) {
+		throwV8RuntimeException(env, exceptionString);
+	} else {
+	    v8::String::Utf8Value filename(message->GetScriptResourceName());
+	    int lineNumber = message->GetLineNumber();
+	    v8::String::Utf8Value sourceline(message->GetSourceLine());
+	    int start = message->GetStartColumn();
+	    int end = message->GetEndColumn();
+	    const char* filenameString = ToCString(filename);
+	    const char* sourcelineString = ToCString(sourceline);
+	    v8::String::Utf8Value stack_trace(tryCatch->StackTrace());
+	    const char* stackTrace = NULL;
+	    if (stack_trace.length() > 0) {
+	      stackTrace = ToCString(stack_trace);
+	    }
+	    throwExecutionException(env, filenameString, lineNumber, exceptionString, sourcelineString, start, end, stackTrace);
+	}
+}
+
+void throwV8RuntimeException( JNIEnv *env, const char *message ) {
+    const char *className = "com/eclipsesource/v8/V8RuntimeException";
 
     jclass exClass = (env)->FindClass(className);
     (env)->ThrowNew(exClass, message );

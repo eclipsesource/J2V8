@@ -163,7 +163,7 @@ public class V8Object {
         return null;
     }
 
-    public int executeIntFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public int executeIntFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -171,7 +171,7 @@ public class V8Object {
         return v8._executeIntFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -179,7 +179,7 @@ public class V8Object {
         return v8._executeDoubleFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public String executeStringFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public String executeStringFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -187,7 +187,7 @@ public class V8Object {
         return v8._executeStringFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -195,7 +195,7 @@ public class V8Object {
         return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -210,7 +210,7 @@ public class V8Object {
         return result;
     }
 
-    public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ExecutionException,
+    public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
     V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
@@ -225,7 +225,7 @@ public class V8Object {
         return result;
     }
 
-    public void executeVoidFunction(final String name, final V8Array parameters) throws V8ExecutionException {
+    public void executeVoidFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException {
         V8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();

@@ -278,7 +278,7 @@ public class V8 extends V8Object {
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
         } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
+            throw e;
         } finally {
             releaseArguments(args, hasVarArgs);
         }
@@ -292,7 +292,7 @@ public class V8 extends V8Object {
                 || (result instanceof String) || (result instanceof V8Object) || (result instanceof V8Array)) {
             return result;
         }
-        throw new V8ExecutionException("Unknown return type: " + result.getClass());
+        throw new V8RuntimeException("Unknown return type: " + result.getClass());
     }
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
@@ -308,7 +308,7 @@ public class V8 extends V8Object {
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
         } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new V8ExecutionException(e);
+            throw e;
         } finally {
             releaseArguments(args, hasVarArgs);
         }

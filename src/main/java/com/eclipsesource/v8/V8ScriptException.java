@@ -1,0 +1,113 @@
+
+package com.eclipsesource.v8;
+
+
+@SuppressWarnings("serial")
+public abstract class V8ScriptException extends V8RuntimeException {
+
+    private final String    fileName;
+    private final int       lineNumber;
+    private final String    jsMessage;
+    private final String    sourceLine;
+    private final int       startColumn;
+    private final int       endColumn;
+    private final String    jsStackTrace;
+
+    public V8ScriptException(final String fileName,
+            final int lineNumber,
+            final String jsMessage,
+            final String sourceLine,
+            final int startColumn,
+            final int endColumn,
+            final String jsStackTrace,
+            final Throwable cause) {
+        this.fileName = fileName;
+        this.lineNumber = lineNumber;
+        this.jsMessage = jsMessage;
+        this.sourceLine = sourceLine;
+        this.startColumn = startColumn;
+        this.endColumn = endColumn;
+        this.jsStackTrace = jsStackTrace;
+        if (cause != null) {
+            initCause(cause);
+        }
+    }
+
+    public String getJSStackTrace() {
+        return jsStackTrace;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public int getStartColumn() {
+        return startColumn;
+    }
+
+    public int getEndColumn() {
+        return endColumn;
+    }
+
+    public String getSourceLine() {
+        return sourceLine;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(createMessageLine());
+        result.append(createMessageDetails());
+        result.append(createJSStackDetails());
+        result.append("\n");
+        result.append(this.getClass().getName());
+        return result.toString();
+    }
+
+    @Override
+    public String getMessage() {
+        return createMessageLine();
+    }
+
+    public String getJSMessage() {
+        return jsMessage;
+    }
+
+    private String createMessageLine() {
+        return fileName + ":" + lineNumber + ": " + jsMessage;
+    }
+
+    private String createJSStackDetails() {
+        if (jsStackTrace != null) {
+            return "\n" + jsStackTrace;
+        }
+        return "";
+    }
+
+    private String createMessageDetails() {
+        StringBuilder result = new StringBuilder();
+        if ((sourceLine != null) && !sourceLine.isEmpty()) {
+            result.append('\n');
+            result.append(sourceLine);
+            result.append('\n');
+            if (startColumn >= 0) {
+                result.append(createCharSequence(startColumn, ' '));
+                result.append(createCharSequence(endColumn - startColumn, '^'));
+            }
+        }
+        return result.toString();
+    }
+
+    private char[] createCharSequence(final int length, final char c) {
+        char[] result = new char[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = c;
+        }
+        return result;
+    }
+
+}

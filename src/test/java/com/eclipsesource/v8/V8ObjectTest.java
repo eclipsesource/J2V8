@@ -709,6 +709,7 @@ public class V8ObjectTest {
         v8.registerJavaMethod(this, "runMe", "runMe", new Class<?>[] { Object.class });
 
         v8.executeVoidScript("runMe(x);");
+        a.release();
     }
 
 }

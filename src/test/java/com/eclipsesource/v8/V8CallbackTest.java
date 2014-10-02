@@ -774,8 +774,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -788,8 +788,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -802,8 +802,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -816,8 +816,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -830,8 +830,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -844,8 +844,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -858,8 +858,8 @@ public class V8CallbackTest {
 
         try {
             v8.executeVoidScript("foo()");
-        } catch (Exception e) {
-            assertEquals("My Runtime Exception", e.getMessage());
+        } catch (V8ScriptExecutionException e) {
+            assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
     }
@@ -944,7 +944,7 @@ public class V8CallbackTest {
         result.release();
     }
 
-    @Test(expected = V8ExecutionException.class)
+    @Test(expected = V8ScriptExecutionException.class)
     public void testObjectMethodReturnsIncompatibleType() {
         ICallback callback = mock(ICallback.class);
         doReturn(new Rectangle()).when(callback).objectMethodNoParameter();
@@ -1099,6 +1099,7 @@ public class V8CallbackTest {
         v8.executeVoidFunction("foo", parameters);
         parameters.release();
         object.release();
+        array.release();
     }
 
     @Test
@@ -1139,6 +1140,7 @@ public class V8CallbackTest {
         v8.executeVoidFunction("foo", parameters);
         parameters.release();
         object.release();
+        array.release();
     }
 
     @Test
