@@ -67,6 +67,24 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    @Test(expected=IllegalStateException.class)
+    public void testAccessReleasedObjectThrowsException1() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.release();
+
+        v8Object.toString();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testAccessReleasedObjectThrowsException2() {
+        V8Object v8Object = new V8Object(v8);
+
+        v8Object.release();
+
+        v8Object.add("foo", "bar");
+    }
+
     @Test
     public void testGetV8Object() {
         v8.executeVoidScript("foo = {key: 'value'}");
@@ -679,6 +697,18 @@ public class V8ObjectTest {
 
         assertEquals("[object Object]", a.toString());
         a.release();
+    }
+
+    public void runMe(final Object o) {
+        assertNotNull(o.toString());
+    }
+
+    @Test
+    public void testToStringInCallback() {
+        V8Object a = v8.executeObjectScript("x = [1, 'test', false]; x;");
+        v8.registerJavaMethod(this, "runMe", "runMe", new Class<?>[] { Object.class });
+
+        v8.executeVoidScript("runMe(x);");
     }
 
 }

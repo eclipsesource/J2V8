@@ -14,7 +14,6 @@ public:
     Isolate::Scope* isolate_scope;
     Persistent<Context> context_;
     std::map <int, Persistent<Object>* > objects;
-    JNIEnv* env;
     jobject v8;
 };
 
@@ -32,7 +31,6 @@ void throwError( JNIEnv *env, const char *message );
 void throwExecutionException( JNIEnv *env, const char *message );
 void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
-void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 );
 
 #define DELETE_SCRIPT_ORIGIN_PTR(ptr)\
 		if ( ptr != NULL ) { \
@@ -46,7 +44,6 @@ void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 );
 
 void debugHandler() {
 	JNIEnv * g_env;
-	// double check it's all ok
 	int getEnvStat = jvm->GetEnv((void **) &g_env, JNI_VERSION_1_6);
 	if (getEnvStat == JNI_EDETACHED) {
 		if (jvm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
@@ -115,7 +112,7 @@ static void jsWindowObjectAccessor(Local<String> property,
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-  (JNIEnv *env, jobject, jint handle, jstring globalAlias) {
+  (JNIEnv *env, jobject v8, jint handle, jstring globalAlias) {
 	if (jvm == NULL ) {
 		// on first creation, store the JVM and a handle to V8.class
 		env->GetJavaVM(&jvm);
@@ -125,6 +122,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 	v8Isolates[handle] = new V8Runtime();
 	v8Isolates[handle]->isolate = Isolate::New();
 	v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
+	v8Isolates[handle]->v8 = env->NewGlobalRef(v8);
 	HandleScope handle_scope(v8Isolates[handle]->isolate);
 	Handle<ObjectTemplate> globalObject = ObjectTemplate::New();
 	if ( globalAlias == NULL ) {
@@ -262,6 +260,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
 	v8Isolates[v8RuntimeHandle]->context_.Reset();
 	delete(v8Isolates[v8RuntimeHandle]->isolate_scope);
 	v8Isolates[v8RuntimeHandle]->isolate->Dispose();
+	env->DeleteGlobalRef(v8Isolates[v8RuntimeHandle]->v8);
 	delete(v8Isolates[v8RuntimeHandle]);
 	v8Isolates.erase(v8RuntimeHandle);
 }
@@ -322,7 +321,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -348,7 +346,6 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -379,7 +376,6 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -410,7 +406,6 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 	if ( isolate == NULL ) {
 		return NULL;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -443,7 +438,6 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -474,7 +468,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -508,7 +501,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
@@ -542,7 +534,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayFunction
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -579,7 +570,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectFunction
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -616,7 +606,6 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -650,7 +639,6 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -685,7 +673,6 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -720,13 +707,11 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 	if ( isolate == NULL ) {
 		return 0;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
 	Context::Scope context_scope(context);
 	Handle<v8::Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-
 	int size = 0;
 	Handle<Value>* args = NULL;
 	if ( parameterHandle >= 0 ) {
@@ -756,7 +741,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 	if ( isolate == NULL ) {
 		return;
 	}
-	setupJNIContext(v8RuntimeHandle, env, v8);
 	const char* functionName = env -> GetStringUTFChars(jfunctionName, NULL);
 	HandleScope handle_scope(isolate);
 	v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);
@@ -1461,7 +1445,17 @@ void voidCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
 
 	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
-	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+	JNIEnv * env;
+	int getEnvStat = jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
+	if (getEnvStat == JNI_EDETACHED) {
+		if (jvm->AttachCurrentThread((void **) &env, NULL) != 0) {
+			std::cout << "Failed to attach" << std::endl;
+		}
+	} else if (getEnvStat == JNI_OK) {
+		//
+	} else if (getEnvStat == JNI_EVERSION) {
+		std::cout << "GetEnv: version not supported" << std::endl;
+	}
 
 	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
 
@@ -1543,7 +1537,17 @@ void unknownCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 	jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
 	Isolate* isolate = v8Isolates[md->v8RuntimeHandle]->isolate;
-	JNIEnv* env = v8Isolates[md->v8RuntimeHandle]->env;
+	JNIEnv * env;
+	int getEnvStat = jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
+	if (getEnvStat == JNI_EDETACHED) {
+		if (jvm->AttachCurrentThread((void **) &env, NULL) != 0) {
+			std::cout << "Failed to attach" << std::endl;
+		}
+	} else if (getEnvStat == JNI_OK) {
+		//
+	} else if (getEnvStat == JNI_EVERSION) {
+		std::cout << "GetEnv: version not supported" << std::endl;
+	}
 
 	jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
 
@@ -1685,11 +1689,6 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1identityHash
 	Context::Scope context_scope(context);
 	Handle<v8::Object> global = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	return global->GetIdentityHash();
-}
-
-void setupJNIContext(int v8RuntimeHandle, JNIEnv *env, jobject v8 ) {
-	v8Isolates[v8RuntimeHandle]->env = env;
-	v8Isolates[v8RuntimeHandle]->v8 = v8;
 }
 
 Isolate* getIsolate(JNIEnv *env, int handle) {
