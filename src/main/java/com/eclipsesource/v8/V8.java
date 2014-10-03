@@ -122,13 +122,17 @@ public class V8 extends V8Object {
 
     @Override
     public void release() {
+        release(true);
+    }
+
+    public void release(final boolean reportMemoryLeaks) {
         checkThread();
         if (debugEnabled) {
             disableDebugSupport();
         }
         runtimes.remove(this);
         _releaseRuntime(v8RuntimeHandle);
-        if (objectReferences > 0) {
+        if (reportMemoryLeaks && (objectReferences > 0)) {
             throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
         }
     }

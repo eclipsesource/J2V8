@@ -88,6 +88,22 @@ public class V8Test {
         assertTrue(result[0]);
     }
 
+    @Test
+    public void testIAENotThrownOnShutdown() {
+        V8 v8_ = V8.createV8Runtime();
+
+        new V8Object(v8_);
+        v8_.release(false);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testISEThrownOnShutdown() {
+        V8 v8_ = V8.createV8Runtime();
+
+        new V8Object(v8_);
+        v8_.release(true);
+    }
+
     /*** Void Script ***/
     @Test
     public void testSimpleVoidScript() {
