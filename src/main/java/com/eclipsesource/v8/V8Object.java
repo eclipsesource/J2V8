@@ -270,7 +270,7 @@ public class V8Object {
     public V8Object add(final String key, final V8Array value) {
         V8.checkThread();
         checkReleaesd();
-        v8._addArray(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
+        v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
         return this;
     }
 
