@@ -14,6 +14,7 @@ public class V8Array extends V8Object {
     @Override
     protected void initialize(final int runtimeHandle, final int objectHandle) {
         v8._initNewV8Array(runtimeHandle, objectHandle);
+        v8.addObjRef();
         released = false;
     }
 

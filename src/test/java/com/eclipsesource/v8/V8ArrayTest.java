@@ -37,6 +37,13 @@ public class V8ArrayTest {
         assertTrue(v8Array.isReleased());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testDoNotReleaseArrayReference() {
+        V8 _v8 = V8.createV8Runtime();
+        new V8Array(_v8);
+        _v8.release();
+    }
+
     @Test
     public void testReleaseV8ArrayWithoutNativeResources() {
         V8Array v8Array = new V8Array(v8, false);
