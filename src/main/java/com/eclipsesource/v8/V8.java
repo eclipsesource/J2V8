@@ -323,13 +323,13 @@ public class V8 extends V8Object {
             Object[] varArgs = (Object[]) args[args.length - 1];
             for (Object object : varArgs) {
                 if (object instanceof V8Object) {
-                    ((V8Object) object).release();
+                    ((V8Value) object).release();
                 }
             }
         }
         for (Object arg : args) {
             if (arg instanceof V8Object) {
-                ((V8Object) arg).release();
+                ((V8Value) arg).release();
             }
         }
     }
@@ -507,8 +507,6 @@ public class V8 extends V8Object {
     protected native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
 
     protected native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
-
-    protected native void _addArrayArrayItem(int v8RuntimeHandle, int arrayHandle, int value);
 
     protected native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
 

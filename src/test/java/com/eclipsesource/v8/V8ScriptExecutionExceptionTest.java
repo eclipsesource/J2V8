@@ -12,7 +12,7 @@ import static org.junit.Assert.fail;
 public class V8ScriptExecutionExceptionTest {
 
     private V8ScriptExecutionException exception;
-    private String                     errorFunction = "function myFunction() {\n"
+    private String                     errorFunction         = "function myFunction() {\n"
                                                                      + "undefined.toString();\n"
                                                                      + "}\n";
     private String                     undefinedAccessScript = "x=undefined;\n"

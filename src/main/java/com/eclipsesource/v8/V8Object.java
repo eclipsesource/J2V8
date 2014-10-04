@@ -2,22 +2,7 @@ package com.eclipsesource.v8;
 
 import java.lang.reflect.Method;
 
-public class V8Object {
-
-    public static final int UNDEFINED               = 0;
-    public static final int VOID                    = 0;
-    public static final int INTEGER                 = 1;
-    public static final int DOUBLE                  = 2;
-    public static final int BOOLEAN                 = 3;
-    public static final int STRING                  = 4;
-    public static final int V8_ARRAY                = 5;
-    public static final int V8_OBJECT               = 6;
-
-    private static int      v8ObjectInstanceCounter = 1;
-
-    protected V8            v8;
-    private int             objectHandle;
-    protected boolean       released                = true;
+public class V8Object extends V8Value {
 
     protected V8Object() {
         v8 = (V8) this;
@@ -36,53 +21,6 @@ public class V8Object {
         if (initialize) {
             initialize(v8.getV8RuntimeHandle(), objectHandle);
         }
-    }
-
-    protected void initialize(final int runtimeHandle, final int objectHandle) {
-        v8._initNewV8Object(runtimeHandle, objectHandle);
-        v8.addObjRef();
-        released = false;
-    }
-
-    public int getHandle() {
-        return objectHandle;
-    }
-
-    public void release() {
-        V8.checkThread();
-        if ( !released ) {
-            released = true;
-            v8._release(v8.getV8RuntimeHandle(), objectHandle);
-            v8.releaseObjRef();
-        }
-    }
-
-    @Override
-    public boolean equals(final Object that) {
-        V8.checkThread();
-        checkReleaesd();
-        if ((that instanceof V8Object)) {
-            return v8._equals(v8.getV8RuntimeHandle(), getHandle(), ((V8Object) that).getHandle());
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        V8.checkThread();
-        checkReleaesd();
-        return v8._identityHash(v8.getV8RuntimeHandle(), getHandle());
-    }
-
-    @Override
-    public String toString() {
-        V8.checkThread();
-        checkReleaesd();
-        return executeStringFunction("toString", null);
-    }
-
-    public boolean isReleased() {
-        return released;
     }
 
     public boolean contains(final String key) {
@@ -260,14 +198,7 @@ public class V8Object {
         return this;
     }
 
-    public V8Object add(final String key, final V8Object value) {
-        V8.checkThread();
-        checkReleaesd();
-        v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
-        return this;
-    }
-
-    public V8Object add(final String key, final V8Array value) {
+    public V8Object add(final String key, final V8Value value) {
         V8.checkThread();
         checkReleaesd();
         v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
@@ -318,10 +249,11 @@ public class V8Object {
         return this;
     }
 
-    protected void checkReleaesd() {
-        if (released) {
-            throw new IllegalStateException("Object released");
-        }
+    @Override
+    public String toString() {
+        V8.checkThread();
+        checkReleaesd();
+        return executeStringFunction("toString", null);
     }
 
 }

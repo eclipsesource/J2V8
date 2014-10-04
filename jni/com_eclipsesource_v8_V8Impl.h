@@ -305,14 +305,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _addArray
- * Signature: (IILjava/lang/String;I)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArray
-  (JNIEnv *, jobject, jint, jint, jstring, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _addUndefined
  * Signature: (IILjava/lang/String;)V
  */
@@ -430,14 +422,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
   (JNIEnv *, jobject, jint, jint, jstring);
-
-/*
- * Class:     com_eclipsesource_v8_V8
- * Method:    _addArrayArrayItem
- * Signature: (III)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
-  (JNIEnv *, jobject, jint, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

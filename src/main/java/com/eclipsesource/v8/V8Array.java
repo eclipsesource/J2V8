@@ -161,16 +161,9 @@ public class V8Array extends V8Object {
         return this;
     }
 
-    public V8Array push(final V8Object value) {
+    public V8Array push(final V8Value value) {
         V8.checkThread();
         v8._addArrayObjectItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
-        return this;
-    }
-
-    public V8Array push(final V8Array value) {
-        V8.checkThread();
-        checkReleaesd();
-        v8._addArrayArrayItem(v8.getV8RuntimeHandle(), getHandle(), value.getHandle());
         return this;
     }
 

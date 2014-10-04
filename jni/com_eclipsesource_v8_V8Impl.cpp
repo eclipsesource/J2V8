@@ -822,15 +822,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
 	env->ReleaseStringUTFChars(value, utfString);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayArrayItem
-  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint valueHandle) {
-	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
-	int index = Array::Cast(*array)->Length();
-	Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
-	array->Set(index, v8Value);
-}
-
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint valueHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
 
 public class V8ObjectUtils {
 
@@ -135,15 +136,15 @@ public class V8ObjectUtils {
     public static Object getValue(final V8Array array, final int index) {
         int valueType = array.getType(index);
         switch (valueType) {
-            case V8Object.INTEGER:
+            case V8Value.INTEGER:
                 return array.getInteger(index);
-            case V8Object.DOUBLE:
+            case V8Value.DOUBLE:
                 return array.getDouble(index);
-            case V8Object.BOOLEAN:
+            case V8Value.BOOLEAN:
                 return array.getBoolean(index);
-            case V8Object.STRING:
+            case V8Value.STRING:
                 return array.getString(index);
-            case V8Object.V8_ARRAY:
+            case V8Value.V8_ARRAY:
                 V8Array arrayValue = array.getArray(index);
                 try {
                     return toList(arrayValue);
@@ -152,7 +153,7 @@ public class V8ObjectUtils {
                         arrayValue.release();
                     }
                 }
-            case V8Object.V8_OBJECT:
+            case V8Value.V8_OBJECT:
                 V8Object objectValue = array.getObject(index);
                 try {
                     return toMap(objectValue);
@@ -161,7 +162,7 @@ public class V8ObjectUtils {
                         objectValue.release();
                     }
                 }
-            case V8Object.VOID:
+            case V8Value.VOID:
                 return null;
             default:
                 throw new IllegalStateException("Cannot find type for index: " + index);
@@ -171,15 +172,15 @@ public class V8ObjectUtils {
     public static Object getValue(final V8Object object, final String key) {
         int valueType = object.getType(key);
         switch (valueType) {
-            case V8Object.INTEGER:
+            case V8Value.INTEGER:
                 return object.getInteger(key);
-            case V8Object.DOUBLE:
+            case V8Value.DOUBLE:
                 return object.getDouble(key);
-            case V8Object.BOOLEAN:
+            case V8Value.BOOLEAN:
                 return object.getBoolean(key);
-            case V8Object.STRING:
+            case V8Value.STRING:
                 return object.getString(key);
-            case V8Object.V8_ARRAY:
+            case V8Value.V8_ARRAY:
                 V8Array array = object.getArray(key);
                 try {
                     return toList(array);
@@ -188,7 +189,7 @@ public class V8ObjectUtils {
                         array.release();
                     }
                 }
-            case V8Object.V8_OBJECT:
+            case V8Value.V8_OBJECT:
                 V8Object child = object.getObject(key);
                 try {
                     return toMap(child);
@@ -197,7 +198,7 @@ public class V8ObjectUtils {
                         child.release();
                     }
                 }
-            case V8Object.VOID:
+            case V8Value.VOID:
                 return null;
             default:
                 throw new IllegalStateException("Cannot find type for key: " + key);
