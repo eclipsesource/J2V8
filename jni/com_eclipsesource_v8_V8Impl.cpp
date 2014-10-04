@@ -83,6 +83,22 @@ int getType(Handle<Value> v8Value);
 			return;\
 		}
 
+Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+		Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+		const char* utfString_key = env -> GetStringUTFChars(key, NULL);
+		Handle<Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
+		env->ReleaseStringUTFChars(key, utfString_key);
+		return v8Value;
+}
+
+void addValueWithKey(JNIEnv* env, Isolate* isolate, jint v8RuntimeHandle, jint objectHandle, jstring key, Handle<Value> value) {
+	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
+	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
+	object->Set(v8Key,  value);
+	env->ReleaseStringUTFChars(key, utfString_key);
+}
+
 void getJNIEnv(JNIEnv*& env) {
 	int getEnvStat = jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
 	if (getEnvStat == JNI_EDETACHED) {
@@ -507,31 +523,19 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
-	object->Set(v8Key, Undefined(isolate));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Undefined(isolate));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
   (JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint value) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
-	object->Set(v8Key,  Int32::New(isolate, value));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Int32::New(isolate, value));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2D
   (JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jdouble value) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
-	object->Set( v8Key,  Number::New(isolate, value));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Number::New(isolate, value));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Ljava_lang_String_2
@@ -550,30 +554,20 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Z
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jboolean value) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
-	object->Set( v8Key, v8::Boolean::New(isolate, value));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, v8::Boolean::New(isolate, value));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addObject
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint valueHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
-	object->Set( v8Key,  Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<Value> value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, value);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
-  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint parentHandle, jstring key, jint resultHandle) {
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint resultHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
-	Handle<Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_OBJECT(v8Value);
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	Handle<Object> obj = v8Value->ToObject();
@@ -581,12 +575,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getObject
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
-  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint parentHandle, jstring key, jint resultHandle) {
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint resultHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parentHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_ARRAY(v8Value);
 	createPersistentContainer(v8Isolates[v8RuntimeHandle], resultHandle);
 	v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, v8Value->ToObject());
@@ -595,10 +586,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1getArray
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_INTEGER(v8Value);
 	return v8Value->Int32Value();
 }
@@ -606,10 +594,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_NUMBER(v8Value);
 	return v8Value->NumberValue();
 }
@@ -617,10 +602,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_STRING(v8Value);
 	String::Utf8Value utf(v8Value->ToString());
 	return env->NewStringUTF(*utf);
@@ -629,10 +611,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	ASSERT_IS_BOOLEAN(v8Value);
 	return v8Value->BooleanValue();
 }
@@ -640,10 +619,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_String_2
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-	Handle<v8::Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
-	Handle<v8::Value> v8Value = object->Get(String::NewFromUtf8(isolate, utfString_key));
-	env->ReleaseStringUTFChars(key, utfString_key);
+	Handle<v8::Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
 	int type = getType(v8Value);
 	if ( type < 0 ) {
 		throwResultUndefinedException(env, "");
