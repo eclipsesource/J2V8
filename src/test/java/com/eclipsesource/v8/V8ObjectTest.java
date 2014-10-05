@@ -720,4 +720,34 @@ public class V8ObjectTest {
         a.release();
     }
 
+    @Test
+    public void testObjectInstanceofArray() {
+        v8.executeVoidScript("x = [1,2,3]");
+
+        V8Object object = v8.getObject("x");
+
+        assertTrue(object instanceof V8Array);
+        object.release();
+    }
+
+    @Test
+    public void testObjectNotInstanceofArray() {
+        v8.executeVoidScript("x = {}");
+
+        V8Object object = v8.getObject("x");
+
+        assertFalse(object instanceof V8Array);
+        object.release();
+    }
+
+    @Test
+    public void testObjectFunctionInstanceoOfArray() {
+        v8.executeVoidScript("function foo() {return [1,2,3];};");
+
+        V8Object object = v8.executeObjectFunction("foo", null);
+
+        assertTrue(object instanceof V8Array);
+        object.release();
+    }
+
 }

@@ -1105,6 +1105,14 @@ public class V8Test {
         v8.executeVoidScript(script, "example.js", 0);
     }
 
+    @Test
+    public void testExecuteArrayScriptAsObject() {
+        V8Object object = v8.executeObjectScript("[1,2,3]");
+
+        assertTrue(object instanceof V8Array);
+        object.release();
+    }
+
     private boolean debugEnabled(final int port) {
         Socket socket = new Socket();
         InetSocketAddress endPoint = new InetSocketAddress("localhost", port);

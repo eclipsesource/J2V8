@@ -106,31 +106,13 @@ public class V8Array extends V8Object {
     public V8Array getArray(final int index) {
         V8.checkThread();
         checkReleaesd();
-        V8Array result = new V8Array(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._arrayGetArray(v8.getV8RuntimeHandle(), getHandle(), index, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
-        }
-        return result;
+        return v8._arrayGetArray(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
     public V8Object getObject(final int index) {
         V8.checkThread();
         checkReleaesd();
-        V8Object result = new V8Object(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._arrayGetObject(v8.getV8RuntimeHandle(), getHandle(), index, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
-        }
-        return result;
+        return v8._arrayGetObject(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
     public V8Array push(final int value) {

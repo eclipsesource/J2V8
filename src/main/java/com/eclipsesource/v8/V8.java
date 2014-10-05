@@ -85,18 +85,21 @@ public class V8 extends V8Object {
 
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
         checkThread();
+        checkReleaesd();
         debugEnabled = _enableDebugSupport(getHandle(), port, waitForConnection);
         return debugEnabled;
     }
 
     public boolean enableDebugSupport(final int port) {
         checkThread();
+        checkReleaesd();
         debugEnabled = _enableDebugSupport(getV8RuntimeHandle(), port, false);
         return debugEnabled;
     }
 
     public void disableDebugSupport() {
         checkThread();
+        checkReleaesd();
         _disableDebugSupport(getV8RuntimeHandle());
         debugEnabled = false;
     }
@@ -143,6 +146,7 @@ public class V8 extends V8Object {
 
     public int executeIntScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkReleaesd();
         return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -152,6 +156,7 @@ public class V8 extends V8Object {
 
     public double executeDoubleScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkReleaesd();
         return _executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -161,6 +166,7 @@ public class V8 extends V8Object {
 
     public String executeStringScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkReleaesd();
         return _executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -170,6 +176,7 @@ public class V8 extends V8Object {
 
     public boolean executeBooleanScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkReleaesd();
         return _executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -179,16 +186,8 @@ public class V8 extends V8Object {
 
     public V8Array executeArrayScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        V8Array result = new V8Array(this, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            _executeArrayScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
-        } catch (Exception e) {
-            result.release();
-            throw e;
-        }
-        return result;
+        checkReleaesd();
+        return _executeArrayScript(getV8RuntimeHandle(), script, scriptName, lineNumber);
     }
 
     public V8Object executeObjectScript(final String script) {
@@ -197,16 +196,8 @@ public class V8 extends V8Object {
 
     public V8Object executeObjectScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        V8Object result = new V8Object(this, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            _executeObjectScript(getV8RuntimeHandle(), script, result.getHandle(), scriptName, lineNumber);
-        } catch (Exception e) {
-            result.release();
-            throw e;
-        }
-        return result;
+        checkReleaesd();
+        return _executeObjectScript(getV8RuntimeHandle(), script, scriptName, lineNumber);
     }
 
     public void executeVoidScript(final String script) {
@@ -215,6 +206,7 @@ public class V8 extends V8Object {
 
     public void executeVoidScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkReleaesd();
         _executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -400,26 +392,19 @@ public class V8 extends V8Object {
 
     protected native void _createIsolate(int v8RuntimeHandle, String globalAlias);
 
-    protected native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
+    protected native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
+    protected native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native String _executeStringScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
+    protected native String _executeStringScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
+    protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle,
-            final String scriptName, final int lineNumber);
+    protected native V8Object _executeObjectScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native void _executeVoidScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
+    protected native void _executeVoidScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
-    protected native void _executeArrayScript(int v8RuntimeHandle, String script, int resultHandle,
-            final String scriptName, final int lineNumber);
+    protected native V8Array _executeArrayScript(int v8RuntimeHandle, String script, final String scriptName, final int lineNumber);
 
     protected native void _release(int v8RuntimeHandle, int objectHandle);
 
@@ -435,28 +420,23 @@ public class V8 extends V8Object {
 
     protected native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native void _getArray(int v8RuntimeHandle, int objectHandle, String key, int resultHandle);
+    protected native V8Array _getArray(int v8RuntimeHandle, int objectHandle, String key);
 
-    protected native void _getObject(int v8RuntimeHandle, final int objectHandle, final String key,
-            final int resultObjectHandle);
+    protected native V8Object _getObject(int v8RuntimeHandle, final int objectHandle, final String key);
 
     protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
-    protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name,
-            int parametersHandle);
+    protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
     protected native String _executeStringFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
     protected native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
-    protected native void _executeArrayFunction(int v8RuntimeHandle, int objectHandle, String name,
-            int parametersHandle, int resultHandle);
+    protected native V8Array _executeArrayFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
-    protected native void _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name,
-            final int parametersHandle, int resultHandle);
+    protected native V8Object _executeObjectFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
 
-    protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name,
-            final int parametersHandle);
+    protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
 
     protected native boolean _equals(int v8RuntimeHandle, int objectHandle, int that);
 
@@ -478,8 +458,7 @@ public class V8 extends V8Object {
 
     protected native void _addUndefined(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName,
-            final int methodID, final boolean voidMethod);
+    protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName, final int methodID, final boolean voidMethod);
 
     protected native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
 
@@ -495,10 +474,9 @@ public class V8 extends V8Object {
 
     protected native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
 
-    protected native void _arrayGetObject(final int v8RuntimeHandle, final int arrayHandle, final int index,
-            final int resultHandle);
+    protected native V8Object _arrayGetObject(final int v8RuntimeHandle, final int arrayHandle, final int index);
 
-    protected native void _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index, int resultHandle);
+    protected native V8Array _arrayGetArray(int v8RuntimeHandle, int arrayHandle, int index);
 
     protected native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
 
