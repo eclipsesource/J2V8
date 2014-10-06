@@ -625,6 +625,47 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_Stri
 	return type;
 }
 
+bool isNumber(int type) {
+	return type == com_eclipsesource_v8_V8_DOUBLE || type == com_eclipsesource_v8_V8_INTEGER;
+}
+
+bool isObject(int type) {
+	return type == com_eclipsesource_v8_V8_V8_OBJECT || type == com_eclipsesource_v8_V8_V8_ARRAY;
+}
+
+bool isNumber(int type1, int type2 ) {
+	return isNumber(type1) && isNumber(type2);
+}
+
+bool isObject(int type1, int type2) {
+	return isObject(type1) && isObject(type2);
+}
+
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
+	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
+	Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+	int length = Array::Cast(*array)->Length();
+	int arrayType = com_eclipsesource_v8_V8_UNDEFINED;
+	for (int index = 0; index < length; index++) {
+		int type = getType(array->Get(index));
+		if ( type < 0 ) {
+				throwResultUndefinedException(env, "");
+		} else if ( index == 0 ) {
+			arrayType = type;
+		} else if ( type == arrayType ) {
+			// continue
+		} else if ( isNumber(arrayType, type)) {
+			arrayType = com_eclipsesource_v8_V8_DOUBLE;
+		} else if ( isObject(arrayType, type)) {
+			arrayType = com_eclipsesource_v8_V8_V8_OBJECT;
+		} else {
+			return com_eclipsesource_v8_V8_UNDEFINED;
+		}
+	}
+	return arrayType;
+}
+
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);

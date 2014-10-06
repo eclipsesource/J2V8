@@ -30,6 +30,12 @@ public class V8Array extends V8Object {
         return v8._getType(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
+    public int getType() {
+        V8.checkThread();
+        checkReleaesd();
+        return v8._getArrayType(v8.getV8RuntimeHandle(), getHandle());
+    }
+
     public int getType(final int index, final int length) {
         V8.checkThread();
         checkReleaesd();

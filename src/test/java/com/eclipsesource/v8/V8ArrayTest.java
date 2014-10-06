@@ -1070,12 +1070,142 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetSubArrayOfStringsOutOfBounds() {
-        V8Array a = v8.executeArrayScript("a = ['a', 7, 'c', 'd', 'e']; a");
+        V8Array a = v8.executeArrayScript("['a', 7, 'c', 'd', 'e']");
 
         try {
             a.getStrings(3, 3);
         } finally {
             a.release();
         }
+    }
+
+    @Test
+    public void testGetArrayTypeInt() {
+        V8Array a = v8.executeArrayScript("[1,2,3,4]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.INTEGER, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeDouble() {
+        V8Array a = v8.executeArrayScript("[1.1,2.2,3.3,4.4]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.DOUBLE, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeDoubleWithInts1() {
+        V8Array a = v8.executeArrayScript("[1.1,2,3.3,4]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.DOUBLE, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeDoubleWithInts2() {
+        V8Array a = v8.executeArrayScript("[1,2,3.3,4.4]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.DOUBLE, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeString() {
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd']");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.STRING, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeBoolean() {
+        V8Array a = v8.executeArrayScript("[true, false, false, true]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.BOOLEAN, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeObject() {
+        V8Array a = v8.executeArrayScript("[{}, {}, {foo:'bar'}]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.V8_OBJECT, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeArray() {
+        V8Array a = v8.executeArrayScript("[[], [1,2,3], []]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.V8_ARRAY, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeObjectWithArray1() {
+        V8Array a = v8.executeArrayScript("[{}, []]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.V8_OBJECT, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeObjectWithArray2() {
+        V8Array a = v8.executeArrayScript("[[], {}]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.V8_OBJECT, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeUndefined() {
+        V8Array a = v8.executeArrayScript("[false, 1, true, 0]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.UNDEFINED, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeUndefined2() {
+        V8Array a = v8.executeArrayScript("['false', false]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.UNDEFINED, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeEmpty() {
+        V8Array a = v8.executeArrayScript("['false', false]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.UNDEFINED, type);
+        a.release();
     }
 }

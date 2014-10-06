@@ -494,6 +494,8 @@ public class V8 extends V8Object {
 
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
 
+    protected native int _getArrayType(int v8RuntimeHandle, int objectHandle);
+
     protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index, final int length);
 
     protected native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
