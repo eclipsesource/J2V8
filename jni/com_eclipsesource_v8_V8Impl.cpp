@@ -83,20 +83,20 @@ int getType(Handle<Value> v8Value);
 			return;\
 		}
 
-Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring string) {
+Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
 	const char* utfString = env -> GetStringUTFChars(string, NULL);
 	Local<String> result = String::NewFromUtf8(isolate, utfString);
 	env->ReleaseStringUTFChars(string, utfString);
 	return result;
 }
 
-Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &key) {
 		Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 		Local<String> v8Key = createV8String(env, isolate, key);
 		return object->Get(v8Key);
 }
 
-void addValueWithKey(JNIEnv* env, Isolate* isolate, jint v8RuntimeHandle, jint objectHandle, jstring key, Handle<Value> value) {
+void addValueWithKey(JNIEnv* env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &key, Handle<Value> value) {
 	Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	const char* utfString_key = env -> GetStringUTFChars(key, NULL);
 	Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
@@ -278,12 +278,12 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 	return keys;
 }
 
-ScriptOrigin* createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring jscriptName, jint jlineNumber = 0) {
+ScriptOrigin* createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring &jscriptName, jint jlineNumber = 0) {
 	Local<String> scriptName = createV8String(env, isolate, jscriptName);
 	return new ScriptOrigin(scriptName, Integer::New(isolate, jlineNumber));
 }
 
-bool compileScript( Isolate *isolate, jstring jscript, JNIEnv *env, jstring jscriptName, jint jlineNumber, Local<Script> &script, TryCatch* tryCatch) {
+bool compileScript( Isolate *isolate, jstring &jscript, JNIEnv *env, jstring jscriptName, jint &jlineNumber, Local<Script> &script, TryCatch* tryCatch) {
 	Local<String> source = createV8String(env, isolate, jscript);
 	ScriptOrigin* scriptOriginPtr = NULL;
 	if ( jscriptName != NULL ) {
@@ -415,7 +415,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeArrayScript
 	return;
 }
 
-bool invokeFunction(JNIEnv *env, Isolate* isolate, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle, Handle<Value> &result) {
+bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &jfunctionName, jint &parameterHandle, Handle<Value> &result) {
 	Local<String> functionName = createV8String(env, isolate, jfunctionName);
 	Handle<Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
 	int size = 0;
@@ -1005,7 +1005,8 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
 		} else if ( returnType == com_eclipsesource_v8_V8_DOUBLE ) {
 			args.GetReturnValue().Set(getDouble(env, resultObject));
 		} else if ( returnType == com_eclipsesource_v8_V8_STRING ) {
-			Local<String> result = createV8String(env, v8Isolates[md->v8RuntimeHandle]->isolate, (jstring)resultObject);
+			jstring stringResult = (jstring) resultObject;
+			Local<String> result = createV8String(env, v8Isolates[md->v8RuntimeHandle]->isolate, stringResult);
 			args.GetReturnValue().Set(result);
 		} else if ( returnType == com_eclipsesource_v8_V8_V8_ARRAY ) {
 			int resultHandle = getHandle(env, resultObject);
