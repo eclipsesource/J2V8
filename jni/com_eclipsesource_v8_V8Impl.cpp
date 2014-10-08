@@ -268,7 +268,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
 	Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-	Local<Array> properties = object->GetPropertyNames();
+	Local<Array> properties = object->GetOwnPropertyNames();
 	int size = properties->Length();
 	jobjectArray keys = (env)->NewObjectArray(size, stringCls, NULL);
 	for ( int i = 0; i < size; i++ ) {
