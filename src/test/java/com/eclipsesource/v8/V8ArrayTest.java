@@ -100,7 +100,7 @@ public class V8ArrayTest {
 
     @Test
     public void testArraySize() {
-        V8Array array = v8.executeArrayScript("foo = [1,2,3]; foo");
+        V8Array array = v8.executeArrayScript("[1,2,3];");
 
         assertEquals(3, array.length());
         array.release();
@@ -108,7 +108,7 @@ public class V8ArrayTest {
 
     @Test
     public void testArraySizeZero() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
 
         assertEquals(0, array.length());
         array.release();
@@ -117,7 +117,7 @@ public class V8ArrayTest {
     /*** Get Int ***/
     @Test
     public void testArrayGetInt() {
-        V8Array array = v8.executeArrayScript("foo = [1,2,8]; foo");
+        V8Array array = v8.executeArrayScript("[1,2,8];");
 
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
@@ -125,9 +125,18 @@ public class V8ArrayTest {
         array.release();
     }
 
+    @Test
+    public void testArrayGetIntFromDouble() {
+        V8Array array = v8.executeArrayScript("[1.1, 2.2];");
+
+        assertEquals(1, array.getInteger(0));
+        assertEquals(2, array.getInteger(1));
+        array.release();
+    }
+
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetIntWrongType() {
-        V8Array array = v8.executeArrayScript("foo = ['string']; foo");
+        V8Array array = v8.executeArrayScript("['string'];");
 
         try {
             array.getInteger(0);
@@ -138,7 +147,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetIntIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getInteger(0);
         } finally {
@@ -148,7 +157,7 @@ public class V8ArrayTest {
 
     @Test
     public void testArrayGetIntChangeValue() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("foo = []; foo;");
 
         v8.executeVoidScript("foo[0] = 1");
         assertEquals(1, array.getInteger(0));
@@ -169,7 +178,7 @@ public class V8ArrayTest {
     /*** Get Boolean ***/
     @Test
     public void testArrayGetBoolean() {
-        V8Array array = v8.executeArrayScript("foo = [true,false,false]; foo");
+        V8Array array = v8.executeArrayScript("[true,false,false];");
 
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
@@ -179,7 +188,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetBooleanWrongType() {
-        V8Array array = v8.executeArrayScript("foo = ['string']; foo");
+        V8Array array = v8.executeArrayScript("['string'];");
 
         try {
             array.getBoolean(0);
@@ -190,7 +199,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetBooleanIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getBoolean(0);
         } finally {
@@ -200,7 +209,7 @@ public class V8ArrayTest {
 
     @Test
     public void testArrayGetBooleanChangeValue() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("foo = []; foo;");
 
         v8.executeVoidScript("foo[0] = true");
         assertTrue(array.getBoolean(0));
@@ -210,7 +219,7 @@ public class V8ArrayTest {
     /*** Get Double ***/
     @Test
     public void testArrayGetDouble() {
-        V8Array array = v8.executeArrayScript("foo = [3.1,4.2,5.3]; foo");
+        V8Array array = v8.executeArrayScript("[3.1,4.2,5.3];");
 
         assertEquals(3.1, array.getDouble(0), 0.00001);
         assertEquals(4.2, array.getDouble(1), 0.00001);
@@ -220,7 +229,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetDoubleWrongType() {
-        V8Array array = v8.executeArrayScript("foo = ['string']; foo");
+        V8Array array = v8.executeArrayScript("['string'];");
 
         try {
             array.getDouble(0);
@@ -231,7 +240,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetDoubleIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getDouble(0);
         } finally {
@@ -241,7 +250,7 @@ public class V8ArrayTest {
 
     @Test
     public void testArrayGetDoubleChangeValue() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("foo = []; foo;");
 
         v8.executeVoidScript("foo[0] = 3.14159");
         assertEquals(3.14159, array.getDouble(0), 0.000001);
@@ -251,7 +260,7 @@ public class V8ArrayTest {
     /*** Get String ***/
     @Test
     public void testArrayGetString() {
-        V8Array array = v8.executeArrayScript("foo = ['first','second','third']; foo");
+        V8Array array = v8.executeArrayScript("['first','second','third'];");
 
         assertEquals("first", array.getString(0));
         assertEquals("second", array.getString(1));
@@ -261,7 +270,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetStringWrongType() {
-        V8Array array = v8.executeArrayScript("foo = [42]; foo");
+        V8Array array = v8.executeArrayScript("[42];");
 
         try {
             array.getString(0);
@@ -272,7 +281,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetStringIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getString(0);
         } finally {
@@ -292,7 +301,7 @@ public class V8ArrayTest {
     /**** Get Object ****/
     @Test
     public void testArrayGetObject() {
-        V8Array array = v8.executeArrayScript("foo = [{name : 'joe', age : 38 }]; foo");
+        V8Array array = v8.executeArrayScript("[{name : 'joe', age : 38 }];");
 
         V8Object object = array.getObject(0);
         assertEquals("joe", object.getString("name"));
@@ -303,7 +312,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetObjectWrongType() {
-        V8Array array = v8.executeArrayScript("foo = [42]; foo");
+        V8Array array = v8.executeArrayScript("[42];");
 
         try {
             array.getObject(0);
@@ -314,7 +323,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetObjectIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getObject(0);
         } finally {
@@ -336,7 +345,7 @@ public class V8ArrayTest {
     /*** Get Array ***/
     @Test
     public void testArrayGetArray() {
-        V8Array array = v8.executeArrayScript("foo = [[1,2,3],['first','second'],[true]]; foo");
+        V8Array array = v8.executeArrayScript("[[1,2,3],['first','second'],[true]];");
 
         V8Array array1 = array.getArray(0);
         V8Array array2 = array.getArray(1);
@@ -353,7 +362,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetArrayWrongType() {
-        V8Array array = v8.executeArrayScript("foo = [42]; foo");
+        V8Array array = v8.executeArrayScript("[42];");
 
         try {
             array.getArray(0);
@@ -364,7 +373,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetArrayIndexOutOfBounds() {
-        V8Array array = v8.executeArrayScript("foo = []; foo");
+        V8Array array = v8.executeArrayScript("[];");
         try {
             array.getArray(0);
         } finally {
@@ -386,7 +395,7 @@ public class V8ArrayTest {
     /**** Mixed Array ****/
     @Test
     public void testMixedArray() {
-        V8Array array = v8.executeArrayScript("foo = ['a', 3, 3.1, true]; foo");
+        V8Array array = v8.executeArrayScript("['a', 3, 3.1, true];");
 
         assertEquals(4, array.length());
         assertEquals("a", array.getString(0));
@@ -483,7 +492,7 @@ public class V8ArrayTest {
 
     @Test
     public void testAddToExistingArray() {
-        V8Array array = v8.executeArrayScript("foo = [1,2,3,,5]; foo;");
+        V8Array array = v8.executeArrayScript("[1,2,3,,5];");
 
         array.push(false);
 
@@ -503,7 +512,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetNull() {
-        V8Array v8Array = v8.executeArrayScript("x = [null]; x;");
+        V8Array v8Array = v8.executeArrayScript("[null];");
 
         assertEquals(UNDEFINED, v8Array.getType(0));
         v8Array.release();
@@ -717,7 +726,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfInts() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         int result = a.getType(0, 5);
 
@@ -727,7 +736,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfDoubles() {
-        V8Array a = v8.executeArrayScript("a = [1.1,2.2,3.3,4.4,5.5]; a");
+        V8Array a = v8.executeArrayScript("[1.1,2.2,3.3,4.4,5.5];");
 
         int result = a.getType(1, 3);
 
@@ -737,7 +746,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfStrings() {
-        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 1, 2]; a");
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 1, 2];");
 
         int result = a.getType(0, 3);
 
@@ -747,7 +756,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfBooleans() {
-        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, false, true, false, 2];");
 
         int result = a.getType(1, 3);
 
@@ -757,7 +766,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfUndefined() {
-        V8Array a = v8.executeArrayScript("a = [1, undefined, undefined, undefined, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, undefined, undefined, undefined, 2];");
 
         int result = a.getType(1, 3);
 
@@ -767,7 +776,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfArrays() {
-        V8Array a = v8.executeArrayScript("a = [1, [1], [false], ['string'], 2]; a");
+        V8Array a = v8.executeArrayScript("[1, [1], [false], ['string'], 2];");
 
         int result = a.getType(1, 3);
 
@@ -777,7 +786,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeRangeOfObjects() {
-        V8Array a = v8.executeArrayScript("a = [1, {foo:1}, {foo:false}, {foo:'string'}, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, {foo:1}, {foo:false}, {foo:'string'}, 2];");
 
         int result = a.getType(1, 3);
 
@@ -787,7 +796,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetTypeSubRangeOfInts() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         int result = a.getType(4, 1);
 
@@ -797,7 +806,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetMixedTypeRangeThrowsUndefinedException() {
-        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, false, true, false, 2];");
 
         try {
             a.getType(0, 5);
@@ -808,7 +817,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetTypeRangeSizeZeroThrowsUndefinedException() {
-        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, false, true, false, 2];");
 
         try {
             a.getType(0, 0);
@@ -819,7 +828,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetTypeOutOfBoundsThrowsUndefinedException() {
-        V8Array a = v8.executeArrayScript("a = [1, false, true, false, 2]; a");
+        V8Array a = v8.executeArrayScript("[1, false, true, false, 2];");
 
         try {
             a.getType(5, 0);
@@ -830,7 +839,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayOfInts() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         int[] result = a.getInts(0, 5);
 
@@ -845,7 +854,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfInts() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         int[] result = a.getInts(4, 1);
 
@@ -856,7 +865,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfInts2() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         int[] result = a.getInts(3, 2);
 
@@ -868,7 +877,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetIntsWithoutInts() {
-        V8Array a = v8.executeArrayScript("a = [1,'a',3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,'a',3,4,5];");
 
         try {
             a.getInts(0, 5);
@@ -877,20 +886,24 @@ public class V8ArrayTest {
         }
     }
 
-    @Test(expected = V8ResultUndefined.class)
-    public void testGetIntsWithDoublesThrowsExceptions() {
-        V8Array a = v8.executeArrayScript("a = [1,1.1,3,4,5]; a");
+    @Test
+    public void testGetIntsWithDoubles() {
+        V8Array a = v8.executeArrayScript("[1,1.1,3,4,5];");
 
-        try {
-            a.getInts(0, 5);
-        } finally {
-            a.release();
-        }
+        int[] ints = a.getInts(0, 5);
+
+        assertEquals(5, ints.length);
+        assertEquals(1, ints[0]);
+        assertEquals(1, ints[1]);
+        assertEquals(3, ints[2]);
+        assertEquals(4, ints[3]);
+        assertEquals(5, ints[4]);
+        a.release();
     }
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetSubArrayOfIntsOutOfBounds() {
-        V8Array a = v8.executeArrayScript("a = [1,2,3,4,5]; a");
+        V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         try {
             a.getInts(3, 3);
@@ -901,7 +914,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayOfDoubles() {
-        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+        V8Array a = v8.executeArrayScript("[1.1,2.1,3.1,4.1,5.1];");
 
         double[] result = a.getDoubles(0, 5);
 
@@ -916,7 +929,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfDoubles() {
-        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+        V8Array a = v8.executeArrayScript("[1.1,2.1,3.1,4.1,5.1];");
 
         double[] result = a.getDoubles(4, 1);
 
@@ -927,7 +940,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfDoubles2() {
-        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+        V8Array a = v8.executeArrayScript("[1.1,2.1,3.1,4.1,5.1];");
 
         double[] result = a.getDoubles(3, 2);
 
@@ -939,7 +952,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetDoublesWithoutDoubles() {
-        V8Array a = v8.executeArrayScript("a = [1.1,'a',3.1,4.1,5.1]; a");
+        V8Array a = v8.executeArrayScript("[1.1,'a',3.1,4.1,5.1];");
 
         try {
             a.getInts(0, 5);
@@ -950,7 +963,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetSubArrayOfDoublesOutOfBounds() {
-        V8Array a = v8.executeArrayScript("a = [1.1,2.1,3.1,4.1,5.1]; a");
+        V8Array a = v8.executeArrayScript("[1.1,2.1,3.1,4.1,5.1];");
 
         try {
             a.getInts(3, 3);
@@ -961,7 +974,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayOfBooleans() {
-        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+        V8Array a = v8.executeArrayScript("[true, false, true, true, false];");
 
         boolean[] result = a.getBooleans(0, 5);
 
@@ -976,7 +989,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfBooleans() {
-        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+        V8Array a = v8.executeArrayScript("[true, false, true, true, false];");
 
         boolean[] result = a.getBooleans(4, 1);
 
@@ -987,7 +1000,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfBooleans2() {
-        V8Array a = v8.executeArrayScript("a = [true, false, true, true, false]; a");
+        V8Array a = v8.executeArrayScript("[true, false, true, true, false];");
 
         boolean[] result = a.getBooleans(3, 2);
 
@@ -999,7 +1012,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetBooleansWithoutBooleans() {
-        V8Array a = v8.executeArrayScript("a = [true, 'a', false, false, true]; a");
+        V8Array a = v8.executeArrayScript("[true, 'a', false, false, true];");
 
         try {
             a.getBooleans(0, 5);
@@ -1010,7 +1023,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetSubArrayOfBooleansOutOfBounds() {
-        V8Array a = v8.executeArrayScript("a = [true, true, true, true, false]; a");
+        V8Array a = v8.executeArrayScript("[true, true, true, true, false];");
 
         try {
             a.getBooleans(3, 3);
@@ -1021,7 +1034,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetArrayOfStrings() {
-        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd', 'e'];");
 
         String[] result = a.getStrings(0, 5);
 
@@ -1036,7 +1049,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfStrings() {
-        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd', 'e'];");
 
         String[] result = a.getStrings(4, 1);
 
@@ -1047,7 +1060,7 @@ public class V8ArrayTest {
 
     @Test
     public void testGetSubArrayOfStrings2() {
-        V8Array a = v8.executeArrayScript("a = ['a', 'b', 'c', 'd', 'e']; a");
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd', 'e'];");
 
         String[] result = a.getStrings(3, 2);
 
@@ -1059,7 +1072,7 @@ public class V8ArrayTest {
 
     @Test(expected = V8ResultUndefined.class)
     public void testGetStringsWithoutStrings() {
-        V8Array a = v8.executeArrayScript("a = ['a', 7, 'c', 'd', 'e']; a");
+        V8Array a = v8.executeArrayScript("['a', 7, 'c', 'd', 'e'];");
 
         try {
             a.getStrings(0, 5);

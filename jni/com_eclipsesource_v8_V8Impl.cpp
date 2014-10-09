@@ -57,11 +57,6 @@ int getType(Handle<Value> v8Value);
 			throwResultUndefinedException(env, "");\
 			return 0;\
 		}
-#define ASSERT_IS_INTEGER(v8Value)\
-		if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsInt32()) {\
-			throwResultUndefinedException(env, "");\
-			return 0;\
-		}
 #define ASSERT_IS_STRING(v8Value)\
 		if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsString()) {\
 			throwResultUndefinedException(env, "");\
@@ -381,7 +376,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 		return 0;
 	if ( !runScript(isolate, env, &script, &tryCatch, result ) )
 		return 0;
-	ASSERT_IS_INTEGER(result);
+	ASSERT_IS_NUMBER(result);
 	return result->Int32Value();
 }
 
@@ -472,7 +467,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
 	Handle<Value> result;
 	if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result) )
 		return 0;
-	ASSERT_IS_INTEGER(result);
+	ASSERT_IS_NUMBER(result);
 	return result->Int32Value();
 }
 
@@ -575,7 +570,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
 	Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
-	ASSERT_IS_INTEGER(v8Value);
+	ASSERT_IS_NUMBER(v8Value);
 	return v8Value->Int32Value();
 }
 
@@ -668,7 +663,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
 	Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Handle<Value> v8Value = array->Get(index);
-	ASSERT_IS_INTEGER(v8Value);
+	ASSERT_IS_NUMBER(v8Value);
 	return v8Value->Int32Value();
 }
 
@@ -680,7 +675,7 @@ JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
 	jint fill[length];
 	for (int i = start; i < start+length; i++) {
 		Handle<Value> v8Value = array->Get(i);
-		ASSERT_IS_INTEGER(v8Value);
+		ASSERT_IS_NUMBER(v8Value);
 		fill[i-start] = v8Value->Int32Value();
 	}
 	(env)->SetIntArrayRegion(result, 0, length, fill);

@@ -148,6 +148,13 @@ public class V8Test {
         assertEquals(3, result);
     }
 
+    @Test
+    public void testIntScriptWithDouble() {
+        int result = v8.executeIntScript("1.9+2.9;");
+
+        assertEquals(4, result);
+    }
+
     @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxError() {
         v8.executeIntScript("return 1+2");
@@ -176,6 +183,13 @@ public class V8Test {
         double result = v8.executeDoubleScript("3.14159;");
 
         assertEquals(3.14159, result, 0.00001);
+    }
+
+    @Test
+    public void testDoubleScriptWithInt() {
+        double result = v8.executeDoubleScript("1");
+
+        assertEquals(1.0, result, 0.00001);
     }
 
     @Test(expected = V8ScriptCompilationException.class)
@@ -350,6 +364,15 @@ public class V8Test {
         int result = v8.executeIntFunction("foo", null);
 
         assertEquals(3, result);
+    }
+
+    @Test
+    public void testSimpleIntFunctionWithDouble() {
+        v8.executeVoidScript("function foo() {return 1.2+2.9;};");
+
+        int result = v8.executeIntFunction("foo", null);
+
+        assertEquals(4, result);
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -639,6 +662,15 @@ public class V8Test {
     @Test
     public void testGetInt() {
         v8.executeVoidScript("x = 7");
+
+        int result = v8.getInteger("x");
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testGetIntFromDouble() {
+        v8.executeVoidScript("x = 7.7");
 
         int result = v8.getInteger("x");
 
