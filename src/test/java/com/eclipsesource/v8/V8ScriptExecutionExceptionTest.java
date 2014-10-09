@@ -228,4 +228,9 @@ public class V8ScriptExecutionExceptionTest {
 
         v8.executeArrayFunction("myFunction", null);
     }
+
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testV8ThrowsException() {
+        v8.executeVoidScript("throw 'problem';");
+    }
 }
