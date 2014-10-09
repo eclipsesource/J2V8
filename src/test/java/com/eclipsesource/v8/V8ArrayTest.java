@@ -1100,6 +1100,25 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testGetArrayTypeDoubleSingleValue() {
+        V8Array a = v8.executeArrayScript("[0.1]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.DOUBLE, type);
+        a.release();
+    }
+
+    @Test
+    public void testGetArrayTypeDoubleMixed() {
+        V8Array a = v8.executeArrayScript("[0, 0.1]");
+
+        int type = a.getType();
+
+        assertEquals(V8Value.DOUBLE, type);
+        a.release();
+    }
+
     public void testGetArrayTypeDoubleWithInts1() {
         V8Array a = v8.executeArrayScript("[1.1,2,3.3,4]");
 
