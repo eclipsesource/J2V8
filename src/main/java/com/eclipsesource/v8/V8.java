@@ -272,7 +272,7 @@ public class V8 extends V8Object {
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functions.get(methodID);
         if (methodDescriptor.callback != null) {
-            return methodDescriptor.callback.invoke(parameters);
+            return checkResult(methodDescriptor.callback.invoke(parameters));
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
         Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
@@ -291,6 +291,9 @@ public class V8 extends V8Object {
     private Object checkResult(final Object result) {
         if (result == null) {
             return result;
+        }
+        if (result instanceof Float) {
+            return ((Float) result).doubleValue();
         }
         if ((result instanceof Integer) || (result instanceof Double) || (result instanceof Boolean)
                 || (result instanceof String) || (result instanceof V8Object) || (result instanceof V8Array)) {

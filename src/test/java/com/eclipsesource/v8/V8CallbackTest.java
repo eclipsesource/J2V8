@@ -63,6 +63,8 @@ public class V8CallbackTest {
 
         public double doubleMethodNoParameters();
 
+        public float floatMethodNoParameters();
+
         public double doubleMethodWithParameters(final double x, final double y);
 
         public boolean booleanMethodNoParameters();
@@ -150,6 +152,17 @@ public class V8CallbackTest {
         double result = v8.executeDoubleScript("foo();");
 
         assertEquals(3.14159, result, 0.0000001);
+    }
+
+    @Test
+    public void testFloatMethodCalledFromScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(3.14159f).when(callback).floatMethodNoParameters();
+        v8.registerJavaMethod(callback, "floatMethodNoParameters", "foo", new Class<?>[0]);
+
+        double result = v8.executeDoubleScript("foo();");
+
+        assertEquals(3.14159f, result, 0.0000001);
     }
 
     @Test
