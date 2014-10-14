@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
 import com.eclipsesource.v8.utils.V8ObjectUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -333,7 +334,7 @@ public class V8ObjectUtilsTest {
         assertEquals(7, object.getInteger("integer"));
         assertEquals(3.14159, object.getDouble("double"), 0.000001);
         assertEquals("hello", object.getString("String"));
-        assertEquals(V8Object.UNDEFINED, object.getType("undefined"));
+        assertEquals(V8Value.UNDEFINED, object.getType("undefined"));
         object.release();
     }
 
@@ -644,6 +645,13 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testGetV8ResultFloat() {
+        Object result = V8ObjectUtils.getV8Result(v8, new Float(77.7));
+
+        assertEquals(77.7f, result);
+    }
+
+    @Test
     public void testGetV8ResultString() {
         Object result = V8ObjectUtils.getV8Result(v8, "Seven");
 
@@ -747,6 +755,62 @@ public class V8ObjectUtilsTest {
         V8Array result = array.getArray(0);
         assertEquals("one", result.getString(0));
         result.release();
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromIntegerArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4]");
+
+        int[] result = (int[]) V8ObjectUtils.getTypedArray(array, V8Value.INTEGER);
+
+        assertEquals(4, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromDoubleArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4.4]");
+
+        double[] result = (double[]) V8ObjectUtils.getTypedArray(array, V8Value.DOUBLE);
+
+        assertEquals(4, result.length);
+        assertEquals(1.0, result[0], 0.000001);
+        assertEquals(2.0, result[1], 0.000001);
+        assertEquals(3.0, result[2], 0.000001);
+        assertEquals(4.4, result[3], 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromBooleanArray() {
+        V8Array array = v8.executeArrayScript("[true, false, false, true]");
+
+        boolean[] result = (boolean[]) V8ObjectUtils.getTypedArray(array, V8Value.BOOLEAN);
+
+        assertEquals(4, result.length);
+        assertTrue(result[0]);
+        assertFalse(result[1]);
+        assertFalse(result[2]);
+        assertTrue(result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromStringArray() {
+        V8Array array = v8.executeArrayScript("['one', 'two', 'three', 'four']");
+
+        String[] result = (String[]) V8ObjectUtils.getTypedArray(array, V8Value.STRING);
+
+        assertEquals(4, result.length);
+        assertEquals("one", result[0]);
+        assertEquals("two", result[1]);
+        assertEquals("three", result[2]);
+        assertEquals("four", result[3]);
         array.release();
     }
 

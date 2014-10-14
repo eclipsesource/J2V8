@@ -37,6 +37,20 @@ public class V8ObjectUtils {
         return result;
     }
 
+    public static Object getTypedArray(final V8Array array, final int arrayType) {
+        int length = array.length();
+        if (arrayType == V8Value.INTEGER) {
+            return array.getInts(0, length);
+        } else if (arrayType == V8Value.DOUBLE) {
+            return array.getDoubles(0, length);
+        } else if (arrayType == V8Value.BOOLEAN) {
+            return array.getBooleans(0, length);
+        } else if (arrayType == V8Value.STRING) {
+            return array.getStrings(0, length);
+        }
+        throw new RuntimeException("Unsupported bulk load type: " + arrayType);
+    }
+
     public static V8Object toV8Object(final V8 v8, final Map<String, ? extends Object> map) {
         V8Object result = new V8Object(v8);
         try {
