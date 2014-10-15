@@ -37,6 +37,41 @@ public class V8ObjectUtils {
         return result;
     }
 
+    public static Object getTypedArray(final V8Array array, final int arrayType, final Object result) {
+        int length = array.length();
+        if (arrayType == V8Value.INTEGER) {
+            int[] intArray = (int[]) result;
+            if ((intArray == null) || (intArray.length < length)) {
+                intArray = new int[length];
+            }
+            array.getInts(0, length, intArray);
+            return intArray;
+        } else if (arrayType == V8Value.DOUBLE) {
+            double[] doubleArray = (double[]) result;
+            if ((doubleArray == null) || (doubleArray.length < length)) {
+                doubleArray = new double[length];
+            }
+            array.getDoubles(0, length, doubleArray);
+            return doubleArray;
+        } else if (arrayType == V8Value.BOOLEAN) {
+            boolean[] booleanArray = (boolean[]) result;
+            if ((booleanArray == null) || (booleanArray.length < length)) {
+                booleanArray = new boolean[length];
+            }
+            array.getBooleans(0, length, booleanArray);
+            return booleanArray;
+        } else if (arrayType == V8Value.STRING) {
+            String[] stringArray = (String[]) result;
+            if ((stringArray == null) || (stringArray.length < length)) {
+                stringArray = new String[length];
+            }
+            array.getStrings(0, length, stringArray);
+            return stringArray;
+        }
+        throw new RuntimeException("Unsupported bulk load type: " + arrayType);
+
+    }
+
     public static Object getTypedArray(final V8Array array, final int arrayType) {
         int length = array.length();
         if (arrayType == V8Value.INTEGER) {

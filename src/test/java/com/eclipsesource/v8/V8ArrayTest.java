@@ -1240,4 +1240,197 @@ public class V8ArrayTest {
         assertEquals(V8Value.UNDEFINED, type);
         a.release();
     }
+
+    @Test
+    public void testGetIntsSameSizeArray() {
+        V8Array a = v8.executeArrayScript("[1,2,3,4]");
+        int[] result = new int[4];
+
+        int size = a.getInts(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test
+    public void testGetIntsBiggerArray() {
+        V8Array a = v8.executeArrayScript("[1,2,3,4]");
+        int[] result = new int[40];
+
+        int size = a.getInts(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetIntsSmallerArray() {
+        V8Array a = v8.executeArrayScript("[1,2,3,4]");
+        int[] result = new int[3];
+
+        try {
+            a.getInts(0, 4, result);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test
+    public void testGetIntsPopulatesArray() {
+        V8Array a = v8.executeArrayScript("[1,2,3,4]");
+        int[] result = new int[4];
+
+        a.getInts(0, 4, result);
+
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        a.release();
+    }
+
+    @Test
+    public void testGetDoubleSameSizeArray() {
+        V8Array a = v8.executeArrayScript("[1,2.2,3.3,4]");
+        double[] result = new double[4];
+
+        int size = a.getDoubles(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test
+    public void testGetDoublesBiggerArray() {
+        V8Array a = v8.executeArrayScript("[1.1,2.2,3,4]");
+        double[] result = new double[40];
+
+        int size = a.getDoubles(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetDoublesSmallerArray() {
+        V8Array a = v8.executeArrayScript("[1,2,3.3,4.4]");
+        double[] result = new double[3];
+
+        try {
+            a.getDoubles(0, 4, result);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test
+    public void testGetDoublesPopulatesArray() {
+        V8Array a = v8.executeArrayScript("[1.1,2.2,3.3,4]");
+        double[] result = new double[4];
+
+        a.getDoubles(0, 4, result);
+
+        assertEquals(1.1, result[0], 0.000001);
+        assertEquals(2.2, result[1], 0.000001);
+        assertEquals(3.3, result[2], 0.000001);
+        assertEquals(4, result[3], 0.000001);
+        a.release();
+    }
+
+    @Test
+    public void testGetBooleanSameSizeArray() {
+        V8Array a = v8.executeArrayScript("[true, false, false, true]");
+        boolean[] result = new boolean[4];
+
+        int size = a.getBooleans(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test
+    public void testGetBooleanBiggerArray() {
+        V8Array a = v8.executeArrayScript("[false, false, false, true]");
+        boolean[] result = new boolean[40];
+
+        int size = a.getBooleans(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetBooleanSmallerArray() {
+        V8Array a = v8.executeArrayScript("[true, true, false, false]");
+        boolean[] result = new boolean[3];
+
+        try {
+            a.getBooleans(0, 4, result);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test
+    public void testGetBooleanPopulatesArray() {
+        V8Array a = v8.executeArrayScript("[true, false, false, true]");
+        boolean[] result = new boolean[4];
+
+        a.getBooleans(0, 4, result);
+
+        assertTrue(result[0]);
+        assertFalse(result[1]);
+        assertFalse(result[2]);
+        assertTrue(result[3]);
+        a.release();
+    }
+
+    @Test
+    public void testGetStringSameSizeArray() {
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd']");
+        String[] result = new String[4];
+
+        int size = a.getStrings(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test
+    public void testGetStringBiggerArray() {
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd']");
+        String[] result = new String[40];
+
+        int size = a.getStrings(0, 4, result);
+
+        assertEquals(4, size);
+        a.release();
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetStringSmallerArray() {
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd']");
+        String[] result = new String[3];
+
+        try {
+            a.getStrings(0, 4, result);
+        } finally {
+            a.release();
+        }
+    }
+
+    @Test
+    public void testGetStringPopulatesArray() {
+        V8Array a = v8.executeArrayScript("['a', 'b', 'c', 'd']");
+        String[] result = new String[4];
+
+        a.getStrings(0, 4, result);
+
+        assertEquals("a", result[0]);
+        assertEquals("b", result[1]);
+        assertEquals("c", result[2]);
+        assertEquals("d", result[3]);
+        a.release();
+    }
+
 }

@@ -531,17 +531,21 @@ public class V8 extends V8Object {
 
     protected native void _processDebugMessages(int v8RuntimeHandle);
 
-    public native int[] _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index,
-            final int length);
+    protected native int[] _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
-    public native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index,
-            final int length);
+    protected native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
-    public native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index,
-            final int length);
+    protected native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
-    public native String[] _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index,
-            final int length);
+    protected native String[] _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+
+    protected native int _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, int[] resultArray);
+
+    protected native int _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, double[] resultArray);
+
+    protected native int _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, boolean[] resultArray);
+
+    protected native int _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, String[] resultArray);
 
     void addObjRef() {
         objectReferences++;

@@ -508,7 +508,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
  * Method:    _arrayGetInts
  * Signature: (IIII)[I
  */
-JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
@@ -516,7 +516,7 @@ JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts
  * Method:    _arrayGetDoubles
  * Signature: (IIII)[D
  */
-JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles
+JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
@@ -524,7 +524,7 @@ JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles
  * Method:    _arrayGetBooleans
  * Signature: (IIII)[Z
  */
-JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans
+JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
@@ -532,8 +532,40 @@ JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans
  * Method:    _arrayGetStrings
  * Signature: (IIII)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings
+JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetInts
+ * Signature: (IIII[I)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII_3I
+  (JNIEnv *, jobject, jint, jint, jint, jint, jintArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetDoubles
+ * Signature: (IIII[D)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__IIII_3D
+  (JNIEnv *, jobject, jint, jint, jint, jint, jdoubleArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetBooleans
+ * Signature: (IIII[Z)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__IIII_3Z
+  (JNIEnv *, jobject, jint, jint, jint, jint, jbooleanArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetStrings
+ * Signature: (IIII[Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__IIII_3Ljava_lang_String_2
+  (JNIEnv *, jobject, jint, jint, jint, jint, jobjectArray);
 
 #ifdef __cplusplus
 }

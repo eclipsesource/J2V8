@@ -814,6 +814,188 @@ public class V8ObjectUtilsTest {
         array.release();
     }
 
+    @Test
+    public void testPopulateFromExistingIntArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4,5]");
+        int[] result = new int[1000];
+
+        V8ObjectUtils.getTypedArray(array, V8Value.INTEGER, result);
+
+        assertEquals(1000, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        assertEquals(5, result[4]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromNonExistingIntArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4,5]");
+
+        int[] result = (int[]) V8ObjectUtils.getTypedArray(array, V8Value.INTEGER, null);
+
+        assertEquals(5, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        assertEquals(5, result[4]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromSmallExistingIntArray() {
+        V8Array array = v8.executeArrayScript("[1,2,3,4,5]");
+        int[] result = new int[4];
+
+        result = (int[]) V8ObjectUtils.getTypedArray(array, V8Value.INTEGER, null);
+
+        assertEquals(5, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(2, result[1]);
+        assertEquals(3, result[2]);
+        assertEquals(4, result[3]);
+        assertEquals(5, result[4]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromExistingDoubleArray() {
+        V8Array array = v8.executeArrayScript("[1.1,2.2,3,4,5]");
+        double[] result = new double[1000];
+
+        V8ObjectUtils.getTypedArray(array, V8Value.DOUBLE, result);
+
+        assertEquals(1000, result.length);
+        assertEquals(1.1, result[0], 0.000001);
+        assertEquals(2.2, result[1], 0.000001);
+        assertEquals(3, result[2], 0.000001);
+        assertEquals(4, result[3], 0.000001);
+        assertEquals(5, result[4], 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromNonExistingDoubleArray() {
+        V8Array array = v8.executeArrayScript("[1.1,2.2,3,4,5]");
+
+        double[] result = (double[]) V8ObjectUtils.getTypedArray(array, V8Value.DOUBLE, null);
+
+        assertEquals(5, result.length);
+        assertEquals(1.1, result[0], 0.000001);
+        assertEquals(2.2, result[1], 0.000001);
+        assertEquals(3, result[2], 0.000001);
+        assertEquals(4, result[3], 0.000001);
+        assertEquals(5, result[4], 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromSmallExistingDoubleArray() {
+        V8Array array = v8.executeArrayScript("[1.1,2.2,3,4,5.5]");
+        double[] result = new double[4];
+
+        result = (double[]) V8ObjectUtils.getTypedArray(array, V8Value.DOUBLE, null);
+
+        assertEquals(5, result.length);
+        assertEquals(1.1, result[0], 0.000001);
+        assertEquals(2.2, result[1], 0.000001);
+        assertEquals(3, result[2], 0.000001);
+        assertEquals(4, result[3], 0.000001);
+        assertEquals(5.5, result[4], 0.000001);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromExistingBooleanArray() {
+        V8Array array = v8.executeArrayScript("[true, true, false, false]");
+        boolean[] result = new boolean[1000];
+
+        V8ObjectUtils.getTypedArray(array, V8Value.BOOLEAN, result);
+
+        assertEquals(1000, result.length);
+        assertTrue(result[0]);
+        assertTrue(result[1]);
+        assertFalse(result[2]);
+        assertFalse(result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromNonExistingBooleanArray() {
+        V8Array array = v8.executeArrayScript("[true, true, false, false]");
+
+        boolean[] result = (boolean[]) V8ObjectUtils.getTypedArray(array, V8Value.BOOLEAN, null);
+
+        assertEquals(4, result.length);
+        assertTrue(result[0]);
+        assertTrue(result[1]);
+        assertFalse(result[2]);
+        assertFalse(result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromSmallExistingBooleanArray() {
+        V8Array array = v8.executeArrayScript("[true, true, false, false]");
+        boolean[] result = new boolean[4];
+
+        result = (boolean[]) V8ObjectUtils.getTypedArray(array, V8Value.BOOLEAN, null);
+
+        assertEquals(4, result.length);
+        assertTrue(result[0]);
+        assertTrue(result[1]);
+        assertFalse(result[2]);
+        assertFalse(result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromExistingStringArray() {
+        V8Array array = v8.executeArrayScript("['a', 'b', 'c', 'z']");
+        String[] result = new String[1000];
+
+        V8ObjectUtils.getTypedArray(array, V8Value.STRING, result);
+
+        assertEquals(1000, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("b", result[1]);
+        assertEquals("c", result[2]);
+        assertEquals("z", result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromNonExistingStringArray() {
+        V8Array array = v8.executeArrayScript("['a', 'b', 'c', 'z']");
+
+        String[] result = (String[]) V8ObjectUtils.getTypedArray(array, V8Value.STRING, null);
+
+        assertEquals(4, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("b", result[1]);
+        assertEquals("c", result[2]);
+        assertEquals("z", result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromSmallExistingStringArray() {
+        V8Array array = v8.executeArrayScript("['a', 'b', 'c', 'z']");
+        String[] result = new String[4];
+
+        result = (String[]) V8ObjectUtils.getTypedArray(array, V8Value.STRING, null);
+
+        assertEquals(4, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("b", result[1]);
+        assertEquals("c", result[2]);
+        assertEquals("z", result[3]);
+        array.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);

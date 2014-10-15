@@ -72,10 +72,28 @@ public class V8Array extends V8Object {
         return v8._arrayGetInts(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
+    public int getInts(final int index, final int length, final int[] resultArray) {
+        V8.checkThread();
+        checkReleaesd();
+        if (length > resultArray.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return v8._arrayGetInts(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
+    }
+
     public double[] getDoubles(final int index, final int length) {
         V8.checkThread();
         checkReleaesd();
         return v8._arrayGetDoubles(v8.getV8RuntimeHandle(), getHandle(), index, length);
+    }
+
+    public int getDoubles(final int index, final int length, final double[] resultArray) {
+        V8.checkThread();
+        checkReleaesd();
+        if (length > resultArray.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return v8._arrayGetDoubles(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
     }
 
     public boolean[] getBooleans(final int index, final int length) {
@@ -84,10 +102,28 @@ public class V8Array extends V8Object {
         return v8._arrayGetBooleans(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
+    public int getBooleans(final int index, final int length, final boolean[] resultArray) {
+        V8.checkThread();
+        checkReleaesd();
+        if (length > resultArray.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return v8._arrayGetBooleans(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
+    }
+
     public String[] getStrings(final int index, final int length) {
         V8.checkThread();
         checkReleaesd();
         return v8._arrayGetStrings(v8.getV8RuntimeHandle(), getHandle(), index, length);
+    }
+
+    public int getStrings(final int index, final int length, final String[] resultArray) {
+        V8.checkThread();
+        checkReleaesd();
+        if (length > resultArray.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return v8._arrayGetStrings(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
     }
 
     public Object get(final int index) {
