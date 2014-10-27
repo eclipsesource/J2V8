@@ -1,6 +1,5 @@
 package com.eclipsesource.v8.utils;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,7 +31,19 @@ public class DebugTunnel {
         close(target);
     }
 
-    private void close(final Closeable socket) {
+    // Android 4.3 and before, Socket didn't implement closeable
+    private void close(final Socket socket) {
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                // Do nothing
+            }
+        }
+    }
+
+    // Android 4.3 and before, Socket didn't implement closeable
+    private void close(final ServerSocket socket) {
         if (socket != null) {
             try {
                 socket.close();
