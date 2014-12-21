@@ -10,6 +10,14 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -21,13 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.DebugTunnel;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class V8Test {
 
@@ -289,6 +290,88 @@ public class V8Test {
         String result = v8.executeStringScript("'hello, world'", "name", 5);
 
         assertEquals("hello, world", result);
+    }
+
+    /*** Unknown Script ***/
+    @Test
+    public void testAnyScriptReturnedNothing() {
+        Object result = v8.executeScript("");
+
+        assertNull(result);
+    }
+
+    @Test
+    public void testAnyScriptReturnedNull() {
+        Object result = v8.executeScript("null;");
+
+        assertNull(result);
+    }
+
+    @Test
+    public void testAnyScriptReturnedUndefined() {
+        Object result = v8.executeScript("undefined;");
+
+        assertNull(result);
+    }
+
+    @Test
+    public void testAnyScriptReturnInt() {
+        Object result = v8.executeScript("1;");
+
+        assertEquals(1, result);
+    }
+
+    @Test
+    public void testAnyScriptReturnDouble() {
+        Object result = v8.executeScript("1.1;");
+
+        assertEquals(1.1, (double) result, 0.000001);
+    }
+
+    @Test
+    public void testAnyScriptReturnString() {
+        Object result = v8.executeScript("'foo';");
+
+        assertEquals("foo", result);
+    }
+
+    @Test
+    public void testAnyScriptReturnBoolean() {
+        Object result = v8.executeScript("false;");
+
+        assertFalse((boolean) result);
+    }
+
+    @Test
+    public void testAnyScriptReturnsV8Object() {
+        V8Object result = (V8Object) v8.executeScript("foo = {hello:'world'}; foo;");
+
+        assertEquals("world", result.getString("hello"));
+        result.release();
+    }
+
+    @Test
+    public void testAnyScriptReturnsV8Array() {
+        V8Array result = (V8Array) v8.executeScript("[1,2,3];");
+
+        assertEquals(3, result.length());
+        assertEquals(1, result.get(0));
+        assertEquals(2, result.get(1));
+        assertEquals(3, result.get(2));
+        result.release();
+    }
+
+    @Test(expected = V8ScriptCompilationException.class)
+    public void testSimpleSyntaxErrorAnytScript() {
+        v8.executeScript("'a");
+    }
+
+    @Test
+    public void testAnyScriptWithName() {
+        V8Object result = (V8Object) v8.executeScript("foo = {hello:'world'}; foo;", "name", 6);
+
+        assertEquals("world", result.getString("hello"));
+        result.release();
     }
 
     /*** Object Script ***/

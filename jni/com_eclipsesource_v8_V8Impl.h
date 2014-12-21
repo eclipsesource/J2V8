@@ -89,6 +89,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _executeScript
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _executeVoidScript
  * Signature: (ILjava/lang/String;Ljava/lang/String;I)V
  */

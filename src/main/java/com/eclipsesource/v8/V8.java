@@ -201,6 +201,15 @@ public class V8 extends V8Object {
         return result;
     }
 
+    public Object executeScript(final String script) {
+        return this.executeScript(script, null, 0);
+    }
+
+    public Object executeScript(final String script, final String scriptName, final int lineNumber) {
+        checkThread();
+        return _executeScript(getV8RuntimeHandle(), script, scriptName, lineNumber);
+    }
+
     public V8Object executeObjectScript(final String script) {
         return this.executeObjectScript(script, null, 0);
     }
@@ -427,6 +436,8 @@ public class V8 extends V8Object {
 
     protected native void _executeObjectScript(int v8RuntimeHandle, final String script, final int resultHandle,
             final String scriptName, final int lineNumber);
+
+    protected native Object _executeScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
     protected native void _executeVoidScript(int v8RuntimeHandle, final String script, final String scriptName,
             final int lineNumber);

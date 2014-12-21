@@ -88,6 +88,22 @@ int getType(Handle<Value> v8Value);
 			return;\
 		}
 
+void release(JNIEnv* env, jobject object) {
+	jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
+	env->CallVoidMethod(object, release);
+}
+
+void releaseArray(JNIEnv* env, jobject object) {
+	jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
+	env->CallVoidMethod(object, release);
+}
+
+int getHandle(JNIEnv* env, jobject object) {
+	jmethodID getHandle = env->GetMethodID(v8ObjectCls, "getHandle", "()I");
+	jint handle = env->CallIntMethod(object, getHandle);
+	return handle;
+}
+
 Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
 	const char* utfString = env -> GetStringUTFChars(string, NULL);
 	Local<String> result = String::NewFromUtf8(isolate, utfString);
@@ -388,6 +404,44 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 		return 0;
 	ASSERT_IS_NUMBER(result);
 	return result->Int32Value();
+}
+
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+	TryCatch tryCatch;
+	Local<Script> script;
+	Local<Value> result;
+	if ( !compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch) ) { return NULL; }
+	if ( !runScript(isolate, env, &script, &tryCatch, result ) ) { return NULL; }
+	if ( result->IsUndefined() ) {
+		return NULL;
+	} else if ( result->IsInt32() ) {
+	    jmethodID constructor = env->GetMethodID(integerCls, "<init>", "(I)V");
+	    return env->NewObject(integerCls, constructor, result->Int32Value());
+	} else if ( result->IsNumber() ) {
+		jmethodID constructor = env->GetMethodID(doubleCls, "<init>", "(D)V");
+		return env->NewObject(doubleCls, constructor, result->NumberValue());
+	} else if ( result->IsBoolean() ) {
+		jmethodID constructor = env->GetMethodID(booleanCls, "<init>", "(Z)V");
+		return env->NewObject(booleanCls, constructor, result->BooleanValue());
+	} else if ( result->IsString() ) {
+		String::Utf8Value utf(result->ToString());
+		return env->NewStringUTF(*utf);
+	} else if ( result->IsArray() ) {
+		jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+		jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+		int resultHandle = getHandle( env, objectResult );
+		v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+		return objectResult;
+	} else if ( result->IsObject() ) {
+		jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+		jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8);
+		int resultHandle = getHandle( env, objectResult );
+		v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+		return objectResult;
+	}
+	return NULL;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeObjectScript
@@ -946,22 +1000,6 @@ public:
 	int methodID;
 	int v8RuntimeHandle;
 };
-
-void release(JNIEnv* env, jobject object) {
-	jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
-	env->CallVoidMethod(object, release);
-}
-
-void releaseArray(JNIEnv* env, jobject object) {
-	jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
-	env->CallVoidMethod(object, release);
-}
-
-int getHandle(JNIEnv* env, jobject object) {
-	jmethodID getHandle = env->GetMethodID(v8ObjectCls, "getHandle", "()I");
-	jint handle = env->CallIntMethod(object, getHandle);
-	return handle;
-}
 
 jobject createParameterArray(JNIEnv* env, int v8RuntimeHandle, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
