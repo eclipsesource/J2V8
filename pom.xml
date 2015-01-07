@@ -8,7 +8,27 @@
   <packaging>jar</packaging>
 
   <name>j2v8</name>
-  <url>http://maven.apache.org</url>
+  <description>J2V8 is a set of Java bindings for V8</description>
+  <url>https://github.com/eclipsesource/j2v8</url>
+  <licenses>
+    <license>
+      <name>Eclipse Public License - v 1.0</name>
+      <url>https://www.eclipse.org/legal/epl-v10.html</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>R. Ian Bull</name>
+      <email>irbull@eclipsesource.com</email>
+      <organization>EclipseSource</organization>
+      <organizationUrl>http://www.eclipsesource.com</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:eclipsesource/J2V8.git</connection>
+    <developerConnection>scm:git:git@github.com:eclipsesource/J2V8.git</developerConnection>
+    <url>git@github.com:eclipsesource/J2V8.git</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
