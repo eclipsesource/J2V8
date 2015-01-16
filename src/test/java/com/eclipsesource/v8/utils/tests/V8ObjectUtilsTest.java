@@ -10,6 +10,12 @@
  ******************************************************************************/
 package com.eclipsesource.v8.utils.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,12 +31,6 @@ import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
 import com.eclipsesource.v8.utils.V8ObjectUtils;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class V8ObjectUtilsTest {
     private V8 v8;
@@ -56,7 +56,7 @@ public class V8ObjectUtilsTest {
     public void testCreateIntegerMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {a:1, b:2, c:3}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(3, map.size());
         assertEquals(1, map.get("a"));
@@ -69,13 +69,13 @@ public class V8ObjectUtilsTest {
     public void testCreateDoubleMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {a:1.1, b:2.2, c:3.3, d:4.4}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(4, map.size());
-        assertEquals(1.1, (double) map.get("a"), 0.000001);
-        assertEquals(2.2, (double) map.get("b"), 0.000001);
-        assertEquals(3.3, (double) map.get("c"), 0.000001);
-        assertEquals(4.4, (double) map.get("d"), 0.000001);
+        assertEquals(1.1, (Double) map.get("a"), 0.000001);
+        assertEquals(2.2, (Double) map.get("b"), 0.000001);
+        assertEquals(3.3, (Double) map.get("c"), 0.000001);
+        assertEquals(4.4, (Double) map.get("d"), 0.000001);
         object.release();
     }
 
@@ -83,7 +83,7 @@ public class V8ObjectUtilsTest {
     public void testCreateStringMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {a:'foo', b:'bar', c:'baz', d:'boo'}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(4, map.size());
         assertEquals("foo", map.get("a"));
@@ -97,13 +97,13 @@ public class V8ObjectUtilsTest {
     public void testCreateBooleanMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {a:true, b:1==1, c:false, d:1!=1}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(4, map.size());
-        assertTrue((boolean) map.get("a"));
-        assertTrue((boolean) map.get("b"));
-        assertFalse((boolean) map.get("c"));
-        assertFalse((boolean) map.get("d"));
+        assertTrue((Boolean) map.get("a"));
+        assertTrue((Boolean) map.get("b"));
+        assertFalse((Boolean) map.get("c"));
+        assertFalse((Boolean) map.get("d"));
         object.release();
     }
 
@@ -111,12 +111,12 @@ public class V8ObjectUtilsTest {
     public void testCreateMixedMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {boolean:true, integer:1, double:3.14159, string:'hello'}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(4, map.size());
-        assertTrue((boolean) map.get("boolean"));
-        assertEquals(1, (int) map.get("integer"));
-        assertEquals(3.14159, (double) map.get("double"), 0.0000001);
+        assertTrue((Boolean) map.get("boolean"));
+        assertEquals(1, (int) (Integer) map.get("integer"));
+        assertEquals(3.14159, (Double) map.get("double"), 0.0000001);
         assertEquals("hello", map.get("string"));
         object.release();
     }
@@ -126,7 +126,7 @@ public class V8ObjectUtilsTest {
     public void testCreateNestedMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = { name : { first :'john', last: 'smith'}, age: 7}; x");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(2, map.size());
         assertEquals(7, map.get("age"));
@@ -139,7 +139,7 @@ public class V8ObjectUtilsTest {
     public void testCreateListFromV8Array() {
         V8Array array = v8.executeArrayScript("x = [1,2,3]; x");
 
-        List<Object> list = V8ObjectUtils.toList(array);
+        List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(3, list.size());
         assertEquals(1, list.get(0));
@@ -152,7 +152,7 @@ public class V8ObjectUtilsTest {
     public void testCreateListWithUndefinedFromV8Array() {
         V8Array array = v8.executeArrayScript("x = [1,2,3]; x[9] = 10; x");
 
-        List<Object> list = V8ObjectUtils.toList(array);
+        List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(10, list.size());
         assertEquals(1, list.get(0));
@@ -172,7 +172,7 @@ public class V8ObjectUtilsTest {
     public void testCreateListWithNullFromV8Array() {
         V8Array array = v8.executeArrayScript("x = [null]; x");
 
-        List<Object> list = V8ObjectUtils.toList(array);
+        List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(1, list.size());
         assertNull(list.get(0));
@@ -184,7 +184,7 @@ public class V8ObjectUtilsTest {
     public void testCreateMatrixFromV8Array() {
         V8Array array = v8.executeArrayScript("x = [[1,2,3],[true,false,true],['this','that','other']]; x");
 
-        List<Object> list = V8ObjectUtils.toList(array);
+        List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(3, list.size());
         assertEquals(3, ((List) list.get(0)).size());
@@ -193,9 +193,9 @@ public class V8ObjectUtilsTest {
         assertEquals(1, ((List) list.get(0)).get(0));
         assertEquals(2, ((List) list.get(0)).get(1));
         assertEquals(3, ((List) list.get(0)).get(2));
-        assertTrue((boolean) ((List) list.get(1)).get(0));
-        assertFalse((boolean) ((List) list.get(1)).get(1));
-        assertTrue((boolean) ((List) list.get(1)).get(2));
+        assertTrue((Boolean) ((List) list.get(1)).get(0));
+        assertFalse((Boolean) ((List) list.get(1)).get(1));
+        assertTrue((Boolean) ((List) list.get(1)).get(2));
         assertEquals("this", ((List) list.get(2)).get(0));
         assertEquals("that", ((List) list.get(2)).get(1));
         assertEquals("other", ((List) list.get(2)).get(2));
@@ -207,7 +207,7 @@ public class V8ObjectUtilsTest {
     public void testCreateMapWithLists() {
         V8Object object = v8.executeObjectScript("x = {a:[1,2,3], b:[4,5,6]}; x;");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(2, map.size());
         assertEquals(1, ((List) map.get("a")).get(0));
@@ -223,7 +223,7 @@ public class V8ObjectUtilsTest {
     public void testCreateMapWithNulls() {
         V8Object object = v8.executeObjectScript("x = {a:null}; x;");
 
-        Map<String, Object> map = V8ObjectUtils.toMap(object);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(1, map.size());
         assertNull(map.get(0));
@@ -574,7 +574,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testNullObjectGivesEmptyMap() {
-        Map<String, Object> map = V8ObjectUtils.toMap(null);
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(null);
 
         assertNotNull(map);
         assertEquals(0, map.size());
@@ -582,7 +582,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testNullArrayGivesEmptyMap() {
-        List<Object> list = V8ObjectUtils.toList(null);
+        List<? super Object> list = V8ObjectUtils.toList(null);
 
         assertNotNull(list);
         assertEquals(0, list.size());
