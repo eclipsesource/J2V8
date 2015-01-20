@@ -248,7 +248,7 @@ public class V8 extends V8Object {
         methodDescriptor.object = object;
         methodDescriptor.method = method;
         int methodID = methodReferenceCounter++;
-        functions.put(methodID, methodDescriptor);
+        getFunctionRegistry().put(methodID, methodDescriptor);
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
     }
 
@@ -256,7 +256,7 @@ public class V8 extends V8Object {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.voidCallback = callback;
         int methodID = methodReferenceCounter++;
-        functions.put(methodID, methodDescriptor);
+        getFunctionRegistry().put(methodID, methodDescriptor);
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, true);
     }
 
@@ -264,7 +264,7 @@ public class V8 extends V8Object {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.callback = callback;
         int methodID = methodReferenceCounter++;
-        functions.put(methodID, methodDescriptor);
+        getFunctionRegistry().put(methodID, methodDescriptor);
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, false);
     }
 
@@ -289,7 +289,7 @@ public class V8 extends V8Object {
     }
 
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
+        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
         if (methodDescriptor.callback != null) {
             return checkResult(methodDescriptor.callback.invoke(parameters));
         }
@@ -322,7 +322,7 @@ public class V8 extends V8Object {
     }
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = functions.get(methodID);
+        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
         if (methodDescriptor.voidCallback != null) {
             methodDescriptor.voidCallback.invoke(parameters);
             return;
@@ -414,6 +414,13 @@ public class V8 extends V8Object {
         if (debugHandler != null) {
             debugHandler.run();
         }
+    }
+
+    private Map<Integer, MethodDescriptor> getFunctionRegistry() {
+        if (functions == null) {
+            functions = new HashMap<Integer, V8.MethodDescriptor>();
+        }
+        return functions;
     }
 
     protected native void _initNewV8Object(int v8RuntimeHandle, int objectHandle);
