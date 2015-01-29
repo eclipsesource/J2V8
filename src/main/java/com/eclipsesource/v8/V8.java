@@ -19,19 +19,22 @@ import java.util.Map;
 
 public class V8 extends V8Object {
 
-    private static int       v8InstanceCounter;
-    private static Thread    thread                 = null;
-    private static List<V8>  runtimes               = new ArrayList<>();
-    private static Runnable  debugHandler           = null;
+    private static final boolean VOID_CALLBACK_LOGGING_ENABLED = false;
+    private static final boolean CALLBACK_LOGGING_ENABLED      = false;
 
-    private int              methodReferenceCounter = 0;
-    private int              v8RuntimeHandle;
-    private boolean          debugEnabled           = false;
-    long                     objectReferences       = 0;
+    private static int           v8InstanceCounter;
+    private static Thread        thread                             = null;
+    private static List<V8>      runtimes                           = new ArrayList<>();
+    private static Runnable      debugHandler                       = null;
 
-    private static boolean   nativeLibraryLoaded    = false;
-    private static Error     nativeLoadError        = null;
-    private static Exception nativeLoadException    = null;
+    private int                  methodReferenceCounter             = 0;
+    private int                  v8RuntimeHandle;
+    private boolean              debugEnabled                       = false;
+    long                         objectReferences                   = 0;
+
+    private static boolean       nativeLibraryLoaded                = false;
+    private static Error         nativeLoadError                    = null;
+    private static Exception     nativeLoadException                = null;
 
     class MethodDescriptor {
         Object           object;
@@ -254,18 +257,26 @@ public class V8 extends V8Object {
 
     void registerVoidCallback(final JavaVoidCallback callback, final int objectHandle, final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
-        methodDescriptor.voidCallback = callback;
+        methodDescriptor.voidCallback = wrapVoidCallback(callback, jsFunctionName);
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, true);
     }
 
+    private JavaVoidCallback wrapVoidCallback(final JavaVoidCallback callback, final String jsFunctionName) {
+        return VOID_CALLBACK_LOGGING_ENABLED ? new LoggingJavaVoidCallback(callback, jsFunctionName) : callback;
+    }
+
     void registerCallback(final JavaCallback callback, final int objectHandle, final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
-        methodDescriptor.callback = callback;
+        methodDescriptor.callback = wrapCallback(callback, jsFunctionName);
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
         _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, false);
+    }
+
+    private JavaCallback wrapCallback(final JavaCallback callback, final String jsFunctionName) {
+        return CALLBACK_LOGGING_ENABLED ? new LoggingJavaCallback(callback, jsFunctionName) : callback;
     }
 
     private boolean isVoidMethod(final Method method) {
