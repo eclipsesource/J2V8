@@ -41,6 +41,7 @@ jclass v8ResultsUndefinedCls = NULL;
 jclass v8ScriptCompilationCls = NULL;
 jclass v8ScriptExecutionException = NULL;
 jclass v8RuntimeException = NULL;
+jclass throwableCls = NULL;
 jclass stringCls = NULL;
 jclass integerCls = NULL;
 jclass doubleCls = NULL;
@@ -186,6 +187,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 		integerCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Integer"));
 		doubleCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Double"));
 		booleanCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Boolean"));
+		throwableCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Throwable"));
 		v8ResultsUndefinedCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ResultUndefined"));
 		v8ScriptCompilationCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptCompilationException"));
 		v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
@@ -1029,9 +1031,16 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
 	env->CallVoidMethod(v8, callVoidMethod, md->methodID, parameters);
 	if ( env -> ExceptionCheck() ) {
 		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-		isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
 		v8Isolates[md->v8RuntimeHandle]->pendingException = env->ExceptionOccurred();
 		env->ExceptionClear();
+		jmethodID getMessage = env->GetMethodID(throwableCls,"getMessage","()Ljava/lang/String;");
+		jstring exceptionMessage = (jstring) env->CallObjectMethod(v8Isolates[md->v8RuntimeHandle]->pendingException, getMessage);
+		if ( exceptionMessage != NULL ) {
+			Local<String> v8String = createV8String(env, isolate, exceptionMessage);
+			isolate->ThrowException(v8String);
+		} else {
+			isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+		}
 	}
 	jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
 	env->CallVoidMethod(parameters, release);
@@ -1088,9 +1097,16 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
 	jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, parameters);
 	if ( env -> ExceptionCheck() ) {
 		Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-		isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
 		v8Isolates[md->v8RuntimeHandle]->pendingException = env->ExceptionOccurred();
 		env->ExceptionClear();
+		jmethodID getMessage = env->GetMethodID(throwableCls,"getMessage","()Ljava/lang/String;");
+		jstring exceptionMessage = (jstring) env->CallObjectMethod(v8Isolates[md->v8RuntimeHandle]->pendingException, getMessage);
+		if ( exceptionMessage != NULL ) {
+			Local<String> v8String = createV8String(env, isolate, exceptionMessage);
+			isolate->ThrowException(v8String);
+		} else {
+			isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+		}
 	} else if ( resultObject == NULL ) {
 		args.GetReturnValue().SetUndefined();
 	} else {

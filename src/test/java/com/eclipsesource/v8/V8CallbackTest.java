@@ -808,6 +808,50 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testCatchJavaExceptionInJS() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).voidMethodNoParameters();
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
+
+        v8.executeVoidScript("var caught = false; try {foo();} catch (e) {if ( e === 'My Runtime Exception' ) caught=true;}");
+
+        assertTrue(v8.getBoolean("caught"));
+    }
+
+    @Test
+    public void testCatchJavaExceptionInJSWithoutMessage() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException()).when(callback).voidMethodNoParameters();
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
+
+        v8.executeVoidScript("var caught = false; try {foo();} catch (e) {if ( e === 'Unhandled Java Exception' ) caught=true;}");
+
+        assertTrue(v8.getBoolean("caught"));
+    }
+
+    @Test
+    public void testNonVoidCallbackCatchJavaExceptionInJS() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).booleanMethodNoParameters();
+        v8.registerJavaMethod(callback, "booleanMethodNoParameters", "foo", new Class<?>[] {});
+
+        v8.executeVoidScript("var caught = false; try {foo();} catch (e) {if ( e === 'My Runtime Exception' ) caught=true;}");
+
+        assertTrue(v8.getBoolean("caught"));
+    }
+
+    @Test
+    public void testNonVoidCallbackCatchJavaExceptionInJSWithoutMessage() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException()).when(callback).booleanMethodNoParameters();
+        v8.registerJavaMethod(callback, "booleanMethodNoParameters", "foo", new Class<?>[] {});
+
+        v8.executeVoidScript("var caught = false; try {foo();} catch (e) {if ( e === 'Unhandled Java Exception' ) caught=true;}");
+
+        assertTrue(v8.getBoolean("caught"));
+    }
+
+    @Test
     public void testJSCatchWillCatchJavaException() {
         ICallback callback = mock(ICallback.class);
         doThrow(new RuntimeException("My Runtime Exception")).when(callback).voidMethodNoParameters();
