@@ -10,6 +10,20 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.awt.Rectangle;
 
 import org.junit.After;
@@ -17,18 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class V8CallbackTest {
 
@@ -62,6 +64,8 @@ public class V8CallbackTest {
         public void voidMethodWithArrayParameter(final V8Array array);
 
         public void voidMethodWithObjectParameter(final V8Object object);
+
+        public void voidMethodWithStringParameter(final String string);
 
         public int intMethodNoParameters();
 
@@ -801,6 +805,32 @@ public class V8CallbackTest {
             assertEquals("My Runtime Exception", e.getCause().getMessage());
             throw e;
         }
+    }
+
+    @Test
+    public void testJSCatchWillCatchJavaException() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).voidMethodNoParameters();
+        doNothing().when(callback).voidMethodWithStringParameter(anyString());
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
+        v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "bar", new Class<?>[] { String.class });
+
+        v8.executeVoidScript("try {foo();} catch (e) {bar();}");
+
+        // Runtime exception should not be thrown
+    }
+
+    @Test
+    public void testJSCatchWillCatchJavaException2() {
+        ICallback callback = mock(ICallback.class);
+        doThrow(new RuntimeException("My Runtime Exception")).when(callback).voidMethodNoParameters();
+        doNothing().when(callback).voidMethodWithStringParameter(anyString());
+        v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
+        v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "bar", new Class<?>[] { String.class });
+
+        v8.executeVoidScript("try {foo();} catch (e) {}");
+
+        // Runtime exception should not be thrown
     }
 
     @Test(expected = RuntimeException.class)
