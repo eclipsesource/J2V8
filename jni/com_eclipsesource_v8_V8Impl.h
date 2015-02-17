@@ -7,8 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef com_eclipsesource_v8_V8_VOID
-#define com_eclipsesource_v8_V8_VOID 0L
+#undef com_eclipsesource_v8_V8_NULL
+#define com_eclipsesource_v8_V8_NULL 0L
 #undef com_eclipsesource_v8_V8_UNKNOWN
 #define com_eclipsesource_v8_V8_UNKNOWN 0L
 #undef com_eclipsesource_v8_V8_INTEGER
@@ -291,6 +291,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _addNull
+ * Signature: (IILjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addNull
+  (JNIEnv *, jobject, jint, jint, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _registerJavaMethod
  * Signature: (IILjava/lang/String;IZ)V
  */
@@ -407,6 +415,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
  * Signature: (II)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayNullItem
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
   (JNIEnv *, jobject, jint, jint);
 
 /*

@@ -79,7 +79,7 @@ public class V8Object extends V8Value {
         V8.checkThread();
         checkReleaesd();
         Object result = v8._get(v8.getV8RuntimeHandle(), V8_ARRAY, objectHandle, key);
-        if (result instanceof V8Array) {
+        if ((result == null) || (result instanceof V8Array)) {
             return (V8Array) result;
         }
         throw new V8ResultUndefined();
@@ -89,7 +89,7 @@ public class V8Object extends V8Value {
         V8.checkThread();
         checkReleaesd();
         Object result = v8._get(v8.getV8RuntimeHandle(), V8_OBJECT, objectHandle, key);
-        if (result instanceof V8Object) {
+        if ((result == null) || (result instanceof V8Object)) {
             return (V8Object) result;
         }
         throw new V8ResultUndefined();
@@ -180,14 +180,26 @@ public class V8Object extends V8Value {
     public V8Object add(final String key, final String value) {
         V8.checkThread();
         checkReleaesd();
-        v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        if (value == null) {
+            v8._addNull(v8.getV8RuntimeHandle(), objectHandle, key);
+        } else if (value.equals(V8.getUndefined())) {
+            v8._addUndefined(v8.getV8RuntimeHandle(), objectHandle, key);
+        } else {
+            v8._add(v8.getV8RuntimeHandle(), objectHandle, key, value);
+        }
         return this;
     }
 
     public V8Object add(final String key, final V8Value value) {
         V8.checkThread();
         checkReleaesd();
-        v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
+        if (value == null) {
+            v8._addNull(v8.getV8RuntimeHandle(), objectHandle, key);
+        } else if (value.equals(V8.getUndefined())) {
+            v8._addUndefined(v8.getV8RuntimeHandle(), objectHandle, key);
+        } else {
+            v8._addObject(v8.getV8RuntimeHandle(), objectHandle, key, value.getHandle());
+        }
         return this;
     }
 

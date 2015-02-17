@@ -12,7 +12,7 @@ package com.eclipsesource.v8;
 
 abstract public class V8Value {
 
-    public static final int VOID                    = 0;
+    public static final int NULL                    = 0;
     public static final int UNKNOWN                 = 0;
     public static final int INTEGER                 = 1;
     public static final int DOUBLE                  = 2;

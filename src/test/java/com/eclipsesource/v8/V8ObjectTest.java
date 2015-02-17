@@ -13,6 +13,7 @@ package com.eclipsesource.v8;
 import static com.eclipsesource.v8.V8Value.BOOLEAN;
 import static com.eclipsesource.v8.V8Value.DOUBLE;
 import static com.eclipsesource.v8.V8Value.INTEGER;
+import static com.eclipsesource.v8.V8Value.NULL;
 import static com.eclipsesource.v8.V8Value.STRING;
 import static com.eclipsesource.v8.V8Value.UNDEFINED;
 import static com.eclipsesource.v8.V8Value.V8_ARRAY;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -314,14 +316,6 @@ public class V8ObjectTest {
     @Test
     public void testGetUndefined() {
         V8Object v8Object = v8.executeObjectScript("x = {a : undefined}; x;");
-
-        assertEquals(UNDEFINED, v8Object.getType("a"));
-        v8Object.release();
-    }
-
-    @Test
-    public void testGetNull() {
-        V8Object v8Object = v8.executeObjectScript("x = {a : null}; x;");
 
         assertEquals(UNDEFINED, v8Object.getType("a"));
         v8Object.release();
@@ -676,6 +670,63 @@ public class V8ObjectTest {
         V8Object undefined = v8.getObject("object");
 
         undefined.registerJavaMethod(new Object(), "toString", "toString", new Class<?>[0]);
+    }
+
+    @Test
+    public void testAddUndefinedAsObject() {
+        V8Object object = new V8Object(v8).add("foo", V8.getUndefined());
+
+        assertEquals(V8.getUndefined(), object.getObject("foo"));
+        object.release();
+    }
+
+    @Test
+    public void testAddUndefinedIsUndefined() {
+        V8Object object = new V8Object(v8).add("foo", V8.getUndefined());
+
+        assertEquals(UNDEFINED, object.getType("foo"));
+        object.release();
+    }
+
+    /*** Null ***/
+    @Test
+    public void testIsNull() {
+        V8Object v8Object = v8.executeObjectScript("x = {a : null}; x;");
+
+        assertEquals(NULL, v8Object.getType("a"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testGetNull() {
+        V8Object v8Object = v8.executeObjectScript("x = {a : null}; x;");
+
+        assertNull(v8Object.getObject("a"));
+        v8Object.release();
+    }
+
+    @Test
+    public void testAddNullAsObject() {
+        V8Object object = new V8Object(v8).add("foo", (V8Object) null);
+
+        assertNull(object.getObject("foo"));
+        object.release();
+    }
+
+    @Test
+    public void testAddNullAsString() {
+        V8Object object = new V8Object(v8).add("foo", (String) null);
+
+        assertNull(object.getObject("foo"));
+        object.release();
+    }
+
+    @Test
+    public void testAddNullAsArray() {
+        V8Object object = new V8Object(v8).add("foo", (V8Array) null);
+
+        assertNull(object.getArray("foo"));
+        object.release();
     }
 
     /*** Test Types ***/

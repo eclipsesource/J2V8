@@ -221,7 +221,7 @@ public class V8ObjectUtils {
                         objectValue.release();
                     }
                 }
-            case V8Value.VOID:
+            case V8Value.NULL:
                 return null;
             case V8Value.UNDEFINED:
                 return V8.getUndefined();
@@ -259,7 +259,7 @@ public class V8ObjectUtils {
                         child.release();
                     }
                 }
-            case V8Value.VOID:
+            case V8Value.NULL:
                 return null;
             case V8Value.UNDEFINED:
                 return V8.getUndefined();

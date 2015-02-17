@@ -506,6 +506,12 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
 	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Undefined(isolate));
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addNull
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+	addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Null(isolate));
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
   (JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint value) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
@@ -614,7 +620,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
 	for (int index = 0; index < length; index++) {
 		int type = getType(array->Get(index));
 		if ( type < 0 ) {
-				throwResultUndefinedException(env, "");
+			throwResultUndefinedException(env, "");
 		} else if ( index == 0 ) {
 			arrayType = type;
 		} else if ( type == arrayType ) {
@@ -789,6 +795,14 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1arrayGet
 	return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
+  (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
+	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+	Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+	int index = Array::Cast(*array)->Length();
+	array->Set(index, Null(isolate));
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
   (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, );
@@ -844,8 +858,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 }
 
 int getType(Handle<Value> v8Value) {
-	if (v8Value.IsEmpty() || v8Value->IsUndefined() || v8Value->IsNull()) {
+	if (v8Value.IsEmpty() || v8Value->IsUndefined()) {
 		return com_eclipsesource_v8_V8_UNDEFINED;
+	} else if ( v8Value->IsNull() ) {
+		return com_eclipsesource_v8_V8_NULL;
 	} else if ( v8Value->IsInt32() ) {
 		return com_eclipsesource_v8_V8_INTEGER;
 	} else if ( v8Value->IsNumber() ) {
@@ -946,7 +962,7 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
 }
 
 int getReturnType(JNIEnv* env, jobject &object) {
-	int result = com_eclipsesource_v8_V8_VOID;
+	int result = com_eclipsesource_v8_V8_NULL;
 	if ( env->IsInstanceOf(object,integerCls) ) {
 		result = com_eclipsesource_v8_V8_INTEGER;
 	} else if ( env->IsInstanceOf(object, doubleCls)) {
@@ -1193,7 +1209,7 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
 		jmethodID constructor = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
 		jobject objectResult = env->NewObject(undefinedV8ArrayCls, constructor, v8);
 		return objectResult;
-	} else if ( result->IsUndefined() && ( expectedType == com_eclipsesource_v8_V8_V8_OBJECT || expectedType == com_eclipsesource_v8_V8_VOID ) ) {
+	} else if ( result->IsUndefined() && ( expectedType == com_eclipsesource_v8_V8_V8_OBJECT || expectedType == com_eclipsesource_v8_V8_NULL ) ) {
 		jmethodID constructor = env->GetMethodID(undefinedV8ObjectCls, "<init>", "()V");
 		jobject objectResult = env->NewObject(undefinedV8ObjectCls, constructor, v8);
 		return objectResult;

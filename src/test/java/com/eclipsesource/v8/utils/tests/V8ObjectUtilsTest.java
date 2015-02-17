@@ -175,7 +175,7 @@ public class V8ObjectUtilsTest {
         List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(1, list.size());
-        assertTrue(((V8Value) list.get(0)).isUndefined());
+        assertNull(list.get(0));
         array.release();
     }
 

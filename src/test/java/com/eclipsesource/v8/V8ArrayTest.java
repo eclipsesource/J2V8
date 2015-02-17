@@ -13,6 +13,7 @@ package com.eclipsesource.v8;
 import static com.eclipsesource.v8.V8Value.BOOLEAN;
 import static com.eclipsesource.v8.V8Value.DOUBLE;
 import static com.eclipsesource.v8.V8Value.INTEGER;
+import static com.eclipsesource.v8.V8Value.NULL;
 import static com.eclipsesource.v8.V8Value.STRING;
 import static com.eclipsesource.v8.V8Value.UNDEFINED;
 import static com.eclipsesource.v8.V8Value.V8_ARRAY;
@@ -20,6 +21,7 @@ import static com.eclipsesource.v8.V8Value.V8_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -561,6 +563,47 @@ public class V8ArrayTest {
         undefined.get(7);
     }
 
+    /*** Null ***/
+    @Test
+    public void testIsNull() {
+        V8Array array = v8.executeArrayScript("x = [null]; x;");
+
+        assertEquals(NULL, array.getType(0));
+        array.release();
+    }
+
+    @Test
+    public void testGetNullInArray() {
+        V8Array array = v8.executeArrayScript("x = [null]; x;");
+
+        assertNull(array.getObject(0));
+        array.release();
+    }
+
+    @Test
+    public void testAddNullAsObject() {
+        V8Array array = new V8Array(v8).push((V8Object) null);
+
+        assertNull(array.getObject(0));
+        array.release();
+    }
+
+    @Test
+    public void testAddNullAsString() {
+        V8Array array = new V8Array(v8).push((String) null);
+
+        assertNull(array.getObject(0));
+        array.release();
+    }
+
+    @Test
+    public void testAddNullAsArray() {
+        V8Array array = new V8Array(v8).push((V8Array) null);
+
+        assertNull(array.getArray(0));
+        array.release();
+    }
+
     /*** Get Int ***/
     @Test
     public void testArrayGetInt() {
@@ -961,7 +1004,7 @@ public class V8ArrayTest {
     public void testGetNull() {
         V8Array v8Array = v8.executeArrayScript("[null];");
 
-        assertEquals(UNDEFINED, v8Array.getType(0));
+        assertEquals(NULL, v8Array.getType(0));
         v8Array.release();
     }
 
