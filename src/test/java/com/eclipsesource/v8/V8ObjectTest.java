@@ -10,10 +10,13 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import static com.eclipsesource.v8.V8Value.BOOLEAN;
+import static com.eclipsesource.v8.V8Value.DOUBLE;
+import static com.eclipsesource.v8.V8Value.INTEGER;
+import static com.eclipsesource.v8.V8Value.STRING;
+import static com.eclipsesource.v8.V8Value.UNDEFINED;
+import static com.eclipsesource.v8.V8Value.V8_ARRAY;
+import static com.eclipsesource.v8.V8Value.V8_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -22,13 +25,9 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static com.eclipsesource.v8.V8Value.BOOLEAN;
-import static com.eclipsesource.v8.V8Value.DOUBLE;
-import static com.eclipsesource.v8.V8Value.INTEGER;
-import static com.eclipsesource.v8.V8Value.STRING;
-import static com.eclipsesource.v8.V8Value.UNDEFINED;
-import static com.eclipsesource.v8.V8Value.V8_ARRAY;
-import static com.eclipsesource.v8.V8Value.V8_OBJECT;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class V8ObjectTest {
 
@@ -69,20 +68,6 @@ public class V8ObjectTest {
             return;
         }
         fail("Illegal State Exception not thrown.");
-    }
-
-    @Test
-    public void testCreateV8ObjectWithNativeResource() {
-        V8Object v8Object = new V8Object(v8, false);
-
-        assertTrue(v8Object.isReleased());
-    }
-
-    @Test
-    public void testReleaseV8ObjectWithoutNativeResources() {
-        V8Object v8Object = new V8Object(v8, false);
-
-        v8Object.release();
     }
 
     @Test(expected = IllegalStateException.class)

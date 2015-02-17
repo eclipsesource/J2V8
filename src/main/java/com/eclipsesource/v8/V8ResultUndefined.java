@@ -16,4 +16,8 @@ public class V8ResultUndefined extends V8RuntimeException {
     public V8ResultUndefined(final String message) {
         super(message);
     }
+
+    public V8ResultUndefined() {
+        super();
+    }
 }

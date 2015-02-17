@@ -10,15 +10,6 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
 import static com.eclipsesource.v8.V8Value.BOOLEAN;
 import static com.eclipsesource.v8.V8Value.DOUBLE;
 import static com.eclipsesource.v8.V8Value.INTEGER;
@@ -26,6 +17,14 @@ import static com.eclipsesource.v8.V8Value.STRING;
 import static com.eclipsesource.v8.V8Value.UNDEFINED;
 import static com.eclipsesource.v8.V8Value.V8_ARRAY;
 import static com.eclipsesource.v8.V8Value.V8_OBJECT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class V8ArrayTest {
 
@@ -48,25 +47,11 @@ public class V8ArrayTest {
         }
     }
 
-    @Test
-    public void testCreateV8ArrayWithNativeResource() {
-        V8Array v8Array = new V8Array(v8, false);
-
-        assertTrue(v8Array.isReleased());
-    }
-
     @Test(expected = IllegalStateException.class)
     public void testDoNotReleaseArrayReference() {
         V8 _v8 = V8.createV8Runtime();
         new V8Array(_v8);
         _v8.release();
-    }
-
-    @Test
-    public void testReleaseV8ArrayWithoutNativeResources() {
-        V8Array v8Array = new V8Array(v8, false);
-
-        v8Array.release();
     }
 
     @Test

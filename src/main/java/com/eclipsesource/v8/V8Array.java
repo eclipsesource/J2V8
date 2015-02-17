@@ -13,11 +13,7 @@ package com.eclipsesource.v8;
 public class V8Array extends V8Object {
 
     public V8Array(final V8 v8) {
-        this(v8, true);
-    }
-
-    protected V8Array(final V8 v8, final boolean initialize) {
-        super(v8, initialize);
+        super(v8);
         V8.checkThread();
     }
 
@@ -158,31 +154,21 @@ public class V8Array extends V8Object {
     public V8Array getArray(final int index) {
         V8.checkThread();
         checkReleaesd();
-        V8Array result = new V8Array(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._arrayGetArray(v8.getV8RuntimeHandle(), getHandle(), index, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), objectHandle, index);
+        if (result instanceof V8Array) {
+            return (V8Array) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
     public V8Object getObject(final int index) {
         V8.checkThread();
         checkReleaesd();
-        V8Object result = new V8Object(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._arrayGetObject(v8.getV8RuntimeHandle(), getHandle(), index, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), objectHandle, index);
+        if (result instanceof V8Object) {
+            return (V8Object) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
     public V8Array push(final int value) {

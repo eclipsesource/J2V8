@@ -21,16 +21,10 @@ public class V8Object extends V8Value {
     }
 
     public V8Object(final V8 v8) {
-        this(v8, true);
-    }
-
-    protected V8Object(final V8 v8, final boolean initialize) {
         this.v8 = v8;
         V8.checkThread();
         objectHandle = v8ObjectInstanceCounter++;
-        if (initialize) {
-            initialize(v8.getV8RuntimeHandle(), objectHandle);
-        }
+        initialize(v8.getV8RuntimeHandle(), objectHandle);
     }
 
     public boolean contains(final String key) {
@@ -78,31 +72,21 @@ public class V8Object extends V8Value {
     public V8Array getArray(final String key) throws V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
-        V8Array result = new V8Array(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._getArray(v8.getV8RuntimeHandle(), getHandle(), key, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        Object result = v8._get(v8.getV8RuntimeHandle(), objectHandle, key);
+        if (result instanceof V8Array) {
+            return (V8Array) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
     public V8Object getObject(final String key) throws V8ResultUndefined {
         V8.checkThread();
         checkReleaesd();
-        V8Object result = new V8Object(v8, false);
-        try {
-            result.released = false;
-            v8.addObjRef();
-            v8._getObject(v8.getV8RuntimeHandle(), objectHandle, key, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        Object result = v8._get(v8.getV8RuntimeHandle(), objectHandle, key);
+        if (result instanceof V8Object) {
+            return (V8Object) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
     public V8Array createParameterList(final int size) {
@@ -143,34 +127,26 @@ public class V8Object extends V8Value {
         return v8._executeBooleanFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
-    public V8Array executeArrayFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-    V8ResultUndefined {
+    public V8Array executeArrayFunction(final String name, final V8Array parameters) {
         V8.checkThread();
         checkReleaesd();
-        V8Array result = new V8Array(v8);
-        try {
-            int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-            v8._executeArrayFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        Object result = v8._executeFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle);
+        if (result instanceof V8Array) {
+            return (V8Array) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
-    public V8Object executeObjectFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-    V8ResultUndefined {
+    public V8Object executeObjectFunction(final String name, final V8Array parameters) {
         V8.checkThread();
         checkReleaesd();
-        V8Object result = new V8Object(v8);
-        try {
-            int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-            v8._executeObjectFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle, result.getHandle());
-        } catch (Exception e) {
-            result.release();
-            throw e;
+        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        Object result = v8._executeFunction(v8.getV8RuntimeHandle(), objectHandle, name, parametersHandle);
+        if (result instanceof V8Object) {
+            return (V8Object) result;
         }
-        return result;
+        throw new V8ResultUndefined();
     }
 
     public void executeVoidFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException {
