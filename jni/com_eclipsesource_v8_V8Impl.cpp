@@ -37,6 +37,8 @@ JavaVM* jvm = NULL;
 jclass v8cls = NULL;
 jclass v8ObjectCls = NULL;
 jclass v8ArrayCls = NULL;
+jclass undefinedV8ObjectCls = NULL;
+jclass undefinedV8ArrayCls = NULL;
 jclass v8ResultsUndefinedCls = NULL;
 jclass v8ScriptCompilationCls = NULL;
 jclass v8ScriptExecutionException = NULL;
@@ -55,7 +57,7 @@ void throwV8RuntimeException( JNIEnv *env, const char *message );
 void throwResultUndefinedException( JNIEnv *env, const char *message );
 Isolate* getIsolate(JNIEnv *env, int handle);
 int getType(Handle<Value> v8Value);
-jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result);
+jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result, jint expectedType);
 
 #define SETUP(env, v8RuntimeHandle, errorReturnResult) getIsolate(env, v8RuntimeHandle);\
 		if ( isolate == NULL ) {\
@@ -169,11 +171,13 @@ static void jsWindowObjectAccessor(Local<String> property,
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
   (JNIEnv *env, jobject v8, jint handle, jstring globalAlias) {
 	if (jvm == NULL ) {
-		// on first creation, store the JVM and a handle to V8.class
+		// on first creation, store the JVM and a handle to J2V8 classes
 		env->GetJavaVM(&jvm);
 		v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
 		v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
 		v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
+		undefinedV8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object$Undefined"));
+		undefinedV8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array$Undefined"));
 		stringCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/String"));
 		integerCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Integer"));
 		doubleCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Double"));
@@ -402,14 +406,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
 	TryCatch tryCatch;
 	Local<Script> script;
 	Local<Value> result;
 	if ( !compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch) ) { return NULL; }
 	if ( !runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle ) ) { return NULL; }
-	return getResult( env, v8, v8RuntimeHandle, result );
+	return getResult( env, v8, v8RuntimeHandle, result, expectedType );
 }
 
 bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &jfunctionName, jint &parameterHandle, Handle<Value> &result) {
@@ -440,12 +444,12 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
 	Handle<Value> result;
 	if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result) )
 		return NULL;
-	return getResult(env, v8, v8RuntimeHandle, result);
+	return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
@@ -535,10 +539,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addObject
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1get
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring key) {
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint objectHandle, jstring key) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
 	Handle<Value> result = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
-	return getResult(env, v8, v8RuntimeHandle, result);
+	return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
@@ -778,11 +782,11 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1arrayGet
- (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint arrayHandle, jint index) {
+ (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint arrayHandle, jint index) {
 	Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
 	Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
 	Handle<Value> result = array->Get(index);
-	return getResult(env, v8, v8RuntimeHandle, result);
+	return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
@@ -1184,9 +1188,15 @@ void throwError( JNIEnv *env, const char *message ) {
     (env)->ThrowNew(errorCls, message );
 }
 
-jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result) {
-	if ( result->IsUndefined() ) {
-		return NULL;
+jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result, jint expectedType ) {
+	if ( result->IsUndefined() && expectedType == com_eclipsesource_v8_V8_V8_ARRAY  ) {
+		jmethodID constructor = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
+		jobject objectResult = env->NewObject(undefinedV8ArrayCls, constructor, v8);
+		return objectResult;
+	} else if ( result->IsUndefined() && ( expectedType == com_eclipsesource_v8_V8_V8_OBJECT || expectedType == com_eclipsesource_v8_V8_VOID ) ) {
+		jmethodID constructor = env->GetMethodID(undefinedV8ObjectCls, "<init>", "()V");
+		jobject objectResult = env->NewObject(undefinedV8ObjectCls, constructor, v8);
+		return objectResult;
 	} else if ( result->IsInt32() ) {
 		jmethodID constructor = env->GetMethodID(integerCls, "<init>", "(I)V");
 		return env->NewObject(integerCls, constructor, result->Int32Value());

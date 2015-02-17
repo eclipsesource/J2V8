@@ -12,19 +12,20 @@ package com.eclipsesource.v8;
 
 abstract public class V8Value {
 
-    public static final int UNDEFINED = 0;
-    public static final int VOID = 0;
-    public static final int INTEGER = 1;
-    public static final int DOUBLE = 2;
-    public static final int BOOLEAN = 3;
-    public static final int STRING = 4;
-    public static final int V8_ARRAY = 5;
-    public static final int V8_OBJECT = 6;
+    public static final int VOID                    = 0;
+    public static final int UNKNOWN                 = 0;
+    public static final int INTEGER                 = 1;
+    public static final int DOUBLE                  = 2;
+    public static final int BOOLEAN                 = 3;
+    public static final int STRING                  = 4;
+    public static final int V8_ARRAY                = 5;
+    public static final int V8_OBJECT               = 6;
+    public static final int UNDEFINED               = 99;
 
-    protected static int v8ObjectInstanceCounter = 1;
-    protected V8 v8;
-    protected int objectHandle;
-    protected boolean released = true;
+    protected static int    v8ObjectInstanceCounter = 1;
+    protected V8            v8;
+    protected int           objectHandle;
+    protected boolean       released                = true;
 
     public V8Value() {
         super();
@@ -34,6 +35,10 @@ abstract public class V8Value {
         v8._initNewV8Object(runtimeHandle, objectHandle);
         v8.addObjRef();
         released = false;
+    }
+
+    public boolean isUndefined() {
+        return false;
     }
 
     public int getHandle() {

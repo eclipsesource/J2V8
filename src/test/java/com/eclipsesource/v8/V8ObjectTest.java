@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -411,10 +412,260 @@ public class V8ObjectTest {
         result.release();
     }
 
-    /*** Object Errors ***/
-    @Test(expected = V8ResultUndefined.class)
+    /*** Undefined ***/
+    @Test
     public void testUndefinedObjectProperty() {
-        v8.getObject("object");
+        V8Object result = v8.getObject("object");
+
+        assertTrue(result.isUndefined());
+    }
+
+    @Test
+    public void testUndefinedEqual() {
+        V8Object undefined1 = v8.getObject("foo");
+        V8Object undefined2 = v8.getObject("bar");
+
+        assertEquals(undefined1, undefined2);
+    }
+
+    @Test
+    public void testStaticUndefined() {
+        V8Object undefined = v8.getObject("foo");
+
+        assertEquals(undefined, V8.getUndefined());
+    }
+
+    @Test
+    public void testUndefinedHashCodeEquals() {
+        V8Object undefined1 = v8.getObject("foo");
+        V8Object undefined2 = v8.getObject("bar");
+
+        assertEquals(undefined1.hashCode(), undefined2.hashCode());
+    }
+
+    @Test
+    public void testUndefinedToString() {
+        V8Object undefined = v8.getObject("object");
+
+        assertEquals("undefined", undefined.toString());
+    }
+
+    @Test
+    public void testUndefinedRelease() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.release();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddIntUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.add("foo", 7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddBooleanUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.add("foo", false);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddStringUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.add("foo", "bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddDoubleUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.add("foo", 7.7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddObjectUndefined() {
+        V8Object undefined = v8.getObject("object");
+        V8Object object = new V8Object(v8);
+
+        try {
+            undefined.add("foo", object);
+        } finally {
+            object.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddArrayUndefined() {
+        V8Object undefined = v8.getObject("object");
+        V8Array array = new V8Array(v8);
+
+        try {
+            undefined.add("foo", array);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddUndefinedUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.addUndefined("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testContainsUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.contains("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteIntFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeIntFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteBooleanFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeBooleanFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteDoubleFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeDoubleFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteStringFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeStringFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteObjectFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeObjectFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteArrayFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeArrayFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteVoidFunctionUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.executeVoidFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetIntegerUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getInteger("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetBooleanUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getBoolean("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDoubleUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getDouble("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetStringUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getString("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetObjectUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getObject("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetArrayUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getArray("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetHandleUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getHandle();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetKeysUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getKeys();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetTypeUndefined() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.getType("bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetPrototype() {
+        V8Object undefined = v8.getObject("object");
+        V8Object prototype = new V8Object(v8);
+
+        try {
+            undefined.setPrototype(prototype);
+        } finally {
+            prototype.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterJavaMethod() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.registerJavaMethod(mock(JavaCallback.class), "name");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterVoidJavaMethod() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.registerJavaMethod(mock(JavaVoidCallback.class), "name");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterAnyJavaMethod() {
+        V8Object undefined = v8.getObject("object");
+
+        undefined.registerJavaMethod(new Object(), "toString", "toString", new Class<?>[0]);
     }
 
     /*** Test Types ***/

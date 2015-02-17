@@ -295,9 +295,9 @@ public class V8Test {
     /*** Unknown Script ***/
     @Test
     public void testAnyScriptReturnedNothing() {
-        Object result = v8.executeScript("");
+        V8Value result = (V8Value) v8.executeScript("");
 
-        assertNull(result);
+        assertTrue(result.isUndefined());
     }
 
     @Test
@@ -309,9 +309,9 @@ public class V8Test {
 
     @Test
     public void testAnyScriptReturnedUndefined() {
-        Object result = v8.executeScript("undefined;");
+        V8Value result = (V8Value) v8.executeScript("undefined;");
 
-        assertNull(result);
+        assertTrue(result.isUndefined());
     }
 
     @Test
@@ -388,9 +388,11 @@ public class V8Test {
         v8.executeObjectScript("'a");
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testResultUndefinedExceptionObjectScript() {
-        v8.executeObjectScript("");
+        V8Object result = v8.executeObjectScript("");
+
+        assertTrue(result.isUndefined());
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -576,11 +578,13 @@ public class V8Test {
         v8.executeObjectFunction("foo", null);
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testResultUndefinedForNoReturnInobjectFunction() {
         v8.executeVoidScript("function foo() {};");
 
-        v8.executeObjectFunction("foo", null);
+        V8Object result = v8.executeObjectFunction("foo", null);
+
+        assertTrue(result.isUndefined());
     }
 
     /*** Array Function ***/
@@ -601,11 +605,13 @@ public class V8Test {
         v8.executeArrayFunction("foo", null);
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testResultUndefinedForNoReturnInArrayFunction() {
         v8.executeVoidScript("function foo() {};");
 
-        v8.executeArrayFunction("foo", null);
+        V8Array result = v8.executeArrayFunction("foo", null);
+
+        assertTrue(result.isUndefined());
     }
 
     /*** Void Function ***/
@@ -956,11 +962,13 @@ public class V8Test {
         v8.getArray("foo");
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test()
     public void testGetArrayDoesNotExist() {
         v8.executeVoidScript("foo = 42");
 
-        v8.getArray("bar");
+        V8Array result = v8.getArray("bar");
+
+        assertTrue(result.isUndefined());
     }
 
     /*** Contains ***/

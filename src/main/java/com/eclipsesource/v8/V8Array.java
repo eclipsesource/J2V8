@@ -12,6 +12,10 @@ package com.eclipsesource.v8;
 
 public class V8Array extends V8Object {
 
+    protected V8Array() {
+
+    }
+
     public V8Array(final V8 v8) {
         super(v8);
         V8.checkThread();
@@ -154,7 +158,7 @@ public class V8Array extends V8Object {
     public V8Array getArray(final int index) {
         V8.checkThread();
         checkReleaesd();
-        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), objectHandle, index);
+        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), V8_ARRAY, objectHandle, index);
         if (result instanceof V8Array) {
             return (V8Array) result;
         }
@@ -164,7 +168,7 @@ public class V8Array extends V8Object {
     public V8Object getObject(final int index) {
         V8.checkThread();
         checkReleaesd();
-        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), objectHandle, index);
+        Object result = v8._arrayGet(v8.getV8RuntimeHandle(), V8_OBJECT, objectHandle, index);
         if (result instanceof V8Object) {
             return (V8Object) result;
         }
@@ -210,6 +214,359 @@ public class V8Array extends V8Object {
         checkReleaesd();
         v8._addArrayUndefinedItem(v8.getV8RuntimeHandle(), getHandle());
         return this;
+    }
+
+    static class Undefined extends V8Array {
+
+        @Override
+        public boolean isUndefined() {
+            V8.checkThread();
+            return true;
+        }
+
+        @Override
+        public boolean isReleased() {
+            V8.checkThread();
+            return true;
+        }
+
+        @Override
+        public void release() {
+            V8.checkThread();
+        }
+
+        @Override
+        public String toString() {
+            return "undefined";
+        }
+
+        @Override
+        public boolean equals(final Object that) {
+            V8.checkThread();
+            if ((that instanceof V8Object) && ((V8Object) that).isUndefined()) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            V8.checkThread();
+            return 919;
+        }
+
+        @Override
+        public V8Object add(final String key, final boolean value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object add(final String key, final double value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object add(final String key, final int value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object add(final String key, final String value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object add(final String key, final V8Value value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object addUndefined(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean contains(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array executeArrayFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean executeBooleanFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double executeDoubleFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int executeIntFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object executeObjectFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String executeStringFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void executeVoidFunction(final String name, final V8Array parameters) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array getArray(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean getBoolean(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double getDouble(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getHandle() {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getInteger(final String key) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String[] getKeys() {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object getObject(final String key) throws V8ResultUndefined {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getString(final String key) throws V8ResultUndefined {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getType(final String key) throws V8ResultUndefined {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object registerJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object setPrototype(final V8Object value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object get(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array getArray(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean getBoolean(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean[] getBooleans(final int index, final int length) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getBooleans(final int index, final int length, final boolean[] resultArray) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double getDouble(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double[] getDoubles(final int index, final int length) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getDoubles(final int index, final int length, final double[] resultArray) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getInteger(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int[] getInts(final int index, final int length) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getInts(final int index, final int length, final int[] resultArray) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Object getObject(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getString(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String[] getStrings(final int index, final int length) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStrings(final int index, final int length, final String[] resultArray) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getType() {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getType(final int index) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getType(final int index, final int length) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int length() {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array push(final boolean value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array push(final double value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array push(final int value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array push(final String value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array push(final V8Value value) {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public V8Array pushUndefined() {
+            V8.checkThread();
+            throw new UnsupportedOperationException();
+        }
+
     }
 
 }

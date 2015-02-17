@@ -7,10 +7,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef com_eclipsesource_v8_V8_UNDEFINED
-#define com_eclipsesource_v8_V8_UNDEFINED 0L
 #undef com_eclipsesource_v8_V8_VOID
 #define com_eclipsesource_v8_V8_VOID 0L
+#undef com_eclipsesource_v8_V8_UNKNOWN
+#define com_eclipsesource_v8_V8_UNKNOWN 0L
 #undef com_eclipsesource_v8_V8_INTEGER
 #define com_eclipsesource_v8_V8_INTEGER 1L
 #undef com_eclipsesource_v8_V8_DOUBLE
@@ -23,6 +23,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_ARRAY 5L
 #undef com_eclipsesource_v8_V8_V8_OBJECT
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
+#undef com_eclipsesource_v8_V8_UNDEFINED
+#define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _initNewV8Object
@@ -82,10 +84,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeScript
- * Signature: (ILjava/lang/String;Ljava/lang/String;I)Ljava/lang/Object;
+ * Signature: (IILjava/lang/String;Ljava/lang/String;I)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
-  (JNIEnv *, jobject, jint, jstring, jstring, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -154,10 +156,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _get
- * Signature: (IILjava/lang/String;)Ljava/lang/Object;
+ * Signature: (IIILjava/lang/String;)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1get
-  (JNIEnv *, jobject, jint, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jint, jstring);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -194,10 +196,10 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _executeFunction
- * Signature: (IILjava/lang/String;I)Ljava/lang/Object;
+ * Signature: (IIILjava/lang/String;I)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction
-  (JNIEnv *, jobject, jint, jint, jstring, jint);
+  (JNIEnv *, jobject, jint, jint, jint, jstring, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -354,10 +356,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _arrayGet
- * Signature: (III)Ljava/lang/Object;
+ * Signature: (IIII)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1arrayGet
-  (JNIEnv *, jobject, jint, jint, jint);
+  (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

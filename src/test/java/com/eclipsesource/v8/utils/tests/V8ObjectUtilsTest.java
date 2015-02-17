@@ -158,12 +158,12 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.get(0));
         assertEquals(2, list.get(1));
         assertEquals(3, list.get(2));
-        assertNull(list.get(3));
-        assertNull(list.get(4));
-        assertNull(list.get(5));
-        assertNull(list.get(6));
-        assertNull(list.get(7));
-        assertNull(list.get(8));
+        assertTrue(((V8Value) list.get(3)).isUndefined());
+        assertTrue(((V8Value) list.get(4)).isUndefined());
+        assertTrue(((V8Value) list.get(5)).isUndefined());
+        assertTrue(((V8Value) list.get(6)).isUndefined());
+        assertTrue(((V8Value) list.get(7)).isUndefined());
+        assertTrue(((V8Value) list.get(8)).isUndefined());
         assertEquals(10, list.get(9));
         array.release();
     }
@@ -175,7 +175,7 @@ public class V8ObjectUtilsTest {
         List<? super Object> list = V8ObjectUtils.toList(array);
 
         assertEquals(1, list.size());
-        assertNull(list.get(0));
+        assertTrue(((V8Value) list.get(0)).isUndefined());
         array.release();
     }
 

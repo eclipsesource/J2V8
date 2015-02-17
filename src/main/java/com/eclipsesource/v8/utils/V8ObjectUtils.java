@@ -223,6 +223,8 @@ public class V8ObjectUtils {
                 }
             case V8Value.VOID:
                 return null;
+            case V8Value.UNDEFINED:
+                return V8.getUndefined();
             default:
                 throw new IllegalStateException("Cannot find type for index: " + index);
         }
@@ -259,6 +261,8 @@ public class V8ObjectUtils {
                 }
             case V8Value.VOID:
                 return null;
+            case V8Value.UNDEFINED:
+                return V8.getUndefined();
             default:
                 throw new IllegalStateException("Cannot find type for key: " + key);
         }

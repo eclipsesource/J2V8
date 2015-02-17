@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -107,6 +108,457 @@ public class V8ArrayTest {
 
         assertEquals(0, array.length());
         array.release();
+    }
+
+    /*** Undefined ***/
+    @Test
+    public void testUndefinedObjectProperty() {
+        V8Array result = v8.getArray("array");
+
+        assertTrue(result.isUndefined());
+    }
+
+    @Test
+    public void testObjectUndefinedEqualsArrayUndefined() {
+        assertEquals(new V8Object.Undefined(), new V8Array.Undefined());
+    }
+
+    @Test
+    public void testObjectUndefinedHashCodeEqualsArrayUndefinedHashCode() {
+        assertEquals(new V8Object.Undefined().hashCode(), new V8Array.Undefined().hashCode());
+    }
+
+    @Test
+    public void testUndefinedEqual() {
+        V8Array undefined1 = v8.getArray("foo");
+        V8Array undefined2 = v8.getArray("bar");
+
+        assertEquals(undefined1, undefined2);
+    }
+
+    @Test
+    public void testStaticUndefined() {
+        V8Array undefined = v8.getArray("foo");
+
+        assertEquals(undefined, V8.getUndefined());
+    }
+
+    @Test
+    public void testUndefinedHashCodeEquals() {
+        V8Array undefined1 = v8.getArray("foo");
+        V8Array undefined2 = v8.getArray("bar");
+
+        assertEquals(undefined1.hashCode(), undefined2.hashCode());
+    }
+
+    @Test
+    public void testUndefinedToString() {
+        V8Array undefined = v8.getArray("object");
+
+        assertEquals("undefined", undefined.toString());
+    }
+
+    @Test
+    public void testUndefinedRelease() {
+        V8Array undefined = v8.getArray("object");
+
+        undefined.release();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddIntUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.add("foo", 7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddBooleanUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.add("foo", false);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddStringUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.add("foo", "bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddDoubleUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.add("foo", 7.7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddObjectUndefined() {
+        V8Array undefined = v8.getArray("array");
+        V8Object object = new V8Object(v8);
+
+        try {
+            undefined.add("foo", object);
+        } finally {
+            object.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddArrayUndefined() {
+        V8Array undefined = v8.getArray("array");
+        V8Array array = new V8Array(v8);
+
+        try {
+            undefined.add("foo", array);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddUndefinedUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.addUndefined("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testContainsUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.contains("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteIntFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeIntFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteBooleanFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeBooleanFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteDoubleFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeDoubleFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteStringFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeStringFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteObjectFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeObjectFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteArrayFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeArrayFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteVoidFunctionUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.executeVoidFunction("foo", null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetIntegerUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getInteger("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetBooleanUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getBoolean("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDoubleUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getDouble("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetStringUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getString("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetObjectUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getObject("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetArrayUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getArray("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetHandleUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getHandle();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetKeysUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getKeys();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetTypeKeyUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getType("bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetTypeIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getType(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetPrototype() {
+        V8Array undefined = v8.getArray("array");
+        V8Object prototype = new V8Object(v8);
+
+        try {
+            undefined.setPrototype(prototype);
+        } finally {
+            prototype.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterJavaMethod() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.registerJavaMethod(mock(JavaCallback.class), "name");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterVoidJavaMethod() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.registerJavaMethod(mock(JavaVoidCallback.class), "name");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRegisterAnyJavaMethod() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.registerJavaMethod(new Object(), "toString", "toString", new Class<?>[0]);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetIntegerIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getInteger(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetBooleanIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getBoolean(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDoubleIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getDouble(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetStringIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getString(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetObjectIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getObject(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetArrayIndexUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getArray(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushIntUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.push(7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushBooleanUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.push(false);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushDoubleUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.push(7.7);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushStringUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.push("bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushV8ObjectUndefined() {
+        V8Array undefined = v8.getArray("array");
+        V8Object object = new V8Object(v8);
+
+        try {
+            undefined.push(object);
+        } finally {
+            object.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushV8ArrayUndefined() {
+        V8Array undefined = v8.getArray("array");
+        V8Array array = new V8Array(v8);
+
+        try {
+            undefined.push(array);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPushUndefinedUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.pushUndefined();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetIntsUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getInts(0, 1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetInts2Undefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getInts(0, 1, new int[1]);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDoublesUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getDoubles(0, 1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDoubles2Undefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getDoubles(0, 1, new double[1]);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetBooleansUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getBooleans(0, 1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetBooleans2Undefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getBooleans(0, 1, new boolean[1]);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetStringsUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getStrings(0, 1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetStrings2Undefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getStrings(0, 1, new String[1]);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testLengthUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.length();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetTypeUndefined() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.getType();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetIndex() {
+        V8Array undefined = v8.getArray("array");
+
+        undefined.get(7);
     }
 
     /*** Get Int ***/
@@ -316,14 +768,14 @@ public class V8ArrayTest {
         }
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testArrayGetObjectIndexOutOfBounds() {
         V8Array array = v8.executeArrayScript("[];");
-        try {
-            array.getObject(0);
-        } finally {
-            array.release();
-        }
+        V8Object result = array.getObject(0);
+
+        assertTrue(result.isUndefined());
+
+        array.release();
     }
 
     @Test
@@ -366,14 +818,14 @@ public class V8ArrayTest {
         }
     }
 
-    @Test(expected = V8ResultUndefined.class)
+    @Test
     public void testArrayGetArrayIndexOutOfBounds() {
         V8Array array = v8.executeArrayScript("[];");
-        try {
-            array.getArray(0);
-        } finally {
-            array.release();
-        }
+
+        V8Array result = array.getArray(0);
+
+        assertTrue(result.isUndefined());
+        array.release();
     }
 
     @Test

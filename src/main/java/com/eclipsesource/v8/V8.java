@@ -32,6 +32,7 @@ public class V8 extends V8Object {
     private static boolean   nativeLibraryLoaded    = false;
     private static Error     nativeLoadError        = null;
     private static Exception nativeLoadException    = null;
+    private static V8Value   undefined              = new V8Object.Undefined();
 
     class MethodDescriptor {
         Object           object;
@@ -88,9 +89,14 @@ public class V8 extends V8Object {
     }
 
     protected V8(final String globalAlias) {
+        super(null, 0);
         checkThread();
         v8RuntimeHandle = v8InstanceCounter++;
         _createIsolate(v8RuntimeHandle, globalAlias);
+    }
+
+    public static V8Value getUndefined() {
+        return undefined;
     }
 
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
@@ -202,7 +208,7 @@ public class V8 extends V8Object {
 
     public Object executeScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        return _executeScript(getV8RuntimeHandle(), script, scriptName, lineNumber);
+        return _executeScript(getV8RuntimeHandle(), UNKNOWN, script, scriptName, lineNumber);
     }
 
     public V8Object executeObjectScript(final String script) {
@@ -431,9 +437,9 @@ public class V8 extends V8Object {
     protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName,
             final int lineNumber);
 
-    protected native Object _executeScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+    protected native Object _executeScript(int v8RuntimeHandle, int expectedType, String script, String scriptName, int lineNumber);
 
-    protected native void _executeVoidScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+    protected native void _executeVoidScript(int v8RuntimeHandle, String script, String scriptName, int lineNumber);
 
     protected native void _release(int v8RuntimeHandle, int objectHandle);
 
@@ -449,7 +455,7 @@ public class V8 extends V8Object {
 
     protected native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
 
-    protected native Object _get(int v8RuntimeHandle, final int objectHandle, final String key);
+    protected native Object _get(int v8RuntimeHandle, int expectedType, final int objectHandle, final String key);
 
     protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
@@ -460,7 +466,7 @@ public class V8 extends V8Object {
 
     protected native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
-    protected native Object _executeFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
+    protected native Object _executeFunction(int v8RuntimeHandle, int expectedType, int objectHandle, String name, int parametersHandle);
 
     protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
 
@@ -501,7 +507,7 @@ public class V8 extends V8Object {
 
     protected native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
 
-    protected native Object _arrayGet(final int v8RuntimeHandle, final int arrayHandle, final int index);
+    protected native Object _arrayGet(int v8RuntimeHandle, int expectedType, int arrayHandle, int index);
 
     protected native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
 
