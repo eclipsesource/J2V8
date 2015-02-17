@@ -429,6 +429,16 @@ public class V8ObjectTest {
     }
 
     @Test
+    public void testUndefinedNotEquals() {
+        V8Object undefined = v8.getObject("foo");
+        V8Object object = new V8Object(v8);
+
+        assertNotEquals(undefined, object);
+        assertNotEquals(object, undefined);
+        object.release();
+    }
+
+    @Test
     public void testStaticUndefined() {
         V8Object undefined = v8.getObject("foo");
 

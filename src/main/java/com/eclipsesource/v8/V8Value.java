@@ -58,7 +58,13 @@ abstract public class V8Value {
     public boolean equals(final Object that) {
         V8.checkThread();
         checkReleaesd();
-        if ((that instanceof V8Object)) {
+        if (that == this) {
+            return true;
+        }
+        if (that == null) {
+            return false;
+        }
+        if ((that.getClass() == this.getClass())) {
             return v8._equals(v8.getV8RuntimeHandle(), getHandle(), ((V8Object) that).getHandle());
         }
         return false;
