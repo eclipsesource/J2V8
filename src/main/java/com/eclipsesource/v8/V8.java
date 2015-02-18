@@ -279,6 +279,12 @@ public class V8 extends V8Object {
             return 0d;
         } else if (type.equals(Boolean.TYPE) || type.equals(Boolean.class)) {
             return false;
+        } else if (type.equals(String.class)) {
+            return null;
+        } else if (type.equals(V8Object.class)) {
+            return new V8Object.Undefined();
+        } else if (type.equals(V8Array.class)) {
+            return new V8Array.Undefined();
         } else {
             return null;
         }
@@ -399,6 +405,8 @@ public class V8 extends V8Object {
                     return array.getArray(index);
                 case V8_OBJECT:
                     return array.getObject(index);
+                case UNDEFINED:
+                    return V8.getUndefined();
             }
         } catch (V8ResultUndefined e) {
             // do nothing

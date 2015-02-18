@@ -57,7 +57,7 @@ public class V8CallbackTest {
 
         public void voidMethodNoParameters();
 
-        public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d);
+        public void voidMethodWithParameters(final int a, final double b, final boolean c, final String d, V8Object e);
 
         public void voidMethodWithObjectParameters(final Integer a);
 
@@ -91,7 +91,7 @@ public class V8CallbackTest {
 
         public V8Object v8ObjectMethodNoParameters();
 
-        public V8Object v8ObjectMethodWithObjectParameter(final V8Object person);
+        public V8Object v8ObjectMethodWithObjectParameter(final V8Object object);
 
         public V8Array v8ArrayMethodNoParameters();
 
@@ -211,6 +211,36 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testCallbackWithUndefinedInParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
+
+        v8.executeVoidScript("foo(undefined);");
+
+        verify(callback).voidMethodWithObjectParameter(new V8Object.Undefined());
+    }
+
+    @Test
+    public void testCallbackWithNullInParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
+
+        v8.executeVoidScript("foo(null);");
+
+        verify(callback).voidMethodWithObjectParameter(null);
+    }
+
+    @Test
+    public void testCallbackWithEmptyParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
+
+        v8.executeVoidScript("foo();");
+
+        verify(callback).voidMethodWithObjectParameter(new V8Object.Undefined());
+    }
+
+    @Test
     public void testStringMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         doReturn("bar").when(callback).stringMethodNoParameters();
@@ -222,12 +252,12 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testStringMethodCalledFromScriptWithUndefined() {
+    public void testStringMethodCalledFromScriptWithNull() {
         ICallback callback = mock(ICallback.class);
         doReturn(null).when(callback).stringMethodNoParameters();
         v8.registerJavaMethod(callback, "stringMethodNoParameters", "foo", new Class<?>[0]);
 
-        boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
+        boolean result = v8.executeBooleanScript("foo() === null");
 
         assertTrue(result);
     }
@@ -245,10 +275,21 @@ public class V8CallbackTest {
     @Test
     public void testV8ObjectMethodReturnsUndefined() {
         ICallback callback = mock(ICallback.class);
-        doReturn(null).when(callback).v8ObjectMethodNoParameters();
+        doReturn(V8.getUndefined()).when(callback).v8ObjectMethodNoParameters();
         v8.registerJavaMethod(callback, "v8ObjectMethodNoParameters", "foo", new Class<?>[0]);
 
         boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testV8ObjectMethodReturnsNull() {
+        ICallback callback = mock(ICallback.class);
+        doReturn(null).when(callback).v8ObjectMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ObjectMethodNoParameters", "foo", new Class<?>[0]);
+
+        boolean result = v8.executeBooleanScript("foo() === null");
 
         assertTrue(result);
     }
@@ -292,7 +333,7 @@ public class V8CallbackTest {
     @Test
     public void testV8ArrayMethodReturnsUndefined() {
         ICallback callback = mock(ICallback.class);
-        doReturn(null).when(callback).v8ArrayMethodNoParameters();
+        doReturn(new V8Array.Undefined()).when(callback).v8ArrayMethodNoParameters();
         v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
 
         boolean result = v8.executeBooleanScript("typeof foo() === 'undefined'");
@@ -582,11 +623,11 @@ public class V8CallbackTest {
     public void testVoidMethodCalledWithParameters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
-                Boolean.TYPE, String.class });
+                Boolean.TYPE, String.class, V8Object.class });
 
-        v8.executeVoidScript("foo(1,1.1, false, 'string');");
+        v8.executeVoidScript("foo(1,1.1, false, 'string', undefined);");
 
-        verify(callback).voidMethodWithParameters(1, 1.1, false, "string");
+        verify(callback).voidMethodWithParameters(1, 1.1, false, "string", new V8Object.Undefined());
     }
 
     @Test
@@ -968,7 +1009,7 @@ public class V8CallbackTest {
 
         v8.executeVoidScript("foo()");
 
-        verify(callback).voidMethodWithObjectParameter(null);
+        verify(callback).voidMethodWithObjectParameter(new V8Array.Undefined());
     }
 
     @Test
@@ -1109,22 +1150,22 @@ public class V8CallbackTest {
     public void testMissingParamters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
-                Boolean.TYPE, String.class });
+                Boolean.TYPE, String.class, V8Object.class });
 
         v8.executeVoidScript("foo()");
 
-        verify(callback).voidMethodWithParameters(0, 0d, false, null);
+        verify(callback).voidMethodWithParameters(0, 0d, false, null, new V8Object.Undefined());
     }
 
     @Test
     public void testSomeMissingParamters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
-                Boolean.TYPE, String.class });
+                Boolean.TYPE, String.class, V8Object.class });
 
         v8.executeVoidScript("foo(1,2)");
 
-        verify(callback).voidMethodWithParameters(1, 2d, false, null);
+        verify(callback).voidMethodWithParameters(1, 2d, false, null, new V8Object.Undefined());
     }
 
     @Test

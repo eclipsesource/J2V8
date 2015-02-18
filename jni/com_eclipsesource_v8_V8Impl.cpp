@@ -93,6 +93,12 @@ void releaseArray(JNIEnv* env, jobject object) {
 	env->CallVoidMethod(object, release);
 }
 
+int isUndefined(JNIEnv* env, jobject object) {
+	jmethodID isUndefined = env->GetMethodID(v8ObjectCls, "isUndefined", "()Z");
+	jboolean result = env->CallIntMethod(object, isUndefined);
+	return result;
+}
+
 int getHandle(JNIEnv* env, jobject object) {
 	jmethodID getHandle = env->GetMethodID(v8ObjectCls, "getHandle", "()I");
 	jint handle = env->CallIntMethod(object, getHandle);
@@ -1022,7 +1028,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
 			isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
 		}
 	} else if ( resultObject == NULL ) {
-		args.GetReturnValue().SetUndefined();
+		args.GetReturnValue().SetNull();
 	} else {
 		int returnType = getReturnType(env, resultObject);
 		if ( returnType == com_eclipsesource_v8_V8_INTEGER) {
@@ -1036,15 +1042,23 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
 			Local<String> result = createV8String(env, v8Isolates[md->v8RuntimeHandle]->isolate, stringResult);
 			args.GetReturnValue().Set(result);
 		} else if ( returnType == com_eclipsesource_v8_V8_V8_ARRAY ) {
-			int resultHandle = getHandle(env, resultObject);
-			Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
-			releaseArray(env, resultObject);
-			args.GetReturnValue().Set(result);
+			if ( isUndefined(env, resultObject) ) {
+				args.GetReturnValue().SetUndefined();
+			} else {
+				int resultHandle = getHandle(env, resultObject);
+				Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+				releaseArray(env, resultObject);
+				args.GetReturnValue().Set(result);
+			}
 		} else if ( returnType == com_eclipsesource_v8_V8_V8_OBJECT ) {
-			int resultHandle = getHandle(env, resultObject);
-			Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
-			release(env, resultObject);
-			args.GetReturnValue().Set(result);
+			if ( isUndefined(env, resultObject) ) {
+				args.GetReturnValue().SetUndefined();
+			} else {
+				int resultHandle = getHandle(env, resultObject);
+				Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+				release(env, resultObject);
+				args.GetReturnValue().Set(result);
+			}
 		} else {
 			args.GetReturnValue().SetUndefined();
 		}
