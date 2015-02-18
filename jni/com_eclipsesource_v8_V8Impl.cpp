@@ -95,7 +95,7 @@ void releaseArray(JNIEnv* env, jobject object) {
 
 int isUndefined(JNIEnv* env, jobject object) {
 	jmethodID isUndefined = env->GetMethodID(v8ObjectCls, "isUndefined", "()Z");
-	jboolean result = env->CallIntMethod(object, isUndefined);
+	jboolean result = env->CallBooleanMethod(object, isUndefined);
 	return result;
 }
 
