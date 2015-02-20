@@ -33,6 +33,7 @@ public class V8 extends V8Object {
     private static Error     nativeLoadError        = null;
     private static Exception nativeLoadException    = null;
     private static V8Value   undefined              = new V8Object.Undefined();
+    private static Object    invalid                = new Object();
 
     class MethodDescriptor {
         Object           object;
@@ -280,21 +281,12 @@ public class V8 extends V8Object {
     }
 
     private Object getDefaultValue(final Class<?> type) {
-        if (type.equals(Integer.TYPE) || type.equals(Integer.class)) {
-            return 0;
-        } else if (type.equals(Double.TYPE) || type.equals(Double.class)) {
-            return 0d;
-        } else if (type.equals(Boolean.TYPE) || type.equals(Boolean.class)) {
-            return false;
-        } else if (type.equals(String.class)) {
-            return null;
-        } else if (type.equals(V8Object.class)) {
+        if (type.equals(V8Object.class)) {
             return new V8Object.Undefined();
         } else if (type.equals(V8Array.class)) {
             return new V8Array.Undefined();
-        } else {
-            return null;
         }
+        return invalid;
     }
 
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
@@ -304,6 +296,7 @@ public class V8 extends V8Object {
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
         Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+        checkArgs(args);
         try {
             Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
             return checkResult(result);
@@ -338,6 +331,7 @@ public class V8 extends V8Object {
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
         Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+        checkArgs(args);
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
         } catch (InvocationTargetException e) {
@@ -346,6 +340,14 @@ public class V8 extends V8Object {
             throw e;
         } finally {
             releaseArguments(args, hasVarArgs);
+        }
+    }
+
+    private void checkArgs(final Object[] args) {
+        for (Object argument : args) {
+            if (argument == invalid) {
+                throw new IllegalArgumentException("argument type mismatch");
+            }
         }
     }
 

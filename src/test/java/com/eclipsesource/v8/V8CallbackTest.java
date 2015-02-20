@@ -67,6 +67,8 @@ public class V8CallbackTest {
 
         public void voidMethodWithStringParameter(final String string);
 
+        public void voidMethodWithIntParameter(final int i);
+
         public int intMethodNoParameters();
 
         public Integer integerMethod();
@@ -218,6 +220,26 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo(undefined);");
 
         verify(callback).voidMethodWithObjectParameter(new V8Object.Undefined());
+    }
+
+    @Test
+    public void testCallbackWithNullInStringParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "foo", new Class<?>[] { String.class });
+
+        v8.executeVoidScript("foo(null);");
+
+        verify(callback).voidMethodWithStringParameter(null);
+    }
+
+    @Test
+    public void testCallbackVarArgsWithUndefined() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgs", "foo", new Class<?>[] { Object[].class });
+
+        v8.executeVoidScript("foo(undefined);");
+
+        verify(callback).voidMethodVarArgs(new V8Object.Undefined());
     }
 
     @Test
@@ -900,7 +922,7 @@ public class V8CallbackTest {
         v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[] {});
         v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "bar", new Class<?>[] { String.class });
 
-        v8.executeVoidScript("try {foo();} catch (e) {bar();}");
+        v8.executeVoidScript("try {foo();} catch (e) {bar('string');}");
 
         // Runtime exception should not be thrown
     }
@@ -1146,37 +1168,31 @@ public class V8CallbackTest {
         verify(callback).voidMethodVarArgsAndOthers(1, 2);
     }
 
-    @Test
+    @Test(expected = V8ScriptExecutionException.class)
     public void testMissingParamters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
                 Boolean.TYPE, String.class, V8Object.class });
 
         v8.executeVoidScript("foo()");
-
-        verify(callback).voidMethodWithParameters(0, 0d, false, null, new V8Object.Undefined());
     }
 
-    @Test
+    @Test(expected = V8ScriptExecutionException.class)
     public void testSomeMissingParamters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Double.TYPE,
                 Boolean.TYPE, String.class, V8Object.class });
 
         v8.executeVoidScript("foo(1,2)");
-
-        verify(callback).voidMethodWithParameters(1, 2d, false, null, new V8Object.Undefined());
     }
 
-    @Test
-    public void testMissingParamtersWithVarArgs() {
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testMissingIntParamtersWithVarArgs() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodVarArgsAndOthers", "foo", new Class<?>[] { Integer.TYPE,
                 Integer.TYPE, Object[].class });
 
         v8.executeVoidScript("foo(1)");
-
-        verify(callback).voidMethodVarArgsAndOthers(1, 0);
     }
 
     @Test
@@ -1189,14 +1205,54 @@ public class V8CallbackTest {
         verify(callback).voidMethodWithObjectParameters(1);
     }
 
-    @Test
+    @Test(expected = V8ScriptExecutionException.class)
     public void testMissingParamtersWithMissingObjectParameters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithObjectParameters", "foo", new Class<?>[] { Integer.class });
 
         v8.executeVoidScript("foo()");
+    }
 
-        verify(callback).voidMethodWithObjectParameters(0);
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testCallJavaMethodMissingInt() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithIntParameter", "foo", new Class<?>[] { Integer.TYPE });
+
+        v8.executeVoidScript("foo()");
+    }
+
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testCallJavaMethodNullInt() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithIntParameter", "foo", new Class<?>[] { Integer.TYPE });
+
+        v8.executeVoidScript("foo(null)");
+    }
+
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testCallJavaMethodMissingString() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "foo", new Class<?>[] { String.class });
+
+        v8.executeVoidScript("foo()");
+    }
+
+    @Test
+    public void testCallJavaMethodNullString() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithStringParameter", "foo", new Class<?>[] { String.class });
+
+        v8.executeVoidScript("foo(null)");
+
+        verify(callback).voidMethodWithStringParameter(null);
+    }
+
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testCallJavaMethodNotInt() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithIntParameter", "foo", new Class<?>[] { Integer.TYPE });
+
+        v8.executeVoidScript("foo('bar')");
     }
 
     @Test
