@@ -51,8 +51,10 @@ public class LibraryLoader {
         }
 
         /* Try loading library from the IDE location */
-        if (load(ideLocation, message)) {
-            return;
+        if (new File(ideLocation).exists()) {
+            if (load(ideLocation, message)) {
+                return;
+            }
         }
 
         if (tempDirectory != null) {
