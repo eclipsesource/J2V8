@@ -10,6 +10,8 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import static org.junit.Assert.assertFalse;
+
 import java.lang.reflect.Field;
 import java.net.URLClassLoader;
 
@@ -21,8 +23,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 import com.eclipsesource.v8.V8RuntimeNotLoadedTest.SeparateClassloaderTestRunner;
-
-import static org.junit.Assert.assertFalse;
 
 // A separate class loaded must be used since we don't want these tests to interfere
 // with other tests.
@@ -50,7 +50,13 @@ public class V8RuntimeNotLoadedTest {
 
     @Test(expected = IllegalStateException.class)
     public void testJ2V8CannotCreateRuntime() {
-        V8.createV8Runtime();
+        String oldValue = System.getProperty("os.arch");
+        System.setProperty("os.arch", "unknown");
+        try {
+            V8.createV8Runtime();
+        } finally {
+            System.setProperty("os.arch", oldValue);
+        }
     }
 
     private static void setLibraryPath(final String path) throws Exception {
