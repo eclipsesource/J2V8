@@ -43,9 +43,9 @@ public class V8 extends V8Object {
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
-    static {
+    public static void load(final String tmpDirectory) {
         try {
-            System.loadLibrary("j2v8"); // Load native library at runtime
+            LibraryLoader.loadLibrary(tmpDirectory);
             nativeLibraryLoaded = true;
         } catch (Error e) {
             nativeLoadError = e;
@@ -59,10 +59,17 @@ public class V8 extends V8Object {
     }
 
     public synchronized static V8 createV8Runtime() {
-        return createV8Runtime(null);
+        return createV8Runtime(null, null);
     }
 
     public synchronized static V8 createV8Runtime(final String globalAlias) {
+        return createV8Runtime(globalAlias, null);
+    }
+
+    public synchronized static V8 createV8Runtime(final String globalAlias, final String tempDirectory) {
+        if (!nativeLibraryLoaded) {
+            load(tempDirectory);
+        }
         checkNativeLibraryLoaded();
         if (thread == null) {
             thread = Thread.currentThread();
