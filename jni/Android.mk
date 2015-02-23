@@ -34,7 +34,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 #include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE    := j2v8_android_armv7l
+LOCAL_MODULE    := j2v8_android_$(TARGET_ARCH_ABI)
 LOCAL_SRC_FILES := com_eclipsesource_v8_V8Impl.cpp 
 LOCAL_C_INCLUDES := /data/jenkins/v8_3_26/include/
 LOCAL_CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive
