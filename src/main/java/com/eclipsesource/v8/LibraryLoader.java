@@ -167,7 +167,11 @@ public class LibraryLoader {
     }
 
     public static String getArchSuffix() {
-        return System.getProperty("os.arch");
+        String arch = System.getProperty("os.arch");
+        if (arch.equals("i686")) {
+            return "x86";
+        }
+        return arch;
     }
 
     public static String getOSFileExtension() {

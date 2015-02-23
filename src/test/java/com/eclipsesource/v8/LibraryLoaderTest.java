@@ -86,4 +86,11 @@ public class LibraryLoaderTest {
         assertEquals("armv7l", LibraryLoader.getArchSuffix());
     }
 
+    @Test
+    public void test686isX86() {
+        System.setProperty("os.arch", "i686");
+
+        assertEquals("x86", LibraryLoader.getArchSuffix());
+    }
+
 }
