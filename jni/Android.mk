@@ -4,14 +4,14 @@ include $(CLEAR_VARS)
 LOCAL_MODULE	:= v8_base
 #LOCAL_SRC_FILES := ../support/android/libs/libv8_base.arm.a
 #LOCAL_SRC_FILES := ../libv8_base.arm.a
-LOCAL_SRC_FILES := /data/jenkins/v8_3_26/out/android_arm.release/obj.target/tools/gyp/libv8_base.arm.a
+LOCAL_SRC_FILES := /data/jenkins/v8_3_26/out/android_$(TARGET_ARCH_ABI).release/obj.target/tools/gyp/libv8_base.$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE	:= v8_nosnapshot
 #LOCAL_SRC_FILES :=  ../support/android/libs/libv8_nosnapshot.arm.a
 #LOCAL_SRC_FILES :=  ../libv8_nosnapshot.arm.a
-LOCAL_SRC_FILES :=  /data/jenkins/v8_3_26/out/android_arm.release/obj.target/tools/gyp/libv8_nosnapshot.arm.a
+LOCAL_SRC_FILES :=  /data/jenkins/v8_3_26/out/android_$(TARGET_ARCH_ABI).release/obj.target/tools/gyp/libv8_nosnapshot.$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 #include $(CLEAR_VARS)
