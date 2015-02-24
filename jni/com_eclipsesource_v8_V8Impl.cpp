@@ -300,6 +300,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 	for ( int i = 0; i < size; i++ ) {
 		jobject key = (env)->NewStringUTF( *String::Utf8Value( properties->Get(i)->ToString() ) );
 		(env)->SetObjectArrayElement(keys, i, key);
+		(env)->DeleteLocalRef(key);
 	}
 	return keys;
 }
@@ -696,7 +697,9 @@ int fillStringArray(JNIEnv *env, Handle<Object> &array, int &start, int &length,
 		Handle<Value> v8Value = array->Get(i);
 		ASSERT_IS_STRING(v8Value);
 		String::Utf8Value utf(v8Value->ToString());
-		env->SetObjectArrayElement(result, i-start, env->NewStringUTF(*utf));
+		jstring string = env->NewStringUTF(*utf);
+		env->SetObjectArrayElement(result, i-start, string);
+		(env)->DeleteLocalRef(string);
 	}
 	return length;
 }
@@ -1144,6 +1147,9 @@ void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, cons
     jstring jmessage = env->NewStringUTF(message);
     jstring jsourceLine = env->NewStringUTF(sourceLine);
     jthrowable result = (jthrowable) env->NewObject(v8ScriptCompilationCls, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn);
+    env->DeleteLocalRef(jfileName);
+    env->DeleteLocalRef(jmessage);
+    env->DeleteLocalRef(jsourceLine);
     (env)->Throw( result );
 }
 
@@ -1167,6 +1173,9 @@ void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, 
     	v8Isolates[v8RuntimeHandle]->pendingException = NULL;
     }
     jthrowable result = (jthrowable) env->NewObject(v8ScriptExecutionException, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
+    env->DeleteLocalRef(jfileName);
+    env->DeleteLocalRef(jmessage);
+    env->DeleteLocalRef(jsourceLine);
     (env)->Throw( result );
 }
 
