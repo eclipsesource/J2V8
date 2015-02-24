@@ -1063,6 +1063,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
 			args.GetReturnValue().SetUndefined();
 		}
 	}
+	env->DeleteLocalRef(resultObject);
 	jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
 	env->CallVoidMethod(parameters, release);
 	env->DeleteLocalRef(parameters);
