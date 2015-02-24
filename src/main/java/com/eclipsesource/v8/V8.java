@@ -44,7 +44,7 @@ public class V8 extends V8Object {
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
-    public static void load(final String tmpDirectory) {
+    private static void load(final String tmpDirectory) {
         try {
             LibraryLoader.loadLibrary(tmpDirectory);
             nativeLibraryLoaded = true;
