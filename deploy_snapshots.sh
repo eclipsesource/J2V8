@@ -1,4 +1,4 @@
-SUFFIX="";
+SUFFIX="-P release";
 
 cp pom.xml pom_template.xml
 
