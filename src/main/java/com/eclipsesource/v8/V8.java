@@ -202,6 +202,15 @@ public class V8 extends V8Object {
         return v8RuntimePtr;
     }
 
+    /**
+     * Gets the version of the V8 engine
+     *
+     * @return The version of the V8 Engine.
+     */
+    public String getV8Version() {
+        return _getVersion();
+    }
+
     /*
      * (non-Javadoc)
      * @see com.eclipsesource.v8.V8Value#release()
@@ -1217,6 +1226,8 @@ public class V8 extends V8Object {
     private native int _arrayGetBooleans(final long v8RuntimePtr, final long objectHandle, final int index, final int length, boolean[] resultArray);
 
     private native int _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, String[] resultArray);
+
+    private native String _getVersion();
 
     private static native void _setFlags(String v8flags);
 

@@ -10,7 +10,11 @@
 ******************************************************************************/
 #include <jni.h>
 #include <iostream>
-#include <v8.h>
+#include <include/v8-debug.h>
+#include <include/libplatform/libplatform.h>
+
+#include <include/v8.h>
+#include <string.h>
 #include <map>
 #include <cstdlib>
 #include <vector>
@@ -37,6 +41,8 @@ public:
   jobject v8;
   jthrowable pendingException;
 };
+
+v8::Platform* v8Platform;
 
 const char* ToCString(const String::Utf8Value& value) {
   return *value ? *value : "<string conversion failed>";
@@ -134,6 +140,11 @@ jlong getHandle(JNIEnv* env, jobject object) {
   return env->CallLongMethod(object, v8ObjectGetHandleMethodID);
 }
 
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env, jobject) {
+  const char* utfString = v8::V8::GetVersion();
+  return env->NewStringUTF(utfString);
+}
+
 Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
   const char* utfString = env->GetStringUTFChars(string, NULL);
   Local<String> result = String::NewFromUtf8(isolate, utfString);
@@ -169,21 +180,52 @@ void getJNIEnv(JNIEnv*& env) {
   }
 }
 
+void debugHandler() {
+  JNIEnv * g_env;
+  getJNIEnv(g_env);
+  jmethodID processDebugMessage = g_env->GetStaticMethodID(v8cls, "debugMessageReceived", "()V");
+  g_env->CallStaticVoidMethod(v8cls, processDebugMessage);
+  if (g_env->ExceptionCheck()) {
+    g_env->ExceptionDescribe();
+  }
+  jvm->DetachCurrentThread();
+}
+
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint port, jboolean waitForConnection) {
+//  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
+//  bool result = Debug::EnableAgent("j2v8", port, waitForConnection);
+//  Debug::DebugMessageDispatchHandler(&debugHandler);
+//  return result;
+  return false;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
+(JNIEnv *env, jobject, jint v8RuntimeHandle) {
+//  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+//  Debug::DisableAgent();
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Debug::ProcessDebugMessages();
+}
+
 static void jsWindowObjectAccessor(Local<String> property,
   const PropertyCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(info.GetIsolate()->GetCurrentContext()->Global());
 }
 
-class MallocArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-public:
-  virtual void* Allocate(size_t length) { return std::malloc(length); }
-  virtual void* AllocateUninitialized(size_t length){ return std::malloc(length); }
-  virtual void Free(void* data, size_t length) { std::free(data); }
+class ShellArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+ public:
+  virtual void* Allocate(size_t length) {
+    void* data = AllocateUninitialized(length);
+    return data == NULL ? data : memset(data, 0, length);
+  }
+  virtual void* AllocateUninitialized(size_t length) { return malloc(length); }
+  virtual void Free(void* data, size_t) { free(data); }
 };
-
-static void enableTypedArrays() {
-  V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
-}
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
@@ -194,8 +236,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (env == NULL) {
         return onLoad_err;
     }
+    v8::V8::InitializeICU();
+    v8Platform = v8::platform::CreateDefaultPlatform();
+    v8::V8::InitializePlatform(v8Platform);
+    v8::V8::Initialize();
+
     // on first creation, store the JVM and a handle to J2V8 classes
-    enableTypedArrays();
     jvm = vm;
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
@@ -250,11 +296,15 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
     v8::V8::Initialize();
 }
 
+ShellArrayBufferAllocator array_buffer_allocator;
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
  (JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();
-  runtime->isolate = Isolate::New();
-  Locker locker(runtime->isolate);
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = &array_buffer_allocator;
+  runtime->isolate = v8::Isolate::New(create_params);
+  Locker locker(runtime->isolate);  
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;

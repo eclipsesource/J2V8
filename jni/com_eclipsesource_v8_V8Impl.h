@@ -541,6 +541,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII_3Lja
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _getVersion
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _setFlags
  * Signature: (Ljava/lang/String;)V
  */

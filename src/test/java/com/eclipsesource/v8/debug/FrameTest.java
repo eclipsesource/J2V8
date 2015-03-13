@@ -115,7 +115,7 @@ public class FrameTest {
 
         v8.executeScript(script, "script", 0);
 
-        assertEquals(2, result);
+        assertEquals(3, result);
     }
 
     @Test

@@ -94,13 +94,32 @@ public class ScopeTest {
     }
 
     @Test
-    public void testGetGlobalScopeType() {
+    public void testGetScriptScopeType() {
         handleBreak(new BreakHandler() {
 
             @Override
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(2);
+                result = scope.getType();
+                scope.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertEquals(ScopeType.Script, result);
+    }
+
+    @Test
+    public void testGetGlobalScopeType() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(3);
                 result = scope.getType();
                 scope.release();
                 frame.release();

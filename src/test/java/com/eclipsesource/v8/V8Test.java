@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +45,13 @@ public class V8Test {
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Test
+    public void getVersion() {
+        String v8version = v8.getV8Version();
+
+        assertNotNull(v8version);
     }
 
     @Test
@@ -186,6 +194,18 @@ public class V8Test {
     @Test(expected = V8ScriptCompilationException.class)
     public void testSyntaxErrorInVoidScript() {
         v8.executeVoidScript("'a");
+    }
+
+    @Test
+    public void testSyntaxErrorMissingParam() {
+        try {
+            v8.executeScript("foo());");
+        } catch (V8ScriptCompilationException e) {
+            String string = e.toString();
+            assertNotNull(string);
+            return;
+        }
+        fail("Exception expected.");
     }
 
     @Test
