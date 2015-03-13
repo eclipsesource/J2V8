@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -192,6 +193,18 @@ public class V8Test {
     @Test(expected = V8ScriptCompilationException.class)
     public void testSyntaxErrorInVoidScript() {
         v8.executeVoidScript("'a");
+    }
+
+    @Test
+    public void testSyntaxErrorMissingParam() {
+        try {
+            v8.executeScript("foo());");
+        } catch (V8ScriptCompilationException e) {
+            String string = e.toString();
+            assertNotNull(string);
+            return;
+        }
+        fail("Exception expected.");
     }
 
     @Test

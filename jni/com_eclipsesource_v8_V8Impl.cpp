@@ -11,6 +11,8 @@
 #include <jni.h>
 #include <iostream>
 #include <v8-debug.h>
+#include <libplatform/libplatform.h>
+
 #include <v8.h>
 #include <map>
 #include <cstdlib>
@@ -30,6 +32,8 @@ public:
   jobject v8;
   jthrowable pendingException;
 };
+
+v8::Platform* myplatform;
 
 const char* ToCString(const String::Utf8Value& value) {
   return *value ? *value : "<string conversion failed>";
@@ -159,17 +163,18 @@ void debugHandler() {
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
-(JNIEnv *env, jobject, jlong v8RuntimePtr, jint port, jboolean waitForConnection) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
-  bool result = Debug::EnableAgent("j2v8", port, waitForConnection);
-  Debug::SetDebugMessageDispatchHandler(&debugHandler);
-  return result;
+(JNIEnv *env, jobject, jint v8RuntimeHandle, jint port, jboolean waitForConnection) {
+//  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
+//  bool result = Debug::EnableAgent("j2v8", port, waitForConnection);
+//  Debug::DebugMessageDispatchHandler(&debugHandler);
+//  return result;
+  return false;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
-(JNIEnv *env, jobject, jlong v8RuntimePtr) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, );
-  Debug::DisableAgent();
+(JNIEnv *env, jobject, jint v8RuntimeHandle) {
+//  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+//  Debug::DisableAgent();
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
@@ -227,13 +232,20 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 (JNIEnv *env, jobject v8, jstring globalAlias) {
-  V8Runtime* runtime = new V8Runtime();
-  runtime->isolate = Isolate::New();
+  v8::V8::InitializeICU();
+  myplatform = v8::platform::CreateDefaultPlatform();
+  v8::V8::InitializePlatform(myplatform);
+  v8::V8::Initialize();
+  
+  v8Isolates[handle] = new V8Runtime();
+  v8Isolates[handle]->isolate = Isolate::New();
   Locker locker(runtime->isolate);
-  runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
-  runtime->v8 = env->NewGlobalRef(v8);
-  runtime->pendingException = NULL;
-  HandleScope handle_scope(runtime->isolate);
+  v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
+  v8Isolates[handle]->v8 = env->NewGlobalRef(v8);
+  v8Isolates[handle]->pendingException = NULL;
+  HandleScope handle_scope(v8Isolates[handle]->isolate);
+  
+
   Handle<ObjectTemplate> globalObject = ObjectTemplate::New();
   if (globalAlias == NULL) {
     Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
