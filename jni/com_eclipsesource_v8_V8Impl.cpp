@@ -13,6 +13,7 @@
 #include <v8-debug.h>
 #include <v8.h>
 #include <map>
+#include <cstdlib>
 #include "com_eclipsesource_v8_V8Impl.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
@@ -178,10 +179,22 @@ static void jsWindowObjectAccessor(Local<String> property,
   info.GetReturnValue().Set(info.GetIsolate()->GetCurrentContext()->Global());
 }
 
+class MallocArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+public:
+  virtual void* Allocate(size_t length) { return std::malloc(length); }
+  virtual void* AllocateUninitialized(size_t length){ return std::malloc(length); }
+  virtual void Free(void* data, size_t length) { std::free(data); }
+};
+
+static void enableTypedArrays() {
+  V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 (JNIEnv *env, jobject v8, jint handle, jstring globalAlias) {
   if (jvm == NULL) {
     // on first creation, store the JVM and a handle to J2V8 classes
+    enableTypedArrays();
     env->GetJavaVM(&jvm);
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
