@@ -642,7 +642,12 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  int length = Array::Cast(*array)->Length();
+  int length = 0;
+  if ( array->IsTypedArray() ) {
+	  length = TypedArray::Cast(*array)->Length();
+  } else {
+	  length = Array::Cast(*array)->Length();
+  }
   int arrayType = com_eclipsesource_v8_V8_UNDEFINED;
   for (int index = 0; index < length; index++) {
     int type = getType(array->Get(index));
@@ -672,6 +677,9 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  return TypedArray::Cast(*array)->Length();
+  }
   return Array::Cast(*array)->Length();
 }
 
@@ -836,6 +844,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   int index = Array::Cast(*array)->Length();
   array->Set(index, Null(isolate));
 }
@@ -844,6 +856,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   int index = Array::Cast(*array)->Length();
   array->Set(index, Undefined(isolate));
 }
@@ -853,6 +869,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint value) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   Local<Value> v8Value = Int32::New(isolate, value);
   int index = Array::Cast(*array)->Length();
   array->Set(index, v8Value);
@@ -862,6 +882,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jdouble value) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   Local<Value> v8Value = Number::New(isolate, value);
   int index = Array::Cast(*array)->Length();
   array->Set(index, v8Value);
@@ -871,6 +895,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jboolean value) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   Local<Value> v8Value = Boolean::New(isolate, value);
   int index = Array::Cast(*array)->Length();
   array->Set(index, v8Value);
@@ -880,6 +908,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jstring value) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   int index = Array::Cast(*array)->Length();
   Local<String> v8Value = createV8String(env, isolate, value);
   array->Set(index, v8Value);
@@ -889,6 +921,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint valueHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, );
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+  if ( array->IsTypedArray() ) {
+	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
+	  return;
+  }
   int index = Array::Cast(*array)->Length();
   Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
   array->Set(index, v8Value);
@@ -1313,6 +1349,13 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
     return env->NewStringUTF(*utf);
   }
   else if (result->IsArray()) {
+    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+    int resultHandle = getHandle(env, objectResult);
+    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    return objectResult;
+  }
+  else if (result->IsTypedArray()) {
     jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
     jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
     int resultHandle = getHandle(env, objectResult);

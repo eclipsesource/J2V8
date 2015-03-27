@@ -101,6 +101,241 @@ public class V8TypedArraysTest {
     }
 
     @Test
+    public void testTypedArrayLength() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int32Array(buf); ints[0] = 7; ints");
+
+        assertEquals(1, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayValue() {
+        int result = v8.executeIntScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints[0]");
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testGetTypedArrayIntValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
+
+        assertEquals(7, result.get(0));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayUsingKeys() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
+
+        assertEquals(7, result.getInteger("0"));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayIntType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
+
+        assertEquals(V8Value.INTEGER, result.getType(0));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayFloatType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var floats = new Float32Array(buf); floats[0] = 7.7; floats");
+
+        assertEquals(V8Value.DOUBLE, result.getType(0));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayIntArrayType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
+
+        assertEquals(V8Value.INTEGER, result.getType());
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayFloatArrayType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float32Array(buf); floats[0] = 7.7; floats[1] = 7; floats");
+
+        assertEquals(V8Value.DOUBLE, result.getType());
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayType32BitValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int32Array(buf); ints[0] = 255; ints");
+
+        assertEquals(255, result.get(0));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayType16BitValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 255; ints");
+
+        assertEquals(255, result.get(0));
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayType32BitFloatValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var floats = new Float32Array(buf); floats[0] = 255.5; floats");
+
+        assertEquals(255.5, result.getDouble(0), 0.00001);
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayType64BitFloatValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float64Array(buf); floats[0] = 255.5; floats");
+
+        assertEquals(255.5, result.getDouble(0), 0.00001);
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedRangeArrayValue() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(100); var ints = new Int32Array(buf); for(var i = 0; i < 25; i++) {ints[i] = i;}; ints");
+
+        assertEquals(25, result.length());
+        int[] ints = result.getInts(0, 25);
+        for (int i = 0; i < ints.length; i++) {
+            assertEquals(i, ints[i]);
+        }
+        result.release();
+    }
+
+    @Test
+    public void testGetTypedArrayGetKeys() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints[0] = 255; ints[1] = 17; ints");
+
+        assertEquals(2, result.getKeys().length);
+        assertEquals("0", result.getKeys()[0]);
+        assertEquals("1", result.getKeys()[1]);
+        result.release();
+    }
+
+    @Test
+    public void testAddTypedArrayInteger() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        array.add("0", 7);
+        array.add("1", 17);
+
+        assertEquals(2, array.length());
+        assertEquals(7, array.getInteger(0));
+        assertEquals(17, array.getInteger(1));
+        array.release();
+    }
+
+    @Test
+    public void testAddTypedArrayFloat() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float32Array(buf); floats");
+
+        array.add("0", 7.7);
+        array.add("1", 17.7);
+
+        assertEquals(2, array.length());
+        assertEquals(7.7, array.getDouble(0), 0.000001);
+        assertEquals(17.7, array.getDouble(1), 0.000001);
+        array.release();
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushIntToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(7);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushFloatToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(7.7);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushBooleanToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(true);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushStringToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push("foo");
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushUndefinedToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.pushUndefined();
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushNullToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push((V8Object) null);
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushV8ObjectToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+        V8Object obj = new V8Object(v8);
+
+        try {
+            array.push(obj);
+        } finally {
+            array.release();
+            obj.release();
+        }
+    }
+
+    @Test(expected = V8RuntimeException.class)
+    public void testCannotPushV8ArrayToTypedArray() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+        V8Array obj = new V8Array(v8);
+
+        try {
+            array.push(obj);
+        } finally {
+            array.release();
+            obj.release();
+        }
+    }
+
+    @Test
     public void testIntArrayLength() {
         v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
                 + "var ints = new Int32Array(buf);\n");
