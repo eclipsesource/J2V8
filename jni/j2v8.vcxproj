@@ -75,7 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\v8_x64\v8\build\Release\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
-    <TargetExt>_win32_amd64.dll</TargetExt>
+    <TargetExt>_win32_x86_64.dll</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

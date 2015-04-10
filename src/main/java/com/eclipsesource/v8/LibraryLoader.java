@@ -170,6 +170,8 @@ public class LibraryLoader {
         String arch = System.getProperty("os.arch");
         if (arch.equals("i686")) {
             return "x86";
+        } else if (arch.equals("amd64")) {
+            return "x86_64";
         }
         return arch;
     }

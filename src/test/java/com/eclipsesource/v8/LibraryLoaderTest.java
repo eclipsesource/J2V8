@@ -80,6 +80,13 @@ public class LibraryLoaderTest {
     }
 
     @Test
+    public void testGetArchx64FromAmd64() {
+        System.setProperty("os.arch", "amd64");
+
+        assertEquals("x86_64", LibraryLoader.getArchSuffix());
+    }
+
+    @Test
     public void testGetArcharmv7l() {
         System.setProperty("os.arch", "armv7l");
 
