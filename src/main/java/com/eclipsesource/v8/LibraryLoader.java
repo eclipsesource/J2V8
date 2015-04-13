@@ -136,8 +136,7 @@ public class LibraryLoader {
     }
 
     static void chmod(final String permision, final String path) {
-        if (isWindows())
-        {
+        if (isWindows()) {
             return;
         }
         try {
@@ -162,6 +161,10 @@ public class LibraryLoader {
         return getOsName().startsWith("Linux");
     }
 
+    public static boolean isNativeClient() {
+        return getOsName().startsWith("nacl");
+    }
+
     public static boolean isAndroid() {
         return getOsName().contains("Android");
     }
@@ -182,6 +185,8 @@ public class LibraryLoader {
         } else if (isMac()) {
             return "dylib";
         } else if (isLinux()) {
+            return "so";
+        } else if (isNativeClient()) {
             return "so";
         }
         throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName() + ".");

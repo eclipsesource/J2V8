@@ -66,6 +66,14 @@ public class LibraryLoaderTest {
     }
 
     @Test
+    public void testGetOSFileExtensionNativeClient() {
+        System.setProperty("os.name", "naclthe android project");
+        System.setProperty("java.specification.vendor", "The Android Project");
+
+        assertEquals("so", LibraryLoader.getOSFileExtension());
+    }
+
+    @Test
     public void testGetArchx86() {
         System.setProperty("os.arch", "x86");
 
