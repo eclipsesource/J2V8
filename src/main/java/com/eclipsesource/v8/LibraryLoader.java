@@ -175,6 +175,8 @@ public class LibraryLoader {
             return "x86";
         } else if (arch.equals("amd64")) {
             return "x86_64";
+        } else if (arch.equals("nacl")) {
+            return "x86";
         }
         return arch;
     }
