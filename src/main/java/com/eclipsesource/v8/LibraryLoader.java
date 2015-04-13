@@ -194,7 +194,7 @@ public class LibraryLoader {
             return "macosx";
         } else if (isLinux() && !isAndroid()) {
             return "linux";
-        } else if (isLinux() && isAndroid()) {
+        } else if (isAndroid()) {
             return "android";
         }
         throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName() + ".");
