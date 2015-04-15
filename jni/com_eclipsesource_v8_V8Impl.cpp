@@ -9,11 +9,11 @@
 *    EclipseSource - initial API and implementation
 ******************************************************************************/
 #include <jni.h>
+#include <include/libplatform/libplatform.h>
 #include <iostream>
-#include <v8-debug.h>
-#include <libplatform/libplatform.h>
+#include <include/v8-debug.h>
 
-#include <v8.h>
+#include <include/v8.h>
 #include <map>
 #include <cstdlib>
 #include "com_eclipsesource_v8_V8Impl.h"
