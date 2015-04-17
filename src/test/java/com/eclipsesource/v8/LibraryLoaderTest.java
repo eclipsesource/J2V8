@@ -77,7 +77,14 @@ public class LibraryLoaderTest {
     public void testGetArchxNaCl() {
         System.setProperty("os.arch", "nacl");
 
-        assertEquals("x86", LibraryLoader.getArchSuffix());
+        assertEquals("armv7l", LibraryLoader.getArchSuffix());
+    }
+    
+    @Test
+    public void testGetArchaarch64() {
+        System.setProperty("os.arch", "aarch64");
+
+        assertEquals("armv7l", LibraryLoader.getArchSuffix());
     }
 
     @Test
