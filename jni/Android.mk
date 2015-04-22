@@ -1,4 +1,5 @@
 LOCAL_PATH := $(call my-dir)
+LOCAL_MULTILIB := "both"
 
 include $(CLEAR_VARS)
 LOCAL_MODULE	:= v8_base
