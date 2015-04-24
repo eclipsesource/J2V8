@@ -167,6 +167,7 @@ public class V8 extends V8Object {
 
     public int executeIntScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -176,6 +177,7 @@ public class V8 extends V8Object {
 
     public double executeDoubleScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         return _executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -185,6 +187,7 @@ public class V8 extends V8Object {
 
     public String executeStringScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         return _executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -194,6 +197,7 @@ public class V8 extends V8Object {
 
     public boolean executeBooleanScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         return _executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
@@ -216,6 +220,7 @@ public class V8 extends V8Object {
 
     public Object executeScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         return _executeScript(getV8RuntimeHandle(), UNKNOWN, script, scriptName, lineNumber);
     }
 
@@ -238,12 +243,19 @@ public class V8 extends V8Object {
 
     public void executeVoidScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
+        checkScript(script);
         _executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     static void checkThread() {
         if ((thread != null) && (thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access.");
+        }
+    }
+
+    static void checkScript(final String script) {
+        if (script == null) {
+            throw new NullPointerException("Script is null");
         }
     }
 
