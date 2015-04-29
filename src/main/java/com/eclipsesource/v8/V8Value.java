@@ -32,7 +32,7 @@ abstract public class V8Value {
     }
 
     protected void initialize(final int runtimeHandle, final int objectHandle) {
-        v8._initNewV8Object(runtimeHandle, objectHandle);
+        v8.initNewV8Object(runtimeHandle, objectHandle);
         v8.addObjRef();
         released = false;
     }
@@ -45,18 +45,31 @@ abstract public class V8Value {
         return objectHandle;
     }
 
+    public V8 getRutime() {
+        return v8;
+    }
+
+    void releaseJNI() {
+        V8.lock.unlockRead();
+        try {
+            release();
+        } finally {
+            V8.lock.lockRead();
+        }
+    }
+
     public void release() {
-        V8.checkThread();
+        v8.checkThread();
         if ( !released ) {
             released = true;
-            v8._release(v8.getV8RuntimeHandle(), objectHandle);
+            v8.release(v8.getV8RuntimeHandle(), objectHandle);
             v8.releaseObjRef();
         }
     }
 
     @Override
     public boolean equals(final Object that) {
-        V8.checkThread();
+        v8.checkThread();
         checkReleaesd();
         if (that == this) {
             return true;
@@ -65,16 +78,16 @@ abstract public class V8Value {
             return false;
         }
         if ((that.getClass() == this.getClass())) {
-            return v8._equals(v8.getV8RuntimeHandle(), getHandle(), ((V8Object) that).getHandle());
+            return v8.equals(v8.getV8RuntimeHandle(), getHandle(), ((V8Object) that).getHandle());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        V8.checkThread();
+        v8.checkThread();
         checkReleaesd();
-        return v8._identityHash(v8.getV8RuntimeHandle(), getHandle());
+        return v8.identityHash(v8.getV8RuntimeHandle(), getHandle());
     }
 
     public boolean isReleased() {

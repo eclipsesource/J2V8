@@ -19,21 +19,23 @@ import java.util.Map;
 
 public class V8 extends V8Object {
 
-    private static int       v8InstanceCounter;
-    private static Thread    thread                 = null;
-    private static List<V8>  runtimes               = new ArrayList<>();
-    private static Runnable  debugHandler           = null;
+    static V8Lock               lock                   = new V8Lock();
+    private static volatile int v8InstanceCounter      = 0;
+    private static List<V8>     runtimes               = new ArrayList<>();
+    private static Runnable     debugHandler           = null;
+    private static Thread       debugThread            = null;
 
-    private int              methodReferenceCounter = 0;
-    private int              v8RuntimeHandle;
-    private boolean          debugEnabled           = false;
-    long                     objectReferences       = 0;
+    private Thread              thread                 = null;
+    private int                 methodReferenceCounter = 0;
+    private int                 v8RuntimeHandle;
+    private boolean             debugEnabled           = false;
+    long                        objectReferences       = 0;
 
-    private static boolean   nativeLibraryLoaded    = false;
-    private static Error     nativeLoadError        = null;
-    private static Exception nativeLoadException    = null;
-    private static V8Value   undefined              = new V8Object.Undefined();
-    private static Object    invalid                = new Object();
+    private static boolean      nativeLibraryLoaded    = false;
+    private static Error        nativeLoadError        = null;
+    private static Exception    nativeLoadException    = null;
+    private static V8Value      undefined              = new V8Object.Undefined();
+    private static Object       invalid                = new Object();
 
     class MethodDescriptor {
         Object           object;
@@ -41,6 +43,16 @@ public class V8 extends V8Object {
         JavaCallback     callback;
         JavaVoidCallback voidCallback;
     }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that;
+    };
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    };
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
@@ -72,12 +84,18 @@ public class V8 extends V8Object {
             load(tempDirectory);
         }
         checkNativeLibraryLoaded();
-        if (thread == null) {
-            thread = Thread.currentThread();
+        if (debugThread == null) {
+            debugThread = Thread.currentThread();
         }
-        V8 runtime = new V8(globalAlias);
-        runtimes.add(runtime);
-        return runtime;
+        lock.lockWrite();
+        try {
+            V8 runtime = new V8(globalAlias);
+            runtime.thread = Thread.currentThread();
+            runtimes.add(runtime);
+            return runtime;
+        } finally {
+            lock.unlockWrite();
+        }
     }
 
     private static void checkNativeLibraryLoaded() {
@@ -108,27 +126,27 @@ public class V8 extends V8Object {
     }
 
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
-        checkThread();
-        debugEnabled = _enableDebugSupport(getHandle(), port, waitForConnection);
+        V8.checkDebugThread();
+        debugEnabled = enableDebugSupport(getHandle(), port, waitForConnection);
         return debugEnabled;
     }
 
     public boolean enableDebugSupport(final int port) {
-        checkThread();
-        debugEnabled = _enableDebugSupport(getV8RuntimeHandle(), port, false);
+        V8.checkDebugThread();
+        debugEnabled = enableDebugSupport(getV8RuntimeHandle(), port, false);
         return debugEnabled;
     }
 
     public void disableDebugSupport() {
-        checkThread();
-        _disableDebugSupport(getV8RuntimeHandle());
+        V8.checkDebugThread();
+        disableDebugSupport(getV8RuntimeHandle());
         debugEnabled = false;
     }
 
     public static void processDebugMessages() {
-        checkThread();
+        V8.checkDebugThread();
         for (V8 v8 : runtimes) {
-            v8._processDebugMessages(v8.getV8RuntimeHandle());
+            v8.processDebugMessages(v8.getV8RuntimeHandle());
         }
     }
 
@@ -149,15 +167,24 @@ public class V8 extends V8Object {
         release(true);
     }
 
+    public void terminateExecution() {
+        terminateExecution(v8RuntimeHandle);
+    }
+
     public void release(final boolean reportMemoryLeaks) {
         checkThread();
         if (debugEnabled) {
             disableDebugSupport();
         }
-        runtimes.remove(this);
-        _releaseRuntime(v8RuntimeHandle);
-        if (reportMemoryLeaks && (objectReferences > 0)) {
-            throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+        lock.lockWrite();
+        try {
+            runtimes.remove(this);
+            _releaseRuntime(v8RuntimeHandle);
+            if (reportMemoryLeaks && (objectReferences > 0)) {
+                throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+            }
+        } finally {
+            lock.unlockWrite();
         }
     }
 
@@ -168,7 +195,7 @@ public class V8 extends V8Object {
     public int executeIntScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        return executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     public double executeDoubleScript(final String script) {
@@ -178,7 +205,7 @@ public class V8 extends V8Object {
     public double executeDoubleScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return _executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        return executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     public String executeStringScript(final String script) {
@@ -188,7 +215,7 @@ public class V8 extends V8Object {
     public String executeStringScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return _executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        return executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     public boolean executeBooleanScript(final String script) {
@@ -198,7 +225,7 @@ public class V8 extends V8Object {
     public boolean executeBooleanScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return _executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        return executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     public V8Array executeArrayScript(final String script) {
@@ -221,7 +248,7 @@ public class V8 extends V8Object {
     public Object executeScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return _executeScript(getV8RuntimeHandle(), UNKNOWN, script, scriptName, lineNumber);
+        return executeScript(getV8RuntimeHandle(), UNKNOWN, script, scriptName, lineNumber);
     }
 
     public V8Object executeObjectScript(final String script) {
@@ -244,11 +271,17 @@ public class V8 extends V8Object {
     public void executeVoidScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        _executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
-    static void checkThread() {
+    void checkThread() {
         if ((thread != null) && (thread != Thread.currentThread())) {
+            throw new Error("Invalid V8 thread access.");
+        }
+    }
+
+    static void checkDebugThread() {
+        if ((debugThread != null) && (debugThread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access.");
         }
     }
@@ -265,7 +298,7 @@ public class V8 extends V8Object {
         methodDescriptor.method = method;
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
+        registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
     }
 
     void registerVoidCallback(final JavaVoidCallback callback, final int objectHandle, final String jsFunctionName) {
@@ -273,7 +306,7 @@ public class V8 extends V8Object {
         methodDescriptor.voidCallback = callback;
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, true);
+        registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, true);
     }
 
     void registerCallback(final JavaCallback callback, final int objectHandle, final String jsFunctionName) {
@@ -281,7 +314,7 @@ public class V8 extends V8Object {
         methodDescriptor.callback = callback;
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
-        _registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, false);
+        registerJavaMethod(getV8RuntimeHandle(), objectHandle, jsFunctionName, methodID, false);
     }
 
     private boolean isVoidMethod(final Method method) {
@@ -302,22 +335,27 @@ public class V8 extends V8Object {
     }
 
     protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
-        if (methodDescriptor.callback != null) {
-            return checkResult(methodDescriptor.callback.invoke(parameters));
-        }
-        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
-        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
-        checkArgs(args);
+        lock.unlockRead();
         try {
-            Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
-            return checkResult(result);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw e;
+            MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
+            if (methodDescriptor.callback != null) {
+                return checkResult(methodDescriptor.callback.invoke(parameters));
+            }
+            boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+            Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+            checkArgs(args);
+            try {
+                Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
+                return checkResult(result);
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                throw e;
+            } finally {
+                releaseArguments(args, hasVarArgs);
+            }
         } finally {
-            releaseArguments(args, hasVarArgs);
+            lock.lockRead();
         }
     }
 
@@ -336,22 +374,27 @@ public class V8 extends V8Object {
     }
 
     protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
-        if (methodDescriptor.voidCallback != null) {
-            methodDescriptor.voidCallback.invoke(parameters);
-            return;
-        }
-        boolean hasVarArgs = methodDescriptor.method.isVarArgs();
-        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
-        checkArgs(args);
+        lock.unlockRead();
         try {
-            methodDescriptor.method.invoke(methodDescriptor.object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw e;
+            MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
+            if (methodDescriptor.voidCallback != null) {
+                methodDescriptor.voidCallback.invoke(parameters);
+                return;
+            }
+            boolean hasVarArgs = methodDescriptor.method.isVarArgs();
+            Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+            checkArgs(args);
+            try {
+                methodDescriptor.method.invoke(methodDescriptor.object, args);
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                throw e;
+            } finally {
+                releaseArguments(args, hasVarArgs);
+            }
         } finally {
-            releaseArguments(args, hasVarArgs);
+            lock.lockRead();
         }
     }
 
@@ -448,143 +491,713 @@ public class V8 extends V8Object {
         return functions;
     }
 
-    protected native void _initNewV8Object(int v8RuntimeHandle, int objectHandle);
-
-    protected native void _releaseRuntime(int v8RuntimeHandle);
-
-    protected native void _createIsolate(int v8RuntimeHandle, String globalAlias);
-
-    protected native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
-
-    protected native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
-
-    protected native String _executeStringScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
-
-    protected native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName,
-            final int lineNumber);
-
-    protected native Object _executeScript(int v8RuntimeHandle, int expectedType, String script, String scriptName, int lineNumber);
-
-    protected native void _executeVoidScript(int v8RuntimeHandle, String script, String scriptName, int lineNumber);
-
-    protected native void _release(int v8RuntimeHandle, int objectHandle);
-
-    protected native boolean _contains(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native String[] _getKeys(int v8RuntimeHandle, int objectHandle);
-
-    protected native int _getInteger(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native boolean _getBoolean(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native double _getDouble(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native Object _get(int v8RuntimeHandle, int expectedType, final int objectHandle, final String key);
-
-    protected native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
-
-    protected native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name,
-            int parametersHandle);
-
-    protected native String _executeStringFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
-
-    protected native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
-
-    protected native Object _executeFunction(int v8RuntimeHandle, int expectedType, int objectHandle, String name, int parametersHandle);
-
-    protected native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
-
-    protected native boolean _equals(int v8RuntimeHandle, int objectHandle, int that);
-
-    protected native boolean _strictEquals(int v8RuntimeHandle, int objectHandle, int that);
-
-    protected native boolean _sameValue(int v8RuntimeHandle, int objectHandle, int that);
-
-    protected native int _identityHash(int v8RuntimeHandle, int objectHandle);
-
-    protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final int value);
-
-    protected native void _addObject(int v8RuntimeHandle, int objectHandle, final String key, final int value);
-
-    protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final boolean value);
-
-    protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final double value);
-
-    protected native void _add(int v8RuntimeHandle, int objectHandle, final String key, final String value);
-
-    protected native void _addUndefined(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native void _addNull(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName,
-            final int methodID, final boolean voidMethod);
-
-    protected native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
-
-    protected native void _releaseArray(int v8RuntimeHandle, int arrayHandle);
-
-    protected native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
-
-    protected native int _arrayGetInteger(int v8RuntimeHandle, int arrayHandle, int index);
-
-    protected native boolean _arrayGetBoolean(int v8RuntimeHandle, int arrayHandle, int index);
-
-    protected native double _arrayGetDouble(int v8RuntimeHandle, int arrayHandle, int index);
-
-    protected native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
-
-    protected native Object _arrayGet(int v8RuntimeHandle, int expectedType, int arrayHandle, int index);
-
-    protected native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
-
-    protected native void _addArrayBooleanItem(int v8RuntimeHandle, int arrayHandle, boolean value);
-
-    protected native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
-
-    protected native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
-
-    protected native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
-
-    protected native void _addArrayUndefinedItem(int v8RuntimeHandle, int arrayHandle);
-
-    protected native void _addArrayNullItem(int v8RuntimeHandle, int arrayHandle);
-
-    protected native int _getType(int v8RuntimeHandle, int objectHandle, final String key);
-
-    protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
-
-    protected native int _getArrayType(int v8RuntimeHandle, int objectHandle);
-
-    protected native int _getType(int v8RuntimeHandle, int objectHandle, final int index, final int length);
-
-    protected native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
-
-    protected native boolean _enableDebugSupport(int v8RuntimeHandle, int port, boolean waitForConnection);
-
-    protected native void _disableDebugSupport(int v8RuntimeHandle);
-
-    protected native void _processDebugMessages(int v8RuntimeHandle);
-
-    protected native int[] _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
-
-    protected native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
-
-    protected native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
-
-    protected native String[] _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
-
-    protected native int _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, int[] resultArray);
-
-    protected native int _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, double[] resultArray);
-
-    protected native int _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, boolean[] resultArray);
-
-    protected native int _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, String[] resultArray);
+    protected void initNewV8Object(final int v8RuntimeHandle, final int objectHandle) {
+        lock.lockRead();
+        try {
+            _initNewV8Object(v8RuntimeHandle, objectHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int executeIntScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected double executeDoubleScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            return _executeDoubleScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String executeStringScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            return _executeStringScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean executeBooleanScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            return _executeBooleanScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected Object executeScript(final int v8RuntimeHandle, final int expectedType, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            return _executeScript(v8RuntimeHandle, expectedType, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void executeVoidScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+        lock.lockRead();
+        try {
+            _executeVoidScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void release(final int v8RuntimeHandle, final int objectHandle) {
+        lock.lockRead();
+        try {
+            _release(v8RuntimeHandle, objectHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean contains(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _contains(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String[] getKeys(final int v8RuntimeHandle, final int objectHandle) {
+        lock.lockRead();
+        try {
+            return _getKeys(v8RuntimeHandle, objectHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int getInteger(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _getInteger(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean getBoolean(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _getBoolean(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected double getDouble(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _getDouble(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String getString(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _getString(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected Object get(final int v8RuntimeHandle, final int expectedType, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _get(v8RuntimeHandle, expectedType, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int executeIntFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeIntFunction(v8RuntimeHandle, objectHandle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected double executeDoubleFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeDoubleFunction(v8RuntimeHandle, objectHandle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String executeStringFunction(final int v8RuntimeHandle, final int handle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeStringFunction(v8RuntimeHandle, handle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean executeBooleanFunction(final int v8RuntimeHandle, final int handle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeBooleanFunction(v8RuntimeHandle, handle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected Object executeFunction(final int v8RuntimeHandle, final int expectedType, final int objectHandle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeFunction(v8RuntimeHandle, expectedType, objectHandle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void executeVoidFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            _executeVoidFunction(v8RuntimeHandle, objectHandle, name, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean equals(final int v8RuntimeHandle, final int objectHandle, final int that) {
+        lock.lockRead();
+        try {
+            return _equals(v8RuntimeHandle, objectHandle, that);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean strictEquals(final int v8RuntimeHandle, final int objectHandle, final int that) {
+        lock.lockRead();
+        try {
+            return _strictEquals(v8RuntimeHandle, objectHandle, that);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean sameValue(final int v8RuntimeHandle, final int objectHandle, final int that) {
+        lock.lockRead();
+        try {
+            return _sameValue(v8RuntimeHandle, objectHandle, that);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int identityHash(final int v8RuntimeHandle, final int objectHandle) {
+        lock.lockRead();
+        try {
+            return _identityHash(v8RuntimeHandle, objectHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void add(final int v8RuntimeHandle, final int objectHandle, final String key, final int value) {
+        lock.lockRead();
+        try {
+            _add(v8RuntimeHandle, objectHandle, key, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addObject(final int v8RuntimeHandle, final int objectHandle, final String key, final int value) {
+        lock.lockRead();
+        try {
+            _addObject(v8RuntimeHandle, objectHandle, key, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void add(final int v8RuntimeHandle, final int objectHandle, final String key, final boolean value) {
+        lock.lockRead();
+        try {
+            _add(v8RuntimeHandle, objectHandle, key, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void add(final int v8RuntimeHandle, final int objectHandle, final String key, final double value) {
+        lock.lockRead();
+        try {
+            _add(v8RuntimeHandle, objectHandle, key, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void add(final int v8RuntimeHandle, final int objectHandle, final String key, final String value) {
+        lock.lockRead();
+        try {
+            _add(v8RuntimeHandle, objectHandle, key, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addUndefined(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            _addUndefined(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addNull(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            _addNull(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void registerJavaMethod(final int v8RuntimeHandle, final int objectHandle, final String functionName, final int methodID, final boolean voidMethod) {
+        lock.lockRead();
+        try {
+            _registerJavaMethod(v8RuntimeHandle, objectHandle, functionName, methodID, voidMethod);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void initNewV8Array(final int v8RuntimeHandle, final int arrayHandle) {
+        lock.lockRead();
+        try {
+            _initNewV8Array(v8RuntimeHandle, arrayHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetSize(final int v8RuntimeHandle, final int arrayHandle) {
+        lock.lockRead();
+        try {
+            return _arrayGetSize(v8RuntimeHandle, arrayHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetInteger(final int v8RuntimeHandle, final int arrayHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _arrayGetInteger(v8RuntimeHandle, arrayHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean arrayGetBoolean(final int v8RuntimeHandle, final int arrayHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _arrayGetBoolean(v8RuntimeHandle, arrayHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected double arrayGetDouble(final int v8RuntimeHandle, final int arrayHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _arrayGetDouble(v8RuntimeHandle, arrayHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String arrayGetString(final int v8RuntimeHandle, final int arrayHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _arrayGetString(v8RuntimeHandle, arrayHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected Object arrayGet(final int v8RuntimeHandle, final int expectedType, final int arrayHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _arrayGet(v8RuntimeHandle, expectedType, arrayHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayIntItem(final int v8RuntimeHandle, final int arrayHandle, final int value) {
+        lock.lockRead();
+        try {
+            _addArrayIntItem(v8RuntimeHandle, arrayHandle, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayBooleanItem(final int v8RuntimeHandle, final int arrayHandle, final boolean value) {
+        lock.lockRead();
+        try {
+            _addArrayBooleanItem(v8RuntimeHandle, arrayHandle, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayDoubleItem(final int v8RuntimeHandle, final int arrayHandle, final double value) {
+        lock.lockRead();
+        try {
+            _addArrayDoubleItem(v8RuntimeHandle, arrayHandle, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayStringItem(final int v8RuntimeHandle, final int arrayHandle, final String value) {
+        lock.lockRead();
+        try {
+            _addArrayStringItem(v8RuntimeHandle, arrayHandle, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayObjectItem(final int v8RuntimeHandle, final int arrayHandle, final int value) {
+        lock.lockRead();
+        try {
+            _addArrayObjectItem(v8RuntimeHandle, arrayHandle, value);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayUndefinedItem(final int v8RuntimeHandle, final int arrayHandle) {
+        lock.lockRead();
+        try {
+            _addArrayUndefinedItem(v8RuntimeHandle, arrayHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void addArrayNullItem(final int v8RuntimeHandle, final int arrayHandle) {
+        lock.lockRead();
+        try {
+            _addArrayNullItem(v8RuntimeHandle, arrayHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int getType(final int v8RuntimeHandle, final int objectHandle, final String key) {
+        lock.lockRead();
+        try {
+            return _getType(v8RuntimeHandle, objectHandle, key);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int getType(final int v8RuntimeHandle, final int objectHandle, final int index) {
+        lock.lockRead();
+        try {
+            return _getType(v8RuntimeHandle, objectHandle, index);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int getArrayType(final int v8RuntimeHandle, final int objectHandle) {
+        lock.lockRead();
+        try {
+            return _getArrayType(v8RuntimeHandle, objectHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int getType(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+        lock.lockRead();
+        try {
+            return _getType(v8RuntimeHandle, objectHandle, index, length);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void setPrototype(final int v8RuntimeHandle, final int objectHandle, final int prototypeHandle) {
+        lock.lockRead();
+        try {
+            _setPrototype(v8RuntimeHandle, objectHandle, prototypeHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean enableDebugSupport(final int v8RuntimeHandle, final int port, final boolean waitForConnection) {
+        lock.lockRead();
+        try {
+            return _enableDebugSupport(v8RuntimeHandle, port, waitForConnection);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void disableDebugSupport(final int v8RuntimeHandle) {
+        lock.lockRead();
+        try {
+            _disableDebugSupport(v8RuntimeHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void processDebugMessages(final int v8RuntimeHandle) {
+        lock.lockRead();
+        try {
+            _processDebugMessages(v8RuntimeHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int[] arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+        lock.lockRead();
+        try {
+            return _arrayGetInts(v8RuntimeHandle, objectHandle, index, length);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected double[] arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+        lock.lockRead();
+        try {
+            return _arrayGetDoubles(v8RuntimeHandle, objectHandle, index, length);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected boolean[] arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+        lock.lockRead();
+        try {
+            return _arrayGetBooleans(v8RuntimeHandle, objectHandle, index, length);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected String[] arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+        lock.lockRead();
+        try {
+            return _arrayGetStrings(v8RuntimeHandle, objectHandle, index, length);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final int[] resultArray) {
+        lock.lockRead();
+        try {
+            return _arrayGetInts(v8RuntimeHandle, objectHandle, index, length, resultArray);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final double[] resultArray) {
+        lock.lockRead();
+        try {
+            return _arrayGetDoubles(v8RuntimeHandle, objectHandle, index, length, resultArray);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final boolean[] resultArray) {
+        lock.lockRead();
+        try {
+            return _arrayGetBooleans(v8RuntimeHandle, objectHandle, index, length, resultArray);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected int arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final String[] resultArray) {
+        lock.lockRead();
+        try {
+            return _arrayGetStrings(v8RuntimeHandle, objectHandle, index, length, resultArray);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    protected void terminateExecution(final int v8RuntimeHandle) {
+        lock.lockRead();
+        try {
+            _terminateExecution(v8RuntimeHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
+    private native void _initNewV8Object(int v8RuntimeHandle, int objectHandle);
+
+    private native void _releaseRuntime(int v8RuntimeHandle);
+
+    private native void _createIsolate(int v8RuntimeHandle, String globalAlias);
+
+    private native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+
+    private native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+
+    private native String _executeStringScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+
+    private native boolean _executeBooleanScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+
+    private native Object _executeScript(int v8RuntimeHandle, int expectedType, String script, String scriptName, int lineNumber);
+
+    private native void _executeVoidScript(int v8RuntimeHandle, String script, String scriptName, int lineNumber);
+
+    private native void _release(int v8RuntimeHandle, int objectHandle);
+
+    private native boolean _contains(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native String[] _getKeys(int v8RuntimeHandle, int objectHandle);
+
+    private native int _getInteger(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native boolean _getBoolean(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native double _getDouble(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native String _getString(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native Object _get(int v8RuntimeHandle, int expectedType, final int objectHandle, final String key);
+
+    private native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
+
+    private native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
+
+    private native String _executeStringFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
+
+    private native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
+
+    private native Object _executeFunction(int v8RuntimeHandle, int expectedType, int objectHandle, String name, int parametersHandle);
+
+    private native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
+
+    private native boolean _equals(int v8RuntimeHandle, int objectHandle, int that);
+
+    private native boolean _strictEquals(int v8RuntimeHandle, int objectHandle, int that);
+
+    private native boolean _sameValue(int v8RuntimeHandle, int objectHandle, int that);
+
+    private native int _identityHash(int v8RuntimeHandle, int objectHandle);
+
+    private native void _add(int v8RuntimeHandle, int objectHandle, final String key, final int value);
+
+    private native void _addObject(int v8RuntimeHandle, int objectHandle, final String key, final int value);
+
+    private native void _add(int v8RuntimeHandle, int objectHandle, final String key, final boolean value);
+
+    private native void _add(int v8RuntimeHandle, int objectHandle, final String key, final double value);
+
+    private native void _add(int v8RuntimeHandle, int objectHandle, final String key, final String value);
+
+    private native void _addUndefined(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native void _addNull(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native void _registerJavaMethod(int v8RuntimeHandle, final int objectHandle, final String functionName, final int methodID, final boolean voidMethod);
+
+    private native void _initNewV8Array(int v8RuntimeHandle, int arrayHandle);
+
+    private native int _arrayGetSize(int v8RuntimeHandle, int arrayHandle);
+
+    private native int _arrayGetInteger(int v8RuntimeHandle, int arrayHandle, int index);
+
+    private native boolean _arrayGetBoolean(int v8RuntimeHandle, int arrayHandle, int index);
+
+    private native double _arrayGetDouble(int v8RuntimeHandle, int arrayHandle, int index);
+
+    private native String _arrayGetString(int v8RuntimeHandle, int arrayHandle, int index);
+
+    private native Object _arrayGet(int v8RuntimeHandle, int expectedType, int arrayHandle, int index);
+
+    private native void _addArrayIntItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    private native void _addArrayBooleanItem(int v8RuntimeHandle, int arrayHandle, boolean value);
+
+    private native void _addArrayDoubleItem(int v8RuntimeHandle, int arrayHandle, double value);
+
+    private native void _addArrayStringItem(int v8RuntimeHandle, int arrayHandle, String value);
+
+    private native void _addArrayObjectItem(int v8RuntimeHandle, int arrayHandle, int value);
+
+    private native void _addArrayUndefinedItem(int v8RuntimeHandle, int arrayHandle);
+
+    private native void _addArrayNullItem(int v8RuntimeHandle, int arrayHandle);
+
+    private native int _getType(int v8RuntimeHandle, int objectHandle, final String key);
+
+    private native int _getType(int v8RuntimeHandle, int objectHandle, final int index);
+
+    private native int _getArrayType(int v8RuntimeHandle, int objectHandle);
+
+    private native void _setPrototype(int v8RuntimeHandle, int objectHandle, int prototypeHandle);
+
+    private native int _getType(int v8RuntimeHandle, int objectHandle, final int index, final int length);
+
+    private native boolean _enableDebugSupport(int v8RuntimeHandle, int port, boolean waitForConnection);
+
+    private native void _disableDebugSupport(int v8RuntimeHandle);
+
+    private native void _processDebugMessages(int v8RuntimeHandle);
+
+    private native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+
+    private native int[] _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+
+    private native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+
+    private native String[] _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+
+    private native int _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, int[] resultArray);
+
+    private native int _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, double[] resultArray);
+
+    private native int _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, boolean[] resultArray);
+
+    private native int _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, String[] resultArray);
+
+    private native void _terminateExecution(final int v8RuntimeHandle);
 
     void addObjRef() {
         objectReferences++;

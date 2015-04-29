@@ -315,14 +315,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _releaseArray
- * Signature: (II)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
-  (JNIEnv *, jobject, jint, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _arrayGetSize
  * Signature: (II)I
  */
@@ -451,19 +443,19 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _getType
- * Signature: (IIII)I
- */
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
-  (JNIEnv *, jobject, jint, jint, jint, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _setPrototype
  * Signature: (III)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
   (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _getType
+ * Signature: (IIII)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
+  (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -491,18 +483,18 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _arrayGetInts
- * Signature: (IIII)[I
- */
-JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII
-  (JNIEnv *, jobject, jint, jint, jint, jint);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _arrayGetDoubles
  * Signature: (IIII)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__IIII
+  (JNIEnv *, jobject, jint, jint, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetInts
+ * Signature: (IIII)[I
+ */
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
@@ -552,6 +544,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__IIII_3Z
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__IIII_3Ljava_lang_String_2
   (JNIEnv *, jobject, jint, jint, jint, jint, jobjectArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _terminateExecution
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1terminateExecution
+  (JNIEnv *, jobject, jint);
 
 #ifdef __cplusplus
 }

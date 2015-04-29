@@ -87,12 +87,12 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
                                 }
 
 void release(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
+  jmethodID release = env->GetMethodID(v8ObjectCls, "releaseJNI", "()V");
   env->CallVoidMethod(object, release);
 }
 
 void releaseArray(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
+  jmethodID release = env->GetMethodID(v8ArrayCls, "releaseJNI", "()V");
   env->CallVoidMethod(object, release);
 }
 
@@ -272,19 +272,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
   v8Isolates[v8RuntimeHandle]->objects.erase(objectHandle);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseArray
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
-  if (v8Isolates.count(v8RuntimeHandle) == 0) {
-    return;
-  }
-  else if (v8Isolates[v8RuntimeHandle]->objects.find(arrayHandle) == v8Isolates[v8RuntimeHandle]->objects.end()) {
-    return;
-  }
-  Isolate* isolate = getIsolate(env, v8RuntimeHandle);
-  HandleScope handle_scope(isolate);
-  v8Isolates[v8RuntimeHandle]->objects[arrayHandle]->Reset();
-  delete(v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
-  v8Isolates[v8RuntimeHandle]->objects.erase(arrayHandle);
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1terminateExecution
+  (JNIEnv * env, jobject, jint v8RuntimeHandle) {
+	if (v8Isolates.count(v8RuntimeHandle) == 0) {
+	  return;
+	}
+	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	V8::TerminateExecution(isolate);
+	return;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
@@ -1002,9 +997,9 @@ public:
 
 jobject createParameterArray(JNIEnv* env, int v8RuntimeHandle, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = getIsolate(env, v8RuntimeHandle);
-  jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+  jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
   jmethodID getHandle = env->GetMethodID(v8ArrayCls, "getHandle", "()I");
-  jobject result = env->NewObject(v8ArrayCls, methodID, v8);
+  jobject result = env->NewObject(v8ArrayCls, methodID, v8, true);
   jint parameterHandle = env->CallIntMethod(result, getHandle);
   Handle<Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
   for (int i = 0; i < size; i++) {
@@ -1158,7 +1153,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   if (resultObject != NULL) {
     env->DeleteLocalRef(resultObject);
   }
-  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
+  jmethodID release = env->GetMethodID(v8ArrayCls, "releaseJNI", "()V");
   env->CallVoidMethod(parameters, release);
   env->DeleteLocalRef(parameters);
 }
@@ -1349,22 +1344,22 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
     return env->NewStringUTF(*utf);
   }
   else if (result->IsArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
+    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8, true);
     int resultHandle = getHandle(env, objectResult);
     v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsTypedArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
+    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8, true);
     int resultHandle = getHandle(env, objectResult);
     v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsObject()) {
-    jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8);
+    jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
+    jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8, true);
     int resultHandle = getHandle(env, objectResult);
     v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
     return objectResult;
