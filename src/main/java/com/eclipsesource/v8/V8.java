@@ -242,7 +242,7 @@ public class V8 extends V8Object {
     }
 
     public Object executeScript(final String script) {
-        return this.executeScript(script, null, 0);
+        return executeScript(script, null, 0);
     }
 
     public Object executeScript(final String script, final String scriptName, final int lineNumber) {

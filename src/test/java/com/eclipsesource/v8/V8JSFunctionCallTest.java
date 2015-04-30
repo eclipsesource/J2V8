@@ -10,13 +10,14 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class V8JSFunctionCallTest {
 
@@ -125,6 +126,109 @@ public class V8JSFunctionCallTest {
         assertEquals(7, result.getInteger("age"));
         parameters.release();
         result.release();
+    }
+
+    @Test
+    public void testFunctionCallWithObjectReturn() {
+        v8.executeVoidScript("function getPerson(first, last, age) {return {'first':first, 'last':last, 'age':age};}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push("John");
+        parameters.push("Smith");
+        parameters.push(7);
+
+        Object result = v8.executeFunction("getPerson", parameters);
+
+        assertTrue(result instanceof V8Object);
+        V8Object v8Object = (V8Object) result;
+        assertEquals("John", v8Object.getString("first"));
+        assertEquals("Smith", v8Object.getString("last"));
+        assertEquals(7, v8Object.getInteger("age"));
+        parameters.release();
+        v8Object.release();
+    }
+
+    @Test
+    public void testFunctionCallWithIntegerReturn() {
+        v8.executeVoidScript("function getAge(first, last, age) {return age;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push("John");
+        parameters.push("Smith");
+        parameters.push(7);
+
+        Object result = v8.executeFunction("getAge", parameters);
+
+        assertTrue(result instanceof Integer);
+        assertEquals(7, result);
+        parameters.release();
+    }
+
+    @Test
+    public void testFunctionCallWithDoubleReturn() {
+        v8.executeVoidScript("function getFoo() {return 33.3;}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertEquals(33.3, (double) result, 0.000001);
+    }
+
+    @Test
+    public void testFunctionCallWithStringReturn() {
+        v8.executeVoidScript("function getFoo() {return 'bar';}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertEquals("bar", result);
+    }
+
+    @Test
+    public void testFunctionCallWithBooleanReturn() {
+        v8.executeVoidScript("function getFoo() {return true;}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertTrue((boolean) result);
+    }
+
+    @Test
+    public void testFunctionCallWithNullReturn() {
+        v8.executeVoidScript("function getFoo() {return null;}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertNull(result);
+    }
+
+    @Test
+    public void testFunctionCallWithUndefinedReturn() {
+        v8.executeVoidScript("function getFoo() {return undefined;}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertEquals(V8.getUndefined(), result);
+    }
+
+    @Test
+    public void testFunctionCallWithArrayReturn() {
+        v8.executeVoidScript("function getFoo() {return [1,2,3];}");
+
+        Object result = v8.executeFunction("getFoo", null);
+
+        assertTrue(result instanceof V8Array);
+        V8Array v8Array = (V8Array) result;
+        assertEquals(3, v8Array.length());
+        assertEquals(1, v8Array.get(0));
+        assertEquals(2, v8Array.get(1));
+        assertEquals(3, v8Array.get(2));
+        v8Array.release();
+    }
+
+    @Test
+    public void testFunctionCallWithNoReturn() {
+        v8.executeVoidScript("function getAge(first, last, age) {}");
+
+        Object result = v8.executeFunction("getAge", null);
+
+        assertEquals(V8.getUndefined(), result);
     }
 
     @Test
