@@ -81,19 +81,19 @@ public class V8Array extends V8Object {
         return v8.arrayGetString(v8.getV8RuntimeHandle(), getHandle(), index);
     }
 
-    public int[] getInts(final int index, final int length) {
+    public int[] getIntegers(final int index, final int length) {
         v8.checkThread();
         checkReleaesd();
-        return v8.arrayGetInts(v8.getV8RuntimeHandle(), getHandle(), index, length);
+        return v8.arrayGetIntegers(v8.getV8RuntimeHandle(), getHandle(), index, length);
     }
 
-    public int getInts(final int index, final int length, final int[] resultArray) {
+    public int getIntegers(final int index, final int length, final int[] resultArray) {
         v8.checkThread();
         checkReleaesd();
         if (length > resultArray.length) {
             throw new IndexOutOfBoundsException();
         }
-        return v8.arrayGetInts(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
+        return v8.arrayGetIntegers(v8.getV8RuntimeHandle(), getHandle(), index, length, resultArray);
     }
 
     public double[] getDoubles(final int index, final int length) {
@@ -327,7 +327,7 @@ public class V8Array extends V8Object {
         }
 
         @Override
-        public int executeIntFunction(final String name, final V8Array parameters) {
+        public int executeIntegerFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
@@ -457,12 +457,12 @@ public class V8Array extends V8Object {
         }
 
         @Override
-        public int[] getInts(final int index, final int length) {
+        public int[] getIntegers(final int index, final int length) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public int getInts(final int index, final int length, final int[] resultArray) {
+        public int getIntegers(final int index, final int length, final int[] resultArray) {
             throw new UnsupportedOperationException();
         }
 

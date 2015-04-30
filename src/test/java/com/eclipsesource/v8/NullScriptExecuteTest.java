@@ -57,7 +57,7 @@ public class NullScriptExecuteTest {
 
     @Test(expected = NullPointerException.class)
     public void testIntScript() {
-        v8.executeIntScript(null);
+        v8.executeIntegerScript(null);
     }
 
     @Test(expected = NullPointerException.class)

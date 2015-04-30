@@ -51,10 +51,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _executeIntScript
+ * Method:    _executeIntegerScript
  * Signature: (ILjava/lang/String;Ljava/lang/String;I)I
  */
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerScript
   (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
@@ -163,10 +163,10 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1get
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _executeIntFunction
+ * Method:    _executeIntegerFunction
  * Signature: (IILjava/lang/String;I)I
  */
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerFunction
   (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
@@ -491,10 +491,10 @@ JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__I
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _arrayGetInts
+ * Method:    _arrayGetIntegers
  * Signature: (IIII)[I
  */
-JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII
   (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
@@ -515,10 +515,10 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__I
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _arrayGetInts
+ * Method:    _arrayGetIntegers
  * Signature: (IIII[I)I
  */
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII_3I
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII_3I
   (JNIEnv *, jobject, jint, jint, jint, jint, jintArray);
 
 /*

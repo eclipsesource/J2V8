@@ -108,12 +108,12 @@ public class V8Object extends V8Value {
         throw new V8ResultUndefined();
     }
 
-    public int executeIntFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
+    public int executeIntegerFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
             V8ResultUndefined {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-        return v8.executeIntFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
+        return v8.executeIntegerFunction(v8.getV8RuntimeHandle(), getHandle(), name, parametersHandle);
     }
 
     public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
@@ -360,7 +360,7 @@ public class V8Object extends V8Value {
         }
 
         @Override
-        public int executeIntFunction(final String name, final V8Array parameters) {
+        public int executeIntegerFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 

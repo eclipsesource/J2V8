@@ -46,7 +46,7 @@ public class V8JSFunctionCallTest {
         parameters.push(7);
         parameters.push(8);
 
-        int result = v8.executeIntFunction("add", parameters);
+        int result = v8.executeIntegerFunction("add", parameters);
 
         assertEquals(15, result);
         parameters.release();
@@ -150,7 +150,7 @@ public class V8JSFunctionCallTest {
         v8.executeVoidScript("function foo() {return 7;}");
         V8Array parameters = new V8Array(v8);
 
-        int result = v8.executeIntFunction("foo", parameters);
+        int result = v8.executeIntegerFunction("foo", parameters);
 
         assertEquals(7, result);
         parameters.release();
@@ -228,7 +228,7 @@ public class V8JSFunctionCallTest {
     public void testIntFunctionCallNullParameters() {
         v8.executeVoidScript("function foo() {return 7;}");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(7, result);
     }
@@ -299,7 +299,7 @@ public class V8JSFunctionCallTest {
         V8Array parameters = new V8Array(v8);
         parameters.push(7);
         parameters.push(8);
-        int result = object.executeIntFunction("addFuction", parameters);
+        int result = object.executeIntegerFunction("addFuction", parameters);
         parameters.release();
 
         assertEquals(15, result);
@@ -420,7 +420,7 @@ public class V8JSFunctionCallTest {
         V8Array parameters = new V8Array(v8);
         parameters.push("abcdefghijklmnopqrstuvwxyz");
 
-        assertEquals(26, v8.executeIntFunction("countLength", parameters));
+        assertEquals(26, v8.executeIntegerFunction("countLength", parameters));
         parameters.release();
     }
 
@@ -439,7 +439,7 @@ public class V8JSFunctionCallTest {
         parameters.push(obj2);
 
         v8.executeVoidScript("function add(p1, p2) {return p1.age + p2['age'];}");
-        int result = v8.executeIntFunction("add", parameters);
+        int result = v8.executeIntegerFunction("add", parameters);
 
         assertEquals(15, result);
         obj1.release();

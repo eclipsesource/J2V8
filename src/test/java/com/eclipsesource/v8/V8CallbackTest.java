@@ -133,7 +133,7 @@ public class V8CallbackTest {
         doReturn(7).when(callback).intMethodNoParameters();
         v8.registerJavaMethod(callback, "intMethodNoParameters", "foo", new Class<?>[0]);
 
-        int result = v8.executeIntScript("foo();");
+        int result = v8.executeIntegerScript("foo();");
 
         assertEquals(7, result);
     }
@@ -144,7 +144,7 @@ public class V8CallbackTest {
         doReturn(8).when(callback).integerMethod();
         v8.registerJavaMethod(callback, "integerMethod", "foo", new Class<?>[0]);
 
-        int result = v8.executeIntScript("foo();");
+        int result = v8.executeIntegerScript("foo();");
 
         assertEquals(8, result);
     }
@@ -420,7 +420,7 @@ public class V8CallbackTest {
         V8Object v8Object = new V8Object(v8);
         v8Object.registerJavaMethod(callback, "intMethodNoParameters", "foo", new Class<?>[0]);
 
-        int result = v8Object.executeIntFunction("foo", null);
+        int result = v8Object.executeIntegerFunction("foo", null);
 
         verify(callback).intMethodNoParameters();
         assertEquals(99, result);
@@ -434,7 +434,7 @@ public class V8CallbackTest {
         V8Array v8Array = new V8Array(v8);
         v8Array.registerJavaMethod(callback, "intMethodNoParameters", "foo", new Class<?>[0]);
 
-        int result = v8Array.executeIntFunction("foo", null);
+        int result = v8Array.executeIntegerFunction("foo", null);
 
         verify(callback).intMethodNoParameters();
         assertEquals(99, result);
@@ -596,7 +596,7 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
-        v8.executeIntScript("foo();1");
+        v8.executeIntegerScript("foo();1");
 
         verify(callback).voidMethodNoParameters();
     }
@@ -668,7 +668,7 @@ public class V8CallbackTest {
         }).when(callback).intMethodWithParameters(anyInt(), anyInt());
         v8.registerJavaMethod(callback, "intMethodWithParameters", "foo", new Class<?>[] { Integer.TYPE, Integer.TYPE });
 
-        int result = v8.executeIntScript("foo(8,7);");
+        int result = v8.executeIntegerScript("foo(8,7);");
 
         verify(callback).intMethodWithParameters(8, 7);
         assertEquals(15, result);
@@ -735,7 +735,7 @@ public class V8CallbackTest {
         }).when(callback).intMethodWithArrayParameter(any(V8Array.class));
         v8.registerJavaMethod(callback, "intMethodWithArrayParameter", "foo", new Class<?>[] { V8Array.class });
 
-        int result = v8.executeIntScript("foo([1,2,3,4,5]);");
+        int result = v8.executeIntegerScript("foo([1,2,3,4,5]);");
 
         assertEquals(15, result);
     }
@@ -1040,7 +1040,7 @@ public class V8CallbackTest {
         doReturn(7).when(callback).objectMethodNoParameter();
         v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(7, result);
     }
@@ -1343,7 +1343,7 @@ public class V8CallbackTest {
         v8.registerJavaMethod(callback, "foo");
         doAnswer(constructAnswer(null, 77)).when(callback).invoke(any(V8Array.class));
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(77, result);
     }

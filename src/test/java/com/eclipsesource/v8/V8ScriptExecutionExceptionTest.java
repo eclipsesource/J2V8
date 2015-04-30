@@ -162,7 +162,7 @@ public class V8ScriptExecutionExceptionTest {
 
     @Test(expected = V8ScriptExecutionException.class)
     public void testV8ScriptExecutionExceptionIntScript() {
-        v8.executeIntScript(undefinedAccessScript + "1;", "file", 0);
+        v8.executeIntegerScript(undefinedAccessScript + "1;", "file", 0);
     }
 
     @Test(expected = V8ScriptExecutionException.class)
@@ -201,7 +201,7 @@ public class V8ScriptExecutionExceptionTest {
     public void testV8ScriptExceptionIntCall() {
         v8.executeVoidScript(errorFunction);
 
-        v8.executeIntFunction("myFunction", null);
+        v8.executeIntegerFunction("myFunction", null);
     }
 
     @Test(expected = V8ScriptExecutionException.class)

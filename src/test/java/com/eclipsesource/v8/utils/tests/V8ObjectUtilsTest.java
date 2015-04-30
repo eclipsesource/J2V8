@@ -252,8 +252,8 @@ public class V8ObjectUtilsTest {
         int size = registerAndRelease("result", map);
 
         assertEquals(2, size);
-        assertEquals(1, v8.executeIntScript("result.a"));
-        assertEquals(3, v8.executeIntScript("result['b']"));
+        assertEquals(1, v8.executeIntegerScript("result.a"));
+        assertEquals(3, v8.executeIntegerScript("result['b']"));
     }
 
     @Test
@@ -265,8 +265,8 @@ public class V8ObjectUtilsTest {
         int size = registerAndRelease("result", map);
 
         assertEquals(2, size);
-        assertEquals(1, v8.executeIntScript("result.a"));
-        assertEquals(3, v8.executeIntScript("result['b']"));
+        assertEquals(1, v8.executeIntegerScript("result.a"));
+        assertEquals(3, v8.executeIntegerScript("result['b']"));
     }
 
     @Test
@@ -360,16 +360,16 @@ public class V8ObjectUtilsTest {
         int size = registerAndRelease("result", list);
 
         assertEquals(10, size);
-        assertEquals(1, v8.executeIntScript("result[0]"));
-        assertEquals(1, v8.executeIntScript("result[1]"));
-        assertEquals(2, v8.executeIntScript("result[2]"));
-        assertEquals(3, v8.executeIntScript("result[3]"));
-        assertEquals(5, v8.executeIntScript("result[4]"));
-        assertEquals(8, v8.executeIntScript("result[5]"));
-        assertEquals(13, v8.executeIntScript("result[6]"));
-        assertEquals(21, v8.executeIntScript("result[7]"));
-        assertEquals(34, v8.executeIntScript("result[8]"));
-        assertEquals(55, v8.executeIntScript("result[9]"));
+        assertEquals(1, v8.executeIntegerScript("result[0]"));
+        assertEquals(1, v8.executeIntegerScript("result[1]"));
+        assertEquals(2, v8.executeIntegerScript("result[2]"));
+        assertEquals(3, v8.executeIntegerScript("result[3]"));
+        assertEquals(5, v8.executeIntegerScript("result[4]"));
+        assertEquals(8, v8.executeIntegerScript("result[5]"));
+        assertEquals(13, v8.executeIntegerScript("result[6]"));
+        assertEquals(21, v8.executeIntegerScript("result[7]"));
+        assertEquals(34, v8.executeIntegerScript("result[8]"));
+        assertEquals(55, v8.executeIntegerScript("result[9]"));
     }
 
     @Test
@@ -380,7 +380,7 @@ public class V8ObjectUtilsTest {
         int size = registerAndRelease("result", list);
 
         assertEquals(1, size);
-        assertEquals(1, v8.executeIntScript("result[0]"));
+        assertEquals(1, v8.executeIntegerScript("result[0]"));
     }
 
     @Test
@@ -463,7 +463,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(5, size);
         assertEquals("string", v8.executeStringScript("result[0]"));
-        assertEquals(7, v8.executeIntScript("result[1]"));
+        assertEquals(7, v8.executeIntegerScript("result[1]"));
         assertEquals(3.14159, v8.executeDoubleScript("result[2]"), 0.000001);
         assertTrue(v8.executeBooleanScript("result[3]"));
         assertTrue(v8.executeBooleanScript("typeof result[4] === 'undefined'"));
@@ -484,10 +484,10 @@ public class V8ObjectUtilsTest {
         int size = registerAndRelease("result", list);
 
         assertEquals(2, size);
-        assertEquals(7, v8.executeIntScript("result[0].Sadie"));
-        assertEquals(5, v8.executeIntScript("result[0].Lily"));
-        assertEquals(3, v8.executeIntScript("result[0].Maggie"));
-        assertEquals(38, v8.executeIntScript("result[1].Ian"));
+        assertEquals(7, v8.executeIntegerScript("result[0].Sadie"));
+        assertEquals(5, v8.executeIntegerScript("result[0].Lily"));
+        assertEquals(3, v8.executeIntegerScript("result[0].Maggie"));
+        assertEquals(38, v8.executeIntegerScript("result[1].Ian"));
     }
 
     @Test
@@ -511,18 +511,18 @@ public class V8ObjectUtilsTest {
 
         int size = registerAndRelease("result", matrix);
         assertEquals(3, size);
-        assertEquals(3, v8.executeIntScript("result[0].length"));
-        assertEquals(3, v8.executeIntScript("result[1].length"));
-        assertEquals(3, v8.executeIntScript("result[2].length"));
-        assertEquals(1, v8.executeIntScript("result[0][0]"));
-        assertEquals(2, v8.executeIntScript("result[0][1]"));
-        assertEquals(3, v8.executeIntScript("result[0][2]"));
-        assertEquals(4, v8.executeIntScript("result[1][0]"));
-        assertEquals(5, v8.executeIntScript("result[1][1]"));
-        assertEquals(6, v8.executeIntScript("result[1][2]"));
-        assertEquals(7, v8.executeIntScript("result[2][0]"));
-        assertEquals(8, v8.executeIntScript("result[2][1]"));
-        assertEquals(9, v8.executeIntScript("result[2][2]"));
+        assertEquals(3, v8.executeIntegerScript("result[0].length"));
+        assertEquals(3, v8.executeIntegerScript("result[1].length"));
+        assertEquals(3, v8.executeIntegerScript("result[2].length"));
+        assertEquals(1, v8.executeIntegerScript("result[0][0]"));
+        assertEquals(2, v8.executeIntegerScript("result[0][1]"));
+        assertEquals(3, v8.executeIntegerScript("result[0][2]"));
+        assertEquals(4, v8.executeIntegerScript("result[1][0]"));
+        assertEquals(5, v8.executeIntegerScript("result[1][1]"));
+        assertEquals(6, v8.executeIntegerScript("result[1][2]"));
+        assertEquals(7, v8.executeIntegerScript("result[2][0]"));
+        assertEquals(8, v8.executeIntegerScript("result[2][1]"));
+        assertEquals(9, v8.executeIntegerScript("result[2][2]"));
     }
 
     @Test

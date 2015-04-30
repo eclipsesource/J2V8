@@ -54,7 +54,7 @@ public class V8ObjectUtils {
             if ((intArray == null) || (intArray.length < length)) {
                 intArray = new int[length];
             }
-            array.getInts(0, length, intArray);
+            array.getIntegers(0, length, intArray);
             return intArray;
         } else if (arrayType == V8Value.DOUBLE) {
             double[] doubleArray = (double[]) result;
@@ -85,7 +85,7 @@ public class V8ObjectUtils {
     public static Object getTypedArray(final V8Array array, final int arrayType) {
         int length = array.length();
         if (arrayType == V8Value.INTEGER) {
-            return array.getInts(0, length);
+            return array.getIntegers(0, length);
         } else if (arrayType == V8Value.DOUBLE) {
             return array.getDoubles(0, length);
         } else if (arrayType == V8Value.BOOLEAN) {

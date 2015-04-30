@@ -65,7 +65,7 @@ public class V8Test {
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateInt() {
         v8.release();
-        v8.executeIntScript("7");
+        v8.executeIntegerScript("7");
     }
 
     @Test(expected = Error.class)
@@ -120,7 +120,7 @@ public class V8Test {
     public void testSimpleVoidScript() {
         v8.executeVoidScript("function foo() {return 1+1}");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(2, result);
     }
@@ -130,8 +130,8 @@ public class V8Test {
         v8.executeVoidScript("function foo() {return 1+1}");
         v8.executeVoidScript("function bar() {return foo() + 1}");
 
-        int foo = v8.executeIntFunction("foo", null);
-        int bar = v8.executeIntFunction("bar", null);
+        int foo = v8.executeIntegerFunction("foo", null);
+        int bar = v8.executeIntegerFunction("bar", null);
 
         assertEquals(2, foo);
         assertEquals(3, bar);
@@ -146,7 +146,7 @@ public class V8Test {
     public void testVoidScriptWithName() {
         v8.executeVoidScript("function foo() {return 1+1}", "name", 1);
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(2, result);
     }
@@ -154,36 +154,36 @@ public class V8Test {
     /*** Int Script ***/
     @Test
     public void testSimpleIntScript() {
-        int result = v8.executeIntScript("1+2;");
+        int result = v8.executeIntegerScript("1+2;");
 
         assertEquals(3, result);
     }
 
     @Test
     public void testIntScriptWithDouble() {
-        int result = v8.executeIntScript("1.9+2.9;");
+        int result = v8.executeIntegerScript("1.9+2.9;");
 
         assertEquals(4, result);
     }
 
     @Test(expected = V8ScriptCompilationException.class)
     public void testSimpleSyntaxError() {
-        v8.executeIntScript("return 1+2");
+        v8.executeIntegerScript("return 1+2");
     }
 
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionIntScript() {
-        v8.executeIntScript("");
+        v8.executeIntegerScript("");
     }
 
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionForWrongReturnTypeIntScript() {
-        v8.executeIntScript("'test'");
+        v8.executeIntegerScript("'test'");
     }
 
     @Test
     public void testIntScriptWithName() {
-        int result = v8.executeIntScript("1+2;", "name", 2);
+        int result = v8.executeIntegerScript("1+2;", "name", 2);
 
         assertEquals(3, result);
     }
@@ -277,7 +277,7 @@ public class V8Test {
 
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedExceptionStringScript() {
-        v8.executeIntScript("");
+        v8.executeIntegerScript("");
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -454,9 +454,9 @@ public class V8Test {
     /*** Int Function ***/
     @Test
     public void testSimpleIntFunction() {
-        v8.executeIntScript("function foo() {return 1+2;}; 42");
+        v8.executeIntegerScript("function foo() {return 1+2;}; 42");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(3, result);
     }
@@ -465,25 +465,25 @@ public class V8Test {
     public void testSimpleIntFunctionWithDouble() {
         v8.executeVoidScript("function foo() {return 1.2+2.9;};");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(4, result);
     }
 
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedForWrongReturnTypeOfIntFunction() {
-        v8.executeIntScript("function foo() {return 'test';}; 42");
+        v8.executeIntegerScript("function foo() {return 'test';}; 42");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(3, result);
     }
 
     @Test(expected = V8ResultUndefined.class)
     public void testResultUndefinedForNoReturnInIntFunction() {
-        v8.executeIntScript("function foo() {}; 42");
+        v8.executeIntegerScript("function foo() {}; 42");
 
-        int result = v8.executeIntFunction("foo", null);
+        int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(3, result);
     }
@@ -629,7 +629,7 @@ public class V8Test {
     public void testAddInt() {
         v8.add("foo", 42);
 
-        int result = v8.executeIntScript("foo");
+        int result = v8.executeIntegerScript("foo");
 
         assertEquals(42, result);
     }
@@ -639,7 +639,7 @@ public class V8Test {
         v8.add("foo", 42);
         v8.add("foo", 43);
 
-        int result = v8.executeIntScript("foo");
+        int result = v8.executeIntegerScript("foo");
 
         assertEquals(43, result);
     }
@@ -1077,7 +1077,7 @@ public class V8Test {
         boolean result = v8.executeBooleanScript(script);
 
         assertTrue(result);
-        assertEquals(7, v8.executeIntScript("window.foo"));
+        assertEquals(7, v8.executeIntegerScript("window.foo"));
     }
 
     @Test
@@ -1147,8 +1147,8 @@ public class V8Test {
 
         v8.executeVoidScript("a = 1; window.b = 2;");
 
-        assertEquals(1, v8.executeIntScript("window.a;"));
-        assertEquals(2, v8.executeIntScript("b;"));
+        assertEquals(1, v8.executeIntegerScript("window.a;"));
+        assertEquals(2, v8.executeIntegerScript("b;"));
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
     }
 

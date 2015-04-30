@@ -188,14 +188,14 @@ public class V8 extends V8Object {
         }
     }
 
-    public int executeIntScript(final String script) {
-        return executeIntScript(script, null, 0);
+    public int executeIntegerScript(final String script) {
+        return executeIntegerScript(script, null, 0);
     }
 
-    public int executeIntScript(final String script, final String scriptName, final int lineNumber) {
+    public int executeIntegerScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
+        return executeIntegerScript(v8RuntimeHandle, script, scriptName, lineNumber);
     }
 
     public double executeDoubleScript(final String script) {
@@ -500,10 +500,10 @@ public class V8 extends V8Object {
         }
     }
 
-    protected int executeIntScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
+    protected int executeIntegerScript(final int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber) {
         lock.lockRead();
         try {
-            return _executeIntScript(v8RuntimeHandle, script, scriptName, lineNumber);
+            return _executeIntegerScript(v8RuntimeHandle, script, scriptName, lineNumber);
         } finally {
             lock.unlockRead();
         }
@@ -626,10 +626,10 @@ public class V8 extends V8Object {
         }
     }
 
-    protected int executeIntFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
+    protected int executeIntegerFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
         lock.lockRead();
         try {
-            return _executeIntFunction(v8RuntimeHandle, objectHandle, name, parametersHandle);
+            return _executeIntegerFunction(v8RuntimeHandle, objectHandle, name, parametersHandle);
         } finally {
             lock.unlockRead();
         }
@@ -986,10 +986,10 @@ public class V8 extends V8Object {
         }
     }
 
-    protected int[] arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
+    protected int[] arrayGetIntegers(final int v8RuntimeHandle, final int objectHandle, final int index, final int length) {
         lock.lockRead();
         try {
-            return _arrayGetInts(v8RuntimeHandle, objectHandle, index, length);
+            return _arrayGetIntegers(v8RuntimeHandle, objectHandle, index, length);
         } finally {
             lock.unlockRead();
         }
@@ -1022,10 +1022,10 @@ public class V8 extends V8Object {
         }
     }
 
-    protected int arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final int[] resultArray) {
+    protected int arrayGetIntegers(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, final int[] resultArray) {
         lock.lockRead();
         try {
-            return _arrayGetInts(v8RuntimeHandle, objectHandle, index, length, resultArray);
+            return _arrayGetIntegers(v8RuntimeHandle, objectHandle, index, length, resultArray);
         } finally {
             lock.unlockRead();
         }
@@ -1073,7 +1073,7 @@ public class V8 extends V8Object {
 
     private native void _createIsolate(int v8RuntimeHandle, String globalAlias);
 
-    private native int _executeIntScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
+    private native int _executeIntegerScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
     private native double _executeDoubleScript(int v8RuntimeHandle, final String script, final String scriptName, final int lineNumber);
 
@@ -1101,7 +1101,7 @@ public class V8 extends V8Object {
 
     private native Object _get(int v8RuntimeHandle, int expectedType, final int objectHandle, final String key);
 
-    private native int _executeIntFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
+    private native int _executeIntegerFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
     private native double _executeDoubleFunction(int v8RuntimeHandle, int objectHandle, String name, int parametersHandle);
 
@@ -1183,13 +1183,13 @@ public class V8 extends V8Object {
 
     private native double[] _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
-    private native int[] _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
+    private native int[] _arrayGetIntegers(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
     private native boolean[] _arrayGetBooleans(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
     private native String[] _arrayGetStrings(final int v8RuntimeHandle, final int objectHandle, final int index, final int length);
 
-    private native int _arrayGetInts(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, int[] resultArray);
+    private native int _arrayGetIntegers(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, int[] resultArray);
 
     private native int _arrayGetDoubles(final int v8RuntimeHandle, final int objectHandle, final int index, final int length, double[] resultArray);
 

@@ -154,7 +154,7 @@ public class V8ScriptCompilationExceptionTest {
 
     @Test(expected = V8ScriptCompilationException.class)
     public void testV8ScriptCompilationExceptionForIntScript() {
-        v8.executeIntScript(script);
+        v8.executeIntegerScript(script);
     }
 
     @Test(expected = V8ScriptCompilationException.class)

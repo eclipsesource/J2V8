@@ -413,7 +413,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
   return env->NewStringUTF(*utf);
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntScript
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerScript
 (JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
   TryCatch tryCatch;
@@ -474,7 +474,7 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction
   return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntFunction
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerFunction
 (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
   Handle<Value> result;
@@ -735,14 +735,14 @@ int fillStringArray(JNIEnv *env, Handle<Object> &array, int start, int length, j
   return length;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII_3I
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII_3I
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length, jintArray result) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
   return fillIntArray(env, array, start, length, result);
 }
 
-JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInts__IIII
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII
 (JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
   Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);

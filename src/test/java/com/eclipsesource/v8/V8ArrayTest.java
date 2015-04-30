@@ -237,7 +237,7 @@ public class V8ArrayTest {
     public void testExecuteIntFunctionUndefined() {
         V8Array undefined = v8.getArray("array");
 
-        undefined.executeIntFunction("foo", null);
+        undefined.executeIntegerFunction("foo", null);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -490,14 +490,14 @@ public class V8ArrayTest {
     public void testGetIntsUndefined() {
         V8Array undefined = v8.getArray("array");
 
-        undefined.getInts(0, 1);
+        undefined.getIntegers(0, 1);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testGetInts2Undefined() {
         V8Array undefined = v8.getArray("array");
 
-        undefined.getInts(0, 1, new int[1]);
+        undefined.getIntegers(0, 1, new int[1]);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -1331,7 +1331,7 @@ public class V8ArrayTest {
     public void testGetArrayOfInts() {
         V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
-        int[] result = a.getInts(0, 5);
+        int[] result = a.getIntegers(0, 5);
 
         assertEquals(5, result.length);
         assertEquals(1, result[0]);
@@ -1346,7 +1346,7 @@ public class V8ArrayTest {
     public void testGetSubArrayOfInts() {
         V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
-        int[] result = a.getInts(4, 1);
+        int[] result = a.getIntegers(4, 1);
 
         assertEquals(1, result.length);
         assertEquals(5, result[0]);
@@ -1357,7 +1357,7 @@ public class V8ArrayTest {
     public void testGetSubArrayOfInts2() {
         V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
-        int[] result = a.getInts(3, 2);
+        int[] result = a.getIntegers(3, 2);
 
         assertEquals(2, result.length);
         assertEquals(4, result[0]);
@@ -1370,7 +1370,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1,'a',3,4,5];");
 
         try {
-            a.getInts(0, 5);
+            a.getIntegers(0, 5);
         } finally {
             a.release();
         }
@@ -1380,7 +1380,7 @@ public class V8ArrayTest {
     public void testGetIntsWithDoubles() {
         V8Array a = v8.executeArrayScript("[1,1.1,3,4,5];");
 
-        int[] ints = a.getInts(0, 5);
+        int[] ints = a.getIntegers(0, 5);
 
         assertEquals(5, ints.length);
         assertEquals(1, ints[0]);
@@ -1396,7 +1396,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1,2,3,4,5];");
 
         try {
-            a.getInts(3, 3);
+            a.getIntegers(3, 3);
         } finally {
             a.release();
         }
@@ -1445,7 +1445,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1.1,'a',3.1,4.1,5.1];");
 
         try {
-            a.getInts(0, 5);
+            a.getIntegers(0, 5);
         } finally {
             a.release();
         }
@@ -1456,7 +1456,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1.1,2.1,3.1,4.1,5.1];");
 
         try {
-            a.getInts(3, 3);
+            a.getIntegers(3, 3);
         } finally {
             a.release();
         }
@@ -1736,7 +1736,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1,2,3,4]");
         int[] result = new int[4];
 
-        int size = a.getInts(0, 4, result);
+        int size = a.getIntegers(0, 4, result);
 
         assertEquals(4, size);
         a.release();
@@ -1747,7 +1747,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1,2,3,4]");
         int[] result = new int[40];
 
-        int size = a.getInts(0, 4, result);
+        int size = a.getIntegers(0, 4, result);
 
         assertEquals(4, size);
         a.release();
@@ -1759,7 +1759,7 @@ public class V8ArrayTest {
         int[] result = new int[3];
 
         try {
-            a.getInts(0, 4, result);
+            a.getIntegers(0, 4, result);
         } finally {
             a.release();
         }
@@ -1770,7 +1770,7 @@ public class V8ArrayTest {
         V8Array a = v8.executeArrayScript("[1,2,3,4]");
         int[] result = new int[4];
 
-        a.getInts(0, 4, result);
+        a.getIntegers(0, 4, result);
 
         assertEquals(1, result[0]);
         assertEquals(2, result[1]);

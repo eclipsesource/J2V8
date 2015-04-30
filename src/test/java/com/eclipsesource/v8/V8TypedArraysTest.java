@@ -110,7 +110,7 @@ public class V8TypedArraysTest {
 
     @Test
     public void testGetTypedArrayValue() {
-        int result = v8.executeIntScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints[0]");
+        int result = v8.executeIntegerScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints[0]");
 
         assertEquals(7, result);
     }
@@ -200,7 +200,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(100); var ints = new Int32Array(buf); for(var i = 0; i < 25; i++) {ints[i] = i;}; ints");
 
         assertEquals(25, result.length());
-        int[] ints = result.getInts(0, 25);
+        int[] ints = result.getIntegers(0, 25);
         for (int i = 0; i < ints.length; i++) {
             assertEquals(i, ints[i]);
         }
@@ -339,7 +339,7 @@ public class V8TypedArraysTest {
     public void testIntArrayLength() {
         v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
                 + "var ints = new Int32Array(buf);\n");
-        int arrayLength = v8.executeIntScript("ints.length;"); // 4 bytes for each element
+        int arrayLength = v8.executeIntegerScript("ints.length;"); // 4 bytes for each element
 
         assertEquals(25, arrayLength);
     }
@@ -348,7 +348,7 @@ public class V8TypedArraysTest {
     public void testIntArrayByteLength() {
         v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
                 + "var ints = new Int32Array(buf);\n");
-        int arrayLength = v8.executeIntScript("ints.byteLength;"); // 4 bytes for each element
+        int arrayLength = v8.executeIntegerScript("ints.byteLength;"); // 4 bytes for each element
 
         assertEquals(100, arrayLength);
     }

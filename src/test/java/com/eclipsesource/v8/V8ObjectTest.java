@@ -362,7 +362,7 @@ public class V8ObjectTest {
 
         v8.add("foo", v8Object);
 
-        int result = v8.executeIntScript("foo.integer");
+        int result = v8.executeIntegerScript("foo.integer");
         assertEquals(75, result);
         v8Object.release();
     }
@@ -531,7 +531,7 @@ public class V8ObjectTest {
     public void testExecuteIntFunctionUndefined() {
         V8Object undefined = v8.getObject("object");
 
-        undefined.executeIntFunction("foo", null);
+        undefined.executeIntegerFunction("foo", null);
     }
 
     @Test(expected = UnsupportedOperationException.class)
