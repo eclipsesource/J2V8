@@ -17,6 +17,7 @@ import static com.eclipsesource.v8.V8Value.NULL;
 import static com.eclipsesource.v8.V8Value.STRING;
 import static com.eclipsesource.v8.V8Value.UNDEFINED;
 import static com.eclipsesource.v8.V8Value.V8_ARRAY;
+import static com.eclipsesource.v8.V8Value.V8_FUNCTION;
 import static com.eclipsesource.v8.V8Value.V8_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1122,6 +1123,18 @@ public class V8ArrayTest {
         assertEquals(V8_ARRAY, v8Array.getType(0));
         v8Array.release();
         value.release();
+    }
+
+    @Test
+    public void testGetTypeFunction() {
+        v8.executeVoidScript("var foo = function() {};");
+        V8Object function = v8.getObject("foo");
+
+        V8Array v8Array = new V8Array(v8).push(function);
+
+        assertEquals(V8_FUNCTION, v8Array.getType(0));
+        v8Array.release();
+        function.release();
     }
 
     @Test
