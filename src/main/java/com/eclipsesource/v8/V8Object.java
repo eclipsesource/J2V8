@@ -166,7 +166,7 @@ public class V8Object extends V8Value {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-        return v8.executeFunction(v8.getV8RuntimeHandle(), V8_OBJECT, objectHandle, name, parametersHandle);
+        return v8.executeFunction(v8.getV8RuntimeHandle(), UNKNOWN, objectHandle, name, parametersHandle);
     }
 
     public void executeVoidFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException {

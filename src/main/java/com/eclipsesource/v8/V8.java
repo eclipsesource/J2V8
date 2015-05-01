@@ -671,6 +671,15 @@ public class V8 extends V8Object {
         }
     }
 
+    protected Object executeFunction(final int v8RuntimeHandle, final int receiverHandle, final int functionHandle, final int parametersHandle) {
+        lock.lockRead();
+        try {
+            return _executeFunction(v8RuntimeHandle, receiverHandle, functionHandle, parametersHandle);
+        } finally {
+            lock.unlockRead();
+        }
+    }
+
     protected void executeVoidFunction(final int v8RuntimeHandle, final int objectHandle, final String name, final int parametersHandle) {
         lock.lockRead();
         try {
@@ -1110,6 +1119,8 @@ public class V8 extends V8Object {
     private native boolean _executeBooleanFunction(int v8RuntimeHandle2, int handle, String name, int parametersHandle);
 
     private native Object _executeFunction(int v8RuntimeHandle, int expectedType, int objectHandle, String name, int parametersHandle);
+
+    private native Object _executeFunction(int v8RuntimeHandle, int receiverHandle, int functionHandle, int parametersHandle);
 
     private native void _executeVoidFunction(int v8RuntimeHandle, int objectHandle, final String name, final int parametersHandle);
 

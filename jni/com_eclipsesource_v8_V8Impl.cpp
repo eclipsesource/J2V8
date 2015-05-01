@@ -40,6 +40,7 @@ JavaVM* jvm = NULL;
 jclass v8cls = NULL;
 jclass v8ObjectCls = NULL;
 jclass v8ArrayCls = NULL;
+jclass v8FunctionCls = NULL;
 jclass undefinedV8ObjectCls = NULL;
 jclass undefinedV8ArrayCls = NULL;
 jclass v8ResultsUndefinedCls = NULL;
@@ -199,6 +200,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
     v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
+    v8FunctionCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Function"));
     undefinedV8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object$Undefined"));
     undefinedV8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array$Undefined"));
     stringCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/String"));
@@ -438,6 +440,32 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
   return getResult(env, v8, v8RuntimeHandle, result, expectedType);
 }
 
+bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &receiverHandle, jint &functionHandle, jint &parameterHandle, Handle<Value> &result) {
+  int size = 0;
+  Handle<Value>* args = NULL;
+  if (parameterHandle >= 0) {
+    Handle<Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
+    size = Array::Cast(*parameters)->Length();
+    args = new Handle<Value>[size];
+    for (int i = 0; i < size; i++) {
+      args[i] = parameters->Get(i);
+    }
+  }
+  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[functionHandle]);
+  Handle<Object> receiver = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[receiverHandle]);
+  Handle<Function> func = Handle<Function>::Cast(object);
+  TryCatch tryCatch;
+  result = func->Call(receiver, size, args);
+  if (args != NULL) {
+    delete(args);
+  }
+  if (tryCatch.HasCaught()) {
+    throwExecutionException(env, isolate, &tryCatch, v8RuntimeHandle);
+    return false;
+  }
+  return true;
+}
+
 bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &jfunctionName, jint &parameterHandle, Handle<Value> &result) {
   Local<String> functionName = createV8String(env, isolate, jfunctionName);
   Handle<Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
@@ -465,7 +493,16 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &
   return true;
 }
 
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIII
+  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint receiverHandle, jint functionHandle, jint parameterHandle) {
+    Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+  Handle<Value> result;
+  if (!invokeFunction(env, isolate, v8RuntimeHandle, receiverHandle, functionHandle, parameterHandle, result))
+    return NULL;
+  return getResult(env, v8, v8RuntimeHandle, result, com_eclipsesource_v8_V8_UNKNOWN);
+}
+
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIILjava_lang_String_2I
 (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
   Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
   Handle<Value> result;
@@ -944,6 +981,9 @@ int getType(Handle<Value> v8Value) {
   else if (v8Value->IsString()) {
     return com_eclipsesource_v8_V8_STRING;
   }
+  else if (v8Value->IsFunction()) {
+   return com_eclipsesource_v8_V8_V8_FUNCTION;
+  }
   else if (v8Value->IsArray()) {
     return com_eclipsesource_v8_V8_V8_ARRAY;
   }
@@ -1342,6 +1382,13 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
   else if (result->IsString()) {
     String::Utf8Value utf(result->ToString());
     return env->NewStringUTF(*utf);
+  }
+  else if (result->IsFunction()) {
+    jmethodID constructor = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
+    jobject objectResult = env->NewObject(v8FunctionCls, constructor, v8, true);
+    int resultHandle = getHandle(env, objectResult);
+    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    return objectResult;
   }
   else if (result->IsArray()) {
     jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");

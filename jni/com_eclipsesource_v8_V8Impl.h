@@ -23,6 +23,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_ARRAY 5L
 #undef com_eclipsesource_v8_V8_V8_OBJECT
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
+#undef com_eclipsesource_v8_V8_V8_FUNCTION
+#define com_eclipsesource_v8_V8_V8_FUNCTION 7L
 #undef com_eclipsesource_v8_V8_UNDEFINED
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*
@@ -198,8 +200,16 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
  * Method:    _executeFunction
  * Signature: (IIILjava/lang/String;I)Ljava/lang/Object;
  */
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIILjava_lang_String_2I
   (JNIEnv *, jobject, jint, jint, jint, jstring, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _executeFunction
+ * Signature: (IIII)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIII
+  (JNIEnv *, jobject, jint, jint, jint, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

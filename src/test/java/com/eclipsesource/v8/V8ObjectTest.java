@@ -17,6 +17,7 @@ import static com.eclipsesource.v8.V8Value.NULL;
 import static com.eclipsesource.v8.V8Value.STRING;
 import static com.eclipsesource.v8.V8Value.UNDEFINED;
 import static com.eclipsesource.v8.V8Value.V8_ARRAY;
+import static com.eclipsesource.v8.V8Value.V8_FUNCTION;
 import static com.eclipsesource.v8.V8Value.V8_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -780,6 +781,19 @@ public class V8ObjectTest {
         assertEquals(V8_OBJECT, v8Object.getType("key"));
         v8Object.release();
         value.release();
+    }
+
+    @Test
+    public void testGetTypeFunction() {
+        v8.executeVoidScript("var foo = function() {};");
+        V8Object function = v8.getObject("foo");
+        V8Object v8Object = new V8Object(v8).add("key", function);
+
+        int type = v8Object.getType("key");
+
+        assertEquals(V8_FUNCTION, type);
+        v8Object.release();
+        function.release();
     }
 
     @Test

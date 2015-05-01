@@ -41,6 +41,46 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testGetFunction() {
+        v8.executeVoidScript("function add(x, y) {return x+y;}");
+
+        V8Object result = v8.getObject("add");
+
+        assertTrue(result instanceof V8Function);
+        result.release();
+    }
+
+    @Test
+    public void testCallFunction() {
+        v8.executeVoidScript("function add(x, y) {return x+y;}");
+        V8Function function = (V8Function) v8.getObject("add");
+        V8Array parameters = new V8Array(v8).push(7).push(8);
+
+        Object result = function.call(v8, parameters);
+
+        assertEquals(15, result);
+        function.release();
+        parameters.release();
+    }
+
+    @Test
+    public void testFunctionScope() {
+        v8.executeVoidScript("function say() { return this.name + ' say meow!'} ");
+        V8Function function = (V8Function) v8.getObject("say");
+        V8Object ginger = new V8Object(v8).add("name", "ginger");
+        V8Object felix = new V8Object(v8).add("name", "felix");
+
+        Object result1 = function.call(ginger, null);
+        Object result2 = function.call(felix, null);
+
+        assertEquals("ginger say meow!", result1);
+        assertEquals("felix say meow!", result2);
+        function.release();
+        ginger.release();
+        felix.release();
+    }
+
+    @Test
     public void testIntFunction() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Array parameters = new V8Array(v8);
