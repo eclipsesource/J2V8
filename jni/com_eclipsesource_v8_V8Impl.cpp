@@ -35,7 +35,6 @@ const char* ToCString(const String::Utf8Value& value) {
   return *value ? *value : "<string conversion failed>";
 }
 
-std::map <int, V8Runtime*> v8Isolates;
 JavaVM* jvm = NULL;
 jclass v8cls = NULL;
 jclass v8ObjectCls = NULL;
@@ -55,21 +54,22 @@ jclass booleanCls = NULL;
 jclass errorCls = NULL;
 
 void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch);
-void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, int v8RuntimeHandle);
+void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, long v8RuntimePtr);
 void throwError(JNIEnv *env, const char *message);
 void throwV8RuntimeException(JNIEnv *env, const char *message);
 void throwResultUndefinedException(JNIEnv *env, const char *message);
-Isolate* getIsolate(JNIEnv *env, int handle);
+Isolate* getIsolate(JNIEnv *env, long handle);
 int getType(Handle<Value> v8Value);
-jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result, jint expectedType);
+jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType);
 
-#define SETUP(env, v8RuntimeHandle, errorReturnResult) getIsolate(env, v8RuntimeHandle);\
+#define SETUP(env, v8RuntimePtr, errorReturnResult) getIsolate(env, v8RuntimePtr);\
     if ( isolate == NULL ) {\
       return errorReturnResult;\
                                 }\
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);\
     Isolate::Scope isolateScope(isolate);\
     HandleScope handle_scope(isolate);\
-    Local<Context> context = Local<Context>::New(isolate,v8Isolates[v8RuntimeHandle]->context_);\
+    Local<Context> context = Local<Context>::New(isolate,runtime->context_);\
     Context::Scope context_scope(context);
 #define ASSERT_IS_NUMBER(v8Value) \
     if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsNumber()) {\
@@ -88,12 +88,12 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
                                 }
 
 void release(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ObjectCls, "releaseJNI", "()V");
+  jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
   env->CallVoidMethod(object, release);
 }
 
 void releaseArray(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ArrayCls, "releaseJNI", "()V");
+  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
   env->CallVoidMethod(object, release);
 }
 
@@ -116,14 +116,14 @@ Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
   return result;
 }
 
-Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &key) {
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr, jint &objectHandle, jstring &key) {
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Local<String> v8Key = createV8String(env, isolate, key);
   return object->Get(v8Key);
 }
 
-void addValueWithKey(JNIEnv* env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &key, Handle<Value> value) {
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+void addValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr, jint &objectHandle, jstring &key, Handle<Value> value) {
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   const char* utfString_key = env->GetStringUTFChars(key, NULL);
   Local<String> v8Key = String::NewFromUtf8(isolate, utfString_key);
   object->Set(v8Key, value);
@@ -156,22 +156,22 @@ void debugHandler() {
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint port, jboolean waitForConnection) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint port, jboolean waitForConnection) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   bool result = Debug::EnableAgent("j2v8", port, waitForConnection);
   Debug::SetDebugMessageDispatchHandler(&debugHandler);
   return result;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
-(JNIEnv *env, jobject, jint v8RuntimeHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Debug::DisableAgent();
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
-(JNIEnv *env, jobject, jint v8RuntimeHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Debug::ProcessDebugMessages();
 }
 
@@ -191,8 +191,8 @@ static void enableTypedArrays() {
   V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-(JNIEnv *env, jobject v8, jint handle, jstring globalAlias) {
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
+(JNIEnv *env, jobject v8, jstring globalAlias) {
   if (jvm == NULL) {
     // on first creation, store the JVM and a handle to J2V8 classes
     enableTypedArrays();
@@ -214,27 +214,28 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
   }
-  v8Isolates[handle] = new V8Runtime();
-  v8Isolates[handle]->isolate = Isolate::New();
-  v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
-  v8Isolates[handle]->v8 = env->NewGlobalRef(v8);
-  v8Isolates[handle]->pendingException = NULL;
-  HandleScope handle_scope(v8Isolates[handle]->isolate);
+  V8Runtime* runtime = new V8Runtime();
+  runtime->isolate = Isolate::New();
+  runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
+  runtime->v8 = env->NewGlobalRef(v8);
+  runtime->pendingException = NULL;
+  HandleScope handle_scope(runtime->isolate);
   Handle<ObjectTemplate> globalObject = ObjectTemplate::New();
   if (globalAlias == NULL) {
-    Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, globalObject);
-    v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
-    v8Isolates[handle]->objects[0] = new Persistent<Object>;
-    v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
+    Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
+    runtime->context_.Reset(runtime->isolate, context);
+    runtime->objects[0] = new Persistent<Object>;
+    runtime->objects[0]->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
   }
   else {
-    Local<String> utfAlias = createV8String(env, v8Isolates[handle]->isolate, globalAlias);
+    Local<String> utfAlias = createV8String(env, runtime->isolate, globalAlias);
     globalObject->SetAccessor(utfAlias, jsWindowObjectAccessor);
-    Handle<Context> context = Context::New(v8Isolates[handle]->isolate, NULL, globalObject);
-    v8Isolates[handle]->context_.Reset(v8Isolates[handle]->isolate, context);
-    v8Isolates[handle]->objects[0] = new Persistent<Object>;
-    v8Isolates[handle]->objects[0]->Reset(v8Isolates[handle]->isolate, context->Global()->GetPrototype()->ToObject());
+    Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
+    runtime->context_.Reset(runtime->isolate, context);
+    runtime->objects[0] = new Persistent<Object>;
+    runtime->objects[0]->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
   }
+  return reinterpret_cast<long>(runtime);
 }
 
 void createPersistentContainer(V8Runtime* runtime, int handle) {
@@ -244,73 +245,72 @@ void createPersistentContainer(V8Runtime* runtime, int handle) {
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Local<Object> obj = Object::New(isolate);
-  createPersistentContainer(v8Isolates[v8RuntimeHandle], objectHandle);
-  v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, obj);
+  createPersistentContainer(reinterpret_cast<V8Runtime*>(v8RuntimePtr), objectHandle);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, obj);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Local<Array> array = Array::New(isolate);
-  createPersistentContainer(v8Isolates[v8RuntimeHandle], arrayHandle);
-  v8Isolates[v8RuntimeHandle]->objects[arrayHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, array);
+  createPersistentContainer(reinterpret_cast<V8Runtime*>(v8RuntimePtr), arrayHandle);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, array);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-  if (v8Isolates.count(v8RuntimeHandle) == 0) {
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
+  if (v8RuntimePtr == 0) {
     return;
   }
-  else if (v8Isolates[v8RuntimeHandle]->objects.find(objectHandle) == v8Isolates[v8RuntimeHandle]->objects.end()) {
+  else if (reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects.find(objectHandle) == reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects.end()) {
     return;
   }
-  Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+  Isolate* isolate = getIsolate(env, v8RuntimePtr);
   HandleScope handle_scope(isolate);
-  v8Isolates[v8RuntimeHandle]->objects[objectHandle]->Reset();
-  delete(v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  v8Isolates[v8RuntimeHandle]->objects.erase(objectHandle);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]->Reset();
+  delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects.erase(objectHandle);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1terminateExecution
-  (JNIEnv * env, jobject, jint v8RuntimeHandle) {
-	if (v8Isolates.count(v8RuntimeHandle) == 0) {
+  (JNIEnv * env, jobject, jlong v8RuntimePtr) {
+	if (v8RuntimePtr == 0) {
 	  return;
 	}
-	Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+	Isolate* isolate = getIsolate(env, v8RuntimePtr);
 	V8::TerminateExecution(isolate);
 	return;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
-(JNIEnv *env, jobject, jint v8RuntimeHandle) {
-  if (v8Isolates.count(v8RuntimeHandle) == 0) {
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  if (v8RuntimePtr == 0) {
     return;
   }
-  Isolate* isolate = getIsolate(env, v8RuntimeHandle);
+  Isolate* isolate = getIsolate(env, v8RuntimePtr);
   //HandleScope handle_scope(isolate);
-  v8Isolates[v8RuntimeHandle]->context_.Reset();
-  delete(v8Isolates[v8RuntimeHandle]->isolate_scope);
-  v8Isolates[v8RuntimeHandle]->isolate->Dispose();
-  env->DeleteGlobalRef(v8Isolates[v8RuntimeHandle]->v8);
-  delete(v8Isolates[v8RuntimeHandle]);
-  v8Isolates.erase(v8RuntimeHandle);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->context_.Reset();
+  delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate_scope);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate->Dispose();
+  env->DeleteGlobalRef(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->v8);
+  delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr));
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1contains
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Local<String> v8Key = createV8String(env, isolate, key);
   return object->Has(v8Key);
 }
 
 JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Local<Array> properties = object->GetOwnPropertyNames();
   int size = properties->Length();
   jobjectArray keys = (env)->NewObjectArray(size, stringCls, NULL);
@@ -344,71 +344,71 @@ bool compileScript(Isolate *isolate, jstring &jscript, JNIEnv *env, jstring jscr
   return true;
 }
 
-bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, int v8RuntimeHandle) {
+bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, long v8RuntimePtr) {
   (*script)->Run();
   if (tryCatch->HasCaught()) {
-    throwExecutionException(env, isolate, tryCatch, v8RuntimeHandle);
+    throwExecutionException(env, isolate, tryCatch, v8RuntimePtr);
     return false;
   }
   return true;
 }
 
-bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, Local<Value> &result, int v8RuntimeHandle) {
+bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, Local<Value> &result, long v8RuntimePtr) {
   result = (*script)->Run();
   if (tryCatch->HasCaught()) {
-    throwExecutionException(env, isolate, tryCatch, v8RuntimeHandle);
+    throwExecutionException(env, isolate, tryCatch, v8RuntimePtr);
     return false;
   }
   return true;
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
-(JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   TryCatch tryCatch;
   Local<Script> script;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return;
-  runScript(isolate, env, &script, &tryCatch, v8RuntimeHandle);
+  runScript(isolate, env, &script, &tryCatch, v8RuntimePtr);
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
-(JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
+(JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   TryCatch tryCatch;
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return 0;
-  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle))
+  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr))
     return 0;
   ASSERT_IS_NUMBER(result);
   return result->NumberValue();
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   TryCatch tryCatch;
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return false;
-  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle))
+  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr))
     return false;
   ASSERT_IS_BOOLEAN(result);
   return result->BooleanValue();
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   TryCatch tryCatch;
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return NULL;
-  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle))
+  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr))
     return NULL;
   ASSERT_IS_STRING(result);
   String::Utf8Value utf(result->ToString());
@@ -416,43 +416,43 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerScript
-(JNIEnv * env, jobject v8, jint v8RuntimeHandle, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
+(JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   TryCatch tryCatch;
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return 0;
-  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle))
+  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr))
     return 0;
   ASSERT_IS_NUMBER(result);
   return result->Int32Value();
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint expectedType, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   TryCatch tryCatch;
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch)) { return NULL; }
-  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimeHandle)) { return NULL; }
-  return getResult(env, v8, v8RuntimeHandle, result, expectedType);
+  if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr)) { return NULL; }
+  return getResult(env, v8, v8RuntimePtr, result, expectedType);
 }
 
-bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &receiverHandle, jint &functionHandle, jint &parameterHandle, Handle<Value> &result) {
+bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jint &receiverHandle, jint &functionHandle, jint &parameterHandle, Handle<Value> &result) {
   int size = 0;
   Handle<Value>* args = NULL;
   if (parameterHandle >= 0) {
-    Handle<Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
+    Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[parameterHandle]);
     size = Array::Cast(*parameters)->Length();
     args = new Handle<Value>[size];
     for (int i = 0; i < size; i++) {
       args[i] = parameters->Get(i);
     }
   }
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[functionHandle]);
-  Handle<Object> receiver = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[receiverHandle]);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[functionHandle]);
+  Handle<Object> receiver = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[receiverHandle]);
   Handle<Function> func = Handle<Function>::Cast(object);
   TryCatch tryCatch;
   result = func->Call(receiver, size, args);
@@ -460,19 +460,19 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &
     delete(args);
   }
   if (tryCatch.HasCaught()) {
-    throwExecutionException(env, isolate, &tryCatch, v8RuntimeHandle);
+    throwExecutionException(env, isolate, &tryCatch, v8RuntimePtr);
     return false;
   }
   return true;
 }
 
-bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &objectHandle, jstring &jfunctionName, jint &parameterHandle, Handle<Value> &result) {
+bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jint &objectHandle, jstring &jfunctionName, jint &parameterHandle, Handle<Value> &result) {
   Local<String> functionName = createV8String(env, isolate, jfunctionName);
-  Handle<Object> parentObject = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+  Handle<Object> parentObject = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   int size = 0;
   Handle<Value>* args = NULL;
   if (parameterHandle >= 0) {
-    Handle<Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
+    Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[parameterHandle]);
     size = Array::Cast(*parameters)->Length();
     args = new Handle<Value>[size];
     for (int i = 0; i < size; i++) {
@@ -487,65 +487,65 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jint &v8RuntimeHandle, jint &
     delete(args);
   }
   if (tryCatch.HasCaught()) {
-    throwExecutionException(env, isolate, &tryCatch, v8RuntimeHandle);
+    throwExecutionException(env, isolate, &tryCatch, v8RuntimePtr);
     return false;
   }
   return true;
 }
 
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIII
-  (JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint receiverHandle, jint functionHandle, jint parameterHandle) {
-    Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__JIII
+  (JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint receiverHandle, jint functionHandle, jint parameterHandle) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, receiverHandle, functionHandle, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, receiverHandle, functionHandle, parameterHandle, result))
     return NULL;
-  return getResult(env, v8, v8RuntimeHandle, result, com_eclipsesource_v8_V8_UNKNOWN);
+  return getResult(env, v8, v8RuntimePtr, result, com_eclipsesource_v8_V8_UNKNOWN);
 }
 
-JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__IIILjava_lang_String_2I
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeFunction__JIILjava_lang_String_2I
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint expectedType, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return NULL;
-  return getResult(env, v8, v8RuntimeHandle, result, expectedType);
+  return getResult(env, v8, v8RuntimePtr, result, expectedType);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return 0;
   ASSERT_IS_NUMBER(result);
   return result->Int32Value();
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return 0;
   ASSERT_IS_NUMBER(result);
   return result->NumberValue();
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return false;
   ASSERT_IS_BOOLEAN(result);
   return result->BooleanValue();
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   Handle<Value> result;
-  if (!invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result))
+  if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return NULL;
   ASSERT_IS_STRING(result);
   String::Utf8Value utf(result->ToString());
@@ -553,100 +553,100 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidFunction
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint objectHandle, jstring jfunctionName, jint parameterHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Value> result;
-  invokeFunction(env, isolate, v8RuntimeHandle, objectHandle, jfunctionName, parameterHandle, result);
+  invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addUndefined
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Undefined(isolate));
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, Undefined(isolate));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addNull
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Null(isolate));
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, Null(isolate));
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2I
-(JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Int32::New(isolate, value));
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__JILjava_lang_String_2I
+(JNIEnv * env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key, jint value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, Int32::New(isolate, value));
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2D
-(JNIEnv * env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jdouble value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Number::New(isolate, value));
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__JILjava_lang_String_2D
+(JNIEnv * env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key, jdouble value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, Number::New(isolate, value));
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Ljava_lang_String_2
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jstring value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__JILjava_lang_String_2Ljava_lang_String_2
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key, jstring value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Value> v8Value = createV8String(env, isolate, value);
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, v8Value);
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, v8Value);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__IILjava_lang_String_2Z
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jboolean value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, Boolean::New(isolate, value));
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1add__JILjava_lang_String_2Z
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key, jboolean value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, Boolean::New(isolate, value));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addObject
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key, jint valueHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Value> value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
-  addValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key, value);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key, jint valueHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Value> value = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[valueHandle]);
+  addValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key, value);
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1get
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Value> result = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
-  return getResult(env, v8, v8RuntimeHandle, result, expectedType);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint expectedType, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Value> result = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
+  return getResult(env, v8, v8RuntimePtr, result, expectedType);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getInteger
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   ASSERT_IS_NUMBER(v8Value);
   return v8Value->Int32Value();
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1getDouble
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   ASSERT_IS_NUMBER(v8Value);
   return v8Value->NumberValue();
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   ASSERT_IS_STRING(v8Value);
   String::Utf8Value utf(v8Value->ToString());
   return env->NewStringUTF(*utf);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1getBoolean
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   ASSERT_IS_BOOLEAN(v8Value);
   return v8Value->BooleanValue();
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IILjava_lang_String_2
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring key) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimeHandle, objectHandle, key);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JILjava_lang_String_2
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring key) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   int type = getType(v8Value);
   if (type < 0) {
     throwResultUndefinedException(env, "");
@@ -671,9 +671,9 @@ bool isObject(int type1, int type2) {
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   int length = 0;
   if ( array->IsTypedArray() ) {
 	  length = TypedArray::Cast(*array)->Length();
@@ -706,9 +706,9 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  return TypedArray::Cast(*array)->Length();
   }
@@ -716,9 +716,9 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_NUMBER(v8Value);
   return v8Value->Int32Value();
@@ -772,92 +772,92 @@ int fillStringArray(JNIEnv *env, Handle<Object> &array, int start, int length, j
   return length;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII_3I
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length, jintArray result) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__JIII_3I
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length, jintArray result) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   return fillIntArray(env, array, start, length, result);
 }
 
-JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__IIII
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__JIII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   jintArray result = env->NewIntArray(length);
   fillIntArray(env, array, start, length, result);
   return result;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__IIII_3D
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length, jdoubleArray result) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__JIII_3D
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length, jdoubleArray result) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   return fillDoubleArray(env, array, start, length, result);
 }
 
-JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__IIII
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jdoubleArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDoubles__JIII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   jdoubleArray result = env->NewDoubleArray(length);
   fillDoubleArray(env, array, start, length, result);
   return result;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__IIII_3Z
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length, jbooleanArray result) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__JIII_3Z
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length, jbooleanArray result) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   return fillBooleanArray(env, array, start, length, result);
 }
 
-JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__IIII
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__JIII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   jbooleanArray result = env->NewBooleanArray(length);
   fillBooleanArray(env, array, start, length, result);
   return result;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__IIII_3Ljava_lang_String_2
-(JNIEnv * env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length, jobjectArray result) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JIII_3Ljava_lang_String_2
+(JNIEnv * env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length, jobjectArray result) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   return fillStringArray(env, array, start, length, result);
 }
 
-JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__IIII
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JIII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   jobjectArray result = env->NewObjectArray(length, stringCls, NULL);
   fillStringArray(env, array, start, length, result);
   return result;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_BOOLEAN(v8Value);
   return v8Value->BooleanValue();
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDouble
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_NUMBER(v8Value);
   return v8Value->NumberValue();
 }
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_STRING(v8Value);
   String::Utf8Value utf(v8Value->ToString());
@@ -865,17 +865,17 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
 }
 
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1arrayGet
-(JNIEnv *env, jobject v8, jint v8RuntimeHandle, jint expectedType, jint arrayHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, NULL);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint expectedType, jint arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   Handle<Value> result = array->Get(index);
-  return getResult(env, v8, v8RuntimeHandle, result, expectedType);
+  return getResult(env, v8, v8RuntimePtr, result, expectedType);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -885,9 +885,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -898,9 +898,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
 
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -911,9 +911,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jdouble value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jdouble value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -924,9 +924,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jboolean value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jboolean value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -937,9 +937,9 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jstring value) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jstring value) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
@@ -950,15 +950,15 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint valueHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint valueHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   if ( array->IsTypedArray() ) {
 	  throwV8RuntimeException(env, "Cannot push to a Typed Array.");
 	  return;
   }
   int index = Array::Cast(*array)->Length();
-  Local<Value> v8Value = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[valueHandle]);
+  Local<Value> v8Value = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[valueHandle]);
   array->Set(index, v8Value);
 }
 
@@ -993,10 +993,10 @@ int getType(Handle<Value> v8Value) {
   return -1;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint index) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Handle<Value> v8Value = array->Get(index);
   int type = getType(v8Value);
   if (type < 0) {
@@ -1005,10 +1005,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__III
   return type;
 }
 
-JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint arrayHandle, jint start, jint length) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, 0);
-  Handle<Object> array = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[arrayHandle]);
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JIII
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[arrayHandle]);
   int result = -1;
   for (int i = start; i < start + length; i++) {
     Handle<Value> v8Value = array->Get(i);
@@ -1032,16 +1032,16 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__IIII
 class MethodDescriptor {
 public:
   int methodID;
-  int v8RuntimeHandle;
+  jlong v8RuntimePtr;
 };
 
-jobject createParameterArray(JNIEnv* env, int v8RuntimeHandle, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = getIsolate(env, v8RuntimeHandle);
-  jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
+jobject createParameterArray(JNIEnv* env, jlong v8RuntimePtr, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = getIsolate(env, v8RuntimePtr);
+  jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
   jmethodID getHandle = env->GetMethodID(v8ArrayCls, "getHandle", "()I");
-  jobject result = env->NewObject(v8ArrayCls, methodID, v8, true);
+  jobject result = env->NewObject(v8ArrayCls, methodID, v8);
   jint parameterHandle = env->CallIntMethod(result, getHandle);
-  Handle<Object> parameters = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[parameterHandle]);
+  Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[parameterHandle]);
   for (int i = 0; i < size; i++) {
     parameters->Set(i, args[i]);
   }
@@ -1053,18 +1053,18 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   Local<External> data = Local<External>::Cast(args.Data());
   void *methodDescriptorPtr = data->Value();
   MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
-  jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
+  jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
   JNIEnv * env;
   getJNIEnv(env);
-  jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+  jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
   jmethodID callVoidMethod = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)V");
   env->CallVoidMethod(v8, callVoidMethod, md->methodID, parameters);
   if (env->ExceptionCheck()) {
-    Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-    v8Isolates[md->v8RuntimeHandle]->pendingException = env->ExceptionOccurred();
+    Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
+    reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
     jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(v8Isolates[md->v8RuntimeHandle]->pendingException, getMessage);
+    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
     if (exceptionMessage != NULL) {
       Local<String> v8String = createV8String(env, isolate, exceptionMessage);
       isolate->ThrowException(v8String);
@@ -1124,19 +1124,19 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   Local<External> data = Local<External>::Cast(args.Data());
   void *methodDescriptorPtr = data->Value();
   MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
-  jobject v8 = v8Isolates[md->v8RuntimeHandle]->v8;
-  Isolate* isolate = v8Isolates[md->v8RuntimeHandle]->isolate;
+  jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
+  Isolate* isolate = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->isolate;
   JNIEnv * env;
   getJNIEnv(env);
-  jobject parameters = createParameterArray(env, md->v8RuntimeHandle, v8, size, args);
+  jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
   jmethodID callObjectMethod = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
   jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, parameters);
   if (env->ExceptionCheck()) {
-    Isolate* isolate = getIsolate(env, md->v8RuntimeHandle);
-    v8Isolates[md->v8RuntimeHandle]->pendingException = env->ExceptionOccurred();
+    Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
+    reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
     jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(v8Isolates[md->v8RuntimeHandle]->pendingException, getMessage);
+    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
     if (exceptionMessage != NULL) {
       Local<String> v8String = createV8String(env, isolate, exceptionMessage);
       isolate->ThrowException(v8String);
@@ -1161,7 +1161,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
     }
     else if (returnType == com_eclipsesource_v8_V8_STRING) {
       jstring stringResult = (jstring)resultObject;
-      Local<String> result = createV8String(env, v8Isolates[md->v8RuntimeHandle]->isolate, stringResult);
+      Local<String> result = createV8String(env, reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->isolate, stringResult);
       args.GetReturnValue().Set(result);
     }
     else if (returnType == com_eclipsesource_v8_V8_V8_ARRAY) {
@@ -1170,7 +1170,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
       }
       else {
         int resultHandle = getHandle(env, resultObject);
-        Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+        Handle<Object> result = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->objects[resultHandle]);
         releaseArray(env, resultObject);
         args.GetReturnValue().Set(result);
       }
@@ -1181,7 +1181,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
       }
       else {
         int resultHandle = getHandle(env, resultObject);
-        Handle<Object> result = Local<Object>::New(isolate, *v8Isolates[md->v8RuntimeHandle]->objects[resultHandle]);
+        Handle<Object> result = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->objects[resultHandle]);
         release(env, resultObject);
         args.GetReturnValue().Set(result);
       }
@@ -1193,71 +1193,72 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   if (resultObject != NULL) {
     env->DeleteLocalRef(resultObject);
   }
-  jmethodID release = env->GetMethodID(v8ArrayCls, "releaseJNI", "()V");
+  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
   env->CallVoidMethod(parameters, release);
   env->DeleteLocalRef(parameters);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jstring functionName, jint methodID, jboolean voidMethod) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jstring functionName, jint methodID, jboolean voidMethod) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
   FunctionCallback callback = voidCallback;
   if (!voidMethod) {
     callback = objectCallback;
   }
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Local<String> v8FunctionName = createV8String(env, isolate, functionName);
   MethodDescriptor* md = new MethodDescriptor();
   md->methodID = methodID;
-  md->v8RuntimeHandle = v8RuntimeHandle;
+  md->v8RuntimePtr = v8RuntimePtr;
   object->Set(v8FunctionName, Function::New(isolate, callback, External::New(isolate, md)));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint prototypeHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, );
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  Handle<Object> prototype = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[prototypeHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint prototypeHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  Handle<Object> prototype = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[prototypeHandle]);
   object->SetPrototype(prototype);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint thatHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  Handle<Object> that = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[thatHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint thatHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
   return object->Equals(that);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1strictEquals
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint thatHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  Handle<Object> that = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[thatHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint thatHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
   return object->StrictEquals(that);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1sameValue
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle, jint thatHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
-  Handle<Object> that = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[thatHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint thatHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
   return object->SameValue(that);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1identityHash
-(JNIEnv *env, jobject, jint v8RuntimeHandle, jint objectHandle) {
-  Isolate* isolate = SETUP(env, v8RuntimeHandle, false);
-  Handle<Object> object = Local<Object>::New(isolate, *v8Isolates[v8RuntimeHandle]->objects[objectHandle]);
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   return object->GetIdentityHash();
 }
 
-Isolate* getIsolate(JNIEnv *env, int handle) {
-  if (v8Isolates.find(handle) == v8Isolates.end()) {
+Isolate* getIsolate(JNIEnv *env, long v8RuntimePtr) {
+  if (v8RuntimePtr == 0) {
     throwError(env, "V8 isolate not found.");
     return NULL;
   }
-  return v8Isolates[handle]->isolate;
+  V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  return runtime->isolate;
 }
 
 void throwResultUndefinedException(JNIEnv *env, const char *message) {
@@ -1278,7 +1279,7 @@ void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, cons
 }
 
 void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
-  const char* sourceLine, int startColumn, int endColumn, const char* stackTrace, int v8RuntimeHandle) {
+  const char* sourceLine, int startColumn, int endColumn, const char* stackTrace, long v8RuntimePtr) {
   jmethodID methodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
   jstring jfileName = env->NewStringUTF(fileName);
   jstring jmessage = env->NewStringUTF(message);
@@ -1292,9 +1293,9 @@ void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, 
     wrappedException = env->ExceptionOccurred();
     env->ExceptionClear();
   }
-  if (v8Isolates[v8RuntimeHandle]->pendingException != NULL) {
-    wrappedException = v8Isolates[v8RuntimeHandle]->pendingException;
-    v8Isolates[v8RuntimeHandle]->pendingException = NULL;
+  if (reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException != NULL) {
+    wrappedException = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException;
+    reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException = NULL;
   }
   jthrowable result = (jthrowable)env->NewObject(v8ScriptExecutionException, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
   env->DeleteLocalRef(jfileName);
@@ -1323,7 +1324,7 @@ void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
   }
 }
 
-void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, int v8RuntimeHandle) {
+void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, long v8RuntimePtr) {
   HandleScope handle_scope(isolate);
   String::Utf8Value exception(tryCatch->Exception());
   const char* exceptionString = ToCString(exception);
@@ -1344,7 +1345,7 @@ void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, 
     if (stack_trace.length() > 0) {
       stackTrace = ToCString(stack_trace);
     }
-    throwExecutionException(env, filenameString, lineNumber, exceptionString, sourcelineString, start, end, stackTrace, v8RuntimeHandle);
+    throwExecutionException(env, filenameString, lineNumber, exceptionString, sourcelineString, start, end, stackTrace, v8RuntimePtr);
   }
 }
 
@@ -1356,7 +1357,7 @@ void throwError(JNIEnv *env, const char *message) {
   (env)->ThrowNew(errorCls, message);
 }
 
-jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> &result, jint expectedType) {
+jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType) {
   if (result->IsUndefined() && expectedType == com_eclipsesource_v8_V8_V8_ARRAY) {
     jmethodID constructor = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
     jobject objectResult = env->NewObject(undefinedV8ArrayCls, constructor, v8);
@@ -1384,31 +1385,31 @@ jobject getResult(JNIEnv *env, jobject &v8, jint v8RuntimeHandle, Handle<Value> 
     return env->NewStringUTF(*utf);
   }
   else if (result->IsFunction()) {
-    jmethodID constructor = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
-    jobject objectResult = env->NewObject(v8FunctionCls, constructor, v8, true);
+    jmethodID constructor = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    jobject objectResult = env->NewObject(v8FunctionCls, constructor, v8);
     int resultHandle = getHandle(env, objectResult);
-    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[resultHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8, true);
+    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
     int resultHandle = getHandle(env, objectResult);
-    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[resultHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsTypedArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8, true);
+    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
     int resultHandle = getHandle(env, objectResult);
-    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[resultHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsObject()) {
-    jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;Z)V");
-    jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8, true);
+    jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8);
     int resultHandle = getHandle(env, objectResult);
-    v8Isolates[v8RuntimeHandle]->objects[resultHandle]->Reset(v8Isolates[v8RuntimeHandle]->isolate, result->ToObject());
+    reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[resultHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   return NULL;

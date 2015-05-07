@@ -12,14 +12,14 @@ package com.eclipsesource.v8;
 
 public class V8Function extends V8Object {
 
-    protected V8Function(final V8 v8, final boolean unlock) {
-        super(v8, unlock);
+    protected V8Function(final V8 v8) {
+        super(v8);
     }
 
     public Object call(final V8Object receiver, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-        return v8.executeFunction(v8.getV8RuntimeHandle(), receiver.objectHandle, objectHandle, parametersHandle);
+        return v8.executeFunction(v8.getV8RuntimePtr(), receiver.objectHandle, objectHandle, parametersHandle);
     }
 }
