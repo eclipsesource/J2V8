@@ -191,7 +191,7 @@ static void enableTypedArrays() {
   V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
 }
 
-jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
     jint onLoad_err = -1;
     if ( vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK ) {
