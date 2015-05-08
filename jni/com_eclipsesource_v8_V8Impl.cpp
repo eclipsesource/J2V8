@@ -191,12 +191,18 @@ static void enableTypedArrays() {
   V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
 }
 
-JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-(JNIEnv *env, jobject v8, jstring globalAlias) {
-  if (jvm == NULL) {
+jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *env;
+    jint onLoad_err = -1;
+    if ( vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK ) {
+        return onLoad_err;
+    }
+    if (env == NULL) {
+        return onLoad_err;
+    }
     // on first creation, store the JVM and a handle to J2V8 classes
     enableTypedArrays();
-    env->GetJavaVM(&jvm);
+    jvm = vm;
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
     v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
@@ -213,7 +219,11 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
-  }
+    return JNI_VERSION_1_6;
+}
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
+(JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();
   runtime->isolate = Isolate::New();
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);

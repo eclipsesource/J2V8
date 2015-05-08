@@ -19,9 +19,10 @@ import java.util.Map;
 
 public class V8 extends V8Object {
 
-    private static List<V8> runtimes     = new ArrayList<>();
-    private static Runnable debugHandler = null;
-    private static Thread   debugThread  = null;
+    private static Object       lock           = new Object();
+    private volatile static int runtimeCounter = 0;
+    private static Runnable     debugHandler   = null;
+    private static Thread       debugThread    = null;
 
     private Thread  thread                 = null;
     private int     methodReferenceCounter = 0;
@@ -54,7 +55,7 @@ public class V8 extends V8Object {
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
-    private static void load(final String tmpDirectory) {
+    private synchronized static void load(final String tmpDirectory) {
         try {
             LibraryLoader.loadLibrary(tmpDirectory);
             nativeLibraryLoaded = true;
@@ -79,7 +80,11 @@ public class V8 extends V8Object {
 
     public static V8 createV8Runtime(final String globalAlias, final String tempDirectory) {
         if (!nativeLibraryLoaded) {
-            load(tempDirectory);
+            synchronized (lock) {
+                if (!nativeLibraryLoaded) {
+                    load(tempDirectory);
+                }
+            }
         }
         checkNativeLibraryLoaded();
         if (debugThread == null) {
@@ -87,7 +92,7 @@ public class V8 extends V8Object {
         }
         V8 runtime = new V8(globalAlias);
         runtime.thread = Thread.currentThread();
-        runtimes.add(runtime);
+        runtimeCounter++;
         return runtime;
     }
 
@@ -135,15 +140,8 @@ public class V8 extends V8Object {
         debugEnabled = false;
     }
 
-    public static void processDebugMessages() {
-        V8.checkDebugThread();
-        for (V8 v8 : runtimes) {
-            v8.processDebugMessages(v8.getV8RuntimePtr());
-        }
-    }
-
     public static int getActiveRuntimes() {
-        return runtimes.size();
+        return runtimeCounter;
     }
 
     public static void registerDebugHandler(final Runnable handler) {
@@ -165,12 +163,16 @@ public class V8 extends V8Object {
 
     public void release(final boolean reportMemoryLeaks) {
         checkThread();
+        if (isReleased()) {
+            return;
+        }
         if (debugEnabled) {
             disableDebugSupport();
         }
-        runtimes.remove(this);
+        runtimeCounter--;
         _releaseRuntime(v8RuntimePtr);
         v8RuntimePtr = 0L;
+        released = true;
         if (reportMemoryLeaks && (objectReferences > 0)) {
             throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
         }
