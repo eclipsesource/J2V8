@@ -1067,8 +1067,10 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   JNIEnv * env;
   getJNIEnv(env);
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
-  jmethodID callVoidMethod = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)V");
-  env->CallVoidMethod(v8, callVoidMethod, md->methodID, parameters);
+  Handle<Value> receiver = args.This();
+  jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);  
+  jmethodID callVoidMethod = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
+  env->CallVoidMethod(v8, callVoidMethod, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
@@ -1085,6 +1087,9 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   }
   jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
   env->CallVoidMethod(parameters, release);
+  jmethodID releaseReciver = env->GetMethodID(v8ObjectCls, "release", "()V");
+  env->CallVoidMethod(jreceiver, releaseReciver);
+  env->DeleteLocalRef(jreceiver);
   env->DeleteLocalRef(parameters);
 }
 
@@ -1139,8 +1144,10 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   JNIEnv * env;
   getJNIEnv(env);
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
-  jmethodID callObjectMethod = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
-  jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, parameters);
+  Handle<Value> receiver = args.This();
+  jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);
+  jmethodID callObjectMethod = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
+  jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
@@ -1205,6 +1212,9 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   }
   jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
   env->CallVoidMethod(parameters, release);
+  jmethodID releaseReciver = env->GetMethodID(v8ObjectCls, "release", "()V");
+  env->CallVoidMethod(jreceiver, releaseReciver);
+  env->DeleteLocalRef(jreceiver);
   env->DeleteLocalRef(parameters);
 }
 

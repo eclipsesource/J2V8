@@ -81,7 +81,7 @@ public class V8MultiThreadTest {
         List<Object> result = null;
 
         @Override
-        public Object invoke(final V8Array parameters) {
+        public Object invoke(final V8Object receiver, final V8Array parameters) {
             final List<Object> data = V8ObjectUtils.toList(parameters);
 
             Thread t = new Thread(new Runnable() {

@@ -314,10 +314,10 @@ public class V8 extends V8Object {
         return invalid;
     }
 
-    protected Object callObjectJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+    protected Object callObjectJavaMethod(final int methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
         if (methodDescriptor.callback != null) {
-            return checkResult(methodDescriptor.callback.invoke(parameters));
+            return checkResult(methodDescriptor.callback.invoke(receiver, parameters));
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
         Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
@@ -349,10 +349,10 @@ public class V8 extends V8Object {
         throw new V8RuntimeException("Unknown return type: " + result.getClass());
     }
 
-    protected void callVoidJavaMethod(final int methodID, final V8Array parameters) throws Throwable {
+    protected void callVoidJavaMethod(final int methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
         if (methodDescriptor.voidCallback != null) {
-            methodDescriptor.voidCallback.invoke(parameters);
+            methodDescriptor.voidCallback.invoke(receiver, parameters);
             return;
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();

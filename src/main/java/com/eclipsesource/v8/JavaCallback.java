@@ -12,6 +12,6 @@ package com.eclipsesource.v8;
 
 public interface JavaCallback {
 
-    public Object invoke(V8Array parameters);
+    public Object invoke(V8Object receiver, V8Array parameters);
 
 }

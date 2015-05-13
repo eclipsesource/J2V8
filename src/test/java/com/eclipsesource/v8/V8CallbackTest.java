@@ -1262,7 +1262,7 @@ public class V8CallbackTest {
 
         v8.executeVoidScript("foo()");
 
-        verify(callback).invoke(any(V8Array.class));
+        verify(callback).invoke(any(V8Object.class), any(V8Array.class));
     }
 
     @Test
@@ -1272,7 +1272,7 @@ public class V8CallbackTest {
 
         v8.executeVoidFunction("foo", null);
 
-        verify(callback).invoke(any(V8Array.class));
+        verify(callback).invoke(any(V8Object.class), any(V8Array.class));
     }
 
     @Test
@@ -1288,7 +1288,7 @@ public class V8CallbackTest {
         parameters.push(true);
         parameters.push(object);
         parameters.push(array);
-        doAnswer(constructAnswer(parameters, null)).when(callback).invoke(any(V8Array.class));
+        doAnswer(constructAnswer(null, parameters, null)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         v8.executeVoidFunction("foo", parameters);
         parameters.release();
@@ -1303,7 +1303,7 @@ public class V8CallbackTest {
 
         v8.executeVoidScript("foo()");
 
-        verify(callback).invoke(any(V8Array.class));
+        verify(callback).invoke(any(V8Object.class), any(V8Array.class));
     }
 
     @Test
@@ -1313,7 +1313,7 @@ public class V8CallbackTest {
 
         v8.executeVoidFunction("foo", null);
 
-        verify(callback).invoke(any(V8Array.class));
+        verify(callback).invoke(any(V8Object.class), any(V8Array.class));
     }
 
     @Test
@@ -1329,7 +1329,7 @@ public class V8CallbackTest {
         parameters.push(true);
         parameters.push(object);
         parameters.push(array);
-        doAnswer(constructAnswer(parameters, null)).when(callback).invoke(any(V8Array.class));
+        doAnswer(constructAnswer(null, parameters, null)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         v8.executeVoidFunction("foo", parameters);
         parameters.release();
@@ -1341,24 +1341,65 @@ public class V8CallbackTest {
     public void testInvokeCallbackWithReturnValue() {
         JavaCallback callback = mock(JavaCallback.class);
         v8.registerJavaMethod(callback, "foo");
-        doAnswer(constructAnswer(null, 77)).when(callback).invoke(any(V8Array.class));
+        doAnswer(constructAnswer(null, null, 77)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         int result = v8.executeIntegerFunction("foo", null);
 
         assertEquals(77, result);
     }
 
-    private Answer<Object> constructAnswer(final V8Array parameters, final Object result) {
+    @Test
+    public void testInvokeCallbackFunctionUsesReciver() {
+        V8Object bar = v8.executeObjectScript("var bar = {}; bar;");
+        JavaVoidCallback callback = mock(JavaVoidCallback.class);
+        bar.registerJavaMethod(callback, "foo");
+        doAnswer(constructAnswer(bar, null, 77)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
+
+        bar.executeVoidFunction("foo", null);
+        bar.release();
+    }
+
+    @Test
+    public void testInvokeCallbackOnGlobalFunctionUsesGlobalScopeAsReciver() {
+        JavaVoidCallback callback = mock(JavaVoidCallback.class);
+        v8.registerJavaMethod(callback, "foo");
+        doAnswer(constructAnswer(v8, null, null)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
+
+        v8.executeVoidFunction("foo", null);
+    }
+
+    @Test
+    public void testInvokeCallbackOnGlobalFunctionUsesGlobalScopeAsReciver2() {
+        JavaCallback javaCallback = new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                return receiver.executeFunction("testGlobal", null);
+            }
+        };
+        v8.registerJavaMethod(javaCallback, "foo");
+        boolean result = (Boolean) v8.executeScript("var global = this;\n"
+                + "var testGlobal = function() {return this === global;}; \n"
+                + "foo();");
+
+        assertTrue(result);
+    }
+
+
+    private Answer<Object> constructAnswer(final V8Object receiver, final V8Array parameters, final Object result) {
         return new Answer<Object>() {
 
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 if (parameters != null) {
-                    assertEquals(parameters.length(), ((V8Array) args[0]).length());
+                    assertEquals(parameters.length(), ((V8Array) args[1]).length());
                     for (int i = 0; i < args.length; i++) {
-                        assertEquals(parameters.get(i), ((V8Array) args[0]).get(i));
+                        assertEquals(parameters.get(i), ((V8Array) args[1]).get(i));
                     }
+                }
+                if (receiver != null) {
+                    assertEquals(receiver, args[0]);
                 }
                 return result;
             }
