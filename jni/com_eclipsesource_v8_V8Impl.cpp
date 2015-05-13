@@ -1236,6 +1236,12 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
+  if (objectHandle == 0) {
+    object = context->Global();
+  }
+  if ( thatHandle == 0) {
+  	that = context->Global();
+  }
   return object->Equals(that);
 }
 
@@ -1244,6 +1250,12 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1strictEquals
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
+  if (objectHandle == 0) {
+    object = context->Global();
+  }
+  if ( thatHandle == 0) {
+  	that = context->Global();
+  }
   return object->StrictEquals(that);
 }
 
@@ -1252,6 +1264,12 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1sameValue
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
   Handle<Object> that = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[thatHandle]);
+  if (objectHandle == 0) {
+    object = context->Global();
+  }
+  if ( thatHandle == 0) {
+  	that = context->Global();
+  }
   return object->SameValue(that);
 }
 

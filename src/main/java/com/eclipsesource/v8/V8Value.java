@@ -69,10 +69,58 @@ abstract public class V8Value {
         if (that == null) {
             return false;
         }
-        if ((that.getClass() == this.getClass())) {
-            return v8.equals(v8.getV8RuntimePtr(), getHandle(), ((V8Object) that).getHandle());
+        if (!(that instanceof V8Value)) {
+            return false;
         }
-        return false;
+        if (isUndefined() && ((V8Value) that).isUndefined()) {
+            return true;
+        }
+        if (((V8Value) that).isUndefined()) {
+            return false;
+        }
+        return v8.equals(v8.getV8RuntimePtr(), getHandle(), ((V8Value) that).getHandle());
+    }
+
+    public boolean strictEquals(final Object that) {
+        v8.checkThread();
+        checkReleaesd();
+        if (that == this) {
+            return true;
+        }
+        if (that == null) {
+            return false;
+        }
+        if (!(that instanceof V8Value)) {
+            return false;
+        }
+        if (isUndefined() && ((V8Value) that).isUndefined()) {
+            return true;
+        }
+        if (((V8Value) that).isUndefined()) {
+            return false;
+        }
+        return v8.strictEquals(v8.getV8RuntimePtr(), getHandle(), ((V8Value) that).getHandle());
+    }
+
+    public boolean sameValue(final Object that) {
+        v8.checkThread();
+        checkReleaesd();
+        if (that == this) {
+            return true;
+        }
+        if (that == null) {
+            return false;
+        }
+        if (!(that instanceof V8Value)) {
+            return false;
+        }
+        if (isUndefined() && ((V8Value) that).isUndefined()) {
+            return true;
+        }
+        if (((V8Value) that).isUndefined()) {
+            return false;
+        }
+        return v8.sameValue(v8.getV8RuntimePtr(), getHandle(), ((V8Value) that).getHandle());
     }
 
     @Override

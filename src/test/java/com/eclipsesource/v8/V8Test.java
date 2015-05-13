@@ -1104,6 +1104,73 @@ public class V8Test {
     }
 
     @Test
+    public void testV8IsGlobalStrictEquals() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        V8Object global = v8.executeObjectScript("global");
+
+        assertTrue(v8.strictEquals(global));
+        assertTrue(global.strictEquals(v8));
+        global.release();
+    }
+
+    @Test
+    public void testV8IsGlobalEquals() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        V8Object global = v8.executeObjectScript("global");
+
+        assertTrue(v8.equals(global));
+        assertTrue(global.equals(v8));
+        global.release();
+    }
+
+    @Test
+    public void testV8IsGlobalSame() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        V8Object global = v8.executeObjectScript("global");
+
+        assertTrue(v8.sameValue(global));
+        assertTrue(global.sameValue(v8));
+        global.release();
+    }
+
+    @Test
+    public void testV8EqualsGlobalHashl() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        V8Object global = v8.executeObjectScript("global");
+
+        assertEquals(v8.hashCode(), global.hashCode());
+        global.release();
+    }
+
+    @Test
+    public void testV8IsThis() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        V8Object _this = v8.executeObjectScript("this;");
+
+        assertEquals(v8, _this);
+        assertEquals(_this, v8);
+        _this.release();
+    }
+
+    @Test
+    public void testWindowIsGlobal2() {
+        setupWindowAlias();
+        v8.executeVoidScript("var global = Function('return this')();");
+
+        assertTrue(v8.executeBooleanScript("window === global"));
+    }
+
+    @Test
     public void testAlternateGlobalAlias() {
         v8.release();
         v8 = V8.createV8Runtime("document");

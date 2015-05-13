@@ -43,16 +43,6 @@ public class V8 extends V8Object {
         JavaVoidCallback voidCallback;
     }
 
-    @Override
-    public boolean equals(final Object that) {
-        return this == that;
-    };
-
-    @Override
-    public int hashCode() {
-        return System.identityHashCode(this);
-    };
-
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
 
     private synchronized static void load(final String tmpDirectory) {
