@@ -28,9 +28,14 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 public class V8ArrayTest {
+
+    @Rule
+    public TestName name = new TestName();
 
     private V8 v8;
 
@@ -44,10 +49,10 @@ public class V8ArrayTest {
         try {
             v8.release();
             if (V8.getActiveRuntimes() != 0) {
-                throw new IllegalStateException("V8Runtimes not properly released.");
+                throw new IllegalStateException("V8Runtimes not properly released " + V8.getActiveRuntimes());
             }
         } catch (IllegalStateException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " when executing test: " + name.getMethodName());
         }
     }
 
