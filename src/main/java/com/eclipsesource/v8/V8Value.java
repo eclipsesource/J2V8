@@ -43,6 +43,7 @@ abstract public class V8Value {
     }
 
     public int getHandle() {
+        checkReleaesd();
         return objectHandle;
     }
 

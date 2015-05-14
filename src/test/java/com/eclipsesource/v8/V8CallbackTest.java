@@ -105,6 +105,8 @@ public class V8CallbackTest {
 
         public void voidMethodVarArgsAndOthers(int x, int y, final Object... args);
 
+        public void voidMethodVarArgsReceiverAndOthers(V8Object recier, int x, int y, final Object... args);
+
     }
 
     @Test
@@ -1196,6 +1198,69 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testVarArgsNoReciver() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
+                Integer.TYPE, Object[].class }, false);
+
+        v8.executeVoidScript("foo(undefined, 1, 2);");
+
+        verify(callback).voidMethodVarArgsReceiverAndOthers(new V8Object.Undefined(), 1, 2);
+    }
+
+    @Test
+    public void testVarArgsWithReciver() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
+                Integer.TYPE, Object[].class }, true);
+        V8Array parameters = new V8Array(v8).push(1).push(2);
+        doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
+
+        v8.executeVoidScript("foo(1, 2);");
+
+        parameters.release();
+    }
+
+    @Test
+    public void testAvailableVarArgsWithReciver() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
+                Integer.TYPE, Object[].class }, true);
+        V8Array parameters = new V8Array(v8).push(1).push(2).push(3).push(4);
+        doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
+
+        v8.executeVoidScript("foo(1, 2, 3, 4);");
+
+        parameters.release();
+    }
+
+    @Test
+    public void testAvailableVarArgsWithReciver2() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
+                Integer.TYPE, Object[].class }, true);
+        V8Array parameters = new V8Array(v8).push(1).push(2).push(3).push(false);
+        doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
+
+        v8.executeVoidScript("foo(1, 2, 3, false);");
+
+        parameters.release();
+    }
+
+    @Test
+    public void testAvailableVarArgsWithNoReciver() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
+                Integer.TYPE, Object[].class }, false);
+        V8Array parameters = new V8Array(v8).push(v8).push(1).push(2).push(3).push(false);
+        doAnswer(constructReflectiveAnswer(null, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
+
+        v8.executeVoidScript("foo(this, 1, 2, 3, false);");
+
+        parameters.release();
+    }
+
+    @Test
     public void testMissingParamtersWithObjectParameters() {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodWithObjectParameters", "foo", new Class<?>[] { Integer.class });
@@ -1385,7 +1450,6 @@ public class V8CallbackTest {
         assertTrue(result);
     }
 
-
     private Answer<Object> constructAnswer(final V8Object receiver, final V8Array parameters, final Object result) {
         return new Answer<Object>() {
 
@@ -1400,6 +1464,25 @@ public class V8CallbackTest {
                 }
                 if (receiver != null) {
                     assertEquals(receiver, args[0]);
+                }
+                return result;
+            }
+        };
+    }
+
+    private Answer<Object> constructReflectiveAnswer(final V8Object receiver, final V8Array parameters, final Object result) {
+        return new Answer<Object>() {
+
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                int start = 0;
+                if (receiver != null) {
+                    assertEquals(receiver, args[start]);
+                    start++;
+                }
+                for (int i = start; i < args.length; i++) {
+                    assertEquals(parameters.get(i - start), args[i]);
                 }
                 return result;
             }

@@ -41,6 +41,7 @@ public class V8 extends V8Object {
         Method           method;
         JavaCallback     callback;
         JavaVoidCallback voidCallback;
+        boolean          includeReceiver;
     }
 
     Map<Integer, MethodDescriptor> functions = new HashMap<>();
@@ -276,10 +277,11 @@ public class V8 extends V8Object {
         }
     }
 
-    void registerCallback(final Object object, final Method method, final int objectHandle, final String jsFunctionName) {
+    void registerCallback(final Object object, final Method method, final int objectHandle, final String jsFunctionName, final boolean includeReceiver) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.object = object;
         methodDescriptor.method = method;
+        methodDescriptor.includeReceiver = includeReceiver;
         int methodID = methodReferenceCounter++;
         getFunctionRegistry().put(methodID, methodDescriptor);
         registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
@@ -324,7 +326,7 @@ public class V8 extends V8Object {
             return checkResult(methodDescriptor.callback.invoke(receiver, parameters));
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
-        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+        Object[] args = getArgs(receiver, methodDescriptor, parameters, hasVarArgs);
         checkArgs(args);
         try {
             Object result = methodDescriptor.method.invoke(methodDescriptor.object, args);
@@ -360,7 +362,7 @@ public class V8 extends V8Object {
             return;
         }
         boolean hasVarArgs = methodDescriptor.method.isVarArgs();
-        Object[] args = getArgs(methodDescriptor, parameters, hasVarArgs);
+        Object[] args = getArgs(receiver, methodDescriptor, parameters, hasVarArgs);
         checkArgs(args);
         try {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
@@ -397,31 +399,40 @@ public class V8 extends V8Object {
         }
     }
 
-    private Object[] getArgs(final MethodDescriptor methodDescriptor, final V8Array parameters, final boolean hasVarArgs) {
+    private Object[] getArgs(final V8Object receiver, final MethodDescriptor methodDescriptor, final V8Array parameters, final boolean hasVarArgs) {
         int numberOfParameters = methodDescriptor.method.getParameterTypes().length;
         int varArgIndex = hasVarArgs ? numberOfParameters - 1 : numberOfParameters;
-        Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes());
-        List<Object> varArgs = populateParamters(parameters, varArgIndex, args);
+        Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes(), receiver, methodDescriptor.includeReceiver);
+        List<Object> varArgs = populateParamters(parameters, varArgIndex, args, methodDescriptor.includeReceiver);
         if (hasVarArgs) {
             args[varArgIndex] = varArgs.toArray();
         }
         return args;
     }
 
-    private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args) {
+    private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args, final boolean includeReceiver) {
         List<Object> varArgs = new ArrayList<>();
-        for (int i = 0; i < parameters.length(); i++) {
+        int start = 0;
+        if (includeReceiver) {
+            start = 1;
+        }
+        for (int i = start; i < (parameters.length() + start); i++) {
             if (i >= varArgIndex) {
-                varArgs.add(getArrayItem(parameters, i));
+                varArgs.add(getArrayItem(parameters, i - start));
             } else {
-                args[i] = getArrayItem(parameters, i);
+                args[i] = getArrayItem(parameters, i - start);
             }
         }
         return varArgs;
     }
 
-    private Object[] setDefaultValues(final Object[] parameters, final Class<?>[] parameterTypes) {
-        for (int i = 0; i < parameters.length; i++) {
+    private Object[] setDefaultValues(final Object[] parameters, final Class<?>[] parameterTypes, final V8Object receiver, final boolean includeReceiver) {
+        int start = 0;
+        if (includeReceiver) {
+            start = 1;
+            parameters[0] = receiver;
+        }
+        for (int i = start; i < parameters.length; i++) {
             parameters[i] = getDefaultValue(parameterTypes[i]);
         }
         return parameters;

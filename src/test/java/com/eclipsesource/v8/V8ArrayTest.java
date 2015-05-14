@@ -383,7 +383,7 @@ public class V8ArrayTest {
     public void testRegisterAnyJavaMethod() {
         V8Array undefined = v8.getArray("array");
 
-        undefined.registerJavaMethod(new Object(), "toString", "toString", new Class<?>[0]);
+        undefined.registerJavaMethod(new Object(), "toString", "toString", new Class<?>[0], false);
     }
 
     @Test(expected = UnsupportedOperationException.class)

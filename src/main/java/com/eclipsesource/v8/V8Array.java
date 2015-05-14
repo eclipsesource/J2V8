@@ -397,7 +397,7 @@ public class V8Array extends V8Object {
         }
 
         @Override
-        public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
+        public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {
             throw new UnsupportedOperationException();
         }
 

@@ -238,14 +238,17 @@ public class V8Object extends V8Value {
         return this;
     }
 
-    public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName,
-            final Class<?>[] parameterTypes) {
+    public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
+        return registerJavaMethod(object, methodName, jsFunctionName, parameterTypes, false);
+    }
+
+    public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {
         v8.checkThread();
         checkReleaesd();
         try {
             Method method = object.getClass().getMethod(methodName, parameterTypes);
             method.setAccessible(true);
-            v8.registerCallback(object, method, getHandle(), jsFunctionName);
+            v8.registerCallback(object, method, getHandle(), jsFunctionName, includeReceiver);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         } catch (SecurityException e) {
@@ -429,7 +432,7 @@ public class V8Object extends V8Value {
         }
 
         @Override
-        public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
+        public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {
             throw new UnsupportedOperationException();
         }
 
