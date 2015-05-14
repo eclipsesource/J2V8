@@ -82,7 +82,9 @@ public class V8 extends V8Object {
         }
         V8 runtime = new V8(globalAlias);
         runtime.thread = Thread.currentThread();
-        runtimeCounter++;
+        synchronized (lock) {
+            runtimeCounter++;
+        }
         return runtime;
     }
 
@@ -159,7 +161,9 @@ public class V8 extends V8Object {
         if (debugEnabled) {
             disableDebugSupport();
         }
-        runtimeCounter--;
+        synchronized (lock) {
+            runtimeCounter--;
+        }
         _releaseRuntime(v8RuntimePtr);
         v8RuntimePtr = 0L;
         released = true;
