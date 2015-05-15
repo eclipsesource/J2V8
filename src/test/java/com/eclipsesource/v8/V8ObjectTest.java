@@ -1041,4 +1041,133 @@ public class V8ObjectTest {
         a.release();
     }
 
+    @Test
+    public void testV8ObjectTwinEqual() {
+        V8Object v8Object = new V8Object(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertNotSame(v8Object, twin);
+        assertTrue(v8Object.equals(twin));
+        assertTrue(twin.equals(v8Object));
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testV8ObjectTwinSameValue() {
+        V8Object v8Object = new V8Object(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertNotSame(v8Object, twin);
+        assertTrue(v8Object.sameValue(twin));
+        assertTrue(twin.sameValue(v8Object));
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testV8ObjectTwinStrictEquals() {
+        V8Object v8Object = new V8Object(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertNotSame(v8Object, twin);
+        assertTrue(v8Object.strictEquals(twin));
+        assertTrue(twin.strictEquals(v8Object));
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testV8ObjectTwinSameHashCode() {
+        V8Object v8Object = new V8Object(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertEquals(v8Object.hashCode(), twin.hashCode());
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testTwinIsObject() {
+        V8Object v8Object = new V8Object(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertTrue(twin instanceof V8Object);
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testTwinIsArray() {
+        V8Object v8Object = new V8Array(v8);
+
+        V8Value twin = v8Object.twin();
+
+        assertTrue(twin instanceof V8Array);
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testTwinIsFunction() {
+        v8.executeVoidScript("function add(x, y) {return x+y;}");
+        V8Object v8Object = v8.getObject("add");
+
+        V8Value twin = v8Object.twin();
+
+        assertTrue(twin instanceof V8Function);
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testTwinIsUndefined() {
+        V8Object v8Object = (V8Object) V8.getUndefined();
+
+        V8Value twin = v8Object.twin();
+
+        assertTrue(twin.isUndefined());
+        v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testReleaseTwinDoesNotReleaseOriginal() {
+        V8Object v8Object = new V8Object(v8);
+        V8Value twin = v8Object.twin();
+
+        twin.release();
+
+        assertFalse(v8Object.isReleased());
+        v8Object.release();
+    }
+
+    @Test
+    public void testReleaseObjectDoesNotReleaseTwin() {
+        V8Object v8Object = new V8Object(v8);
+        V8Value twin = v8Object.twin();
+
+        v8Object.release();
+
+        assertFalse(twin.isReleased());
+        twin.release();
+    }
+
+    @Test
+    public void testTwinMimicsObject() {
+        V8Object v8Object = new V8Object(v8);
+        V8Value twin = v8Object.twin();
+
+        v8Object.add("foo", "bar");
+
+        assertEquals("bar", ((V8Object) twin).getString("foo"));
+        v8Object.release();
+        twin.release();
+    }
+
 }

@@ -22,6 +22,15 @@ public class V8Array extends V8Object {
     }
 
     @Override
+    protected V8Value createTwin(final int newHandle) {
+        return new V8Array(v8, newHandle);
+    }
+
+    protected V8Array(final V8 v8, final int objectHandle) {
+        super(v8, objectHandle);
+    }
+
+    @Override
     protected void initialize(final long runtimePtr, final int objectHandle) {
         v8.initNewV8Array(runtimePtr, objectHandle);
         v8.addObjRef();

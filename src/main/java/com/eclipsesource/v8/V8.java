@@ -183,6 +183,11 @@ public class V8 extends V8Object {
         return executeIntegerScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    void createTwin(final V8Value value, final int twinObjectHandle) {
+        checkThread();
+        createTwin(v8RuntimePtr, value.getHandle(), twinObjectHandle);
+    }
+
     public double executeDoubleScript(final String script) {
         return executeDoubleScript(script, null, 0);
     }
@@ -483,6 +488,10 @@ public class V8 extends V8Object {
         _initNewV8Object(v8RuntimePtr, objectHandle);
     }
 
+    protected void createTwin(final long v8RuntimePtr, final int objectHandle, final int twinObjectHandle) {
+        _createTwin(v8RuntimePtr, objectHandle, twinObjectHandle);
+    }
+
     protected int executeIntegerScript(final long v8RuntimePtr, final String script, final String scriptName, final int lineNumber) {
         return _executeIntegerScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
@@ -740,6 +749,8 @@ public class V8 extends V8Object {
     }
 
     private native void _initNewV8Object(long v8RuntimePtr, int objectHandle);
+
+    private native void _createTwin(long v8RuntimePtr, int objectHandle, int twinObjectHandle);
 
     private native void _releaseRuntime(long v8RuntimePtr);
 

@@ -18,18 +18,18 @@ public class V8Object extends V8Value {
 
     }
 
+    @Override
+    protected V8Value createTwin(final int newHandle) {
+        return new V8Object(v8, newHandle);
+    }
+
     protected V8Object(final V8 v8, final int objectHandle) {
-        if (v8 == null) {
-            this.v8 = (V8) this;
-        }
-        this.objectHandle = objectHandle;
-        released = false;
+        super(v8, objectHandle);
     }
 
     public V8Object(final V8 v8) {
-        this.v8 = v8;
+        super(v8);
         v8.checkThread();
-        objectHandle = v8ObjectInstanceCounter++;
         initialize(v8.getV8RuntimePtr(), objectHandle);
     }
 

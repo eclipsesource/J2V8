@@ -262,6 +262,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, obj);
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createTwin
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle, jint twinObjectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Handle<Object> obj = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  createPersistentContainer(reinterpret_cast<V8Runtime*>(v8RuntimePtr), twinObjectHandle);
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[twinObjectHandle]->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, obj);
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jint arrayHandle) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, );

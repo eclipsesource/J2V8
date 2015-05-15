@@ -16,6 +16,15 @@ public class V8Function extends V8Object {
         super(v8);
     }
 
+    protected V8Function(final V8 v8, final int objectHandle) {
+        super(v8, objectHandle);
+    }
+
+    @Override
+    protected V8Value createTwin(final int newHandle) {
+        return new V8Function(v8, newHandle);
+    }
+
     public Object call(final V8Object receiver, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();

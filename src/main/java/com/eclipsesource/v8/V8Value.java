@@ -28,8 +28,24 @@ abstract public class V8Value {
     protected int           objectHandle;
     protected boolean       released                = true;
 
-    public V8Value() {
+    protected V8Value() {
         super();
+    }
+
+    public V8Value(final V8 v8) {
+        this.v8 = v8;
+        objectHandle = v8ObjectInstanceCounter++;
+    }
+
+    protected V8Value(final V8 v8, final int objectHandle) {
+        if (v8 == null) {
+            this.v8 = (V8) this;
+        } else {
+            this.v8 = v8;
+            v8.addObjRef();
+        }
+        this.objectHandle = objectHandle;
+        released = false;
     }
 
     protected void initialize(final long runtimePtr, final int objectHandle) {
@@ -50,6 +66,19 @@ abstract public class V8Value {
     public V8 getRutime() {
         return v8;
     }
+
+    public V8Value twin() {
+        if (isUndefined()) {
+            return this;
+        }
+        v8.checkThread();
+        v8.checkReleaesd();
+        int twinHandle = v8ObjectInstanceCounter++;
+        v8.createTwin(this, twinHandle);
+        return createTwin(twinHandle);
+    }
+
+    protected abstract V8Value createTwin(int twinObjectHandle);
 
     public void release() {
         v8.checkThread();

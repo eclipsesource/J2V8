@@ -37,6 +37,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _createTwin
+ * Signature: (JII)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1createTwin
+  (JNIEnv *, jobject, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _releaseRuntime
  * Signature: (J)V
  */
