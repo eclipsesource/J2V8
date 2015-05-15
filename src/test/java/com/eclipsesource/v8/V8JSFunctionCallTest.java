@@ -64,6 +64,19 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testCallFunctionOnUndefined() {
+        v8.executeVoidScript("function add(x, y) {return x+y;}");
+        V8Function function = (V8Function) v8.getObject("add");
+        V8Array parameters = new V8Array(v8).push(7).push(8);
+
+        Object result = function.call(new V8Object.Undefined(), parameters);
+
+        assertEquals(15, result);
+        function.release();
+        parameters.release();
+    }
+
+    @Test
     public void testFunctionScope() {
         v8.executeVoidScript("function say() { return this.name + ' say meow!'} ");
         V8Function function = (V8Function) v8.getObject("say");

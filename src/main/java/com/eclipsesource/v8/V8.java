@@ -155,10 +155,10 @@ public class V8 extends V8Object {
     }
 
     public void release(final boolean reportMemoryLeaks) {
-        checkThread();
         if (isReleased()) {
             return;
         }
+        checkThread();
         if (debugEnabled) {
             disableDebugSupport();
         }
@@ -262,6 +262,9 @@ public class V8 extends V8Object {
     void checkThread() {
         if ((thread != null) && (thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access.");
+        }
+        if (isReleased()) {
+            throw new Error("Runtime disposed error.");
         }
     }
 
