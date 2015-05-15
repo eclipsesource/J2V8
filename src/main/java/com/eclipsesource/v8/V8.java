@@ -127,6 +127,11 @@ public class V8 extends V8Object {
         return debugEnabled;
     }
 
+    public static void processDebugMessages(final V8 runtime) {
+        runtime.checkThread();
+        runtime._processDebugMessages(runtime.getV8RuntimePtr());
+    }
+
     public void disableDebugSupport() {
         V8.checkDebugThread();
         disableDebugSupport(getV8RuntimePtr());
