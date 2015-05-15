@@ -24,11 +24,11 @@ public class V8 extends V8Object {
     private static Runnable     debugHandler   = null;
     private static Thread       debugThread    = null;
 
-    private Thread  thread                 = null;
-    private int     methodReferenceCounter = 0;
-    private boolean debugEnabled           = false;
-    long            objectReferences       = 0;
-    private long    v8RuntimePtr           = 0;
+    private final V8Locker locker;
+    private int            methodReferenceCounter = 0;
+    private boolean        debugEnabled           = false;
+    long                   objectReferences       = 0;
+    private long           v8RuntimePtr           = 0;
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -82,7 +82,6 @@ public class V8 extends V8Object {
             debugThread = Thread.currentThread();
         }
         V8 runtime = new V8(globalAlias);
-        runtime.thread = Thread.currentThread();
         synchronized (lock) {
             runtimeCounter++;
         }
@@ -107,6 +106,7 @@ public class V8 extends V8Object {
 
     protected V8(final String globalAlias) {
         super(null, 0);
+        locker = new V8Locker();
         checkThread();
         v8RuntimePtr = _createIsolate(globalAlias);
     }
@@ -269,10 +269,12 @@ public class V8 extends V8Object {
         executeVoidScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    public V8Locker getLocker() {
+        return locker;
+    }
+
     void checkThread() {
-        if ((thread != null) && (thread != Thread.currentThread())) {
-            throw new Error("Invalid V8 thread access.");
-        }
+        locker.checkThread();
         if (isReleased()) {
             throw new Error("Runtime disposed error.");
         }

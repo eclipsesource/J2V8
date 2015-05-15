@@ -100,6 +100,26 @@ public class V8Test {
     }
 
     @Test
+    public void testMultiThreadAccess() throws InterruptedException {
+        v8.add("foo", "bar");
+        v8.getLocker().release();
+        Thread t = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                v8.getLocker().acquire();
+                v8.add("foo", "baz");
+                v8.getLocker().release();
+            }
+        });
+        t.start();
+        t.join();
+        v8.getLocker().acquire();
+
+        assertEquals("baz", v8.getString("foo"));
+    }
+
+    @Test
     public void testIAENotThrownOnShutdown() {
         V8 v8_ = V8.createV8Runtime();
 
