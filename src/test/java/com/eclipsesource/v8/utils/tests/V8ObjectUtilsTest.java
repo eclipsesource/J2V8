@@ -232,7 +232,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromStringMap() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<String, String>();
         map.put("first", "john");
         map.put("last", "smith");
 
@@ -245,7 +245,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromIntegerMap() {
-        Map<String, Integer> map = new HashMap<>();
+        Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("a", 1);
         map.put("b", 3);
 
@@ -258,7 +258,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromLongMap() {
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new HashMap<String, Long>();
         map.put("a", 1L);
         map.put("b", 3L);
 
@@ -271,7 +271,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromDoubleMap() {
-        Map<String, Double> map = new HashMap<>();
+        Map<String, Double> map = new HashMap<String, Double>();
         map.put("a", 1.1);
         map.put("b", 3.14159);
         map.put("c", 4.999);
@@ -286,7 +286,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromFloatMap() {
-        Map<String, Float> map = new HashMap<>();
+        Map<String, Float> map = new HashMap<String, Float>();
         map.put("a", 1.1f);
         map.put("b", 3.14159f);
         map.put("c", 4.999f);
@@ -301,7 +301,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromBooleanMap() {
-        Map<String, Boolean> map = new HashMap<>();
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
         map.put("a", true);
         map.put("b", true);
         map.put("c", false);
@@ -316,7 +316,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreatev8ObjectWithNulls() {
-        Map<String, Boolean> map = new HashMap<>();
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
         map.put("a", true);
         map.put("b", null);
 
@@ -329,7 +329,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromMixedMap() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("boolean", true);
         map.put("integer", 7);
         map.put("double", 3.14159);
@@ -350,7 +350,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromIntegerList() {
-        List<Integer> list = new ArrayList<>();
+        List<Integer> list = new ArrayList<Integer>();
         list.add(1);
         list.add(1);
         for (int i = 2; i < 10; i++) {
@@ -374,7 +374,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromLongList() {
-        List<Long> list = new ArrayList<>();
+        List<Long> list = new ArrayList<Long>();
         list.add((long) 1);
 
         int size = registerAndRelease("result", list);
@@ -385,7 +385,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromFloatList() {
-        List<Float> list = new ArrayList<>();
+        List<Float> list = new ArrayList<Float>();
         list.add(1.1f);
 
         int size = registerAndRelease("result", list);
@@ -396,7 +396,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromDoubleList() {
-        List<Double> list = new ArrayList<>();
+        List<Double> list = new ArrayList<Double>();
         list.add(3.14159);
         list.add(4.1);
         list.add(5.3);
@@ -411,7 +411,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromBooleanList() {
-        List<Boolean> list = new ArrayList<>();
+        List<Boolean> list = new ArrayList<Boolean>();
         list.add(true);
         list.add(false);
 
@@ -424,7 +424,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayFromStringList() {
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
         list.add("hello");
         list.add("world");
 
@@ -437,7 +437,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayWithNullValues() {
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
         list.add("hello");
         list.add(null);
         list.add("world");
@@ -452,7 +452,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8AraryFromMixedList() {
-        List<Object> list = new ArrayList<>();
+        List<Object> list = new ArrayList<Object>();
         list.add("string");
         list.add(7);
         list.add(3.14159);
@@ -471,12 +471,12 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ArrayOfMaps() {
-        List<Map<String, Integer>> list = new ArrayList<>();
-        Map<String, Integer> m1 = new HashMap<>();
+        List<Map<String, Integer>> list = new ArrayList<Map<String, Integer>>();
+        Map<String, Integer> m1 = new HashMap<String, Integer>();
         m1.put("Sadie", 7);
         m1.put("Lily", 5);
         m1.put("Maggie", 3);
-        Map<String, Integer> m2 = new HashMap<>();
+        Map<String, Integer> m2 = new HashMap<String, Integer>();
         m2.put("Ian", 38);
         list.add(m1);
         list.add(m2);
@@ -492,16 +492,16 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreatev8ArrayFromMatrix() {
-        List<List<Integer>> matrix = new ArrayList<>();
-        List<Integer> l1 = new ArrayList<>();
+        List<List<Integer>> matrix = new ArrayList<List<Integer>>();
+        List<Integer> l1 = new ArrayList<Integer>();
         l1.add(1);
         l1.add(2);
         l1.add(3);
-        List<Integer> l2 = new ArrayList<>();
+        List<Integer> l2 = new ArrayList<Integer>();
         l2.add(4);
         l2.add(5);
         l2.add(6);
-        List<Integer> l3 = new ArrayList<>();
+        List<Integer> l3 = new ArrayList<Integer>();
         l3.add(7);
         l3.add(8);
         l3.add(9);
@@ -527,16 +527,16 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testCreateV8ObjectFromMapOfLists() {
-        Map<String, List<String>> map = new HashMap<>();
-        List<String> l1 = new ArrayList<>();
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        List<String> l1 = new ArrayList<String>();
         l1.add("first");
         l1.add("second");
         l1.add("third");
-        List<String> l2 = new ArrayList<>();
+        List<String> l2 = new ArrayList<String>();
         l2.add("a");
         l2.add("b");
         l2.add("c");
-        List<String> l3 = new ArrayList<>();
+        List<String> l3 = new ArrayList<String>();
         l3.add("dog");
         l3.add("cat");
         map.put("numbers", l1);
@@ -558,7 +558,7 @@ public class V8ObjectUtilsTest {
 
     @Test(expected = IllegalStateException.class)
     public void testCreateV8ObjectWithInvalidContents() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("first", new Rectangle());
 
         registerAndRelease("result", map);
@@ -566,7 +566,7 @@ public class V8ObjectUtilsTest {
 
     @Test(expected = IllegalStateException.class)
     public void testCreateV8ArrayWithInvalidContents() {
-        List<Object> list = new ArrayList<>();
+        List<Object> list = new ArrayList<Object>();
         list.add(new Rectangle());
 
         registerAndRelease("result", list);
@@ -677,7 +677,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testGetV8ResultObject() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("foo", "bar");
         Object result = V8ObjectUtils.getV8Result(v8, map);
 
@@ -688,7 +688,7 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testGetV8ResultArray() {
-        List<Object> list = new ArrayList<>();
+        List<Object> list = new ArrayList<Object>();
         list.add(1);
         list.add("two");
         Object result = V8ObjectUtils.getV8Result(v8, list);
@@ -743,7 +743,7 @@ public class V8ObjectUtilsTest {
     @Test
     public void testPushMap() {
         V8Array array = new V8Array(v8);
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<String, String>();
         map.put("foo", "bar");
 
         V8ObjectUtils.pushValue(v8, array, map);
@@ -757,7 +757,7 @@ public class V8ObjectUtilsTest {
     @Test
     public void testPushList() {
         V8Array array = new V8Array(v8);
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
         list.add("one");
 
         V8ObjectUtils.pushValue(v8, array, list);

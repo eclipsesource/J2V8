@@ -662,8 +662,8 @@ public class V8CallbackTest {
             @Override
             public Integer answer(final InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                int x = (int) args[0];
-                int y = (int) args[1];
+                int x = (Integer) args[0];
+                int y = (Integer) args[1];
                 return x + y;
             }
 
@@ -684,8 +684,8 @@ public class V8CallbackTest {
             @Override
             public Double answer(final InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                double x = (double) args[0];
-                double y = (double) args[1];
+                double x = (Double) args[0];
+                double y = (Double) args[1];
                 return x + y;
             }
 

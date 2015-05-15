@@ -325,7 +325,7 @@ public class V8Test {
     public void testAnyScriptReturnDouble() {
         Object result = v8.executeScript("1.1;");
 
-        assertEquals(1.1, (double) result, 0.000001);
+        assertEquals(1.1, (Double) result, 0.000001);
     }
 
     @Test
@@ -339,7 +339,7 @@ public class V8Test {
     public void testAnyScriptReturnBoolean() {
         Object result = v8.executeScript("false;");
 
-        assertFalse((boolean) result);
+        assertFalse((Boolean) result);
     }
 
     @Test

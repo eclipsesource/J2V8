@@ -44,7 +44,7 @@ public class V8 extends V8Object {
         boolean          includeReceiver;
     }
 
-    Map<Integer, MethodDescriptor> functions = new HashMap<>();
+    Map<Integer, MethodDescriptor> functions = new HashMap<Integer, MethodDescriptor>();
 
     private synchronized static void load(final String tmpDirectory) {
         try {
@@ -341,7 +341,9 @@ public class V8 extends V8Object {
             return checkResult(result);
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
+        } catch (IllegalAccessException e) {
+            throw e;
+        } catch (IllegalArgumentException e) {
             throw e;
         } finally {
             releaseArguments(args, hasVarArgs);
@@ -376,7 +378,9 @@ public class V8 extends V8Object {
             methodDescriptor.method.invoke(methodDescriptor.object, args);
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
+        } catch (IllegalAccessException e) {
+            throw e;
+        } catch (IllegalArgumentException e) {
             throw e;
         } finally {
             releaseArguments(args, hasVarArgs);
@@ -419,7 +423,7 @@ public class V8 extends V8Object {
     }
 
     private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args, final boolean includeReceiver) {
-        List<Object> varArgs = new ArrayList<>();
+        List<Object> varArgs = new ArrayList<Object>();
         int start = 0;
         if (includeReceiver) {
             start = 1;

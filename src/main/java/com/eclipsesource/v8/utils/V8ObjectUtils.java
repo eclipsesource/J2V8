@@ -28,7 +28,7 @@ public class V8ObjectUtils {
         if (object == null) {
             return Collections.emptyMap();
         }
-        Map<String, ? super Object> result = new HashMap<>();
+        Map<String, ? super Object> result = new HashMap<String, Object>();
         String[] keys = object.getKeys();
         for (String key : keys) {
             result.put(key, getValue(object, key));
@@ -40,7 +40,7 @@ public class V8ObjectUtils {
         if (array == null) {
             return Collections.emptyList();
         }
-        List<? super Object> result = new ArrayList<>();
+        List<? super Object> result = new ArrayList<Object>();
         for (int i = 0; i < array.length(); i++) {
             result.add(getValue(array, i));
         }
@@ -139,17 +139,17 @@ public class V8ObjectUtils {
         if (value == null) {
             result.pushUndefined();
         } else if (value instanceof Integer) {
-            result.push((int) value);
+            result.push((Integer) value);
         } else if (value instanceof Long) {
-            result.push((int) (long) value);
+            result.push((int) (long) (Long) value);
         } else if (value instanceof Double) {
-            result.push((double) value);
+            result.push((Double) value);
         } else if (value instanceof Float) {
-            result.push((float) value);
+            result.push((Float) value);
         } else if (value instanceof String) {
             result.push((String) value);
         } else if (value instanceof Boolean) {
-            result.push((boolean) value);
+            result.push((Boolean) value);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value);
             result.push(object);
@@ -168,17 +168,17 @@ public class V8ObjectUtils {
         if (value == null) {
             result.addUndefined(key);
         } else if (value instanceof Integer) {
-            result.add(key, (int) value);
+            result.add(key, (Integer) value);
         } else if (value instanceof Long) {
-            result.add(key, (int) (long) value);
+            result.add(key, (int) (long) (Long) value);
         } else if (value instanceof Double) {
-            result.add(key, (double) value);
+            result.add(key, (Double) value);
         } else if (value instanceof Float) {
-            result.add(key, (float) value);
+            result.add(key, (Float) value);
         } else if (value instanceof String) {
             result.add(key, (String) value);
         } else if (value instanceof Boolean) {
-            result.add(key, (boolean) value);
+            result.add(key, (Boolean) value);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value);
             result.add(key, object);

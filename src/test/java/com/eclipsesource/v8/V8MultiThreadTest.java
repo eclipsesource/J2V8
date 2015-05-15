@@ -23,7 +23,7 @@ import com.eclipsesource.v8.utils.V8ObjectUtils;
 public class V8MultiThreadTest {
 
     private V8           runtime          = null;
-    private List<Object> mergeSortResults = new ArrayList<>();
+    private List<Object> mergeSortResults = new ArrayList<Object>();
 
     @Test
     public void testKillThread() throws InterruptedException {
@@ -112,7 +112,7 @@ public class V8MultiThreadTest {
     @Test
     public void testMultiV8Threads() throws InterruptedException {
 
-        final List<Thread> threads = new ArrayList<>();
+        final List<Thread> threads = new ArrayList<Thread>();
         for (int i = 0; i < 10; i++) {
             Thread t = new Thread(new Runnable() {
 

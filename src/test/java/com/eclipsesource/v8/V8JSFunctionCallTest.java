@@ -221,7 +221,7 @@ public class V8JSFunctionCallTest {
 
         Object result = v8.executeFunction("getFoo", null);
 
-        assertEquals(33.3, (double) result, 0.000001);
+        assertEquals(33.3, (Double) result, 0.000001);
     }
 
     @Test
@@ -239,7 +239,7 @@ public class V8JSFunctionCallTest {
 
         Object result = v8.executeFunction("getFoo", null);
 
-        assertTrue((boolean) result);
+        assertTrue((Boolean) result);
     }
 
     @Test
