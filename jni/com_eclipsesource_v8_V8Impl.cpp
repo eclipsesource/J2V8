@@ -1295,6 +1295,9 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1identityHash
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jint objectHandle) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
+  if (objectHandle == 0) {
+    object = context->Global();
+  }
   return object->GetIdentityHash();
 }
 

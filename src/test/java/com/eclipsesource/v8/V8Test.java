@@ -1160,7 +1160,7 @@ public class V8Test {
     }
 
     @Test
-    public void testV8EqualsGlobalHashl() {
+    public void testV8EqualsGlobalHash() {
         setupWindowAlias();
         v8.executeVoidScript("var global = Function('return this')();");
 
