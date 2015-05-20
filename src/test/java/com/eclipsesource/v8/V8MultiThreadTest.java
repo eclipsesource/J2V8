@@ -19,63 +19,66 @@ import java.util.List;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.V8ObjectUtils;
+import com.eclipsesource.v8.utils.V8Runnable;
+import com.eclipsesource.v8.utils.V8Thread;
 
 public class V8MultiThreadTest {
 
-    private V8           runtime          = null;
+    private boolean      finished         = false;
     private List<Object> mergeSortResults = new ArrayList<Object>();
 
     @Test
-    public void testKillThread() throws InterruptedException {
-        Thread t = new Thread(new Runnable() {
+    public void testTerminateExecution() throws InterruptedException {
+        V8Thread t = new V8Thread(new V8Runnable() {
 
             @Override
-            public void run() {
-                runtime = V8.createV8Runtime();
+            public void run(final V8 runtime) {
                 try {
                     runtime.executeVoidScript("while ( true ) {try {} catch(e){}} ");
                 } catch (V8RuntimeException e) {
+                    // do nothing
                 }
-                runtime.release();
+                finished = true;
             }
         });
         t.start();
         Thread.sleep(1000);
-        runtime.terminateExecution();
+        t.terminateExecution();
         t.join();
+        assertTrue(finished);
         // Make sure the test ends and that we don't deadlock.
     }
 
     private static final String sortAlgorithm = ""
-                                                      + "function merge(left, right){\n"
-                                                      + "  var result  = [],\n"
-                                                      + "  il      = 0,\n"
-                                                      + "  ir      = 0;\n"
-                                                      + "  while (il < left.length && ir < right.length){\n"
-                                                      + "    if (left[il] < right[ir]){\n"
-                                                      + "      result.push(left[il++]);\n"
-                                                      + "    } else {\n"
-                                                      + "      result.push(right[ir++]);\n"
-                                                      + "    }\n"
-                                                      + "  }\n"
-                                                      + "  return result.concat(left.slice(il)).concat(right.slice(ir));\n"
-                                                      + "};\n"
-                                                      + "\n"
-                                                      + "function sort(data) {\n"
-                                                      + "  if ( data.length === 1 ) {\n"
-                                                      + "    return [data[0]];\n"
-                                                      + "  } else if (data.length === 2 ) {\n"
-                                                      + "    if ( data[1] < data[0] ) {\n"
-                                                      + "      return [data[1],data[0]];\n"
-                                                      + "    } else {\n"
-                                                      + "      return data;\n"
-                                                      + "    }\n"
-                                                      + "  }\n"
-                                                      + "  var mid = Math.floor(data.length / 2);\n"
-                                                      + "  var first = data.slice(0, mid);\n"
-                                                      + "  var second = data.slice(mid);\n"
-                                                      + "  return merge(_sort( first ), _sort( second ) );\n"
-                                                      + "}\n";
+            + "function merge(left, right){\n"
+            + "  var result  = [],\n"
+            + "  il      = 0,\n"
+            + "  ir      = 0;\n"
+            + "  while (il < left.length && ir < right.length){\n"
+            + "    if (left[il] < right[ir]){\n"
+            + "      result.push(left[il++]);\n"
+            + "    } else {\n"
+            + "      result.push(right[ir++]);\n"
+            + "    }\n"
+            + "  }\n"
+            + "  return result.concat(left.slice(il)).concat(right.slice(ir));\n"
+            + "};\n"
+            + "\n"
+            + "function sort(data) {\n"
+            + "  if ( data.length === 1 ) {\n"
+            + "    return [data[0]];\n"
+            + "  } else if (data.length === 2 ) {\n"
+            + "    if ( data[1] < data[0] ) {\n"
+            + "      return [data[1],data[0]];\n"
+            + "    } else {\n"
+            + "      return data;\n"
+            + "    }\n"
+            + "  }\n"
+            + "  var mid = Math.floor(data.length / 2);\n"
+            + "  var first = data.slice(0, mid);\n"
+            + "  var second = data.slice(mid);\n"
+            + "  return merge(_sort( first ), _sort( second ) );\n"
+            + "}\n";
 
     public class Sort implements JavaCallback {
         List<Object> result = null;
@@ -84,11 +87,10 @@ public class V8MultiThreadTest {
         public Object invoke(final V8Object receiver, final V8Array parameters) {
             final List<Object> data = V8ObjectUtils.toList(parameters);
 
-            Thread t = new Thread(new Runnable() {
+            V8Thread t = new V8Thread(new V8Runnable() {
 
                 @Override
-                public void run() {
-                    V8 runtime = V8.createV8Runtime();
+                public void run(final V8 runtime) {
                     runtime.registerJavaMethod(new Sort(), "_sort");
                     runtime.executeVoidScript(sortAlgorithm);
                     V8Array parameters = V8ObjectUtils.toV8Array(runtime, data);
@@ -96,7 +98,6 @@ public class V8MultiThreadTest {
                     result = V8ObjectUtils.toList(_result);
                     _result.release();
                     parameters.release();
-                    runtime.release();
                 }
             });
             t.start();
@@ -114,11 +115,10 @@ public class V8MultiThreadTest {
 
         final List<Thread> threads = new ArrayList<Thread>();
         for (int i = 0; i < 10; i++) {
-            Thread t = new Thread(new Runnable() {
+            V8Thread t = new V8Thread(new V8Runnable() {
 
                 @Override
-                public void run() {
-                    V8 v8 = V8.createV8Runtime();
+                public void run(final V8 v8) {
                     v8.registerJavaMethod(new Sort(), "_sort");
                     v8.executeVoidScript(sortAlgorithm);
                     V8Array data = new V8Array(v8);
@@ -134,8 +134,8 @@ public class V8MultiThreadTest {
                     result.release();
                     parameters.release();
                     data.release();
-                    v8.release();
                 }
+
             });
             threads.add(t);
         }
