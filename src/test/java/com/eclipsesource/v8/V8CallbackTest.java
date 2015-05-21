@@ -17,6 +17,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -64,6 +65,8 @@ public class V8CallbackTest {
         public void voidMethodWithArrayParameter(final V8Array array);
 
         public void voidMethodWithObjectParameter(final V8Object object);
+
+        public void voidMethodWithFunctionParameter(final V8Function object);
 
         public void voidMethodWithStringParameter(final String string);
 
@@ -212,6 +215,26 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo();");
 
         verify(callback).stringMethodNoParameters();
+    }
+
+    @Test
+    public void testCallbackWithFunctionInParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithObjectParameter", "foo", new Class<?>[] { V8Object.class });
+
+        v8.executeVoidScript("var bar = function() {}; foo(bar);");
+
+        verify(callback).voidMethodWithObjectParameter(isNotNull(V8Function.class));
+    }
+
+    @Test
+    public void testCallbackWithExplicitFunctionInParameterList() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodWithFunctionParameter", "foo", new Class<?>[] { V8Function.class });
+
+        v8.executeVoidScript("var bar = function() {}; foo(bar);");
+
+        verify(callback).voidMethodWithFunctionParameter(isNotNull(V8Function.class));
     }
 
     @Test

@@ -473,6 +473,8 @@ public class V8 extends V8Object {
                     return array.getArray(index);
                 case V8_OBJECT:
                     return array.getObject(index);
+                case V8_FUNCTION:
+                    return array.getObject(index);
                 case UNDEFINED:
                     return V8.getUndefined();
             }
