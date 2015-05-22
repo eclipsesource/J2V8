@@ -27,16 +27,20 @@ public class V8Thread extends Thread {
         try {
             target.run(runtime);
         } finally {
-            if (runtime.getLocker().hasLock()) {
-                runtime.release();
-                runtime = null;
+            synchronized (this) {
+                if (runtime.getLocker().hasLock()) {
+                    runtime.release();
+                    runtime = null;
+                }
             }
         }
     }
 
     public void terminateExecution() {
-        if (runtime != null) {
-            runtime.terminateExecution();
+        synchronized (this) {
+            if (runtime != null) {
+                runtime.terminateExecution();
+            }
         }
     }
 }
