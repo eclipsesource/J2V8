@@ -27,7 +27,10 @@ public class V8Thread extends Thread {
         try {
             target.run(runtime);
         } finally {
-            runtime.release();
+            if (runtime.getLocker().hasLock()) {
+                runtime.release();
+                runtime = null;
+            }
         }
     }
 

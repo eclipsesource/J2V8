@@ -36,4 +36,8 @@ public class V8Locker {
         }
     }
 
+    public boolean hasLock() {
+        return thread == Thread.currentThread();
+    }
+
 }

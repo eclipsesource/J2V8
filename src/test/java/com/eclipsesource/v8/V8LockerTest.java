@@ -11,6 +11,7 @@
 package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -34,6 +35,21 @@ public class V8LockerTest {
         v8Locker.acquire();
 
         v8Locker.checkThread();
+    }
+
+    @Test
+    public void testHasLock() {
+        V8Locker v8Locker = new V8Locker();
+
+        assertTrue(v8Locker.hasLock());
+    }
+
+    @Test
+    public void testDoesNotHasLock() {
+        V8Locker v8Locker = new V8Locker();
+        v8Locker.release();
+
+        assertFalse(v8Locker.hasLock());
     }
 
     @Test
