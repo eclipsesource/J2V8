@@ -26,6 +26,11 @@ public class V8Array extends V8Object {
         return new V8Array(v8, newHandle);
     }
 
+    @Override
+    public V8Array twin() {
+        return (V8Array) super.twin();
+    }
+
     protected V8Array(final V8 v8, final int objectHandle) {
         super(v8, objectHandle);
     }
@@ -255,6 +260,11 @@ public class V8Array extends V8Object {
 
         @Override
         public void release() {
+        }
+
+        @Override
+        public Undefined twin() {
+            return (Undefined) super.twin();
         }
 
         @Override

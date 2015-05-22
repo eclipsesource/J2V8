@@ -1045,7 +1045,7 @@ public class V8ObjectTest {
     public void testV8ObjectTwinEqual() {
         V8Object v8Object = new V8Object(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         assertNotSame(v8Object, twin);
         assertTrue(v8Object.equals(twin));
@@ -1058,7 +1058,7 @@ public class V8ObjectTest {
     public void testV8ObjectTwinSameValue() {
         V8Object v8Object = new V8Object(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         assertNotSame(v8Object, twin);
         assertTrue(v8Object.sameValue(twin));
@@ -1071,7 +1071,7 @@ public class V8ObjectTest {
     public void testV8ObjectTwinStrictEquals() {
         V8Object v8Object = new V8Object(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         assertNotSame(v8Object, twin);
         assertTrue(v8Object.strictEquals(twin));
@@ -1084,7 +1084,7 @@ public class V8ObjectTest {
     public void testV8ObjectTwinSameHashCode() {
         V8Object v8Object = new V8Object(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         assertEquals(v8Object.hashCode(), twin.hashCode());
         v8Object.release();
@@ -1095,7 +1095,7 @@ public class V8ObjectTest {
     public void testTwinIsObject() {
         V8Object v8Object = new V8Object(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         assertTrue(twin instanceof V8Object);
         v8Object.release();
@@ -1104,9 +1104,9 @@ public class V8ObjectTest {
 
     @Test
     public void testTwinIsArray() {
-        V8Object v8Object = new V8Array(v8);
+        V8Array v8Object = new V8Array(v8);
 
-        V8Value twin = v8Object.twin();
+        V8Array twin = v8Object.twin();
 
         assertTrue(twin instanceof V8Array);
         v8Object.release();
@@ -1116,9 +1116,9 @@ public class V8ObjectTest {
     @Test
     public void testTwinIsFunction() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
-        V8Object v8Object = v8.getObject("add");
+        V8Function v8Object = (V8Function) v8.getObject("add");
 
-        V8Value twin = v8Object.twin();
+        V8Function twin = v8Object.twin();
 
         assertTrue(twin instanceof V8Function);
         v8Object.release();
@@ -1161,11 +1161,11 @@ public class V8ObjectTest {
     @Test
     public void testTwinMimicsObject() {
         V8Object v8Object = new V8Object(v8);
-        V8Value twin = v8Object.twin();
+        V8Object twin = v8Object.twin();
 
         v8Object.add("foo", "bar");
 
-        assertEquals("bar", ((V8Object) twin).getString("foo"));
+        assertEquals("bar", twin.getString("foo"));
         v8Object.release();
         twin.release();
     }

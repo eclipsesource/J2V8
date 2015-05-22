@@ -23,6 +23,11 @@ public class V8Object extends V8Value {
         return new V8Object(v8, newHandle);
     }
 
+    @Override
+    public V8Object twin() {
+        return (V8Object) super.twin();
+    }
+
     protected V8Object(final V8 v8, final int objectHandle) {
         super(v8, objectHandle);
     }
@@ -281,6 +286,11 @@ public class V8Object extends V8Value {
 
         @Override
         public void release() {
+        }
+
+        @Override
+        public Undefined twin() {
+            return (Undefined) super.twin();
         }
 
         @Override
