@@ -79,6 +79,9 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
                                 }
 #define ASSERT_IS_STRING(v8Value)\
     if (v8Value.IsEmpty() || v8Value->IsUndefined() || !v8Value->IsString()) {\
+      if ( v8Value->IsNull() ) {\
+        return 0;\
+      }\
       throwResultUndefinedException(env, "");\
       return 0;\
                                 }
@@ -87,7 +90,6 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
       throwResultUndefinedException(env, "");\
       return 0;\
                                 }
-
 void release(JNIEnv* env, jobject object) {
   jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
   env->CallVoidMethod(object, release);

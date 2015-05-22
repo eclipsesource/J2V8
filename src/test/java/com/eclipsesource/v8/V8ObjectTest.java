@@ -691,6 +691,18 @@ public class V8ObjectTest {
 
     /*** Null ***/
     @Test
+    public void testStringIsNull() {
+        v8.add("nullString", (V8Object) null);
+
+        assertNull(v8.getString("nullString"));
+    }
+
+    @Test
+    public void testStringScript() {
+        assertNull(v8.executeStringScript("null;"));
+    }
+
+    @Test
     public void testIsNull() {
         V8Object v8Object = v8.executeObjectScript("x = {a : null}; x;");
 

@@ -566,6 +566,14 @@ public class V8ArrayTest {
 
     /*** Null ***/
     @Test
+    public void testNullStrinsgInArray() {
+        V8Array array = v8.executeArrayScript("x = [null]; x;");
+
+        assertNull(array.getString(0));
+        array.release();
+    }
+
+    @Test
     public void testIsNull() {
         V8Array array = v8.executeArrayScript("x = [null]; x;");
 
