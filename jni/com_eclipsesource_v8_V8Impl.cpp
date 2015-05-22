@@ -67,6 +67,7 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
       return errorReturnResult;\
                                 }\
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);\
+    Locker locker(isolate);\
     Isolate::Scope isolateScope(isolate);\
     HandleScope handle_scope(isolate);\
     Local<Context> context = Local<Context>::New(isolate,runtime->context_);\
@@ -226,6 +227,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 (JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();
   runtime->isolate = Isolate::New();
+  Locker locker(runtime->isolate);
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;
@@ -287,6 +289,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
     return;
   }
   Isolate* isolate = getIsolate(env, v8RuntimePtr);
+  Locker locker(isolate);
   HandleScope handle_scope(isolate);
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]->Reset();
   delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->objects[objectHandle]);
@@ -1354,7 +1357,6 @@ void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, 
 }
 
 void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
-  HandleScope handle_scope(isolate);
   String::Utf8Value exception(tryCatch->Exception());
   const char* exceptionString = ToCString(exception);
   Handle<Message> message = tryCatch->Message();
@@ -1374,7 +1376,6 @@ void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
 }
 
 void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, long v8RuntimePtr) {
-  HandleScope handle_scope(isolate);
   String::Utf8Value exception(tryCatch->Exception());
   const char* exceptionString = ToCString(exception);
   Handle<Message> message = tryCatch->Message();
