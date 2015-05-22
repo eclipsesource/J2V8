@@ -222,6 +222,13 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    public V8Object addNull(final String key) {
+        v8.checkThread();
+        checkReleaesd();
+        v8.addNull(v8.getV8RuntimePtr(), objectHandle, key);
+        return this;
+    }
+
     public V8Object setPrototype(final V8Object value) {
         v8.checkThread();
         checkReleaesd();

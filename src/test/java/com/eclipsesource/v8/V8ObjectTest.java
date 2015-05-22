@@ -315,6 +315,16 @@ public class V8ObjectTest {
     }
 
     @Test
+    public void testAddNull() {
+        V8Object v8Object = new V8Object(v8).addNull("foo");
+
+        assertEquals("foo", v8Object.getKeys()[0]);
+        assertEquals(NULL, v8Object.getType("foo"));
+        assertNull(v8Object.getObject("foo"));
+        v8Object.release();
+    }
+
+    @Test
     public void testGetUndefined() {
         V8Object v8Object = v8.executeObjectScript("x = {a : undefined}; x;");
 

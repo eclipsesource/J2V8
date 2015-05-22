@@ -236,6 +236,13 @@ public class V8Array extends V8Object {
         return this;
     }
 
+    public V8Array pushNull() {
+        v8.checkThread();
+        checkReleaesd();
+        v8.addArrayNullItem(v8.getV8RuntimePtr(), getHandle());
+        return this;
+    }
+
     public V8Array pushUndefined() {
         v8.checkThread();
         checkReleaesd();

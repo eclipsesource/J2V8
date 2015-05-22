@@ -1010,6 +1010,16 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testAddNull() {
+        V8Array v8Array = new V8Array(v8).pushNull();
+
+        assertEquals(1, v8Array.length());
+        assertEquals(NULL, v8Array.getType(0));
+        assertNull(v8Array.getObject(0));
+        v8Array.release();
+    }
+
+    @Test
     public void testGetNull() {
         V8Array v8Array = v8.executeArrayScript("[null];");
 
