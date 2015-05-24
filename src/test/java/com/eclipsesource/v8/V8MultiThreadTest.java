@@ -24,30 +24,7 @@ import com.eclipsesource.v8.utils.V8Thread;
 
 public class V8MultiThreadTest {
 
-    private boolean      finished         = false;
     private List<Object> mergeSortResults = new ArrayList<Object>();
-
-    @Test
-    public void testTerminateExecution() throws InterruptedException {
-        V8Thread t = new V8Thread(new V8Runnable() {
-
-            @Override
-            public void run(final V8 runtime) {
-                try {
-                    runtime.executeVoidScript("while ( true ) {try {} catch(e){}} ");
-                } catch (V8RuntimeException e) {
-                    // do nothing
-                }
-                finished = true;
-            }
-        });
-        t.start();
-        Thread.sleep(1000);
-        t.terminateExecution();
-        t.join();
-        assertTrue(finished);
-        // Make sure the test ends and that we don't deadlock.
-    }
 
     private static final String sortAlgorithm = ""
             + "function merge(left, right){\n"

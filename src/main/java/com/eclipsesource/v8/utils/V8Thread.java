@@ -36,11 +36,4 @@ public class V8Thread extends Thread {
         }
     }
 
-    public void terminateExecution() {
-        synchronized (this) {
-            if (runtime != null) {
-                runtime.terminateExecution();
-            }
-        }
-    }
 }
