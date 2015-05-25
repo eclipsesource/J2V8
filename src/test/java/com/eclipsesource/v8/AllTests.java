@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.eclipsesource.v8.utils.tests.V8ExecutorTest;
 import com.eclipsesource.v8.utils.tests.V8ObjectUtilsTest;
 
 @RunWith(Suite.class)
@@ -21,7 +22,7 @@ import com.eclipsesource.v8.utils.tests.V8ObjectUtilsTest;
 // and once the V8 class is loaded we cannot unload it.
 @SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
         V8CallbackTest.class, V8ScriptCompilationExceptionTest.class, V8ScriptExecutionExceptionTest.class, V8ObjectUtilsTest.class, V8TypedArraysTest.class,
-        NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class })
+        NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class, V8ExecutorTest.class })
 public class AllTests {
 
 }
