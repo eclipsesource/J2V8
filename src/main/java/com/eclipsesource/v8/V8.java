@@ -117,7 +117,7 @@ public class V8 extends V8Object {
 
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
         V8.checkDebugThread();
-        debugEnabled = enableDebugSupport(getHandle(), port, waitForConnection);
+        debugEnabled = enableDebugSupport(getV8RuntimePtr(), port, waitForConnection);
         return debugEnabled;
     }
 
