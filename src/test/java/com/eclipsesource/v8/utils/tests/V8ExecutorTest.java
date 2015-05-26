@@ -22,7 +22,6 @@ import com.eclipsesource.v8.V8ScriptCompilationException;
 import com.eclipsesource.v8.V8ScriptException;
 import com.eclipsesource.v8.V8ScriptExecutionException;
 import com.eclipsesource.v8.utils.V8Executor;
-import com.eclipsesource.v8.utils.V8Script;
 
 public class V8ExecutorTest {
 
@@ -77,40 +76,6 @@ public class V8ExecutorTest {
                 runtime.registerJavaMethod(V8ExecutorTest.this, "callback", "callback", new Class<?>[] {});
             }
         };
-        executor.start();
-        executor.join();
-
-        assertTrue(passed);
-    }
-
-    @Test
-    public void testLoadCalled() throws InterruptedException {
-        V8Executor executor = new V8Executor(new V8Script() {
-
-            @Override
-            public String load(final String... parameters) {
-                return "'foo'";
-            }
-        }, "foo", "bar", "baz");
-        executor.start();
-        executor.join();
-
-        assertEquals("foo", executor.getResult());
-    }
-
-    @Test
-    public void testLoadCalledWithCorrectParameters() throws InterruptedException {
-        V8Executor executor = new V8Executor(new V8Script() {
-
-            @Override
-            public String load(final String... parameters) {
-                passed = parameters.length == 3;
-                passed = passed && (parameters[0] == "foo");
-                passed = passed && (parameters[1] == "bar");
-                passed = passed && (parameters[2] == "baz");
-                return "";
-            }
-        }, "foo", "bar", "baz");
         executor.start();
         executor.join();
 

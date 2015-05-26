@@ -24,10 +24,6 @@ public class V8Executor extends Thread {
     private volatile boolean requestTermination = false;
     private Exception        exception          = null;
 
-    public V8Executor(final V8Script script, final String... parameters) {
-        this.script = script.load(parameters);
-    }
-
     public V8Executor(final String script) {
         this.script = script;
     }
