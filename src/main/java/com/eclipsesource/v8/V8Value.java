@@ -10,7 +10,7 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-abstract public class V8Value {
+abstract public class V8Value implements Releasable {
 
     public static final int NULL        = 0;
     public static final int UNKNOWN     = 0;
@@ -80,6 +80,7 @@ abstract public class V8Value {
 
     protected abstract V8Value createTwin(int twinObjectHandle);
 
+    @Override
     public void release() {
         v8.checkThread();
         if ( !released ) {

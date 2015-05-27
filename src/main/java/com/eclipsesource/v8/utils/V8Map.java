@@ -15,9 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Value;
 
-public class V8Map<V> implements Map<V8Value, V> {
+public class V8Map<V> implements Map<V8Value, V>, Releasable {
 
     private Map<V8Value, V>       map;
     private Map<V8Value, V8Value> twinMap;
@@ -27,6 +28,7 @@ public class V8Map<V> implements Map<V8Value, V> {
         twinMap = new HashMap<V8Value, V8Value>();
     }
 
+    @Override
     public void release() {
         this.clear();
     }
