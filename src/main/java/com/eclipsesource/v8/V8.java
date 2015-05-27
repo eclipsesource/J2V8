@@ -24,11 +24,12 @@ public class V8 extends V8Object {
     private static Runnable     debugHandler   = null;
     private static Thread       debugThread    = null;
 
-    private final V8Locker locker;
-    private int            methodReferenceCounter = 0;
-    private boolean        debugEnabled           = false;
-    long                   objectReferences       = 0;
-    private long           v8RuntimePtr           = 0;
+    private final V8Locker   locker;
+    private int              methodReferenceCounter = 0;
+    private boolean          debugEnabled           = false;
+    long                     objectReferences       = 0;
+    private long             v8RuntimePtr           = 0;
+    private List<Releasable> resources              = null;
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -167,6 +168,7 @@ public class V8 extends V8Object {
         if (debugEnabled) {
             disableDebugSupport();
         }
+        releaseResources();
         synchronized (lock) {
             runtimeCounter--;
         }
@@ -176,6 +178,24 @@ public class V8 extends V8Object {
         if (reportMemoryLeaks && (objectReferences > 0)) {
             throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
         }
+    }
+
+    private void releaseResources() {
+        if (resources != null) {
+            for (Releasable releasable : resources) {
+                releasable.release();
+            }
+            resources.clear();
+            resources = null;
+        }
+    }
+
+    public void registerResource(final Releasable object) {
+        checkThread();
+        if (resources == null) {
+            resources = new ArrayList<Releasable>();
+        }
+        resources.add(object);
     }
 
     public int executeIntegerScript(final String script) {

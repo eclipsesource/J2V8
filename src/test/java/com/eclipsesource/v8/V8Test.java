@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.DebugTunnel;
+import com.eclipsesource.v8.utils.V8Map;
 
 public class V8Test {
 
@@ -133,6 +134,37 @@ public class V8Test {
 
         new V8Object(v8_);
         v8_.release(true);
+    }
+
+    @Test
+    public void testReleaseAttachedObjects() {
+        V8 runtime = V8.createV8Runtime();
+        V8Object v8Object = new V8Object(v8);
+        runtime.registerResource(v8Object);
+
+        runtime.release(true);
+    }
+
+    @Test
+    public void testReleaseSeveralAttachedObjects() {
+        V8 runtime = V8.createV8Runtime();
+        runtime.registerResource(new V8Object(runtime));
+        runtime.registerResource(new V8Object(runtime));
+        runtime.registerResource(new V8Object(runtime));
+
+        runtime.release(true);
+    }
+
+    @Test
+    public void testReleaseAttachedMap() {
+        V8 runtime = V8.createV8Runtime();
+        V8Map<String> v8Map = new V8Map<String>();
+        V8Object v8Object = new V8Object(runtime);
+        v8Map.put(v8Object, "foo");
+        v8Object.release();
+        runtime.registerResource(v8Map);
+
+        runtime.release(true);
     }
 
     /*** Void Script ***/
@@ -1202,8 +1234,7 @@ public class V8Test {
     @Test
     public void testAccessGlobalViaWindow() {
         setupWindowAlias();
-        String script = "var global = {data: 0};\n" +
-                "global === window.global";
+        String script = "var global = {data: 0};\n" + "global === window.global";
 
         assertTrue(v8.executeBooleanScript(script));
     }
