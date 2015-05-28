@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.eclipsesource.v8.utils.V8Executor;
+import com.eclipsesource.v8.utils.V8Map;
+
 public class V8 extends V8Object {
 
     private static Object       lock           = new Object();
@@ -24,12 +27,13 @@ public class V8 extends V8Object {
     private static Runnable     debugHandler   = null;
     private static Thread       debugThread    = null;
 
-    private final V8Locker   locker;
-    private int              methodReferenceCounter = 0;
-    private boolean          debugEnabled           = false;
-    long                     objectReferences       = 0;
-    private long             v8RuntimePtr           = 0;
-    private List<Releasable> resources              = null;
+    private final V8Locker    locker;
+    private int               methodReferenceCounter = 0;
+    private boolean           debugEnabled           = false;
+    long                      objectReferences       = 0;
+    private long              v8RuntimePtr           = 0;
+    private List<Releasable>  resources              = null;
+    private V8Map<V8Executor> executors              = null;
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -169,6 +173,10 @@ public class V8 extends V8Object {
             disableDebugSupport();
         }
         releaseResources();
+        terminateExecutors();
+        if (executors != null) {
+            executors.clear();
+        }
         synchronized (lock) {
             runtimeCounter--;
         }
@@ -187,6 +195,40 @@ public class V8 extends V8Object {
             }
             resources.clear();
             resources = null;
+        }
+    }
+
+    public void registerV8Executor(final V8Object key, final V8Executor executor) {
+        checkThread();
+        if (executors == null) {
+            executors = new V8Map<V8Executor>();
+        }
+        executors.put(key, executor);
+    }
+
+    public V8Executor removeExecutor(final V8Object key) {
+        checkThread();
+        if (executors == null) {
+            return null;
+        }
+        return executors.remove(key);
+    }
+
+    public V8Executor getExecutor(final V8Object key) {
+        checkThread();
+        if (executors == null) {
+            return null;
+        }
+        return executors.get(key);
+    }
+
+    public void terminateExecutors() {
+        checkThread();
+        if (executors == null) {
+            return;
+        }
+        for (V8Executor executor : executors.values()) {
+            executor.terminateExecution();
         }
     }
 

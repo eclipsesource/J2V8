@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ScriptCompilationException;
 import com.eclipsesource.v8.V8ScriptException;
 import com.eclipsesource.v8.V8ScriptExecutionException;
@@ -27,6 +28,75 @@ public class V8ExecutorTest {
 
     private boolean passed = false;
     private String  result = "";
+
+    @Test
+    public void testNestedExecutorExecution() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        executor.start();
+        V8Object key = new V8Object(runtime);
+        runtime.registerV8Executor(key, executor);
+        key.release();
+        runtime.release();
+    }
+
+    @Test
+    public void testGetNestedExecutor() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        V8Object key = new V8Object(runtime);
+
+        runtime.registerV8Executor(key, executor);
+
+        assertEquals(executor, runtime.getExecutor(key));
+        key.release();
+        runtime.release();
+    }
+
+    @Test
+    public void testGetMissingExecutor() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        V8Object key = new V8Object(runtime);
+        runtime.registerV8Executor(key, executor);
+        V8Object anotherKey = new V8Object(runtime);
+
+        V8Executor result = runtime.getExecutor(anotherKey);
+
+        assertNull(result);
+        key.release();
+        anotherKey.release();
+        runtime.release();
+    }
+
+    @Test
+    public void testRemoveNestedExecutor() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        V8Object key = new V8Object(runtime);
+        runtime.registerV8Executor(key, executor);
+
+        V8Executor result = runtime.removeExecutor(key);
+
+        assertEquals(executor, result);
+        assertNull(runtime.getExecutor(key));
+        key.release();
+        runtime.release();
+    }
+
+    @Test
+    public void testTerminateNestedExecutors() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        V8Object key = new V8Object(runtime);
+        runtime.registerV8Executor(key, executor);
+
+        runtime.terminateExecutors();
+
+        assertTrue(runtime.getExecutor(key).isTerminating());
+        key.release();
+        runtime.release();
+    }
 
     @Test
     public void testSimpleScript() throws InterruptedException {
@@ -251,6 +321,22 @@ public class V8ExecutorTest {
         executor.join();
 
         assertFalse(passed);
+    }
+
+    @Test
+    public void testIsTerminating() {
+        V8Executor executor = new V8Executor("");
+
+        executor.terminateExecution();
+
+        assertTrue(executor.isTerminating());
+    }
+
+    @Test
+    public void testIsNotTerminating() {
+        V8Executor executor = new V8Executor("");
+
+        assertFalse(executor.isTerminating());
     }
 
     public void postMessage(final Object... s) {

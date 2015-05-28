@@ -137,4 +137,8 @@ public class V8Executor extends Thread {
             }
         }
     }
+
+    public boolean isTerminating() {
+        return requestTermination;
+    }
 }
