@@ -18,6 +18,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNotNull;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -105,6 +106,10 @@ public class V8CallbackTest {
         public Object objectMethodNoParameter();
 
         public void voidMethodVarArgs(final Object... args);
+
+        public void voidMethodStringVarArgs(final String... args);
+
+        public void voidMethodV8ObjectVarArgs(final V8Object... args);
 
         public void voidMethodVarArgsAndOthers(int x, int y, final Object... args);
 
@@ -267,6 +272,37 @@ public class V8CallbackTest {
         verify(callback).voidMethodVarArgs(new V8Object.Undefined());
     }
 
+    @Test
+    public void testCallbackStringVarArgs() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodStringVarArgs", "foo", new Class<?>[] { String[].class });
+
+        v8.executeVoidScript("foo('bar');");
+
+        verify(callback).voidMethodStringVarArgs(eq("bar"));
+    }
+
+    @Test
+    public void testCallbackV8ObjectVarArgs() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodV8ObjectVarArgs", "foo", new Class<?>[] { V8Object[].class });
+
+        v8.executeVoidScript("foo({});");
+
+        verify(callback).voidMethodV8ObjectVarArgs(any(V8Object.class));
+        verify(callback).voidMethodV8ObjectVarArgs(notNull(V8Object.class));
+    }
+
+    @Test
+    public void testCallbackV8ArrayVarArgs() {
+        ICallback callback = mock(ICallback.class);
+        v8.registerJavaMethod(callback, "voidMethodV8ObjectVarArgs", "foo", new Class<?>[] { V8Object[].class });
+
+        v8.executeVoidScript("foo([]);");
+
+        verify(callback).voidMethodV8ObjectVarArgs(any(V8Array.class));
+        verify(callback).voidMethodV8ObjectVarArgs(notNull(V8Array.class));
+    }
     @Test
     public void testCallbackWithNullInParameterList() {
         ICallback callback = mock(ICallback.class);

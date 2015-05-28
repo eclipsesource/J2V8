@@ -442,15 +442,26 @@ public class V8 extends V8Object {
         int numberOfParameters = methodDescriptor.method.getParameterTypes().length;
         int varArgIndex = hasVarArgs ? numberOfParameters - 1 : numberOfParameters;
         Object[] args = setDefaultValues(new Object[numberOfParameters], methodDescriptor.method.getParameterTypes(), receiver, methodDescriptor.includeReceiver);
-        List<Object> varArgs = populateParamters(parameters, varArgIndex, args, methodDescriptor.includeReceiver);
+        List<Object> varArgs = new ArrayList<Object>();
+        populateParamters(parameters, varArgIndex, args, varArgs, methodDescriptor.includeReceiver);
         if (hasVarArgs) {
-            args[varArgIndex] = varArgs.toArray();
+            Object varArgContainer = getVarArgContainer(methodDescriptor.method.getParameterTypes(), varArgs.size());
+            System.arraycopy(varArgs.toArray(), 0, varArgContainer, 0, varArgs.size());
+            args[varArgIndex] = varArgContainer;
         }
         return args;
     }
 
-    private List<Object> populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args, final boolean includeReceiver) {
-        List<Object> varArgs = new ArrayList<Object>();
+    private Object getVarArgContainer(final Class<?>[] parameterTypes, final int size) {
+        Class<?> clazz = parameterTypes[parameterTypes.length - 1];
+        if (clazz.isArray()) {
+            clazz = clazz.getComponentType();
+        }
+        Object result = java.lang.reflect.Array.newInstance(clazz, size);
+        return result;
+    }
+
+    private void populateParamters(final V8Array parameters, final int varArgIndex, final Object[] args, final List<Object> varArgs, final boolean includeReceiver) {
         int start = 0;
         if (includeReceiver) {
             start = 1;
@@ -462,7 +473,6 @@ public class V8 extends V8Object {
                 args[i] = getArrayItem(parameters, i - start);
             }
         }
-        return varArgs;
     }
 
     private Object[] setDefaultValues(final Object[] parameters, final Class<?>[] parameterTypes, final V8Object receiver, final boolean includeReceiver) {
