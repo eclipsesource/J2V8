@@ -26,6 +26,7 @@ import com.eclipsesource.v8.utils.V8Executor;
 public class V8ExecutorTest {
 
     private boolean passed = false;
+    private String  result = "";
 
     @Test
     public void testSimpleScript() throws InterruptedException {
@@ -164,6 +165,99 @@ public class V8ExecutorTest {
         executor.terminateExecution();
 
         assertEquals(1, ((V8ScriptException) executor.getException()).getLineNumber());
+    }
+
+    @Test
+    public void testLongRunningExecutorWithMessageHandler() throws InterruptedException {
+        V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
+            @Override
+            protected void setup(final V8 runtime) {
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+            }
+        };
+        executor.start();
+        executor.postMessage("");
+        Thread.sleep(500);
+        executor.terminateExecution();
+        executor.join();
+
+        assertTrue(passed);
+    }
+
+    @Test
+    public void testPostEmptyMessageToLongRunningTask() throws InterruptedException {
+        V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
+            @Override
+            protected void setup(final V8 runtime) {
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+            }
+        };
+        executor.start();
+        executor.postMessage();
+        Thread.sleep(500);
+        executor.terminateExecution();
+        executor.join();
+
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testLongRunningExecutorWithMultiPartMessage() throws InterruptedException {
+        V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e[0], e[1]); }", true, "messageHandler") {
+            @Override
+            protected void setup(final V8 runtime) {
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+            }
+        };
+        executor.start();
+        executor.postMessage("1", "3");
+        Thread.sleep(500);
+        executor.terminateExecution();
+        executor.join();
+
+        assertEquals("13", result);
+    }
+
+    @Test
+    public void testLongRunningExecutorWithSeveralMessages() throws InterruptedException {
+        V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
+            @Override
+            protected void setup(final V8 runtime) {
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+            }
+        };
+        executor.start();
+        executor.postMessage("1");
+        executor.postMessage("2");
+        executor.postMessage("3");
+        Thread.sleep(500);
+        executor.terminateExecution();
+        executor.join();
+
+        assertEquals("123", result);
+    }
+
+    @Test
+    public void testLongRunningExecutorWithNoMessage() throws InterruptedException {
+        V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
+            @Override
+            protected void setup(final V8 runtime) {
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+            }
+        };
+        executor.start();
+        Thread.sleep(500);
+        executor.terminateExecution();
+        executor.join();
+
+        assertFalse(passed);
+    }
+
+    public void postMessage(final Object... s) {
+        passed = true;
+        for (Object element : s) {
+            result = result + element;
+        }
     }
 
 }
