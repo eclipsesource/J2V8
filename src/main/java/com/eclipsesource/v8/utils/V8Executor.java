@@ -23,10 +23,11 @@ public class V8Executor extends Thread {
     private final String         script;
     private V8                   runtime;
     private String               result;
-    private volatile boolean     terminated         = false;
-    private volatile boolean     requestTermination = false;
-    private Exception            exception          = null;
-    private LinkedList<String[]> messageQueue       = new LinkedList<String[]>();
+    private volatile boolean     terminated       = false;
+    private volatile boolean     shuttingDown     = false;
+    private volatile boolean     forceTerminating = false;
+    private Exception            exception        = null;
+    private LinkedList<String[]> messageQueue     = new LinkedList<String[]>();
     private boolean              longRunning;
     private String               messageHandler;
 
@@ -63,7 +64,7 @@ public class V8Executor extends Thread {
             setup(runtime);
         }
         try {
-            if (!requestTermination) {
+            if (!forceTerminating) {
                 Object scriptResult = runtime.executeScript("__j2v8__checkThreadTerminate();\n" + script, getName(), -1);
                 if (scriptResult != null) {
                     result = scriptResult.toString();
@@ -71,11 +72,17 @@ public class V8Executor extends Thread {
                 if (scriptResult instanceof Releasable) {
                     ((Releasable) scriptResult).release();
                 }
+                if (scriptResult instanceof Releasable) {
+                    ((Releasable) scriptResult).release();
+                }
             }
-            while (!requestTermination && longRunning) {
+            while (!forceTerminating && longRunning) {
                 synchronized (this) {
-                    if (messageQueue.isEmpty()) {
+                    if (messageQueue.isEmpty() && !shuttingDown) {
                         wait();
+                    }
+                    if ((messageQueue.isEmpty() && shuttingDown) || forceTerminating) {
+                        return;
                     }
                 }
                 if (!messageQueue.isEmpty()) {
@@ -119,9 +126,10 @@ public class V8Executor extends Thread {
         return terminated;
     }
 
-    public void terminateExecution() {
+    public void forceTermination() {
         synchronized (this) {
-            requestTermination = true;
+            forceTerminating = true;
+            shuttingDown = true;
             if (runtime != null) {
                 runtime.terminateExecution();
             }
@@ -129,16 +137,27 @@ public class V8Executor extends Thread {
         }
     }
 
+    public void shutdown() {
+        synchronized (this) {
+            shuttingDown = true;
+            notify();
+        }
+    }
+
     class ExecutorTermination implements JavaVoidCallback {
         @Override
         public void invoke(final V8Object receiver, final V8Array parameters) {
-            if (requestTermination) {
+            if (forceTerminating) {
                 throw new RuntimeException("V8Thread Termination.");
             }
         }
     }
 
+    public boolean isShuttingDown() {
+        return shuttingDown;
+    }
+
     public boolean isTerminating() {
-        return requestTermination;
+        return forceTerminating;
     }
 }

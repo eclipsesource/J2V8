@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
@@ -29,10 +30,17 @@ public class V8ExecutorTest {
     private boolean passed = false;
     private String  result = "";
 
+    @After
+    public void tearDown() {
+        if (V8.getActiveRuntimes() != 0) {
+            throw new IllegalStateException("V8Runtimes not properly released.");
+        }
+    }
+
     @Test
     public void testNestedExecutorExecution() {
         V8 runtime = V8.createV8Runtime();
-        V8Executor executor = new V8Executor("while (true){}");
+        V8Executor executor = new V8Executor("");
         executor.start();
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
@@ -43,7 +51,7 @@ public class V8ExecutorTest {
     @Test
     public void testGetNestedExecutor() {
         V8 runtime = V8.createV8Runtime();
-        V8Executor executor = new V8Executor("while (true){}");
+        V8Executor executor = new V8Executor("");
         V8Object key = new V8Object(runtime);
 
         runtime.registerV8Executor(key, executor);
@@ -56,7 +64,7 @@ public class V8ExecutorTest {
     @Test
     public void testGetMissingExecutor() {
         V8 runtime = V8.createV8Runtime();
-        V8Executor executor = new V8Executor("while (true){}");
+        V8Executor executor = new V8Executor("");
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
         V8Object anotherKey = new V8Object(runtime);
@@ -72,7 +80,7 @@ public class V8ExecutorTest {
     @Test
     public void testRemoveNestedExecutor() {
         V8 runtime = V8.createV8Runtime();
-        V8Executor executor = new V8Executor("while (true){}");
+        V8Executor executor = new V8Executor("");
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
 
@@ -91,9 +99,9 @@ public class V8ExecutorTest {
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
 
-        runtime.terminateExecutors();
+        runtime.shutdownExecutors();
 
-        assertTrue(runtime.getExecutor(key).isTerminating());
+        assertTrue(runtime.getExecutor(key).isShuttingDown());
         key.release();
         runtime.release();
     }
@@ -156,7 +164,7 @@ public class V8ExecutorTest {
     @Test
     public void testTerminateBeforeExecution() throws InterruptedException {
         V8Executor executor = new V8Executor("'fooBar'");
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.start();
         executor.join();
 
@@ -168,7 +176,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("while(true){}");
         executor.start();
         Thread.sleep(1000);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         // We should not wait forever
@@ -179,7 +187,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("while(true){}");
         executor.start();
         Thread.sleep(1000);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertTrue(executor.hasException());
@@ -190,7 +198,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("'fooBar'");
         executor.start();
         executor.join();
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertEquals("fooBar", executor.getResult());
     }
@@ -200,7 +208,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("(function() {throw 'foo';})();");
         executor.start();
         executor.join();
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertNull(executor.getResult());
         assertTrue(executor.hasException());
@@ -211,7 +219,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("(function() {throw 'foo';})();");
         executor.start();
         executor.join();
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertTrue(executor.getException() instanceof V8ScriptExecutionException);
         assertEquals("foo", ((V8ScriptExecutionException) executor.getException()).getJSMessage());
@@ -222,7 +230,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("'a");
         executor.start();
         executor.join();
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertTrue(executor.getException() instanceof V8ScriptCompilationException);
     }
@@ -232,7 +240,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("'a");
         executor.start();
         executor.join();
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertEquals(1, ((V8ScriptException) executor.getException()).getLineNumber());
     }
@@ -248,7 +256,7 @@ public class V8ExecutorTest {
         executor.start();
         executor.postMessage("");
         Thread.sleep(500);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertTrue(passed);
@@ -265,7 +273,7 @@ public class V8ExecutorTest {
         executor.start();
         executor.postMessage();
         Thread.sleep(500);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertEquals("", result);
@@ -282,7 +290,7 @@ public class V8ExecutorTest {
         executor.start();
         executor.postMessage("1", "3");
         Thread.sleep(500);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertEquals("13", result);
@@ -301,7 +309,7 @@ public class V8ExecutorTest {
         executor.postMessage("2");
         executor.postMessage("3");
         Thread.sleep(500);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertEquals("123", result);
@@ -317,17 +325,26 @@ public class V8ExecutorTest {
         };
         executor.start();
         Thread.sleep(500);
-        executor.terminateExecution();
+        executor.forceTermination();
         executor.join();
 
         assertFalse(passed);
     }
 
     @Test
+    public void testShutdownDoesNotTerminateLongRunningTask() throws InterruptedException {
+        V8Executor executor = new V8Executor("while(true)", true, "messageHandler");
+        executor.shutdown();
+        Thread.sleep(1000);
+        assertFalse(executor.hasTerminated());
+        executor.forceTermination();
+    }
+
+    @Test
     public void testIsTerminating() {
         V8Executor executor = new V8Executor("");
 
-        executor.terminateExecution();
+        executor.forceTermination();
 
         assertTrue(executor.isTerminating());
     }
@@ -337,6 +354,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("");
 
         assertFalse(executor.isTerminating());
+        assertFalse(executor.isShuttingDown());
     }
 
     public void postMessage(final Object... s) {

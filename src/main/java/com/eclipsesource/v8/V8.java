@@ -173,7 +173,7 @@ public class V8 extends V8Object {
             disableDebugSupport();
         }
         releaseResources();
-        terminateExecutors();
+        shutdownExecutors();
         if (executors != null) {
             executors.clear();
         }
@@ -222,13 +222,13 @@ public class V8 extends V8Object {
         return executors.get(key);
     }
 
-    public void terminateExecutors() {
+    public void shutdownExecutors() {
         checkThread();
         if (executors == null) {
             return;
         }
         for (V8Executor executor : executors.values()) {
-            executor.terminateExecution();
+            executor.shutdown();
         }
     }
 
