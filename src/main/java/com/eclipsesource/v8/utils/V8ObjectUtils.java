@@ -25,24 +25,50 @@ import com.eclipsesource.v8.V8Value;
 public class V8ObjectUtils {
 
     public static Map<String, ? super Object> toMap(final V8Object object) {
+        V8Map<Object> cache = new V8Map<Object>();
+        try {
+            return toMap(object, cache);
+        } finally {
+            cache.release();
+        }
+    }
+
+    private static Map<String, ? super Object> toMap(final V8Object object, final V8Map<Object> cache) {
         if (object == null) {
             return Collections.emptyMap();
         }
+        if (cache.containsKey(object)) {
+            return (Map<String, ? super Object>) cache.get(object);
+        }
         Map<String, ? super Object> result = new HashMap<String, Object>();
+        cache.put(object, result);
         String[] keys = object.getKeys();
         for (String key : keys) {
-            result.put(key, getValue(object, key));
+            result.put(key, getValue(object, key, cache));
         }
         return result;
     }
 
     public static List<? super Object> toList(final V8Array array) {
+        V8Map<Object> cache = new V8Map<Object>();
+        try {
+            return toList(array, cache);
+        } finally {
+            cache.release();
+        }
+    }
+
+    private static List<? super Object> toList(final V8Array array, final V8Map<Object> cache) {
         if (array == null) {
             return Collections.emptyList();
         }
+        if (cache.containsKey(array)) {
+            return (List<? super Object>) cache.get(array);
+        }
         List<? super Object> result = new ArrayList<Object>();
+        cache.put(array, result);
         for (int i = 0; i < array.length(); i++) {
-            result.add(getValue(array, i));
+            result.add(getValue(array, i, cache));
         }
         return result;
     }
@@ -193,6 +219,15 @@ public class V8ObjectUtils {
     }
 
     public static Object getValue(final V8Array array, final int index) {
+        V8Map<Object> cache = new V8Map<Object>();
+        try {
+            return getValue(array, index, cache);
+        } finally {
+            cache.release();
+        }
+    }
+
+    private static Object getValue(final V8Array array, final int index, final V8Map<Object> cache) {
         int valueType = array.getType(index);
         switch (valueType) {
             case V8Value.INTEGER:
@@ -206,7 +241,7 @@ public class V8ObjectUtils {
             case V8Value.V8_ARRAY:
                 V8Array arrayValue = array.getArray(index);
                 try {
-                    return toList(arrayValue);
+                    return toList(arrayValue, cache);
                 } finally {
                     if (arrayValue instanceof V8Array) {
                         arrayValue.release();
@@ -215,7 +250,7 @@ public class V8ObjectUtils {
             case V8Value.V8_OBJECT:
                 V8Object objectValue = array.getObject(index);
                 try {
-                    return toMap(objectValue);
+                    return toMap(objectValue, cache);
                 } finally {
                     if (objectValue instanceof V8Object) {
                         objectValue.release();
@@ -231,6 +266,15 @@ public class V8ObjectUtils {
     }
 
     public static Object getValue(final V8Object object, final String key) {
+        V8Map<Object> cache = new V8Map<Object>();
+        try {
+            return getValue(object, key, cache);
+        } finally {
+            cache.release();
+        }
+    }
+
+    private static Object getValue(final V8Object object, final String key, final V8Map<Object> cache) {
         int valueType = object.getType(key);
         switch (valueType) {
             case V8Value.INTEGER:
@@ -244,7 +288,7 @@ public class V8ObjectUtils {
             case V8Value.V8_ARRAY:
                 V8Array array = object.getArray(key);
                 try {
-                    return toList(array);
+                    return toList(array, cache);
                 } finally {
                     if (array instanceof V8Array) {
                         array.release();
@@ -253,7 +297,7 @@ public class V8ObjectUtils {
             case V8Value.V8_OBJECT:
                 V8Object child = object.getObject(key);
                 try {
-                    return toMap(child);
+                    return toMap(child, cache);
                 } finally {
                     if (child instanceof V8Object) {
                         child.release();

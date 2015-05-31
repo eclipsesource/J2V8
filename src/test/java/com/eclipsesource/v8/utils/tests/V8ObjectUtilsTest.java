@@ -1006,6 +1006,56 @@ public class V8ObjectUtilsTest {
         array.release();
     }
 
+    @Test
+    public void testV8ArrayContainsSelf() {
+        V8Array v8Array = new V8Array(v8);
+        v8Array.push(v8Array);
+
+        List<Object> list = V8ObjectUtils.toList(v8Array);
+
+        assertEquals(list, list.get(0));
+        v8Array.release();
+    }
+
+    @Test
+    public void testV8ObjectContainsSelf() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("self", v8Object);
+
+        Map<String, Object> map = V8ObjectUtils.toMap(v8Object);
+
+        assertEquals(map, map.get("self"));
+        v8Object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBackpointer() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child = child\n;"
+                + "parent;");
+
+        Map<String, Object> map = V8ObjectUtils.toMap(parent);
+
+        assertEquals(map, ((Map<String, Object>) map.get("child")).get("parent"));
+        parent.release();
+    }
+
+    @Test
+    public void testEqualSiblings() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child1 = child\n;"
+                + "parent.child2 = child\n;"
+                + "parent;");
+
+        Map<String, Object> map = V8ObjectUtils.toMap(parent);
+
+        assertEquals((map.get("child2")), (map.get("child1")));
+        parent.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
