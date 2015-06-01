@@ -8,7 +8,7 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package com.eclipsesource.v8.utils.tests;
+package com.eclipsesource.v8.utils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,6 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
-import com.eclipsesource.v8.utils.V8ObjectUtils;
 
 public class V8ObjectUtilsTest {
     private V8 v8;
@@ -49,6 +49,7 @@ public class V8ObjectUtilsTest {
             }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -1007,6 +1008,52 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testListContainsSelf() {
+        List<Object> list = new ArrayList<Object>();
+        list.add(list);
+
+        V8Array v8Array = V8ObjectUtils.toV8Array(v8, list);
+        V8Object self = v8Array.getObject(0);
+
+        assertEquals(v8Array, self);
+        self.release();
+        v8Array.release();
+    }
+
+    @Test
+    public void testMapContainsSelf() {
+        Map<String, Object> map = new Hashtable<String, Object>();
+        map.put("self", map);
+        map.put("self2", map);
+        map.put("self3", map);
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, map);
+        V8Object self = v8Object.getObject("self");
+
+        assertEquals(v8Object, self);
+        assertEquals(3, v8Object.getKeys().length);
+        v8Object.release();
+        self.release();
+    }
+
+    @Test
+    public void testParentChildMap() {
+        Map<String, Object> parent = new Hashtable<String, Object>();
+        Map<String, Object> child = new Hashtable<String, Object>();
+        parent.put("child", child);
+        child.put("parent", parent);
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, parent);
+        V8Object v8_child = v8Object.getObject("child");
+        V8Object v8_parent = v8_child.getObject("parent");
+
+        assertEquals(v8Object, v8_parent);
+        v8Object.release();
+        v8_child.release();
+        v8_parent.release();
+    }
+
+    @Test
     public void testV8ArrayContainsSelf() {
         V8Array v8Array = new V8Array(v8);
         v8Array.push(v8Array);
@@ -1025,6 +1072,7 @@ public class V8ObjectUtilsTest {
         Map<String, Object> map = V8ObjectUtils.toMap(v8Object);
 
         assertEquals(map, map.get("self"));
+        assertEquals(map.hashCode(), map.get("self").hashCode());
         v8Object.release();
     }
 
@@ -1040,6 +1088,45 @@ public class V8ObjectUtilsTest {
 
         assertEquals(map, ((Map<String, Object>) map.get("child")).get("parent"));
         parent.release();
+    }
+
+    @Test
+    public void testCloneV8Object() {
+        V8Object list = v8.executeObjectScript("var l = [{first:'ian', last:'bull'}, {first:'sadie', last:'bull'}]; l;");
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, V8ObjectUtils.toMap(list));
+
+        v8.add("l2", v8Object);
+        v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
+        list.release();
+        v8Object.release();
+    }
+
+    @Test
+    public void testCloneV8Array() {
+        V8Array list = v8.executeArrayScript("var l = [{first:'ian', last:'bull'}, {first:'sadie', last:'bull'}]; l;");
+
+        V8Array v8Object = V8ObjectUtils.toV8Array(v8, V8ObjectUtils.toList(list));
+
+        v8.add("l2", v8Object);
+        v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
+        list.release();
+        v8Object.release();
+    }
+
+    @Test
+    public void testCloneV8ObjectsWithCircularStructure() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child = child\n;"
+                + "parent;");
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, V8ObjectUtils.toMap(parent));
+
+        assertEquals(1, v8Object.getKeys().length);
+        assertEquals("child", v8Object.getKeys()[0]);
+        parent.release();
+        v8Object.release();
     }
 
     @Test
