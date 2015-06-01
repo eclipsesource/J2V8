@@ -99,7 +99,22 @@ public class V8ExecutorTest {
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
 
-        runtime.shutdownExecutors();
+        runtime.shutdownExecutors(false);
+
+        assertTrue(runtime.getExecutor(key).isShuttingDown());
+        key.release();
+        runtime.release();
+    }
+
+    @Test
+    public void testForceTerminateNestedExecutors() {
+        V8 runtime = V8.createV8Runtime();
+        V8Executor executor = new V8Executor("while (true){}");
+        executor.start();
+        V8Object key = new V8Object(runtime);
+        runtime.registerV8Executor(key, executor);
+
+        runtime.shutdownExecutors(true);
 
         assertTrue(runtime.getExecutor(key).isShuttingDown());
         key.release();

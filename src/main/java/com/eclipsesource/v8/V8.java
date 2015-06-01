@@ -28,12 +28,13 @@ public class V8 extends V8Object {
     private static Thread       debugThread    = null;
 
     private final V8Locker    locker;
-    private int               methodReferenceCounter = 0;
-    private boolean           debugEnabled           = false;
-    long                      objectReferences       = 0;
-    private long              v8RuntimePtr           = 0;
-    private List<Releasable>  resources              = null;
-    private V8Map<V8Executor> executors              = null;
+    private int               methodReferenceCounter  = 0;
+    private boolean           debugEnabled            = false;
+    long                      objectReferences        = 0;
+    private long              v8RuntimePtr            = 0;
+    private List<Releasable>  resources               = null;
+    private V8Map<V8Executor> executors               = null;
+    private boolean           forceTerminateExecutors = false;
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -161,6 +162,7 @@ public class V8 extends V8Object {
     }
 
     public void terminateExecution() {
+        forceTerminateExecutors = true;
         terminateExecution(v8RuntimePtr);
     }
 
@@ -173,7 +175,7 @@ public class V8 extends V8Object {
             disableDebugSupport();
         }
         releaseResources();
-        shutdownExecutors();
+        shutdownExecutors(forceTerminateExecutors);
         if (executors != null) {
             executors.clear();
         }
@@ -222,13 +224,17 @@ public class V8 extends V8Object {
         return executors.get(key);
     }
 
-    public void shutdownExecutors() {
+    public void shutdownExecutors(final boolean forceTerminate) {
         checkThread();
         if (executors == null) {
             return;
         }
         for (V8Executor executor : executors.values()) {
-            executor.shutdown();
+            if (forceTerminate) {
+                executor.forceTermination();
+            } else {
+                executor.shutdown();
+            }
         }
     }
 
