@@ -181,6 +181,9 @@ public class V8ObjectUtils {
     }
 
     public static Object getV8Result(final V8 v8, final Object value) {
+        if (value == null) {
+            return null;
+        }
         Map<Object, V8Object> cache = new Hashtable<Object, V8Object>();
         try {
             Object result = getV8Result(v8, value, cache);

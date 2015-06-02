@@ -670,6 +670,20 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testGetV8ResultNull() {
+        Object result = V8ObjectUtils.getV8Result(v8, null);
+
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetV8ResultUndefined() {
+        Object result = V8ObjectUtils.getV8Result(v8, V8.getUndefined());
+
+        assertEquals(V8.getUndefined(), result);
+    }
+
+    @Test
     public void testGetV8ResultTrue() {
         Object result = V8ObjectUtils.getV8Result(v8, Boolean.TRUE);
 
