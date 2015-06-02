@@ -67,6 +67,28 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testCreateMapWithFunction() {
+        V8Object object = v8.executeObjectScript("x = {a : function() {return 1;}, b : 'foo'}; x;");
+
+        Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
+
+        assertEquals(1, map.size());
+        assertEquals("foo", map.get("b"));
+        object.release();
+    }
+
+    @Test
+    public void testCreateListWithFunction() {
+        V8Array array = v8.executeArrayScript("x = [function() {return 1;}, 'foo']; x;");
+
+        List<Object> list = V8ObjectUtils.toList(array);
+
+        assertEquals(1, list.size());
+        assertEquals("foo", list.get(0));
+        array.release();
+    }
+
+    @Test
     public void testCreateDoubleMapFromV8Object() {
         V8Object object = v8.executeObjectScript("x = {a:1.1, b:2.2, c:3.3, d:4.4}; x");
 

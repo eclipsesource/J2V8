@@ -24,6 +24,8 @@ import com.eclipsesource.v8.V8Value;
 
 public class V8ObjectUtils {
 
+    private static final Object IGNORE = new Object();
+
     public static Map<String, ? super Object> toMap(final V8Object object) {
         V8Map<Object> cache = new V8Map<Object>();
         try {
@@ -44,7 +46,10 @@ public class V8ObjectUtils {
         cache.put(object, result);
         String[] keys = object.getKeys();
         for (String key : keys) {
-            result.put(key, getValue(object, key, cache));
+            Object value = getValue(object, key, cache);
+            if (value != IGNORE) {
+                result.put(key, value);
+            }
         }
         return result;
     }
@@ -68,7 +73,10 @@ public class V8ObjectUtils {
         List<? super Object> result = new ArrayList<Object>();
         cache.put(array, result);
         for (int i = 0; i < array.length(); i++) {
-            result.add(getValue(array, i, cache));
+            Object value = getValue(array, i, cache);
+            if (value != IGNORE) {
+                result.add(getValue(array, i, cache));
+            }
         }
         return result;
     }
@@ -296,6 +304,8 @@ public class V8ObjectUtils {
                 return array.getBoolean(index);
             case V8Value.STRING:
                 return array.getString(index);
+            case V8Value.V8_FUNCTION:
+                return IGNORE;
             case V8Value.V8_ARRAY:
                 V8Array arrayValue = array.getArray(index);
                 try {
@@ -343,6 +353,8 @@ public class V8ObjectUtils {
                 return object.getBoolean(key);
             case V8Value.STRING:
                 return object.getString(key);
+            case V8Value.V8_FUNCTION:
+                return IGNORE;
             case V8Value.V8_ARRAY:
                 V8Array array = object.getArray(key);
                 try {
