@@ -5,7 +5,7 @@ J2V8 is a set of Java bindings for V8. J2V8 focuses on performance and tight int
 
 Articles
 ========
-[Getting Started With J2V8)[http://eclipsesource.com/blogs/getting-started-with-j2v8/]
+[Getting Started With J2V8](http://eclipsesource.com/blogs/getting-started-with-j2v8/)
 ## License
 The code is published under the terms of the [Eclipse Public License, version 1.0](http://www.eclipse.org/legal/epl-v10.html).
 
