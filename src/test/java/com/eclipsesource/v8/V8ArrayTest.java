@@ -564,6 +564,17 @@ public class V8ArrayTest {
         undefined.get(7);
     }
 
+    @Test
+    public void testGetFunctionAtIndex() {
+        V8Array array = v8.executeArrayScript("x = [function() {}]; x;");
+
+        Object function = array.get(0);
+
+        assertTrue(function instanceof V8Function);
+        ((V8Function) function).release();
+        array.release();
+    }
+
     /*** Null ***/
     @Test
     public void testNullStrinsgInArray() {

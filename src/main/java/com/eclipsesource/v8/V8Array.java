@@ -163,6 +163,7 @@ public class V8Array extends V8Object {
                 return getString(index);
             case V8_ARRAY:
                 return getArray(index);
+            case V8_FUNCTION:
             case V8_OBJECT:
                 return getObject(index);
         }
