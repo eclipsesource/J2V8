@@ -153,6 +153,8 @@ public class V8Array extends V8Object {
     public Object get(final int index) {
         int type = getType(index);
         switch (type) {
+            case NULL:
+                return null;
             case INTEGER:
                 return getInteger(index);
             case DOUBLE:
@@ -167,7 +169,7 @@ public class V8Array extends V8Object {
             case V8_OBJECT:
                 return getObject(index);
         }
-        return null;
+        return V8.getUndefined();
     }
 
     public V8Array getArray(final int index) {

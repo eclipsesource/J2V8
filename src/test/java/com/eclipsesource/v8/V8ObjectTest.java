@@ -93,6 +93,103 @@ public class V8ObjectTest {
     }
 
     @Test
+    public void testGetIsInteger() {
+        V8Object object = v8.executeObjectScript("foo = {key: 7}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof Integer);
+        assertEquals(7, result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsDouble() {
+        V8Object object = v8.executeObjectScript("foo = {key: 7.7}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof Double);
+        assertEquals(7.7, result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsString() {
+        V8Object object = v8.executeObjectScript("foo = {key: 'bar'}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof String);
+        assertEquals("bar", result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsBoolean() {
+        V8Object object = v8.executeObjectScript("foo = {key: true}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof Boolean);
+        assertEquals(true, result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsObject() {
+        V8Object object = v8.executeObjectScript("foo = {key: {}}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof V8Object);
+        object.release();
+        ((Releasable) result).release();
+    }
+
+    @Test
+    public void testGetIsArray() {
+        V8Object object = v8.executeObjectScript("foo = {key: []}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof V8Array);
+        object.release();
+        ((Releasable) result).release();
+    }
+
+    @Test
+    public void testGetIsNull() {
+        V8Object object = v8.executeObjectScript("foo = {key: null}");
+
+        Object result = object.get("key");
+
+        assertNull(result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsUndefined() {
+        V8Object object = v8.executeObjectScript("foo = {}");
+
+        Object result = object.get("key");
+
+        assertEquals(V8.getUndefined(), result);
+        object.release();
+    }
+
+    @Test
+    public void testGetIsFunction() {
+        V8Object object = v8.executeObjectScript("foo = {key: function(){}}");
+
+        Object result = object.get("key");
+
+        assertTrue(result instanceof V8Function);
+        object.release();
+        ((Releasable) result).release();
+    }
+
+    @Test
     public void testGetV8Object() {
         v8.executeVoidScript("foo = {key: 'value'}");
 

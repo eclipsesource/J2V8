@@ -565,14 +565,100 @@ public class V8ArrayTest {
     }
 
     @Test
-    public void testGetFunctionAtIndex() {
-        V8Array array = v8.executeArrayScript("x = [function() {}]; x;");
+    public void testGetIsInteger() {
+        V8Array array = v8.executeArrayScript("foo = [7]");
 
-        Object function = array.get(0);
+        Object result = array.get(0);
 
-        assertTrue(function instanceof V8Function);
-        ((V8Function) function).release();
+        assertTrue(result instanceof Integer);
+        assertEquals(7, result);
         array.release();
+    }
+
+    @Test
+    public void testGetIsDouble() {
+        V8Array array = v8.executeArrayScript("foo = [7.7]");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof Double);
+        assertEquals(7.7, result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIsString() {
+        V8Array array = v8.executeArrayScript("foo = ['bar']");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof String);
+        assertEquals("bar", result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIsBoolean() {
+        V8Array array = v8.executeArrayScript("foo = [true]");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof Boolean);
+        assertEquals(true, result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIsObject() {
+        V8Array array = v8.executeArrayScript("foo = [{}]");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof V8Object);
+        array.release();
+        ((Releasable) result).release();
+    }
+
+    @Test
+    public void testGetIsArray() {
+        V8Array array = v8.executeArrayScript("foo = [[]]");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof V8Array);
+        array.release();
+        ((Releasable) result).release();
+    }
+
+    @Test
+    public void testGetIsNull() {
+        V8Array array = v8.executeArrayScript("foo = [null]");
+
+        Object result = array.get(0);
+
+        assertNull(result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIsUndefined() {
+        V8Array array = v8.executeArrayScript("foo = []");
+
+        Object result = array.get(0);
+
+        assertEquals(V8.getUndefined(), result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIsFunction() {
+        V8Array array = v8.executeArrayScript("foo = [function(){}]");
+
+        Object result = array.get(0);
+
+        assertTrue(result instanceof V8Function);
+        array.release();
+        ((Releasable) result).release();
     }
 
     /*** Null ***/

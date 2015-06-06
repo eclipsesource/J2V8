@@ -56,6 +56,28 @@ public class V8Object extends V8Value {
         return v8.getType(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
+    public Object get(final String key) {
+        int type = getType(key);
+        switch (type) {
+            case NULL:
+                return null;
+            case INTEGER:
+                return getInteger(key);
+            case DOUBLE:
+                return getDouble(key);
+            case BOOLEAN:
+                return getBoolean(key);
+            case STRING:
+                return getString(key);
+            case V8_ARRAY:
+                return getArray(key);
+            case V8_FUNCTION:
+            case V8_OBJECT:
+                return getObject(key);
+        }
+        return V8.getUndefined();
+    }
+
     public int getInteger(final String key) throws V8ResultUndefined {
         v8.checkThread();
         checkReleaesd();
