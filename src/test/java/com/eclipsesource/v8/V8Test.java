@@ -1180,18 +1180,6 @@ public class V8Test {
     }
 
     @Test
-    public void testV8IsGlobalSame() {
-        setupWindowAlias();
-        v8.executeVoidScript("var global = Function('return this')();");
-
-        V8Object global = v8.executeObjectScript("global");
-
-        assertTrue(v8.sameValue(global));
-        assertTrue(global.sameValue(v8));
-        global.release();
-    }
-
-    @Test
     public void testV8EqualsGlobalHash() {
         setupWindowAlias();
         v8.executeVoidScript("var global = Function('return this')();");

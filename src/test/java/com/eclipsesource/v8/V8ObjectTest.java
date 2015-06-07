@@ -1174,19 +1174,6 @@ public class V8ObjectTest {
     }
 
     @Test
-    public void testV8ObjectTwinSameValue() {
-        V8Object v8Object = new V8Object(v8);
-
-        V8Object twin = v8Object.twin();
-
-        assertNotSame(v8Object, twin);
-        assertTrue(v8Object.sameValue(twin));
-        assertTrue(twin.sameValue(v8Object));
-        v8Object.release();
-        twin.release();
-    }
-
-    @Test
     public void testV8ObjectTwinStrictEquals() {
         V8Object v8Object = new V8Object(v8);
 
