@@ -37,6 +37,7 @@ public class V8JSFunctionCallTest {
             }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -61,6 +62,29 @@ public class V8JSFunctionCallTest {
         assertEquals(15, result);
         function.release();
         parameters.release();
+    }
+
+    @Test
+    public void testCallFunctionNullParameters() {
+        v8.executeVoidScript("function call() {return true;}");
+        V8Function function = (V8Function) v8.getObject("call");
+
+        boolean result = (Boolean) function.call(v8, null);
+
+        assertTrue(result);
+        function.release();
+    }
+
+    @Test
+    public void testCallFunctionNullReceiver() {
+        v8.executeVoidScript("function call() {return this;}");
+        V8Function function = (V8Function) v8.getObject("call");
+
+        Object result = function.call(null, null);
+
+        assertEquals(v8, result);
+        function.release();
+        ((Releasable) result).release();
     }
 
     @Test

@@ -10,6 +10,12 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+/**
+ * A V8Value that represents a JavaScript function.
+ * JavaScript functions cannot be created in Java, but
+ * can be returned as the result of invoking a JS script
+ * or JS Function.
+ */
 public class V8Function extends V8Object {
 
     protected V8Function(final V8 v8) {
@@ -25,14 +31,29 @@ public class V8Function extends V8Object {
         return new V8Function(v8, newHandle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Object#twin()
+     */
     @Override
     public V8Function twin() {
         return (V8Function) super.twin();
     }
 
-    public Object call(final V8Object receiver, final V8Array parameters) {
+    /**
+     * Invoke the JavaScript function on the current runtime.
+     *
+     * @param receiver The object on which to call the function on. The
+     * receiver will be mapped to 'this' in JavaScript. If receiver is null,
+     * then the V8 runtime will be used instead.
+     * @param parameters The parameters passed to the JS Function.
+     *
+     * @return The result of JavaScript function.
+     */
+    public Object call(V8Object receiver, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
+        receiver = receiver != null ? receiver : v8;
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeFunction(v8.getV8RuntimePtr(), receiver.objectHandle, objectHandle, parametersHandle);
     }
