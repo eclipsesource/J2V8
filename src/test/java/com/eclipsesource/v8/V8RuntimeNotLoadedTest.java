@@ -45,7 +45,7 @@ public class V8RuntimeNotLoadedTest {
 
     @Test
     public void testJ2V8NotEnabled() {
-        assertFalse(V8.isEnabled());
+        assertFalse(V8.isLoaded());
     }
 
     @Test(expected = IllegalStateException.class)

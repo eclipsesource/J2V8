@@ -20,6 +20,19 @@ import java.util.Map;
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
 
+/**
+ * An isolated V8Runtime. All JavaScript execution must exist
+ * on a single runtime, and data is not shared between runtimes.
+ * A runtime must be created and released when finished.
+ *
+ * All access to a runtime must come from the same thread, unless
+ * the thread explicitly gives up control using the V8Locker.
+ *
+ * A public static factory method can be used to create the runtime.
+ *
+ * V8 runtime = V8.createV8Runtime();
+ *
+ */
 public class V8 extends V8Object {
 
     private static Object       lock           = new Object();
@@ -27,14 +40,15 @@ public class V8 extends V8Object {
     private static Runnable     debugHandler   = null;
     private static Thread       debugThread    = null;
 
-    private final V8Locker    locker;
-    private int               methodReferenceCounter  = 0;
-    private boolean           debugEnabled            = false;
-    long                      objectReferences        = 0;
-    private long              v8RuntimePtr            = 0;
-    private List<Releasable>  resources               = null;
-    private V8Map<V8Executor> executors               = null;
-    private boolean           forceTerminateExecutors = false;
+    private final V8Locker                 locker;
+    private int                            methodReferenceCounter  = 0;
+    private boolean                        debugEnabled            = false;
+    private long                           objectReferences        = 0;
+    private long                           v8RuntimePtr            = 0;
+    private List<Releasable>               resources               = null;
+    private V8Map<V8Executor>              executors               = null;
+    private boolean                        forceTerminateExecutors = false;
+    private Map<Integer, MethodDescriptor> functions               = new HashMap<Integer, MethodDescriptor>();
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -42,15 +56,13 @@ public class V8 extends V8Object {
     private static V8Value   undefined           = new V8Object.Undefined();
     private static Object    invalid             = new Object();
 
-    class MethodDescriptor {
+    private class MethodDescriptor {
         Object           object;
         Method           method;
         JavaCallback     callback;
         JavaVoidCallback voidCallback;
         boolean          includeReceiver;
     }
-
-    Map<Integer, MethodDescriptor> functions = new HashMap<Integer, MethodDescriptor>();
 
     private synchronized static void load(final String tmpDirectory) {
         try {
@@ -63,18 +75,55 @@ public class V8 extends V8Object {
         }
     }
 
-    public static boolean isEnabled() {
+    /**
+     * Determines if the native libraries are loaded.
+     *
+     * @return Returns true if the native libraries are loaded,
+     * false otherwise.
+     */
+    public static boolean isLoaded() {
         return nativeLibraryLoaded;
     }
 
+    /**
+     * Creates a new V8Runtime and loads the required
+     * native libraries if they are not already loaded.
+     * The current thread is given the lock to this runtime.
+     *
+     * @return A new isolated V8 Runtime.
+     */
     public static V8 createV8Runtime() {
         return createV8Runtime(null, null);
     }
 
+    /**
+     * Creates a new V8Runtime and loads the required native libraries if they
+     * are not already loaded. An alias is also set for the global scope. For example,
+     * 'window' can be set as the global scope name.
+     *
+     * The current thread is given the lock to this runtime.
+     *
+     * @param globalAlias The name to associate with the global scope.
+     *
+     * @return A new isolated V8 Runtime.
+     */
     public static V8 createV8Runtime(final String globalAlias) {
         return createV8Runtime(globalAlias, null);
     }
 
+    /**
+     * Creates a new V8Runtime and loads the required native libraries if they
+     * are not already loaded. An alias is also set for the global scope. For example,
+     * 'window' can be set as the global scope name.
+     *
+     * The current thread is given the lock to this runtime.
+     *
+     * @param globalAlias The name to associate with the global scope.
+     * @param tempDirectory The name of the directory to extract the native
+     * libraries too.
+     *
+     * @return A new isolated V8 Runtime.
+     */
     public static V8 createV8Runtime(final String globalAlias, final String tempDirectory) {
         if (!nativeLibraryLoaded) {
             synchronized (lock) {
@@ -117,55 +166,127 @@ public class V8 extends V8Object {
         v8RuntimePtr = _createIsolate(globalAlias);
     }
 
+    /**
+     * Returns an UNDEFINED constant.
+     *
+     * @return The UNDEFINED constant value.
+     */
     public static V8Value getUndefined() {
         return undefined;
     }
 
+    /**
+     * Enables debug support for this runtime.
+     *
+     * @param port The port to listen for debug connections.
+     * @param waitForConnection True if the runtime should wait on the first
+     * instruction for the debugger to connect.
+     *
+     * @return true if debug support was successfully enabled, false otherwise
+     *
+     * @deprecated NOTE: This is not API and likely to change
+     */
+    @Deprecated
     public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
         V8.checkDebugThread();
         debugEnabled = enableDebugSupport(getV8RuntimePtr(), port, waitForConnection);
         return debugEnabled;
     }
 
+    /**
+     * Enables debug support for this runtime and does not pause for a connection.
+     *
+     * @param port The port to listen for debug connections.
+     *
+     * @return true if debug support was successfully enabled, false otherwise
+     *
+     * @deprecated NOTE: This is not API and likely to change
+     */
+    @Deprecated
     public boolean enableDebugSupport(final int port) {
         V8.checkDebugThread();
         debugEnabled = enableDebugSupport(getV8RuntimePtr(), port, false);
         return debugEnabled;
     }
 
+    /**
+     * Processes all outstanding debug messages for this runtime.
+     *
+     * @deprecated
+     */
+    @Deprecated
     public static void processDebugMessages(final V8 runtime) {
         runtime.checkThread();
         runtime._processDebugMessages(runtime.getV8RuntimePtr());
     }
 
+    /**
+     * Disables debug support for this runtime.
+     *
+     * @deprecated
+     */
+    @Deprecated
     public void disableDebugSupport() {
         V8.checkDebugThread();
         disableDebugSupport(getV8RuntimePtr());
         debugEnabled = false;
     }
 
-    public static int getActiveRuntimes() {
-        return runtimeCounter;
-    }
-
+    /**
+     * Registers a callback that will be invoked whenever a debug message
+     * is received. This can be used so the main thread can call
+     * processDebugMessages to handle the messages.
+     *
+     * @param handler The debug handler to invoke when a debug message
+     * is received.
+     *
+     * @deprecated
+     */
+    @Deprecated
     public static void registerDebugHandler(final Runnable handler) {
         debugHandler = handler;
     }
 
-    public long getV8RuntimePtr() {
+    /**
+     * Returns the number of active runtimes.
+     *
+     * @return The number of active runtimes.
+     */
+    public static int getActiveRuntimes() {
+        return runtimeCounter;
+    }
+
+    protected long getV8RuntimePtr() {
         return v8RuntimePtr;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Value#release()
+     */
     @Override
     public void release() {
         release(true);
     }
 
+    /**
+     * Terminates any JavaScript executing on this runtime. Once
+     * the runtime is released, any executors that were spawned
+     * will also be force terminated.
+     */
     public void terminateExecution() {
         forceTerminateExecutors = true;
         terminateExecution(v8RuntimePtr);
     }
 
+    /**
+     * Release native resources associated with this runtime. Once
+     * released, a runtime cannot be reused.
+     *
+     * @param reportMemoryLeaks True if memory leaks should be
+     * reported by throwing an IllegalStateException if any
+     * objects were not released.
+     */
     public void release(final boolean reportMemoryLeaks) {
         if (isReleased()) {
             return;
@@ -200,6 +321,14 @@ public class V8 extends V8Object {
         }
     }
 
+    /**
+     * Registers an executor with this runtime. An executor is another
+     * runtime with its own thread. By registering an executor, it can be
+     * terminated when this runtime is released.
+     *
+     * @param key The key to associate the executor with.
+     * @param executor The executor itself.
+     */
     public void registerV8Executor(final V8Object key, final V8Executor executor) {
         checkThread();
         if (executors == null) {
@@ -208,6 +337,14 @@ public class V8 extends V8Object {
         executors.put(key, executor);
     }
 
+    /**
+     * Removes the executor from this runtime. The executor is
+     * *NOT* shutdown, simply removed from the list of known
+     * executors.
+     *
+     * @param key The key the executor was associated with.
+     * @return The executor or null if it does not exist.
+     */
     public V8Executor removeExecutor(final V8Object key) {
         checkThread();
         if (executors == null) {
@@ -216,6 +353,12 @@ public class V8 extends V8Object {
         return executors.remove(key);
     }
 
+    /**
+     * Returns the executor associated with the given key.
+     *
+     * @param key The key the executor was associated with.
+     * @return The executor or null if it does not exist.
+     */
     public V8Executor getExecutor(final V8Object key) {
         checkThread();
         if (executors == null) {
@@ -224,6 +367,15 @@ public class V8 extends V8Object {
         return executors.get(key);
     }
 
+    /**
+     * Shutdown all executors associated with this runtime.
+     * If force terminate is specified, it will forcefully terminate
+     * the executors, otherwise it will simply signal that they
+     * should terminate.
+     *
+     * @param forceTerminate Specify if the executors should be
+     * forcefully terminated, or simply notified to shutdown when ready.
+     */
     public void shutdownExecutors(final boolean forceTerminate) {
         checkThread();
         if (executors == null) {
@@ -238,63 +390,174 @@ public class V8 extends V8Object {
         }
     }
 
-    public void registerResource(final Releasable object) {
+    /**
+     * Registers a resource with this runtime. All registered
+     * resources will be released before the runtime is released.
+     *
+     * @param resource The resource to register.
+     */
+    public void registerResource(final Releasable resource) {
         checkThread();
         if (resources == null) {
             resources = new ArrayList<Releasable>();
         }
-        resources.add(object);
+        resources.add(resource);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as an integer.
+     * If the result is not an integer, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as an integer, or V8ResultUndefinedException if
+     * the result is not an integer.
+     */
     public int executeIntegerScript(final String script) {
         return executeIntegerScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as an integer.
+     * If the result is not an integer, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for excepton purposes.
+     *
+     * @return The result of the script as an integer, or V8ResultUndefinedException if
+     * the result is not an integer.
+     */
     public int executeIntegerScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         return executeIntegerScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
-    void createTwin(final V8Value value, final int twinObjectHandle) {
+    protected void createTwin(final V8Value value, final int twinObjectHandle) {
         checkThread();
         createTwin(v8RuntimePtr, value.getHandle(), twinObjectHandle);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a double.
+     * If the result is not a double, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a double, or V8ResultUndefinedException if
+     * the result is not a double.
+     */
     public double executeDoubleScript(final String script) {
         return executeDoubleScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a double.
+     * If the result is not a double, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a double, or V8ResultUndefinedException if
+     * the result is not a double.
+     */
     public double executeDoubleScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         return executeDoubleScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a String.
+     * If the result is not a String, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a String, or V8ResultUndefinedException if
+     * the result is not a String.
+     */
     public String executeStringScript(final String script) {
         return executeStringScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a String.
+     * If the result is not a String, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a String, or V8ResultUndefinedException if
+     * the result is not a String.
+     */
     public String executeStringScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         return executeStringScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a boolean.
+     * If the result is not a boolean, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a boolean, or V8ResultUndefinedException if
+     * the result is not a boolean.
+     */
     public boolean executeBooleanScript(final String script) {
         return executeBooleanScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a boolean.
+     * If the result is not a boolean, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a boolean, or V8ResultUndefinedException if
+     * the result is not a boolean.
+     */
     public boolean executeBooleanScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         return executeBooleanScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a V8Array.
+     * If the result is not a V8Array, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a V8Array, or V8ResultUndefinedException if
+     * the result is not a V8Array.
+     */
     public V8Array executeArrayScript(final String script) {
         return this.executeArrayScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a V8Array.
+     * If the result is not a V8Array, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a V8Array, or V8ResultUndefinedException if
+     * the result is not a V8Array.
+     */
     public V8Array executeArrayScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         Object result = this.executeScript(script, null, 0);
@@ -304,20 +567,60 @@ public class V8 extends V8Object {
         throw new V8ResultUndefined();
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a Java Object.
+     * Primitives will be boxed.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a Java Object.
+     */
     public Object executeScript(final String script) {
         return executeScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a Java Object.
+     * Primitives will be boxed.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a Java Object.
+     */
     public Object executeScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         return executeScript(getV8RuntimePtr(), UNKNOWN, script, scriptName, lineNumber);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a V8Object.
+     * If the result is not a V8Object, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     *
+     * @return The result of the script as a V8Object, or V8ResultUndefinedException if
+     * the result is not a V8Object.
+     */
     public V8Object executeObjectScript(final String script) {
         return this.executeObjectScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime and returns the result as a V8Object.
+     * If the result is not a V8Object, then a V8ResultUndefinedException is thrown.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     *
+     * @return The result of the script as a V8Object, or V8ResultUndefinedException if
+     * the result is not a V8Object.
+     */
     public V8Object executeObjectScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         Object result = this.executeScript(script, null, 0);
@@ -327,16 +630,36 @@ public class V8 extends V8Object {
         throw new V8ResultUndefined();
     }
 
+    /**
+     * Executes a JS Script on this runtime.
+     *
+     * @param script The script to execute.
+     */
     public void executeVoidScript(final String script) {
         this.executeVoidScript(script, null, 0);
     }
 
+    /**
+     * Executes a JS Script on this runtime.
+     *
+     * @param script The script to execute.
+     * @param scriptName The name of the script
+     * @param lineNumber The line number that is considered to be the first line of
+     * the script. Typically 0, but could be set to another value for exception stack trace purposes.
+     */
     public void executeVoidScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
         checkScript(script);
         executeVoidScript(v8RuntimePtr, script, scriptName, lineNumber);
     }
 
+    /**
+     * Returns the locker associated with this runtime. The locker allows
+     * threads to give up control of the runtime and other threads to acquire
+     * control.
+     *
+     * @return The locker associated with this runtime.
+     */
     public V8Locker getLocker() {
         return locker;
     }
