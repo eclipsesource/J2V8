@@ -134,7 +134,7 @@ public class V8Object extends V8Value {
 
     /**
      * Returns the integer value associated with this key. If the value
-     * associated with this key does not exist, or if its not an integer, then
+     * associated with this key does not exist, or if it's not an integer, then
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
@@ -150,7 +150,7 @@ public class V8Object extends V8Value {
 
     /**
      * Returns the boolean value associated with this key. If the value
-     * associated with this key does not exist, or if its not a boolean, then
+     * associated with this key does not exist, or if it's not a boolean, then
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
@@ -166,7 +166,7 @@ public class V8Object extends V8Value {
 
     /**
      * Returns the double value associated with this key. If the value
-     * associated with this key does not exist, or if its not a double, then
+     * associated with this key does not exist, or if it's not a double, then
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
@@ -182,7 +182,7 @@ public class V8Object extends V8Value {
 
     /**
      * Returns the String value associated with this key. If the value
-     * associated with this key does not exist, or if its not a String, then
+     * associated with this key does not exist, or if it's not a String, then
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.

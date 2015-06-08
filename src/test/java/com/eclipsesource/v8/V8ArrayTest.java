@@ -1098,6 +1098,14 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testSparseArrayLength() {
+        V8Array array = v8.executeArrayScript("x = []; x[0] = 'foo'; x[100] = 'bar'; x['boo'] = 'baz'; x");
+
+        assertEquals(101, array.length());
+        array.release();
+    }
+
+    @Test
     public void testAddUndefined() {
         V8Array v8Array = new V8Array(v8).pushUndefined();
 
@@ -2049,6 +2057,14 @@ public class V8ArrayTest {
         assertEquals("c", result[2]);
         assertEquals("d", result[3]);
         a.release();
+    }
+
+    @Test
+    public void testUndefinedNotReleased() {
+        com.eclipsesource.v8.V8Array.Undefined undefined = new V8Array.Undefined();
+        undefined.release();
+
+        assertFalse(undefined.isReleased());
     }
 
 }
