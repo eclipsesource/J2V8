@@ -10,8 +10,15 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+/**
+ * An interface used to denote all V8 Classes which can be released.
+ */
 public interface Releasable {
 
+    /**
+     * Release the underlying resources. Once an object is released
+     * it typically cannot be used again.
+     */
     void release();
 
 }
