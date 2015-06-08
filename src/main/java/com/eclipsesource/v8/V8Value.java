@@ -134,7 +134,7 @@ abstract public class V8Value implements Releasable {
 
     /**
      * Performs a JS === on the parameter and the receiver.
-     * 
+     *
      * @return Returns true iff this === that
      */
     public boolean strictEquals(final Object that) {
@@ -165,6 +165,10 @@ abstract public class V8Value implements Releasable {
 
     protected abstract V8Value createTwin(int twinObjectHandle);
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object that) {
         return strictEquals(that);
@@ -172,7 +176,7 @@ abstract public class V8Value implements Releasable {
 
     /**
      * Performs a JS == on the parameter and the receiver.
-     * 
+     *
      * @return Returns true iff this == that
      */
     public boolean jsEquals(final Object that) {
@@ -196,6 +200,10 @@ abstract public class V8Value implements Releasable {
         return v8.equals(v8.getV8RuntimePtr(), getHandle(), ((V8Value) that).getHandle());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         v8.checkThread();
