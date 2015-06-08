@@ -106,6 +106,34 @@ public class V8JSFunctionCallTest {
         parameters.release();
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testIntegerFunctionNotInteger() {
+        v8.executeVoidScript("function add(x, y) {return 'bar';}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeIntegerFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testIntegerFunctionNoReturn() {
+        v8.executeVoidScript("function add(x, y) {;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeIntegerFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
     @Test
     public void testDoubleFunctionCall() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
@@ -119,6 +147,34 @@ public class V8JSFunctionCallTest {
         parameters.release();
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testDoubleFunctionNotDouble() {
+        v8.executeVoidScript("function add(x, y) {return 'bar';}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeDoubleFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testDoubleFunctionNoReturn() {
+        v8.executeVoidScript("function add(x, y) {;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeDoubleFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
     @Test
     public void testStringFunctionCall() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
@@ -130,6 +186,62 @@ public class V8JSFunctionCallTest {
 
         assertEquals("hello, world!", result);
         parameters.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testStringFunctionNotString() {
+        v8.executeVoidScript("function add(x, y) {return 7;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeStringFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testStringFunctionNoReturn() {
+        v8.executeVoidScript("function add(x, y) {;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeStringFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testBooleanFunctionNotBoolean() {
+        v8.executeVoidScript("function add(x, y) {return 'bar';}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeBooleanFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testBooleanFunctionNoReturn() {
+        v8.executeVoidScript("function add(x, y) {;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeBooleanFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
     }
 
     @Test
@@ -164,6 +276,20 @@ public class V8JSFunctionCallTest {
         result.release();
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testArrayFunctionNotArray() {
+        v8.executeVoidScript("function add(x, y) {return 7;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeArrayFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
     @Test
     public void testObjectFunctionCall() {
         v8.executeVoidScript("function getPerson(first, last, age) {return {'first':first, 'last':last, 'age':age};}");
@@ -179,6 +305,20 @@ public class V8JSFunctionCallTest {
         assertEquals(7, result.getInteger("age"));
         parameters.release();
         result.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testObjectFunctionNotObject() {
+        v8.executeVoidScript("function add(x, y) {return 7;}");
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7);
+        parameters.push(8);
+
+        try {
+            v8.executeObjectFunction("add", parameters);
+        } finally {
+            parameters.release();
+        }
     }
 
     @Test

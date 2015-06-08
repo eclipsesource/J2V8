@@ -12,7 +12,36 @@ package com.eclipsesource.v8;
 
 import java.lang.reflect.Method;
 
+/**
+ * The concrete class for all V8 Objects. V8Objects are
+ * JavaScript objects accessible in java. Specialized
+ * subclasses exist for V8Arrays and V8Functions.
+ *
+ * V8Object are JavaScript object with key value pairs.
+ * Specific get methods exist to access values as primitives.
+ * General get methods also exist, which return Java Objects
+ * and can be casted to the correct subclass.
+ *
+ * V8Object have native resources and must be released
+ * when they are no longer need in Java.
+ */
 public class V8Object extends V8Value {
+
+    /**
+     * Create a new V8Object and associate it with a runtime.
+     * Once created, it must be released.
+     *
+     * @param v8 The runtime on which to associate the V8Object.
+     */
+    public V8Object(final V8 v8) {
+        super(v8);
+        v8.checkThread();
+        initialize(v8.getV8RuntimePtr(), objectHandle);
+    }
+
+    protected V8Object(final V8 v8, final int objectHandle) {
+        super(v8, objectHandle);
+    }
 
     protected V8Object() {
 
@@ -23,39 +52,64 @@ public class V8Object extends V8Value {
         return new V8Object(v8, newHandle);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Value#twin()
+     */
     @Override
     public V8Object twin() {
         return (V8Object) super.twin();
     }
 
-    protected V8Object(final V8 v8, final int objectHandle) {
-        super(v8, objectHandle);
-    }
-
-    public V8Object(final V8 v8) {
-        super(v8);
-        v8.checkThread();
-        initialize(v8.getV8RuntimePtr(), objectHandle);
-    }
-
+    /**
+     * Determine if a key/value pair with this key exists in
+     * the Object.
+     *
+     * @param key The key to check
+     * @return True if the key exists, false otherwise.
+     */
     public boolean contains(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.contains(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
+    /**
+     * Returns all the keys associated with this JavaScript Object.
+     * Keys associated with the objects prototype are not returned.
+     *
+     * @return The keys associated with this JavaScript Object.
+     */
     public String[] getKeys() {
         v8.checkThread();
         checkReleaesd();
         return v8.getKeys(v8.getV8RuntimePtr(), objectHandle);
     }
 
-    public int getType(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the type of the value associated with this Key, or
+     * UNDEFINED if the key does not exist. Types are specified as
+     * integer constants. The types are all defined in V8Value.
+     *
+     * @param key The key whose type to lookup.
+     *
+     * @return The Type of the value associated with this key
+     */
+    public int getType(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.getType(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
+    /**
+     * Returns the value associated with this key. Values are Java Objects.
+     * If the value is a primitive, its boxed type is returned. If the
+     * value is a V8Value, it must be released.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The value associated with this key.
+     */
     public Object get(final String key) {
         int type = getType(key);
         switch (type) {
@@ -78,31 +132,81 @@ public class V8Object extends V8Value {
         return V8.getUndefined();
     }
 
-    public int getInteger(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the integer value associated with this key. If the value
+     * associated with this key does not exist, or if its not an integer, then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The integer value associated with this key, or V8ResultUndefined
+     * if the key does not exist or the value is not an integer.
+     */
+    public int getInteger(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.getInteger(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
-    public boolean getBoolean(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the boolean value associated with this key. If the value
+     * associated with this key does not exist, or if its not a boolean, then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The boolean value associated with this key, or V8ResultUndefined
+     * if the key does not exist or the value is not a boolean.
+     */
+    public boolean getBoolean(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.getBoolean(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
-    public double getDouble(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the double value associated with this key. If the value
+     * associated with this key does not exist, or if its not a double, then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The double value associated with this key, or V8ResultUndefined
+     * if the key does not exist or the value is not a double.
+     */
+    public double getDouble(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.getDouble(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
-    public String getString(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the String value associated with this key. If the value
+     * associated with this key does not exist, or if its not a String, then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The String value associated with this key, or V8ResultUndefined
+     * if the key does not exist or the value is not a String.
+     */
+    public String getString(final String key) {
         v8.checkThread();
         checkReleaesd();
         return v8.getString(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
-    public V8Array getArray(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the V8Array value associated with this key. If the value
+     * associated with this key does not exist then UNDEFINED is returned.
+     * If the value exists but is not an array then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The V8Array value associated with this key.
+     */
+    public V8Array getArray(final String key) {
         v8.checkThread();
         checkReleaesd();
         Object result = v8.get(v8.getV8RuntimePtr(), V8_ARRAY, objectHandle, key);
@@ -112,7 +216,17 @@ public class V8Object extends V8Value {
         throw new V8ResultUndefined();
     }
 
-    public V8Object getObject(final String key) throws V8ResultUndefined {
+    /**
+     * Returns the V8Object value associated with this key. If the value
+     * associated with this key does not exist then UNDEFINED is returned.
+     * If the value exists but is not an JS Object then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param key The key whose value to return.
+     *
+     * @return The V8Object value associated with this key.
+     */
+    public V8Object getObject(final String key) {
         v8.checkThread();
         checkReleaesd();
         Object result = v8.get(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, key);
@@ -122,38 +236,89 @@ public class V8Object extends V8Value {
         throw new V8ResultUndefined();
     }
 
-    public int executeIntegerFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-            V8ResultUndefined {
+    /**
+     * Invoke a JavaScript function and return the result as a integer. If the
+     * result is not an integer, or does not exist, then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return An integer representing the result of the function call or V8ResultUndefined
+     * if the result is not an integer.
+     */
+    public int executeIntegerFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeIntegerFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
-    public double executeDoubleFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-            V8ResultUndefined {
+    /**
+     * Invoke a JavaScript function and return the result as a double. If the
+     * result is not a double, or does not exist, then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A double representing the result of the function call or V8ResultUndefined
+     * if the result is not a double.
+     */
+    public double executeDoubleFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeDoubleFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
-    public String executeStringFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-            V8ResultUndefined {
+    /**
+     * Invoke a JavaScript function and return the result as a String. If the
+     * result is not a String, or does not exist, then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A String representing the result of the function call or V8ResultUndefined
+     * if the result is not a String.
+     */
+    public String executeStringFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeStringFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
-    public boolean executeBooleanFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException,
-            V8ResultUndefined {
+    /**
+     * Invoke a JavaScript function and return the result as a boolean. If the
+     * result is not a boolean, or does not exist, then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A boolean representing the result of the function call or V8ResultUndefined
+     * if the result is not a boolean.
+     */
+    public boolean executeBooleanFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeBooleanFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
+    /**
+     * Invoke a JavaScript function and return the result as a V8Array. If the
+     * result is not a V8Array then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A V8Array representing the result of the function call or V8ResultUndefined
+     * if the result is not a V8Array. The result must be released.
+     */
     public V8Array executeArrayFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
@@ -165,6 +330,17 @@ public class V8Object extends V8Value {
         throw new V8ResultUndefined();
     }
 
+    /**
+     * Invoke a JavaScript function and return the result as a V8Object. If the
+     * result is not a V8Object then V8ResultUndefined is thrown.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A V8Object representing the result of the function call or V8ResultUndefined
+     * if the result is not a V8Object. The result must be released.
+     */
     public V8Object executeObjectFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
@@ -176,6 +352,15 @@ public class V8Object extends V8Value {
         throw new V8ResultUndefined();
     }
 
+    /**
+     * Invoke a JavaScript function and return the result as a Java Object.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     *
+     * @return A Java Object representing the result of the function call.
+     */
     public Object executeFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
@@ -183,13 +368,28 @@ public class V8Object extends V8Value {
         return v8.executeFunction(v8.getV8RuntimePtr(), UNKNOWN, objectHandle, name, parametersHandle);
     }
 
-    public void executeVoidFunction(final String name, final V8Array parameters) throws V8ScriptExecutionException {
+    /**
+     * Invokes a JavaScript function which does not return a result.
+     *
+     * @param name The name of the JS Function to call.
+     *
+     * @param parameters The parameters to pass to the function. Parameters must be released.
+     */
+    public void executeVoidFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
         int parametersHandle = parameters == null ? -1 : parameters.getHandle();
         v8.executeVoidFunction(v8.getV8RuntimePtr(), objectHandle, name, parametersHandle);
     }
 
+    /**
+     * Adds a key value pair to the receiver where the value is an integer.
+     *
+     * @param key The key to associate the value with.
+     * @param value The value to add.
+     *
+     * @return The receiver.
+     */
     public V8Object add(final String key, final int value) {
         v8.checkThread();
         checkReleaesd();
@@ -197,6 +397,14 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Adds a key value pair to the receiver where the value is a boolean.
+     *
+     * @param key The key to associate the value with.
+     * @param value The value to add.
+     *
+     * @return The receiver.
+     */
     public V8Object add(final String key, final boolean value) {
         v8.checkThread();
         checkReleaesd();
@@ -204,6 +412,14 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Adds a key value pair to the receiver where the value is a double.
+     *
+     * @param key The key to associate the value with.
+     * @param value The value to add.
+     *
+     * @return The receiver.
+     */
     public V8Object add(final String key, final double value) {
         v8.checkThread();
         checkReleaesd();
@@ -211,6 +427,14 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Adds a key value pair to the receiver where the value is a String.
+     *
+     * @param key The key to associate the value with.
+     * @param value The value to add.
+     *
+     * @return The receiver.
+     */
     public V8Object add(final String key, final String value) {
         v8.checkThread();
         checkReleaesd();
@@ -224,6 +448,14 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Adds a key value pair to the receiver where the value is a V8Value.
+     *
+     * @param key The key to associate the value with.
+     * @param value The value to add.
+     *
+     * @return The receiver.
+     */
     public V8Object add(final String key, final V8Value value) {
         v8.checkThread();
         checkReleaesd();
@@ -237,6 +469,13 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Associate UNDEFINED with the given key.
+     *
+     * @param key The key to associate UNDEFINED with.
+     *
+     * @return The receiver.
+     */
     public V8Object addUndefined(final String key) {
         v8.checkThread();
         checkReleaesd();
@@ -244,6 +483,13 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Associate NULL with the given key.
+     *
+     * @param key The key to associate NULL with.
+     *
+     * @return The receiver.
+     */
     public V8Object addNull(final String key) {
         v8.checkThread();
         checkReleaesd();
@@ -251,6 +497,13 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Sets the prototype of the receiver.
+     *
+     * @param value The prototype to associate with this V8Object.
+     *
+     * @return The receiver.
+     */
     public V8Object setPrototype(final V8Object value) {
         v8.checkThread();
         checkReleaesd();
@@ -258,6 +511,15 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Register a Java method as a JavaScript function. When the JS Function is invoked
+     * the Java method will be called.
+     *
+     * @param callback The JavaCallback to call when the JSFunction is invoked.
+     * @param jsFunctionName The name of the JSFunction.
+     *
+     * @return The receiver.
+     */
     public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
         v8.checkThread();
         checkReleaesd();
@@ -265,6 +527,15 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Register a void Java method as a JavaScript function. When the JS Function is invoked
+     * the Java method will be called.
+     *
+     * @param callback The JavaVoidCallback to call when the JSFunction is invoked.
+     * @param jsFunctionName The name of the JSFunction.
+     *
+     * @return The receiver.
+     */
     public V8Object registerJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
         v8.checkThread();
         checkReleaesd();
@@ -272,10 +543,35 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /**
+     * Register a Java method reflectively given it's name a signature.
+     *
+     * @param object The Java Object on which the method is defined.
+     * @param methodName The name of the method to register.
+     * @param jsFunctionName The name of the JavaScript function to register the
+     * method with.
+     * @param parameterTypes The parameter types of the method.
+     *
+     * @return The receiver.
+     */
     public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
         return registerJavaMethod(object, methodName, jsFunctionName, parameterTypes, false);
     }
 
+    /**
+     * Register a Java method reflectively given it's name a signature. The option to include
+     * the JS Object in the callback can be specified by setting includeReceiver true.
+     *
+     * @param object The Java Object on which the method is defined.
+     * @param methodName The name of the method to register.
+     * @param jsFunctionName The name of the JavaScript function to register the
+     * method with.
+     * @param parameterTypes The parameter types of the method.
+     * @param includeReceiver True if the first parameter should include the JS Object,
+     * false otherwise.
+     *
+     * @return The receiver.
+     */
     public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {
         v8.checkThread();
         checkReleaesd();
@@ -291,6 +587,10 @@ public class V8Object extends V8Value {
         return this;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         v8.checkThread();
@@ -303,30 +603,54 @@ public class V8Object extends V8Value {
         public Undefined() {
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#isUndefined()
+         */
         @Override
         public boolean isUndefined() {
             return true;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#isReleased()
+         */
         @Override
         public boolean isReleased() {
-            return true;
+            return false;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#release()
+         */
         @Override
         public void release() {
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#twin()
+         */
         @Override
         public Undefined twin() {
             return (Undefined) super.twin();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#toString()
+         */
         @Override
         public String toString() {
             return "undefined";
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#equals(java.lang.Object)
+         */
         @Override
         public boolean equals(final Object that) {
             if ((that instanceof V8Object) && ((V8Object) that).isUndefined()) {
@@ -335,146 +659,262 @@ public class V8Object extends V8Value {
             return false;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#hashCode()
+         */
         @Override
         public int hashCode() {
             return 919;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#add(java.lang.String, boolean)
+         */
         @Override
         public V8Object add(final String key, final boolean value) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#getRutime()
+         */
         @Override
         public V8 getRutime() {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#add(java.lang.String, double)
+         */
         @Override
         public V8Object add(final String key, final double value) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#add(java.lang.String, int)
+         */
         @Override
         public V8Object add(final String key, final int value) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#add(java.lang.String, java.lang.String)
+         */
         @Override
         public V8Object add(final String key, final String value) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#add(java.lang.String, com.eclipsesource.v8.V8Value)
+         */
         @Override
         public V8Object add(final String key, final V8Value value) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#addUndefined(java.lang.String)
+         */
         @Override
         public V8Object addUndefined(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#contains(java.lang.String)
+         */
         @Override
         public boolean contains(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeArrayFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public V8Array executeArrayFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeBooleanFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public boolean executeBooleanFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeDoubleFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public double executeDoubleFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeIntegerFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public int executeIntegerFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeObjectFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public V8Object executeObjectFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeStringFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public String executeStringFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeVoidFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
         @Override
         public void executeVoidFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getArray(java.lang.String)
+         */
         @Override
         public V8Array getArray(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getBoolean(java.lang.String)
+         */
         @Override
         public boolean getBoolean(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getDouble(java.lang.String)
+         */
         @Override
         public double getDouble(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#getHandle()
+         */
         @Override
         public int getHandle() {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getInteger(java.lang.String)
+         */
         @Override
         public int getInteger(final String key) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getKeys()
+         */
         @Override
         public String[] getKeys() {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getObject(java.lang.String)
+         */
         @Override
         public V8Object getObject(final String key) throws V8ResultUndefined {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getString(java.lang.String)
+         */
         @Override
         public String getString(final String key) throws V8ResultUndefined {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#getType(java.lang.String)
+         */
         @Override
         public int getType(final String key) throws V8ResultUndefined {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#registerJavaMethod(com.eclipsesource.v8.JavaCallback, java.lang.String)
+         */
         @Override
         public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#registerJavaMethod(com.eclipsesource.v8.JavaVoidCallback, java.lang.String)
+         */
         @Override
         public V8Object registerJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#registerJavaMethod(java.lang.Object, java.lang.String, java.lang.String, java.lang.Class[], boolean)
+         */
         @Override
         public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {
             throw new UnsupportedOperationException();
         }
 
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#setPrototype(com.eclipsesource.v8.V8Object)
+         */
         @Override
         public V8Object setPrototype(final V8Object value) {
             throw new UnsupportedOperationException();

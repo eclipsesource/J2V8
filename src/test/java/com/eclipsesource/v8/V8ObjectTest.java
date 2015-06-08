@@ -33,6 +33,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.eclipsesource.v8.V8Object.Undefined;
+
 public class V8ObjectTest {
 
     private V8 v8;
@@ -357,12 +359,56 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetStringNotFound() {
+        V8Object v8Object = new V8Object(v8).add("hello", "string");
+
+        try {
+            v8Object.getString("goodbye");
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetStringNotString() {
+        V8Object v8Object = new V8Object(v8).add("hello", 7);
+
+        try {
+            v8Object.getString("hello");
+        } finally {
+            v8Object.release();
+        }
+    }
+
     @Test
     public void testAddInt() {
         V8Object v8Object = new V8Object(v8).add("hello", 7);
 
         assertEquals(7, v8Object.getInteger("hello"));
         v8Object.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetIntegerNotFound() {
+        V8Object v8Object = new V8Object(v8).add("hello", 7);
+
+        try {
+            v8Object.getInteger("goodbye");
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetIntegerNotInteger() {
+        V8Object v8Object = new V8Object(v8).add("hello", "string");
+
+        try {
+            v8Object.getInteger("hello");
+        } finally {
+            v8Object.release();
+        }
     }
 
     @Test
@@ -373,12 +419,56 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetDoubleNotFound() {
+        V8Object v8Object = new V8Object(v8).add("hello", 7.7);
+
+        try {
+            v8Object.getDouble("goodbye");
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetDoubleNotDouble() {
+        V8Object v8Object = new V8Object(v8).add("hello", "string");
+
+        try {
+            v8Object.getDouble("hello");
+        } finally {
+            v8Object.release();
+        }
+    }
+
     @Test
     public void testAddBoolean() {
         V8Object v8Object = new V8Object(v8).add("hello", true);
 
         assertTrue(v8Object.getBoolean("hello"));
         v8Object.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetBooleanNotFound() {
+        V8Object v8Object = new V8Object(v8).add("hello", false);
+
+        try {
+            v8Object.getBoolean("goodbye");
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetBooleanNotBoolean() {
+        V8Object v8Object = new V8Object(v8).add("hello", "string");
+
+        try {
+            v8Object.getBoolean("hello");
+        } finally {
+            v8Object.release();
+        }
     }
 
     @Test
@@ -429,6 +519,14 @@ public class V8ObjectTest {
         v8Object.release();
     }
 
+    @Test
+    public void testUndefinedNotReleased() {
+        Undefined undefined = new V8Object.Undefined();
+        undefined.release();
+
+        assertFalse(undefined.isReleased());
+    }
+
     /*** Add Object ***/
     @Test
     public void testAddObject() {
@@ -440,6 +538,17 @@ public class V8ObjectTest {
         assertTrue(foo.getBoolean("hello"));
         foo.release();
         v8Object.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetObjectNotObject() {
+        V8Object v8Object = new V8Object(v8).add("hello", 7);
+
+        try {
+            v8Object.getObject("hello");
+        } finally {
+            v8Object.release();
+        }
     }
 
     @Test
@@ -512,6 +621,17 @@ public class V8ObjectTest {
         v8Object.release();
         array.release();
         result.release();
+    }
+
+    @Test(expected = V8ResultUndefined.class)
+    public void testGetArrayNotArray() {
+        V8Object v8Object = new V8Object(v8).add("hello", 7);
+
+        try {
+            v8Object.getArray("hello");
+        } finally {
+            v8Object.release();
+        }
     }
 
     /*** Undefined ***/
@@ -968,6 +1088,22 @@ public class V8ObjectTest {
         assertEquals("breathe", cat.executeStringFunction("breathe", null));
         cat.release();
         mammal.release();
+    }
+
+    @Test
+    public void testGetKeysDoesNotIncludePrototypeKeys() {
+        v8.executeVoidScript("function Mammal(){}; Mammal.prototype.breathe=function(){return 'breathe';};");
+        V8Object mammal = v8.executeObjectScript("new Mammal();");
+        V8Object cat = new V8Object(v8).setPrototype(mammal);
+
+        String[] keys = cat.getKeys();
+        Object object = cat.get("breathe");
+        assertTrue(object instanceof V8Function);
+
+        assertEquals(0, keys.length);
+        cat.release();
+        mammal.release();
+        ((Releasable) object).release();
     }
 
     @Test
