@@ -15,7 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LibraryLoader {
+class LibraryLoader {
 
     static final String SEPARATOR;
     static final String DELIMITER;
@@ -38,7 +38,7 @@ public class LibraryLoader {
         return "lib" + computeLibraryShortName() + "." + getOSFileExtension();
     }
 
-    public static void loadLibrary(final String tempDirectory) {
+    static void loadLibrary(final String tempDirectory) {
         StringBuffer message = new StringBuffer();
         String libShortName = computeLibraryShortName();
         String libFullName = computeLibraryFullName();
@@ -145,31 +145,31 @@ public class LibraryLoader {
         }
     }
 
-    public static String getOsName() {
+    static String getOsName() {
         return System.getProperty("os.name") + System.getProperty("java.specification.vendor");
     }
 
-    public static boolean isWindows() {
+    static boolean isWindows() {
         return getOsName().startsWith("Windows");
     }
 
-    public static boolean isMac() {
+    static boolean isMac() {
         return getOsName().startsWith("Mac");
     }
 
-    public static boolean isLinux() {
+    static boolean isLinux() {
         return getOsName().startsWith("Linux");
     }
 
-    public static boolean isNativeClient() {
+    static boolean isNativeClient() {
         return getOsName().startsWith("nacl");
     }
 
-    public static boolean isAndroid() {
+    static boolean isAndroid() {
         return getOsName().contains("Android");
     }
 
-    public static String getArchSuffix() {
+    static String getArchSuffix() {
         String arch = System.getProperty("os.arch");
         if (arch.equals("i686")) {
             return "x86";
@@ -183,7 +183,7 @@ public class LibraryLoader {
         return arch;
     }
 
-    public static String getOSFileExtension() {
+    static String getOSFileExtension() {
         if (isWindows()) {
             return "dll";
         } else if (isMac()) {
@@ -196,7 +196,7 @@ public class LibraryLoader {
         throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName() + ".");
     }
 
-    public static String getOS() {
+    static String getOS() {
         if (isWindows()) {
             return "win32";
         } else if (isMac()) {
