@@ -1259,6 +1259,7 @@ public class V8Test {
     }
 
     /*** Debug Tests ***/
+    @SuppressWarnings("deprecation")
     @Test
     public void testSetupDebugHandler() {
         int port = 9991;
@@ -1268,6 +1269,7 @@ public class V8Test {
         assertTrue(debugEnabled(port));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testEnableTunnel() {
         int port = 9991;
@@ -1278,6 +1280,7 @@ public class V8Test {
         assertNotNull(debugTunnel);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testEnableDisableTunnel() {
         int port = 9991;
@@ -1290,6 +1293,7 @@ public class V8Test {
         assertNotNull(debugTunnel);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRemoveDebugHandler() {
         int port = 9991;
@@ -1300,6 +1304,7 @@ public class V8Test {
         assertFalse(debugEnabled(port));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testMultipleDebugHandlers() {
         V8 v8_2 = V8.createV8Runtime();
@@ -1320,6 +1325,7 @@ public class V8Test {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testHandlerCalled() {
         Runnable runnable = mock(Runnable.class);

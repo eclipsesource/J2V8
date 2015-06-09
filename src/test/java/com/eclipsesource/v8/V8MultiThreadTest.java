@@ -87,6 +87,7 @@ public class V8MultiThreadTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testMultiV8Threads() throws InterruptedException {
 
