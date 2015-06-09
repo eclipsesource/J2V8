@@ -17,6 +17,13 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Creates a tunnel between two ports.
+ *
+ * This is NOT API.
+ * @deprecated
+ */
+@Deprecated
 public class DebugTunnel {
 
     private static final String LOCALHOST = "localhost";
@@ -26,15 +33,27 @@ public class DebugTunnel {
     private int                 targetPort;
     private ServerSocket        ss;
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public DebugTunnel(final int hostPort, final int targetPort) {
         this.hostPort = hostPort;
         this.targetPort = targetPort;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public synchronized void start() {
         createSocketTunnel();
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public synchronized void stop() {
         close(ss);
         close(host);
