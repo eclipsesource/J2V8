@@ -10,10 +10,13 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+/**
+ * An exception used to indicate that a script failed to execute.
+ */
 @SuppressWarnings("serial")
 public class V8ScriptExecutionException extends V8ScriptException {
 
-    public V8ScriptExecutionException(final String fileName,
+    V8ScriptExecutionException(final String fileName,
             final int lineNumber,
             final String message,
             final String sourceLine,
@@ -23,7 +26,7 @@ public class V8ScriptExecutionException extends V8ScriptException {
         this(fileName, lineNumber, message, sourceLine, startColumn, endColumn, jsStackTrace, null);
     }
 
-    public V8ScriptExecutionException(final String fileName,
+    V8ScriptExecutionException(final String fileName,
             final int lineNumber,
             final String message,
             final String sourceLine,

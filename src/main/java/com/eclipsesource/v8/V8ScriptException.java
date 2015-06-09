@@ -10,7 +10,11 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-
+/**
+ * An exception that indicates that the execution of a script failed.
+ * Details about the exception, such as the line number, stack trace, and
+ * message can retrieved using the accessors.
+ */
 @SuppressWarnings("serial")
 public abstract class V8ScriptException extends V8RuntimeException {
 
@@ -22,7 +26,7 @@ public abstract class V8ScriptException extends V8RuntimeException {
     private final int       endColumn;
     private final String    jsStackTrace;
 
-    public V8ScriptException(final String fileName,
+    V8ScriptException(final String fileName,
             final int lineNumber,
             final String jsMessage,
             final String sourceLine,
@@ -42,26 +46,56 @@ public abstract class V8ScriptException extends V8RuntimeException {
         }
     }
 
+    /**
+     * Get the JavaScript Stack as a String.
+     *
+     * @return The JavaScript stack.
+     */
     public String getJSStackTrace() {
         return jsStackTrace;
     }
 
+    /**
+     * Get the file name contains the script that was currently executing.
+     *
+     * @return The file name that contains the script.
+     */
     public String getFileName() {
         return fileName;
     }
 
+    /**
+     * Get the line number that the failure occurred on.
+     *
+     * @return The line number the failure occurred on.
+     */
     public int getLineNumber() {
         return lineNumber;
     }
 
+    /**
+     * Get the JavaScript column where the error begins.
+     *
+     * @return The JavaScript column where the error begins.
+     */
     public int getStartColumn() {
         return startColumn;
     }
 
+    /**
+     * Get the JavaScript column where the error ends.
+     *
+     * @return The JavaScript column where the error ends.
+     */
     public int getEndColumn() {
         return endColumn;
     }
 
+    /**
+     * Get the JavaScript line of source that caused the error.
+     *
+     * @return The JavaScript line of source that caused the error.
+     */
     public String getSourceLine() {
         return sourceLine;
     }
@@ -77,11 +111,20 @@ public abstract class V8ScriptException extends V8RuntimeException {
         return result.toString();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Throwable#getMessage()
+     */
     @Override
     public String getMessage() {
         return createMessageLine();
     }
 
+    /**
+     * Get the message set by the JavaScript exception.
+     *
+     * @return The message set by the JavaScript exception.
+     */
     public String getJSMessage() {
         return jsMessage;
     }
