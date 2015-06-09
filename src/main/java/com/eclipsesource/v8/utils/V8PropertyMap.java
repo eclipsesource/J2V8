@@ -22,27 +22,45 @@ import java.util.Set;
  * A custom map is needed because the existing HashMaps
  * do not self containment, and Hashtables do not
  * allow nulls as values.
+ *
+ * This class is not considered API.
  */
 class V8PropertyMap<V> implements Map<String, V> {
 
     private Hashtable<String, V> map   = new Hashtable<String, V>();
     private Set<String>          nulls = new HashSet<String>();
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#size()
+     */
     @Override
     public int size() {
         return map.size() + nulls.size();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#isEmpty()
+     */
     @Override
     public boolean isEmpty() {
         return map.isEmpty() && nulls.isEmpty();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#containsKey(java.lang.Object)
+     */
     @Override
     public boolean containsKey(final Object key) {
         return map.containsKey(key) || nulls.contains(key);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#containsValue(java.lang.Object)
+     */
     @Override
     public boolean containsValue(final Object value) {
         if ((value == null) && !nulls.isEmpty()) {
@@ -53,6 +71,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return map.containsValue(value);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#get(java.lang.Object)
+     */
     @Override
     public V get(final Object key) {
         if (nulls.contains(key)) {
@@ -61,6 +83,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return map.get(key);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+     */
     @Override
     public V put(final String key, final V value) {
         if (value == null) {
@@ -76,6 +102,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return map.put(key, value);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#remove(java.lang.Object)
+     */
     @Override
     public V remove(final Object key) {
         if (nulls.contains(key)) {
@@ -85,6 +115,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return map.remove(key);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#putAll(java.util.Map)
+     */
     @Override
     public void putAll(final Map<? extends String, ? extends V> m) {
         for (Entry<? extends String, ? extends V> entry : m.entrySet()) {
@@ -92,12 +126,20 @@ class V8PropertyMap<V> implements Map<String, V> {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#clear()
+     */
     @Override
     public void clear() {
         map.clear();
         nulls.clear();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#keySet()
+     */
     @Override
     public Set<String> keySet() {
         HashSet<String> result = new HashSet<String>(map.keySet());
@@ -105,6 +147,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#values()
+     */
     @Override
     public Collection<V> values() {
         ArrayList<V> result = new ArrayList<V>(map.values());
@@ -114,6 +160,10 @@ class V8PropertyMap<V> implements Map<String, V> {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.util.Map#entrySet()
+     */
     @Override
     public Set<Entry<String, V>> entrySet() {
         HashSet<Entry<String, V>> result = new HashSet<Map.Entry<String, V>>(map.entrySet());
