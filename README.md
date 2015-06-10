@@ -20,6 +20,10 @@ Articles
  * [Announcing J2V8 2.0](http://eclipsesource.com/blogs/2015/02/25/announcing-j2v8-2-0/)
  * [Highly Efficient Java & JavaScript Integration](http://eclipsesource.com/blogs/2014/11/17/highly-efficient-java-javascript-integration/)
 
+Presentations
+=============
+ * [J2V8 A Highly Efficient JS Runtime For Java](https://www.eclipsecon.org/na2015/session/j2v8-highly-efficient-js-runtime-java)
+
 Who is using J2V8?
 ========
 
