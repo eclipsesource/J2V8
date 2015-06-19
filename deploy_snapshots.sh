@@ -1,4 +1,5 @@
 SUFFIX="-P release"
+#SUFFIX=""
 
 cp pom.xml pom_template.xml
 
@@ -99,18 +100,18 @@ else
  exit $STATUS
 fi
 
-#echo "Deploying Linux"
-#rm src/main/resources/*j2v8*
-#cp jni/libj2v8_linux_amd64.so src/main/resources/libj2v8_linux_amd64.so
-#sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
-#sed s/\$\{arch\}/amd64/g < pom1.xml  > pom.xml
-#mvn -Dos=linux -Darch=amd64 clean deploy $SUFFIX
-#cp pom_template.xml pom.xml
-#rm pom1.xml
-#STATUS=$?
-#if [ $STATUS -eq 0 ]; then
-#echo "Linux Deployment Successful"
-#else
-#echo "Linux Deployment Failed"
-#exit $STATUS
-#fi
+echo "Deploying Linux"
+rm src/main/resources/*j2v8*
+cp jni/libj2v8_linux_x86_64.so src/main/resources/libj2v8_linux_x86_64.so
+sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
+sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom.xml
+mvn -Dos=linux -Darch=x86_64 clean deploy $SUFFIX
+cp pom_template.xml pom.xml
+rm pom1.xml
+STATUS=$?
+if [ $STATUS -eq 0 ]; then
+ echo "Linux Deployment Successful"
+else
+ echo "Linux Deployment Failed"
+ exit $STATUS
+fi
