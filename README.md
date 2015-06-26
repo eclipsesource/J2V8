@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/eclipsesource/J2V8.png?label=ready&title=Ready)](https://waffle.io/eclipsesource/J2V8)
 J2V8
 ====
 
