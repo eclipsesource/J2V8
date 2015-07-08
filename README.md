@@ -23,13 +23,13 @@ Articles
 Presentations
 =============
  * [J2V8 A Highly Efficient JS Runtime For Java](https://www.eclipsecon.org/na2015/session/j2v8-highly-efficient-js-runtime-java)
-
+ * [Running Java Efficiently in a Java World](http://www.slideshare.net/irbull/enter-js)
 Who is using J2V8?
 ========
 
 Here are some projects that use J2V8:
 * [tabris.js](https://tabrisjs.com)
 * [tern.java](https://github.com/angelozerr/tern.java)
- 
+
 ## License
 The code is published under the terms of the [Eclipse Public License, version 1.0](http://www.eclipse.org/legal/epl-v10.html).
