@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -16,12 +16,12 @@ import java.lang.reflect.Method;
  * The concrete class for all V8 Objects. V8Objects are
  * JavaScript objects accessible in java. Specialized
  * subclasses exist for V8Arrays and V8Functions.
- *
+ * <p>
  * V8Object are JavaScript object with key value pairs.
  * Specific get methods exist to access values as primitives.
  * General get methods also exist, which return Java Objects
  * and can be casted to the correct subclass.
- *
+ * <p>
  * V8Object have native resources and must be released
  * when they are no longer need in Java.
  */
@@ -92,7 +92,6 @@ public class V8Object extends V8Value {
      * integer constants. The types are all defined in V8Value.
      *
      * @param key The key whose type to lookup.
-     *
      * @return The Type of the value associated with this key
      */
     public int getType(final String key) {
@@ -107,7 +106,6 @@ public class V8Object extends V8Value {
      * value is a V8Value, it must be released.
      *
      * @param key The key whose value to return.
-     *
      * @return The value associated with this key.
      */
     public Object get(final String key) {
@@ -138,7 +136,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The integer value associated with this key, or V8ResultUndefined
      * if the key does not exist or the value is not an integer.
      */
@@ -154,7 +151,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The boolean value associated with this key, or V8ResultUndefined
      * if the key does not exist or the value is not a boolean.
      */
@@ -170,7 +166,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The double value associated with this key, or V8ResultUndefined
      * if the key does not exist or the value is not a double.
      */
@@ -186,7 +181,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The String value associated with this key, or V8ResultUndefined
      * if the key does not exist or the value is not a String.
      */
@@ -203,7 +197,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The V8Array value associated with this key.
      */
     public V8Array getArray(final String key) {
@@ -223,7 +216,6 @@ public class V8Object extends V8Value {
      * V8ResultUndefined exception is thrown.
      *
      * @param key The key whose value to return.
-     *
      * @return The V8Object value associated with this key.
      */
     public V8Object getObject(final String key) {
@@ -240,10 +232,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a integer. If the
      * result is not an integer, or does not exist, then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return An integer representing the result of the function call or V8ResultUndefined
      * if the result is not an integer.
      */
@@ -258,10 +248,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a double. If the
      * result is not a double, or does not exist, then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A double representing the result of the function call or V8ResultUndefined
      * if the result is not a double.
      */
@@ -276,10 +264,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a String. If the
      * result is not a String, or does not exist, then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A String representing the result of the function call or V8ResultUndefined
      * if the result is not a String.
      */
@@ -294,10 +280,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a boolean. If the
      * result is not a boolean, or does not exist, then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A boolean representing the result of the function call or V8ResultUndefined
      * if the result is not a boolean.
      */
@@ -312,10 +296,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a V8Array. If the
      * result is not a V8Array then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A V8Array representing the result of the function call or V8ResultUndefined
      * if the result is not a V8Array. The result must be released.
      */
@@ -334,10 +316,8 @@ public class V8Object extends V8Value {
      * Invoke a JavaScript function and return the result as a V8Object. If the
      * result is not a V8Object then V8ResultUndefined is thrown.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A V8Object representing the result of the function call or V8ResultUndefined
      * if the result is not a V8Object. The result must be released.
      */
@@ -355,10 +335,8 @@ public class V8Object extends V8Value {
     /**
      * Invoke a JavaScript function and return the result as a Java Object.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
-     *
      * @return A Java Object representing the result of the function call.
      */
     public Object executeFunction(final String name, final V8Array parameters) {
@@ -371,8 +349,7 @@ public class V8Object extends V8Value {
     /**
      * Invokes a JavaScript function which does not return a result.
      *
-     * @param name The name of the JS Function to call.
-     *
+     * @param name       The name of the JS Function to call.
      * @param parameters The parameters to pass to the function. Parameters must be released.
      */
     public void executeVoidFunction(final String name, final V8Array parameters) {
@@ -385,9 +362,8 @@ public class V8Object extends V8Value {
     /**
      * Adds a key value pair to the receiver where the value is an integer.
      *
-     * @param key The key to associate the value with.
+     * @param key   The key to associate the value with.
      * @param value The value to add.
-     *
      * @return The receiver.
      */
     public V8Object add(final String key, final int value) {
@@ -400,9 +376,8 @@ public class V8Object extends V8Value {
     /**
      * Adds a key value pair to the receiver where the value is a boolean.
      *
-     * @param key The key to associate the value with.
+     * @param key   The key to associate the value with.
      * @param value The value to add.
-     *
      * @return The receiver.
      */
     public V8Object add(final String key, final boolean value) {
@@ -415,9 +390,8 @@ public class V8Object extends V8Value {
     /**
      * Adds a key value pair to the receiver where the value is a double.
      *
-     * @param key The key to associate the value with.
+     * @param key   The key to associate the value with.
      * @param value The value to add.
-     *
      * @return The receiver.
      */
     public V8Object add(final String key, final double value) {
@@ -430,9 +404,8 @@ public class V8Object extends V8Value {
     /**
      * Adds a key value pair to the receiver where the value is a String.
      *
-     * @param key The key to associate the value with.
+     * @param key   The key to associate the value with.
      * @param value The value to add.
-     *
      * @return The receiver.
      */
     public V8Object add(final String key, final String value) {
@@ -451,9 +424,8 @@ public class V8Object extends V8Value {
     /**
      * Adds a key value pair to the receiver where the value is a V8Value.
      *
-     * @param key The key to associate the value with.
+     * @param key   The key to associate the value with.
      * @param value The value to add.
-     *
      * @return The receiver.
      */
     public V8Object add(final String key, final V8Value value) {
@@ -473,7 +445,6 @@ public class V8Object extends V8Value {
      * Associate UNDEFINED with the given key.
      *
      * @param key The key to associate UNDEFINED with.
-     *
      * @return The receiver.
      */
     public V8Object addUndefined(final String key) {
@@ -487,7 +458,6 @@ public class V8Object extends V8Value {
      * Associate NULL with the given key.
      *
      * @param key The key to associate NULL with.
-     *
      * @return The receiver.
      */
     public V8Object addNull(final String key) {
@@ -501,7 +471,6 @@ public class V8Object extends V8Value {
      * Sets the prototype of the receiver.
      *
      * @param value The prototype to associate with this V8Object.
-     *
      * @return The receiver.
      */
     public V8Object setPrototype(final V8Object value) {
@@ -515,9 +484,8 @@ public class V8Object extends V8Value {
      * Register a Java method as a JavaScript function. When the JS Function is invoked
      * the Java method will be called.
      *
-     * @param callback The JavaCallback to call when the JSFunction is invoked.
+     * @param callback       The JavaCallback to call when the JSFunction is invoked.
      * @param jsFunctionName The name of the JSFunction.
-     *
      * @return The receiver.
      */
     public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
@@ -531,9 +499,8 @@ public class V8Object extends V8Value {
      * Register a void Java method as a JavaScript function. When the JS Function is invoked
      * the Java method will be called.
      *
-     * @param callback The JavaVoidCallback to call when the JSFunction is invoked.
+     * @param callback       The JavaVoidCallback to call when the JSFunction is invoked.
      * @param jsFunctionName The name of the JSFunction.
-     *
      * @return The receiver.
      */
     public V8Object registerJavaMethod(final JavaVoidCallback callback, final String jsFunctionName) {
@@ -546,12 +513,11 @@ public class V8Object extends V8Value {
     /**
      * Register a Java method reflectively given it's name a signature.
      *
-     * @param object The Java Object on which the method is defined.
-     * @param methodName The name of the method to register.
+     * @param object         The Java Object on which the method is defined.
+     * @param methodName     The name of the method to register.
      * @param jsFunctionName The name of the JavaScript function to register the
-     * method with.
+     *                       method with.
      * @param parameterTypes The parameter types of the method.
-     *
      * @return The receiver.
      */
     public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes) {
@@ -562,14 +528,13 @@ public class V8Object extends V8Value {
      * Register a Java method reflectively given it's name a signature. The option to include
      * the JS Object in the callback can be specified by setting includeReceiver true.
      *
-     * @param object The Java Object on which the method is defined.
-     * @param methodName The name of the method to register.
-     * @param jsFunctionName The name of the JavaScript function to register the
-     * method with.
-     * @param parameterTypes The parameter types of the method.
+     * @param object          The Java Object on which the method is defined.
+     * @param methodName      The name of the method to register.
+     * @param jsFunctionName  The name of the JavaScript function to register the
+     *                        method with.
+     * @param parameterTypes  The parameter types of the method.
      * @param includeReceiver True if the first parameter should include the JS Object,
-     * false otherwise.
-     *
+     *                        false otherwise.
      * @return The receiver.
      */
     public V8Object registerJavaMethod(final Object object, final String methodName, final String jsFunctionName, final Class<?>[] parameterTypes, final boolean includeReceiver) {

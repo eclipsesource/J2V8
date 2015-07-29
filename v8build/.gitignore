@@ -1,7 +1,0 @@
-depot_tools/
-v8/
-*.bin
-_gclient*/
-.gclient
-lib/
-.gclient_entries

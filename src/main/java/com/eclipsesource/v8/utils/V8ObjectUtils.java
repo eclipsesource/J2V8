@@ -4,23 +4,19 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * A set of static helper methods to convert V8Objects / V8Arrays to
@@ -37,7 +33,6 @@ public class V8ObjectUtils {
      * object itself is not released.
      *
      * @param object The root of the V8Object graph.
-     *
      * @return A map representing a deep copy of the V8Object rooted at 'object'.
      */
     public static Map<String, ? super Object> toMap(final V8Object object) {
@@ -55,7 +50,6 @@ public class V8ObjectUtils {
      * array itself is not released.
      *
      * @param array The root of the V8Array graph.
-     *
      * @return A list representing a deep copy of the V8Array rooted at 'array'.
      */
     public static List<? super Object> toList(final V8Array array) {
@@ -72,14 +66,13 @@ public class V8ObjectUtils {
      * Currently, only INTEGER, DOUBLE, BOOLEAN and STRING are supported.
      * The V8Array must only contain elements of type 'arrayType'. The result
      * can be optionally passed in as a parameter.
-     *
+     * <p>
      * This method will use J2V8's bulk array copy making it faster than iterating over
      * all the elements in the array.
      *
-     * @param array The V8Array to convert to a Java Array.
+     * @param array     The V8Array to convert to a Java Array.
      * @param arrayType The type of the V8Array to convert.
-     * @param result The array to use as the result. If null, a new array will be created.
-     *
+     * @param result    The array to use as the result. If null, a new array will be created.
      * @return A Java array representing a V8Array.
      */
     public static Object getTypedArray(final V8Array array, final int arrayType, final Object result) {
@@ -120,13 +113,12 @@ public class V8ObjectUtils {
      * Creates a Java array from a V8Array. The type of the Array must be specified.
      * Currently, only INTEGER, DOUBLE, BOOLEAN and STRING are supported.
      * The V8Array must only contain elements of type 'arrayType'.
-     *
+     * <p>
      * This method will use J2V8's bulk array copy making it faster than iterating over
      * all the elements in the array.
      *
-     * @param array The V8Array to convert to a Java Array.
+     * @param array     The V8Array to convert to a Java Array.
      * @param arrayType The type of the V8Array to convert.
-     *
      * @return A Java array representing a V8Array.
      */
     public static Object getTypedArray(final V8Array array, final int arrayType) {
@@ -147,9 +139,8 @@ public class V8ObjectUtils {
      * Creates a V8Object from a java.util.Map. This is a deep copy, so if the map
      * contains other maps (or lists) they will also be converted.
      *
-     * @param v8 The runtime on which to create the result.
+     * @param v8  The runtime on which to create the result.
      * @param map The map to convert to a V8Object.
-     *
      * @return A V8Object representing the map.
      */
     public static V8Object toV8Object(final V8 v8, final Map<String, ? extends Object> map) {
@@ -167,9 +158,8 @@ public class V8ObjectUtils {
      * Creates a V8Array from a java.util.List. This is a deep copy, so if the list
      * contains other lists (or maps) they will also be converted.
      *
-     * @param v8 The runtime on which to create the result.
+     * @param v8   The runtime on which to create the result.
      * @param list The list to convert to a V8Array.
-     *
      * @return A V8Array representing the list.
      */
     public static V8Array toV8Array(final V8 v8, final List<? extends Object> list) {
@@ -189,12 +179,11 @@ public class V8ObjectUtils {
      * or String, then 'value' is simply returned as these are directly
      * usable on V8. If 'value' is a map / list, then it's converted to
      * a V8Object / V8Array first.
-     *
+     * <p>
      * If the result is a V8Value, it must be released.
      *
-     * @param v8 The runtime on which to create V8Values.
+     * @param v8    The runtime on which to create V8Values.
      * @param value The value to convert to an object usable with V8
-     *
      * @return An object which can be used directly with a V8 runtime.
      */
     public static Object getV8Result(final V8 v8, final Object value) {
@@ -221,7 +210,7 @@ public class V8ObjectUtils {
      * is a Map / List then a deep copy will be performed, converting the object to a
      * V8Object / V8Array first.
      *
-     * @param v8 The runtime on which to create any needed V8Values.
+     * @param v8    The runtime on which to create any needed V8Values.
      * @param array The array to push the elements to.
      * @param value The value to push to the array.
      */
@@ -245,7 +234,6 @@ public class V8ObjectUtils {
      * @param array The array on which to lookup the value. The array is not
      *              released.
      * @param index The index whose element to lookup.
-     *
      * @return A Java Object representing the value at a given index.
      */
     public static Object getValue(final V8Array array, final int index) {
@@ -265,8 +253,7 @@ public class V8ObjectUtils {
      *
      * @param object The object on which to lookup the value. The object is not
      *               released.
-     * @param key The key to use to lookup the value.
-     *
+     * @param key    The key to use to lookup the value.
      * @return A Java Object representing the value at a given key.
      */
     public static Object getValue(final V8Object object, final String key) {
@@ -366,7 +353,7 @@ public class V8ObjectUtils {
         return value;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void pushValue(final V8 v8, final V8Array result, final Object value, final Map<Object, V8Object> cache) {
         if (value == null) {
             result.pushUndefined();
@@ -393,7 +380,7 @@ public class V8ObjectUtils {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void setValue(final V8 v8, final V8Object result, final String key, final Object value, final Map<Object, V8Object> cache) {
         if (value == null) {
             result.addUndefined(key);

@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -73,7 +73,6 @@ public class V8Array extends V8Object {
      * Returns the type of element at this given index.
      *
      * @param index The index at which to lookup the type of.
-     *
      * @return The type of the element at the index.
      */
     public int getType(final int index) {
@@ -100,9 +99,8 @@ public class V8Array extends V8Object {
      * and a length. UNDEFINED is returned if all the elements in the subset are not
      * of the same type.
      *
-     * @param index The start index.
+     * @param index  The start index.
      * @param length The length.
-     *
      * @return The type of the subset of the array or UNDEFINED if the subset is not
      * all the same type.
      */
@@ -118,7 +116,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The integer value at this index or V8ResultUndefined
      * if the index does not exist or the value is not an integer.
      */
@@ -134,7 +131,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The boolean value at this index or V8ResultUndefined
      * if the index does not exist or the value is not a boolean.
      */
@@ -150,7 +146,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The double value at this index or V8ResultUndefined
      * if the index does not exist or the value is not a double.
      */
@@ -166,7 +161,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The String value at this index or V8ResultUndefined
      * if the index does not exist or the value is not a String.
      */
@@ -182,9 +176,8 @@ public class V8Array extends V8Object {
      * is thrown. Furthermore, if the subset is not entirely contained within the array,
      * then V8ResultUndefined exception is also thrown.
      *
-     * @param index The starting index.
+     * @param index  The starting index.
      * @param length The length.
-     *
      * @return The integers contained in the subset of the array, or V8ResultUndefined
      * exception.
      */
@@ -201,10 +194,9 @@ public class V8Array extends V8Object {
      * then V8ResultUndefined exception is also thrown. Finally, if the resultArray
      * is not large enough to hold the results then IndexOutOfBoundsException is thrown.
      *
-     * @param index The starting index.
-     * @param length The length.
+     * @param index       The starting index.
+     * @param length      The length.
      * @param resultArray The array to put the results in.
-     *
      * @return The number of elements added to the array.
      */
     public int getIntegers(final int index, final int length, final int[] resultArray) {
@@ -222,9 +214,8 @@ public class V8Array extends V8Object {
      * is thrown. Furthermore, if the subset is not entirely contained within the array,
      * then V8ResultUndefined exception is also thrown.
      *
-     * @param index The starting index.
+     * @param index  The starting index.
      * @param length The length.
-     *
      * @return The doubles contained in the subset of the array, or V8ResultUndefined
      * exception.
      */
@@ -241,10 +232,9 @@ public class V8Array extends V8Object {
      * then V8ResultUndefined exception is also thrown. Finally, if the resultArray
      * is not large enough to hold the results then IndexOutOfBoundsException is thrown.
      *
-     * @param index The starting index.
-     * @param length The length.
+     * @param index       The starting index.
+     * @param length      The length.
      * @param resultArray The array to put the results in.
-     *
      * @return The number of elements added to the array.
      */
     public int getDoubles(final int index, final int length, final double[] resultArray) {
@@ -262,9 +252,8 @@ public class V8Array extends V8Object {
      * is thrown. Furthermore, if the subset is not entirely contained within the array,
      * then V8ResultUndefined exception is also thrown.
      *
-     * @param index The starting index.
+     * @param index  The starting index.
      * @param length The length.
-     *
      * @return The booleans contained in the subset of the array, or V8ResultUndefined
      * exception.
      */
@@ -281,10 +270,9 @@ public class V8Array extends V8Object {
      * then V8ResultUndefined exception is also thrown. Finally, if the resultArray
      * is not large enough to hold the results then IndexOutOfBoundsException is thrown.
      *
-     * @param index The starting index.
-     * @param length The length.
+     * @param index       The starting index.
+     * @param length      The length.
      * @param resultArray The array to put the results in.
-     *
      * @return The number of elements added to the array.
      */
     public int getBooleans(final int index, final int length, final boolean[] resultArray) {
@@ -302,9 +290,8 @@ public class V8Array extends V8Object {
      * is thrown. Furthermore, if the subset is not entirely contained within the array,
      * then V8ResultUndefined exception is also thrown.
      *
-     * @param index The starting index.
+     * @param index  The starting index.
      * @param length The length.
-     *
      * @return The Strings contained in the subset of the array, or V8ResultUndefined
      * exception.
      */
@@ -321,10 +308,9 @@ public class V8Array extends V8Object {
      * then V8ResultUndefined exception is also thrown. Finally, if the resultArray
      * is not large enough to hold the results then IndexOutOfBoundsException is thrown.
      *
-     * @param index The starting index.
-     * @param length The length.
+     * @param index       The starting index.
+     * @param length      The length.
      * @param resultArray The array to put the results in.
-     *
      * @return The number of elements added to the array.
      */
     public int getStrings(final int index, final int length, final String[] resultArray) {
@@ -340,7 +326,6 @@ public class V8Array extends V8Object {
      * Gets the value at a given index as a Java Object. Primitives are boxed.
      *
      * @param index The index to get the value at.
-     *
      * @return The value at the given index.
      */
     public Object get(final int index) {
@@ -371,7 +356,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The V8Array value at this index or V8ResultUndefined
      * if the index does not exist or the value is not a V8Array.
      */
@@ -391,7 +375,6 @@ public class V8Array extends V8Object {
      * V8ResultUndefined exception is thrown.
      *
      * @param index The index whose value to return.
-     *
      * @return The V8Object value at this index or V8ResultUndefined
      * if the index does not exist or the value is not a V8Object.
      */
@@ -410,7 +393,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = value;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array push(final int value) {
@@ -425,7 +407,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = value;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array push(final boolean value) {
@@ -440,7 +421,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = value;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array push(final double value) {
@@ -455,7 +435,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = value;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array push(final String value) {
@@ -476,7 +455,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = value;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array push(final V8Value value) {
@@ -497,7 +475,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = null;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array pushNull() {
@@ -512,7 +489,6 @@ public class V8Array extends V8Object {
      * particular, this[length] = undefined;
      *
      * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array pushUndefined() {

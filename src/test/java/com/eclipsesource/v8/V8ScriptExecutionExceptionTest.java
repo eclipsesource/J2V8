@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -14,25 +14,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class V8ScriptExecutionExceptionTest {
 
     private V8ScriptExecutionException exception;
-    private String                     errorFunction         = "function myFunction() {\n"
-                                                                     + "undefined.toString();\n"
-                                                                     + "}\n";
-    private String                     undefinedAccessScript = "x=undefined;\n"
-                                                                     + "function called( y ) {\n"
-                                                                     + " y.toString()\n"
-                                                                     + "}\n"
-                                                                     + "\n"
-                                                                     + "called( x );\n";
+    private String errorFunction = "function myFunction() {\n"
+            + "undefined.toString();\n"
+            + "}\n";
+    private String undefinedAccessScript = "x=undefined;\n"
+            + "function called( y ) {\n"
+            + " y.toString()\n"
+            + "}\n"
+            + "\n"
+            + "called( x );\n";
 
-    private V8                         v8;
+    private V8 v8;
 
     @Before
     public void seutp() {
@@ -119,7 +116,7 @@ public class V8ScriptExecutionExceptionTest {
     @Test(expected = V8ScriptExecutionException.class)
     public void testExceptionInVoidJavaCall() {
         try {
-            v8.registerJavaMethod(this, "voidCallbackWithException", "voidCallback", new Class<?>[] {});
+            v8.registerJavaMethod(this, "voidCallbackWithException", "voidCallback", new Class<?>[]{});
             v8.executeVoidScript("voidCallback()");
         } catch (V8ScriptExecutionException e) {
             assertEquals("Unhandled Java Exception", e.getJSMessage());
@@ -131,7 +128,7 @@ public class V8ScriptExecutionExceptionTest {
     @Test(expected = V8ScriptExecutionException.class)
     public void testExceptionInJavaCall() {
         try {
-            v8.registerJavaMethod(this, "callbackWithException", "callback", new Class<?>[] {});
+            v8.registerJavaMethod(this, "callbackWithException", "callback", new Class<?>[]{});
             v8.executeVoidScript("callback()");
         } catch (V8ScriptExecutionException e) {
             assertEquals("Unhandled Java Exception", e.getJSMessage());

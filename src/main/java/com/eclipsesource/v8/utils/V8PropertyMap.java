@@ -4,31 +4,26 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A custom map is needed because the existing HashMaps
  * do not self containment, and Hashtables do not
  * allow nulls as values.
- *
+ * <p>
  * This class is not considered API.
  */
 class V8PropertyMap<V> implements Map<String, V> {
 
-    private Hashtable<String, V> map   = new Hashtable<String, V>();
-    private Set<String>          nulls = new HashSet<String>();
+    private Hashtable<String, V> map = new Hashtable<String, V>();
+    private Set<String> nulls = new HashSet<String>();
 
     /*
      * (non-Javadoc)

@@ -4,31 +4,19 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
-
-import static com.eclipsesource.v8.V8Value.BOOLEAN;
-import static com.eclipsesource.v8.V8Value.DOUBLE;
-import static com.eclipsesource.v8.V8Value.INTEGER;
-import static com.eclipsesource.v8.V8Value.NULL;
-import static com.eclipsesource.v8.V8Value.STRING;
-import static com.eclipsesource.v8.V8Value.UNDEFINED;
-import static com.eclipsesource.v8.V8Value.V8_ARRAY;
-import static com.eclipsesource.v8.V8Value.V8_FUNCTION;
-import static com.eclipsesource.v8.V8Value.V8_OBJECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static com.eclipsesource.v8.V8Value.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 public class V8ArrayTest {
 
@@ -113,7 +101,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Undefined ***/
+    /***
+     * Undefined
+     ***/
     @Test
     public void testUndefinedObjectProperty() {
         V8Array result = v8.getArray("array");
@@ -661,7 +651,9 @@ public class V8ArrayTest {
         ((Releasable) result).release();
     }
 
-    /*** Null ***/
+    /***
+     * Null
+     ***/
     @Test
     public void testNullStrinsgInArray() {
         V8Array array = v8.executeArrayScript("x = [null]; x;");
@@ -710,7 +702,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Get Int ***/
+    /***
+     * Get Int
+     ***/
     @Test
     public void testArrayGetInt() {
         V8Array array = v8.executeArrayScript("[1,2,8];");
@@ -771,7 +765,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Get Boolean ***/
+    /***
+     * Get Boolean
+     ***/
     @Test
     public void testArrayGetBoolean() {
         V8Array array = v8.executeArrayScript("[true,false,false];");
@@ -812,7 +808,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Get Double ***/
+    /***
+     * Get Double
+     ***/
     @Test
     public void testArrayGetDouble() {
         V8Array array = v8.executeArrayScript("[3.1,4.2,5.3];");
@@ -853,7 +851,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Get String ***/
+    /***
+     * Get String
+     ***/
     @Test
     public void testArrayGetString() {
         V8Array array = v8.executeArrayScript("['first','second','third'];");
@@ -894,7 +894,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /**** Get Object ****/
+    /****
+     * Get Object
+     ****/
     @Test
     public void testArrayGetObject() {
         V8Array array = v8.executeArrayScript("[{name : 'joe', age : 38 }];");
@@ -938,7 +940,9 @@ public class V8ArrayTest {
         obj.release();
     }
 
-    /*** Get Array ***/
+    /***
+     * Get Array
+     ***/
     @Test
     public void testArrayGetArray() {
         V8Array array = v8.executeArrayScript("[[1,2,3],['first','second'],[true]];");
@@ -988,7 +992,9 @@ public class V8ArrayTest {
         array1.release();
     }
 
-    /**** Mixed Array ****/
+    /****
+     * Mixed Array
+     ****/
     @Test
     public void testMixedArray() {
         V8Array array = v8.executeArrayScript("['a', 3, 3.1, true];");
@@ -1001,7 +1007,9 @@ public class V8ArrayTest {
         array.release();
     }
 
-    /*** Add Primitives ***/
+    /***
+     * Add Primitives
+     ***/
     @Test
     public void testAddInt() {
         V8Array array = new V8Array(v8);
@@ -1195,7 +1203,9 @@ public class V8ArrayTest {
         result2.release();
     }
 
-    /*** Test Types ***/
+    /***
+     * Test Types
+     ***/
     @Test
     public void testGetTypeInt() {
         V8Array v8Array = new V8Array(v8);
@@ -1282,7 +1292,9 @@ public class V8ArrayTest {
         v8Array.release();
     }
 
-    /*** Equals ***/
+    /***
+     * Equals
+     ***/
     @Test
     public void testEqualsArray() {
         v8.executeVoidScript("a = [];");

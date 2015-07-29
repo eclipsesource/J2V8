@@ -4,32 +4,32 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
+
+import com.eclipsesource.v8.Releasable;
+import com.eclipsesource.v8.V8Value;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.eclipsesource.v8.Releasable;
-import com.eclipsesource.v8.V8Value;
-
 /**
  * A Map that maps V8Values to arbitrary Java Objects.
  * Once stored in the map, the keys (V8Values) can be released
  * as the map will handle their resource management for you.
- *
+ * <p>
  * Once the map is no longer needed, it should be released. To
  * tie a map to the lifecycle of a V8 runtime, it can be registered
  * as a resource with V8.registerResource.
  */
 public class V8Map<V> implements Map<V8Value, V>, Releasable {
 
-    private Map<V8Value, V>       map;
+    private Map<V8Value, V> map;
     private Map<V8Value, V8Value> twinMap;
 
     /**

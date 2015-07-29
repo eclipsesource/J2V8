@@ -4,17 +4,17 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
-
-import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class LibraryLoaderTest {
 
@@ -79,7 +79,7 @@ public class LibraryLoaderTest {
 
         assertEquals("armv7l", LibraryLoader.getArchSuffix());
     }
-    
+
     @Test
     public void testGetArchaarch64() {
         System.setProperty("os.arch", "aarch64");

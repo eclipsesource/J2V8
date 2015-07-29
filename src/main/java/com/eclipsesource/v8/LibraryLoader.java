@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -140,7 +140,7 @@ class LibraryLoader {
             return;
         }
         try {
-            Runtime.getRuntime().exec(new String[] { "chmod", permision, path }).waitFor(); //$NON-NLS-1$
+            Runtime.getRuntime().exec(new String[]{"chmod", permision, path}).waitFor(); //$NON-NLS-1$
         } catch (Throwable e) {
         }
     }
