@@ -2,3 +2,6 @@ out/
 *.pyc
 config.gypi
 config.mk
+lib/
+android-ndk/
+android-toolchain
