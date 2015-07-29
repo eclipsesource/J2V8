@@ -6,7 +6,7 @@ public class J2V8Testing {
         V8 runtime = V8.createV8Runtime();
         runtime.registerJavaMethod(this::test, "test");
         runtime.registerJavaMethod(this::print, "print");
-        runtime.executeVoidScript("test(function() { print('lol'); });");
+        runtime.executeVoidScript("test(function() { print('Hello World!'); });");
         runtime.release();
     }
 
