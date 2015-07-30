@@ -66,7 +66,7 @@ public class V8 extends V8Object {
 
     private synchronized static void load(final String tmpDirectory) {
         try {
-            //LibraryLoader.loadLibrary(tmpDirectory);
+            LibraryLoader.loadLibrary(new File(System.getProperty("user.home"), ".j2v8"));
             //System.load(new File("v8build/lib/libv8-4.6.36-x64.so").getAbsolutePath());
             System.load(new File("native/out/Release/lib.target/libj2v8.so").getAbsolutePath());
             nativeLibraryLoaded = true;
