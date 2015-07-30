@@ -16,10 +16,9 @@
 
       'include_dirs': [
         'src',
-        'tools/msvs/genfiles',
         'deps/v8', # include/v8_platform.h
-        '/usr/lib/jvm/java-8-oracle/include',
-        '/usr/lib/jvm/java-8-oracle/include/linux',
+        '$(JAVA_HOME)/include',
+        '$(JAVA_HOME)/include/linux',
       ],
 
       'sources': [
