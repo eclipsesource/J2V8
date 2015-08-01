@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import com.eclipsesource.v8.utils.LibraryLoader;
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
 
@@ -66,9 +67,7 @@ public class V8 extends V8Object {
 
     private synchronized static void load(final String tmpDirectory) {
         try {
-            LibraryLoader.loadLibrary(new File(System.getProperty("user.home"), ".j2v8"));
-            //System.load(new File("v8build/lib/libv8-4.6.36-x64.so").getAbsolutePath());
-            System.load(new File("native/out/Release/lib.target/libj2v8.so").getAbsolutePath());
+            LibraryLoader.loadLibrary(new File(tmpDirectory));
             nativeLibraryLoaded = true;
         } catch (Error e) {
             nativeLoadError = e;
@@ -124,10 +123,13 @@ public class V8 extends V8Object {
      *                      libraries too.
      * @return A new isolated V8 Runtime.
      */
-    public static V8 createV8Runtime(final String globalAlias, final String tempDirectory) {
+    public static V8 createV8Runtime(final String globalAlias, String tempDirectory) {
         if (!nativeLibraryLoaded) {
             synchronized (lock) {
                 if (!nativeLibraryLoaded) {
+                    if (tempDirectory == null) {
+                        tempDirectory = System.getProperty("user.home") + "/.j2v8";
+                    }
                     load(tempDirectory);
                 }
             }

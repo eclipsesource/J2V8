@@ -29,10 +29,14 @@ jar {
 }
 
 processResources {
-  filter(ReplaceTokens, tokens: [
-    v8_version : project.property("v8_version"),
-    j2v8_version : project.property("j2v8_version")
-  ])
+    from('src/main/java') {
+        include '**/*.xml'
+        filter ReplaceTokens, tokens: [
+                "v8_version": project.property("v8_version"),
+                "j2v8_version": project.property("j2v8_version")
+        ]
+    }
+
 }
 
 mainClassName = "com.eclipsesource.v8.J2V8Testing"
@@ -44,9 +48,6 @@ task fatJar(type: Jar) {
         attributes 'Main-Class': mainClassName
     }
 }
-
-def javaHeadersPath = System.properties.'java.home'
-javaHeadersPath = javaHeadersPath.substring(0, javaHeadersPath.lastIndexOf(File.separator)) + File.separator + "include";
 
 task native_android(type: Exec) {
   workingDir 'native/'

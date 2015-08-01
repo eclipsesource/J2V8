@@ -1,4 +1,4 @@
-package com.eclipsesource.v8;
+package com.eclipsesource.v8.utils;
 
 public class OS {
 
