@@ -1,8 +1,8 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'application'
-
-def v8_version = "4.6.36";
 
 buildscript {
     repositories {
@@ -28,10 +28,16 @@ jar {
     dependsOn('fatJar')
 }
 
+processResources {
+  filter(ReplaceTokens, tokens: [
+    v8_version : project.property("v8_version"),
+    j2v8_version : project.property("j2v8_version")
+  ])
+}
+
 mainClassName = "com.eclipsesource.v8.J2V8Testing"
 
 task fatJar(type: Jar) {
-    baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     manifest {
@@ -41,3 +47,27 @@ task fatJar(type: Jar) {
 
 def javaHeadersPath = System.properties.'java.home'
 javaHeadersPath = javaHeadersPath.substring(0, javaHeadersPath.lastIndexOf(File.separator)) + File.separator + "include";
+
+task native_android(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_android.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_linux(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_linux.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_mac(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_mac.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_windows(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_windows.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}

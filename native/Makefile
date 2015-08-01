@@ -34,3 +34,5 @@ config.gypi: configure
 
 clean:
 	rm -Rf out/
+	rm config.gypi
+	rm config.mk

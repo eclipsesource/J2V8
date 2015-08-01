@@ -18,18 +18,23 @@ class LibraryLoader {
     static void loadLibrary(File tempDirectory) throws IOException {
         String libraryName = OS.getCurrentOS().getType().getSharedLibraryPrefix() + "j2v8-" + Reference.V8_VERSION + "-" + Reference.J2V8_VERSION + "-" + OS.getCurrentOS().getType().getShortName() + "-" + OS.getCurrentOS().getArch().getName() + "." + OS.getCurrentOS().getType().getSharedLibraryExtension();
         System.out.println(libraryName);
-        //File libraryFile = new File(tempDirectory, libraryName);
-        //if (!isExtracted()) {
-        //    extract(libraryName, libraryFile);
-        //}
-        //System.load(libraryFile.getAbsolutePath());
+        File libraryFile = new File(tempDirectory, libraryName);
+        if (!isExtracted()) {
+            extractFromIDE(libraryName, libraryFile);
+            extractFromResources(libraryName, libraryFile);
+        }
+        System.load(libraryFile.getAbsolutePath());
     }
 
     private static boolean isExtracted() {
         return false;
     }
 
-    private static void extract(String resourceName, File outFile) throws IOException {
+    private static void extractFromIDE(String libraryName, File libraryFile) {
+
+    }
+
+    private static void extractFromResources(String resourceName, File outFile) throws IOException {
         if (outFile.exists()) {
             outFile.delete();
         }
@@ -39,18 +44,9 @@ class LibraryLoader {
             copy(is, os);
             os.close();
             is.close();
-            chmod("755", outFile.getAbsolutePath());
+            outFile.setExecutable(true);
         } else {
             throw new IllegalStateException("could not get resource " + resourceName);
-        }
-    }
-
-    private static void chmod(String permision, String path) throws IOException {
-        if (OS.getCurrentOS().getType() != OS.Type.WINDOWS) {
-            try {
-                Runtime.getRuntime().exec(new String[]{"chmod", permision, path}).waitFor(); //$NON-NLS-1$
-            } catch (InterruptedException e) {
-            }
         }
     }
 
