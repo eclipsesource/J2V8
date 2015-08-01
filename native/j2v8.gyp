@@ -16,9 +16,8 @@
 
       'include_dirs': [
         'src',
-        'deps/v8', # include/v8_platform.h
-        '$(JAVA_HOME)/include',
-        '$(JAVA_HOME)/include/linux',
+        'deps/v8',
+        '$(JAVA_HOME)/include'
       ],
 
       'sources': [
@@ -33,52 +32,30 @@
       ],
 
       'conditions': [
-        [ 'v8_postmortem_support=="true"', {
-          'dependencies': [ 'deps/v8/tools/gyp/v8.gyp:postmortem-metadata' ],
-          'conditions': [
-            # -force_load is not applicable for the static library
-            [ 'j2v8_target_type!="static_library"', {
-              'xcode_settings': {
-                'OTHER_LDFLAGS': [
-                  #'-Wl,-force_load,<(V8_BASE)',
-                ],
-              },
-            }],
-          ],
-        }],
         [ 'OS=="win"', {
           'defines': [
             'FD_SETSIZE=1024',
             '_UNICODE=1',
           ],
-          'libraries': [ '-lpsapi.lib' ]
-        }, { # POSIX
+          'libraries': [ '-lpsapi.lib' ],
+	      'include_dirs': [
+            '$(JAVA_HOME)/include/windows',
+          ]
+        }, { #, POSIX
           'defines': [ '__POSIX__' ],
         }],
         [ 'OS=="mac"', {
           # linking Corefoundation is needed since certain OSX debugging tools
           # like Instruments require it for some features
           'libraries': [ '-framework CoreFoundation' ],
-        }],
-        [ 'OS=="freebsd"', {
-          'libraries': [
-            '-lutil',
-            '-lkvm',
+          'include_dirs': [
+            '$(JAVA_HOME)/include/darwin',
           ],
         }],
-        [ 'OS=="solaris"', {
-          'libraries': [
-            '-lkstat',
-            '-lumem',
+        [ 'OS=="linux"', {
+          'include_dirs': [
+            '$(JAVA_HOME)/include/linux',
           ],
-        }],
-        [ 'OS=="freebsd" or OS=="linux"', {
-          'ldflags': [ '-Wl,-z,noexecstack',
-                       #'-Wl,--whole-archive <(V8_BASE)',
-                       '-Wl,--no-whole-archive' ]
-        }],
-        [ 'OS=="sunos"', {
-          'ldflags': [ '-Wl,-M,/usr/lib/ld/map.noexstk' ],
         }],
       ],
     },
