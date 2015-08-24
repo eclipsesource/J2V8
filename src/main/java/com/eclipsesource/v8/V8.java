@@ -49,6 +49,7 @@ public class V8 extends V8Object {
     private V8Map<V8Executor>              executors               = null;
     private boolean                        forceTerminateExecutors = false;
     private Map<Integer, MethodDescriptor> functions               = new HashMap<Integer, MethodDescriptor>();
+    int                                    v8ObjectInstanceCounter = 1;
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;

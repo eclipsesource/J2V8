@@ -36,7 +36,6 @@ abstract public class V8Value implements Releasable {
     public static final int V8_FUNCTION = 7;
     public static final int UNDEFINED   = 99;
 
-    protected static int v8ObjectInstanceCounter = 1;
     protected V8         v8;
     protected int        objectHandle;
     protected boolean    released                = true;
@@ -47,7 +46,7 @@ abstract public class V8Value implements Releasable {
 
     protected V8Value(final V8 v8) {
         this.v8 = v8;
-        objectHandle = v8ObjectInstanceCounter++;
+        objectHandle = v8.v8ObjectInstanceCounter++;
     }
 
     protected V8Value(final V8 v8, final int objectHandle) {
@@ -104,7 +103,7 @@ abstract public class V8Value implements Releasable {
         }
         v8.checkThread();
         v8.checkReleaesd();
-        int twinHandle = v8ObjectInstanceCounter++;
+        int twinHandle = v8.v8ObjectInstanceCounter++;
         v8.createTwin(this, twinHandle);
         return createTwin(twinHandle);
     }
