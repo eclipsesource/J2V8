@@ -9,7 +9,7 @@
     
   <groupId>com.eclipsesource.j2v8</groupId>
   <artifactId>j2v8_${os}_${arch}</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.1</version>
   <packaging>jar</packaging>
 
   <name>j2v8</name>
