@@ -4,16 +4,16 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
 /**
  * An exception that's used to indicate that method that should have returned a
  * primitive, returned an Undefined instead.
- *
+ * <p>
  * In Java, Undefined cannot be returned for all methods, especially if
  * the method returns a primitive (int, double, boolean) or a String.
  * In this case, if an Undefined should be returned from JS, then an instance

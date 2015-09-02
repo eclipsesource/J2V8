@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -43,11 +43,10 @@ public class V8Function extends V8Object {
     /**
      * Invoke the JavaScript function on the current runtime.
      *
-     * @param receiver The object on which to call the function on. The
-     * receiver will be mapped to 'this' in JavaScript. If receiver is null,
-     * then the V8 runtime will be used instead.
+     * @param receiver   The object on which to call the function on. The
+     *                   receiver will be mapped to 'this' in JavaScript. If receiver is null,
+     *                   then the V8 runtime will be used instead.
      * @param parameters The parameters passed to the JS Function.
-     *
      * @return The result of JavaScript function.
      */
     public Object call(V8Object receiver, final V8Array parameters) {

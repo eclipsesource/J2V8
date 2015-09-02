@@ -1,2 +1,8 @@
 /bin/
 /target/
+/build/
+/.gradle/
+/*.iml
+/*.iws
+/*.ipr
+/out/

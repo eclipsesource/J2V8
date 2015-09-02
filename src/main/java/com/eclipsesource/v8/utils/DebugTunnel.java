@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
@@ -19,19 +19,20 @@ import java.net.Socket;
 
 /**
  * Creates a tunnel between two ports.
- *
+ * <p>
  * This is NOT API.
+ *
  * @deprecated
  */
 @Deprecated
 public class DebugTunnel {
 
     private static final String LOCALHOST = "localhost";
-    Socket                      host      = null, target = null;
-    boolean                     started   = false;
-    private int                 hostPort;
-    private int                 targetPort;
-    private ServerSocket        ss;
+    Socket host = null, target = null;
+    boolean started = false;
+    private int hostPort;
+    private int targetPort;
+    private ServerSocket ss;
 
     /**
      * @deprecated
@@ -104,7 +105,7 @@ public class DebugTunnel {
                     createReverseTunnle(host, target);
                     inputStream = host.getInputStream();
                     outputStream = target.getOutputStream();
-                    for (int i = 0; (i = inputStream.read()) != -1;) {
+                    for (int i = 0; (i = inputStream.read()) != -1; ) {
                         outputStream.write(i);
                     }
                 } catch (IOException e) {
@@ -127,7 +128,7 @@ public class DebugTunnel {
                 try {
                     inputStream = target.getInputStream();
                     outputStream = host.getOutputStream();
-                    for (int i = 0; (i = inputStream.read()) != -1;) {
+                    for (int i = 0; (i = inputStream.read()) != -1; ) {
                         outputStream.write(i);
                     }
                 } catch (IOException e) {

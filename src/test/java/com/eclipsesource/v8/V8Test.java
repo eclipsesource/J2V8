@@ -4,19 +4,17 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.eclipsesource.v8.utils.DebugTunnel;
+import com.eclipsesource.v8.utils.V8Map;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -24,12 +22,9 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.eclipsesource.v8.utils.DebugTunnel;
-import com.eclipsesource.v8.utils.V8Map;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class V8Test {
 
@@ -83,7 +78,7 @@ public class V8Test {
 
     @Test
     public void testSingleThreadAccess() throws InterruptedException {
-        final boolean[] result = new boolean[] { false };
+        final boolean[] result = new boolean[]{false};
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -167,7 +162,9 @@ public class V8Test {
         runtime.release(true);
     }
 
-    /*** Void Script ***/
+    /***
+     * Void Script
+     ***/
     @Test
     public void testSimpleVoidScript() {
         v8.executeVoidScript("function foo() {return 1+1}");
@@ -203,7 +200,9 @@ public class V8Test {
         assertEquals(2, result);
     }
 
-    /*** Int Script ***/
+    /***
+     * Int Script
+     ***/
     @Test
     public void testSimpleIntScript() {
         int result = v8.executeIntegerScript("1+2;");
@@ -240,7 +239,9 @@ public class V8Test {
         assertEquals(3, result);
     }
 
-    /*** Double Script ***/
+    /***
+     * Double Script
+     ***/
     @Test
     public void testSimpleDoubleScript() {
         double result = v8.executeDoubleScript("3.14159;");
@@ -284,7 +285,9 @@ public class V8Test {
         assertEquals(3.14159, result, 0.00001);
     }
 
-    /*** Boolean Script ***/
+    /***
+     * Boolean Script
+     ***/
     @Test
     public void testSimpleBooleanScript() {
         boolean result = v8.executeBooleanScript("true");
@@ -314,7 +317,9 @@ public class V8Test {
         assertTrue(result);
     }
 
-    /*** String Script ***/
+    /***
+     * String Script
+     ***/
     @Test
     public void testSimpleStringScript() {
         String result = v8.executeStringScript("'hello, world'");
@@ -344,7 +349,9 @@ public class V8Test {
         assertEquals("hello, world", result);
     }
 
-    /*** Unknown Script ***/
+    /***
+     * Unknown Script
+     ***/
     @Test
     public void testAnyScriptReturnedNothing() {
         V8Value result = (V8Value) v8.executeScript("");
@@ -426,7 +433,9 @@ public class V8Test {
         result.release();
     }
 
-    /*** Object Script ***/
+    /***
+     * Object Script
+     ***/
     @Test
     public void testSimpleObjectScript() {
         V8Object result = v8.executeObjectScript("foo = {hello:'world'}; foo;");
@@ -471,7 +480,9 @@ public class V8Test {
         result.release();
     }
 
-    /*** Array Script ***/
+    /***
+     * Array Script
+     ***/
     @Test
     public void testSimpleArrayScript() {
         V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;");
@@ -503,7 +514,9 @@ public class V8Test {
         result.release();
     }
 
-    /*** Int Function ***/
+    /***
+     * Int Function
+     ***/
     @Test
     public void testSimpleIntFunction() {
         v8.executeIntegerScript("function foo() {return 1+2;}; 42");
@@ -540,7 +553,9 @@ public class V8Test {
         assertEquals(3, result);
     }
 
-    /*** String Function ***/
+    /***
+     * String Function
+     ***/
     @Test
     public void testSimpleStringFunction() {
         v8.executeVoidScript("function foo() {return 'hello';}");
@@ -564,7 +579,9 @@ public class V8Test {
         v8.executeStringFunction("foo", null);
     }
 
-    /*** Double Function ***/
+    /***
+     * Double Function
+     ***/
     @Test
     public void testSimpleDoubleFunction() {
         v8.executeVoidScript("function foo() {return 3.14 + 1;}");
@@ -588,7 +605,9 @@ public class V8Test {
         v8.executeDoubleFunction("foo", null);
     }
 
-    /*** Boolean Function ***/
+    /***
+     * Boolean Function
+     ***/
     @Test
     public void testSimpleBooleanFunction() {
         v8.executeVoidScript("function foo() {return true;}");
@@ -612,7 +631,9 @@ public class V8Test {
         v8.executeBooleanFunction("foo", null);
     }
 
-    /*** Object Function ***/
+    /***
+     * Object Function
+     ***/
     @Test
     public void testSimpleObjectFunction() {
         v8.executeVoidScript("function foo() {return {foo:true};}");
@@ -639,7 +660,9 @@ public class V8Test {
         assertTrue(result.isUndefined());
     }
 
-    /*** Array Function ***/
+    /***
+     * Array Function
+     ***/
     @Test
     public void testSimpleArrayFunction() {
         v8.executeVoidScript("function foo() {return [1,2,3];}");
@@ -666,7 +689,9 @@ public class V8Test {
         assertTrue(result.isUndefined());
     }
 
-    /*** Void Function ***/
+    /***
+     * Void Function
+     ***/
     @Test
     public void testSimpleVoidFunction() {
         v8.executeVoidScript("function foo() {x=1}");
@@ -676,7 +701,9 @@ public class V8Test {
         assertEquals(1, v8.getInteger("x"));
     }
 
-    /*** Add Int ***/
+    /***
+     * Add Int
+     ***/
     @Test
     public void testAddInt() {
         v8.add("foo", 42);
@@ -696,7 +723,9 @@ public class V8Test {
         assertEquals(43, result);
     }
 
-    /*** Add Double ***/
+    /***
+     * Add Double
+     ***/
     @Test
     public void testAddDouble() {
         v8.add("foo", 3.14159);
@@ -716,7 +745,9 @@ public class V8Test {
         assertEquals(43.1, result, 0.000001);
     }
 
-    /*** Add String ***/
+    /***
+     * Add String
+     ***/
     @Test
     public void testAddString() {
         v8.add("foo", "hello, world!");
@@ -736,7 +767,9 @@ public class V8Test {
         assertEquals("world", result);
     }
 
-    /*** Add Boolean ***/
+    /***
+     * Add Boolean
+     ***/
     @Test
     public void testAddBoolean() {
         v8.add("foo", true);
@@ -766,7 +799,9 @@ public class V8Test {
         assertEquals("test", result);
     }
 
-    /*** Add Object ***/
+    /***
+     * Add Object
+     ***/
     @Test
     public void testAddObject() {
         V8Object v8Object = new V8Object(v8);
@@ -796,7 +831,9 @@ public class V8Test {
         v8ObjectFoo2.release();
     }
 
-    /*** Add Array ***/
+    /***
+     * Add Array
+     ***/
     @Test
     public void testAddArray() {
         V8Array array = new V8Array(v8);
@@ -809,7 +846,9 @@ public class V8Test {
         result.release();
     }
 
-    /*** Get Int ***/
+    /***
+     * Get Int
+     ***/
     @Test
     public void testGetInt() {
         v8.executeVoidScript("x = 7");
@@ -851,7 +890,9 @@ public class V8Test {
         v8.getInteger("x");
     }
 
-    /*** Get Double ***/
+    /***
+     * Get Double
+     ***/
     @Test
     public void testGetDouble() {
         v8.executeVoidScript("x = 3.14159");
@@ -884,7 +925,9 @@ public class V8Test {
         v8.getDouble("x");
     }
 
-    /*** Get String ***/
+    /***
+     * Get String
+     ***/
     @Test
     public void testGetString() {
         v8.executeVoidScript("x = 'hello'");
@@ -917,7 +960,9 @@ public class V8Test {
         v8.getString("x");
     }
 
-    /*** Get Boolean ***/
+    /***
+     * Get Boolean
+     ***/
     @Test
     public void testGetBoolean() {
         v8.executeVoidScript("x = true");
@@ -963,7 +1008,9 @@ public class V8Test {
         assertTrue(v8.getBoolean("boolean"));
     }
 
-    /*** Get Array ***/
+    /***
+     * Get Array
+     ***/
     @Test
     public void testGetV8Array() {
         v8.executeVoidScript("foo = [1,2,3]");
@@ -1023,7 +1070,9 @@ public class V8Test {
         assertTrue(result.isUndefined());
     }
 
-    /*** Contains ***/
+    /***
+     * Contains
+     ***/
     @Test
     public void testContainsKey() {
         v8.add("foo", true);
@@ -1063,7 +1112,9 @@ public class V8Test {
         assertFalse(result);
     }
 
-    /*** GetKeys ***/
+    /***
+     * GetKeys
+     ***/
     @Test
     public void testZeroKeys() {
         assertEquals(0, v8.getKeys().length);
@@ -1109,7 +1160,9 @@ public class V8Test {
         assertEquals("foo", v8.getKeys()[0]);
     }
 
-    /*** Global Object Prototype Manipulation ***/
+    /***
+     * Global Object Prototype Manipulation
+     ***/
     private void setupWindowAlias() {
         v8.release();
         v8 = V8.createV8Runtime("window");
@@ -1258,7 +1311,9 @@ public class V8Test {
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
     }
 
-    /*** Debug Tests ***/
+    /***
+     * Debug Tests
+     ***/
     @SuppressWarnings("deprecation")
     @Test
     public void testSetupDebugHandler() {

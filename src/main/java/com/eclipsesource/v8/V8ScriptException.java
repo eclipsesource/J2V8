@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -18,22 +18,22 @@ package com.eclipsesource.v8;
 @SuppressWarnings("serial")
 public abstract class V8ScriptException extends V8RuntimeException {
 
-    private final String    fileName;
-    private final int       lineNumber;
-    private final String    jsMessage;
-    private final String    sourceLine;
-    private final int       startColumn;
-    private final int       endColumn;
-    private final String    jsStackTrace;
+    private final String fileName;
+    private final int lineNumber;
+    private final String jsMessage;
+    private final String sourceLine;
+    private final int startColumn;
+    private final int endColumn;
+    private final String jsStackTrace;
 
     V8ScriptException(final String fileName,
-            final int lineNumber,
-            final String jsMessage,
-            final String sourceLine,
-            final int startColumn,
-            final int endColumn,
-            final String jsStackTrace,
-            final Throwable cause) {
+                      final int lineNumber,
+                      final String jsMessage,
+                      final String sourceLine,
+                      final int startColumn,
+                      final int endColumn,
+                      final String jsStackTrace,
+                      final Throwable cause) {
         this.fileName = fileName;
         this.lineNumber = lineNumber;
         this.jsMessage = jsMessage;

@@ -1,0 +1,74 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath group: 'eu.appsatori', name: 'gradle-fatjar-plugin', version: '0.3'
+    }
+}
+
+repositories {
+    jcenter();
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.10.19'
+}
+
+jar {
+    actions = []
+    dependsOn = []
+    dependsOn('fatJar')
+}
+
+processResources {
+    from('src/main/java') {
+        include '**/*.xml'
+        filter ReplaceTokens, tokens: [
+                "v8_version": project.property("v8_version"),
+                "j2v8_version": project.property("j2v8_version")
+        ]
+    }
+
+}
+
+mainClassName = "com.eclipsesource.v8.J2V8Testing"
+
+task fatJar(type: Jar) {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+task native_android(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_android.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_linux(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_linux.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_mac(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_mac.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}
+
+task native_windows(type: Exec) {
+  workingDir 'native/'
+  commandLine './build_windows.sh'
+  environment V8_VERSION: project.property("v8_version"), J2V8_VERSION: project.property("j2v8_version")
+}

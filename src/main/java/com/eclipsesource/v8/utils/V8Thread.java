@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
@@ -16,7 +16,7 @@ import com.eclipsesource.v8.V8;
  * A Thread with its own V8 runtime. The thread will create a runtime,
  * and execute a runnable on that runtime. When the thread ends,
  * the runtime will be released.
- *
+ * <p>
  * It's suggested that you *DO NOT* release the lock on the runtime.
  * If the lock is released, you will need to ensure that the runtime
  * is properly released.
@@ -24,7 +24,7 @@ import com.eclipsesource.v8.V8;
 public class V8Thread extends Thread {
 
     private final V8Runnable target;
-    private V8               runtime;
+    private V8 runtime;
 
     /**
      * Create as new Thread with its own V8Runtime.

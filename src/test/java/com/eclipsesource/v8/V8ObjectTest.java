@@ -4,36 +4,20 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import static com.eclipsesource.v8.V8Value.BOOLEAN;
-import static com.eclipsesource.v8.V8Value.DOUBLE;
-import static com.eclipsesource.v8.V8Value.INTEGER;
-import static com.eclipsesource.v8.V8Value.NULL;
-import static com.eclipsesource.v8.V8Value.STRING;
-import static com.eclipsesource.v8.V8Value.UNDEFINED;
-import static com.eclipsesource.v8.V8Value.V8_ARRAY;
-import static com.eclipsesource.v8.V8Value.V8_FUNCTION;
-import static com.eclipsesource.v8.V8Value.V8_OBJECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-
+import com.eclipsesource.v8.V8Object.Undefined;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.V8Object.Undefined;
+import static com.eclipsesource.v8.V8Value.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 public class V8ObjectTest {
 
@@ -234,7 +218,9 @@ public class V8ObjectTest {
         }
     }
 
-    /*** Get Array ***/
+    /***
+     * Get Array
+     ***/
     @Test
     public void testGetV8ArrayV8Object() {
         v8.executeVoidScript("foo = {array : [1,2,3]}");
@@ -250,7 +236,9 @@ public class V8ObjectTest {
         object.release();
     }
 
-    /*** Get Primitives ***/
+    /***
+     * Get Primitives
+     ***/
     @Test
     public void testGetIntegerV8Object() {
         v8.executeVoidScript("foo = {bar: 7}");
@@ -339,7 +327,9 @@ public class V8ObjectTest {
         bar.release();
     }
 
-    /*** Execute Object Function ***/
+    /***
+     * Execute Object Function
+     ***/
     @Test
     public void testObjectScript() {
         v8.executeVoidScript("function foo() { return { x : 7 }} ");
@@ -350,7 +340,9 @@ public class V8ObjectTest {
         result.release();
     }
 
-    /*** Add Primitives ***/
+    /***
+     * Add Primitives
+     ***/
     @Test
     public void testAddString() {
         V8Object v8Object = new V8Object(v8).add("hello", "world");
@@ -527,7 +519,9 @@ public class V8ObjectTest {
         assertFalse(undefined.isReleased());
     }
 
-    /*** Add Object ***/
+    /***
+     * Add Object
+     ***/
     @Test
     public void testAddObject() {
         V8Object v8Object = new V8Object(v8).add("hello", true);
@@ -608,7 +602,9 @@ public class V8ObjectTest {
         nested.release();
     }
 
-    /*** Add Array ***/
+    /***
+     * Add Array
+     ***/
     @Test
     public void testAddArrayToObject() {
         V8Array array = new V8Array(v8);
@@ -634,7 +630,9 @@ public class V8ObjectTest {
         }
     }
 
-    /*** Undefined ***/
+    /***
+     * Undefined
+     ***/
     @Test
     public void testUndefinedObjectProperty() {
         V8Object result = v8.getObject("object");
@@ -916,7 +914,9 @@ public class V8ObjectTest {
         object.release();
     }
 
-    /*** Null ***/
+    /***
+     * Null
+     ***/
     @Test
     public void testStringIsNull() {
         v8.add("nullString", (V8Object) null);
@@ -969,7 +969,9 @@ public class V8ObjectTest {
         object.release();
     }
 
-    /*** Test Types ***/
+    /***
+     * Test Types
+     ***/
     @Test
     public void testGetTypeInt() {
         V8Object v8Object = new V8Object(v8).add("key", 1);
@@ -1060,7 +1062,7 @@ public class V8ObjectTest {
 
     @Test
     public void testUnaccessibleMethod() {
-        final boolean[] called = new boolean[] { false };
+        final boolean[] called = new boolean[]{false};
         Runnable r = new Runnable() {
 
             @Override
@@ -1075,7 +1077,9 @@ public class V8ObjectTest {
         assertTrue(called[0]);
     }
 
-    /*** Manipulate Prototypes ***/
+    /***
+     * Manipulate Prototypes
+     ***/
     @Test
     public void testSetPrototypeOfObject() {
         v8.executeVoidScript("function Mammal(){}; Mammal.prototype.breathe=function(){return 'breathe';};");
@@ -1138,7 +1142,9 @@ public class V8ObjectTest {
         mammal.release();
     }
 
-    /*** Equals ***/
+    /***
+     * Equals
+     ***/
     @Test
     public void testEquals() {
         v8.executeVoidScript("o = {}");
@@ -1290,7 +1296,7 @@ public class V8ObjectTest {
     @Test
     public void testToStringInCallback() {
         V8Object a = v8.executeObjectScript("x = [1, 'test', false]; x;");
-        v8.registerJavaMethod(this, "runMe", "runMe", new Class<?>[] { Object.class });
+        v8.registerJavaMethod(this, "runMe", "runMe", new Class<?>[]{Object.class});
 
         v8.executeVoidScript("runMe(x);");
         a.release();

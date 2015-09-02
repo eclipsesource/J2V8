@@ -4,19 +4,15 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
-import java.util.LinkedList;
+import com.eclipsesource.v8.*;
 
-import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.Releasable;
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
+import java.util.LinkedList;
 
 /**
  * Executes a JS Script on a new V8 runtime in its own thread, and once finished,
@@ -25,7 +21,7 @@ import com.eclipsesource.v8.V8Object;
  * *is* long running, the the script will execute, and when finished, the executor
  * will wait for messages to arrive. When messages arrive, the messageHandler
  * will be invoked with the contents of the message.
- *
+ * <p>
  * Executors can be shutdown in two different ways. forceTermination() will
  * stop any executing scripts and immediately terminate the executor. shutdown()
  * will indicate that the executor should shutdown, but this will only happen
@@ -33,26 +29,26 @@ import com.eclipsesource.v8.V8Object;
  */
 public class V8Executor extends Thread {
 
-    private final String         script;
-    private V8                   runtime;
-    private String               result;
-    private volatile boolean     terminated       = false;
-    private volatile boolean     shuttingDown     = false;
-    private volatile boolean     forceTerminating = false;
-    private Exception            exception        = null;
-    private LinkedList<String[]> messageQueue     = new LinkedList<String[]>();
-    private boolean              longRunning;
-    private String               messageHandler;
+    private final String script;
+    private V8 runtime;
+    private String result;
+    private volatile boolean terminated = false;
+    private volatile boolean shuttingDown = false;
+    private volatile boolean forceTerminating = false;
+    private Exception exception = null;
+    private LinkedList<String[]> messageQueue = new LinkedList<String[]>();
+    private boolean longRunning;
+    private String messageHandler;
 
     /**
      * Create a new executor and execute the given script on it. Once
      * the script has finished executing, the executor can optionally
      * wait on a message queue.
      *
-     * @param script The script to execute on this executor.
-     * @param longRunning True to indicate that this executor should be longRunning.
+     * @param script         The script to execute on this executor.
+     * @param longRunning    True to indicate that this executor should be longRunning.
      * @param messageHandler The name of the message handler that should be notified
-     *        when messages are delivered.
+     *                       when messages are delivered.
      */
     public V8Executor(final String script, final boolean longRunning, final String messageHandler) {
         this.script = script;

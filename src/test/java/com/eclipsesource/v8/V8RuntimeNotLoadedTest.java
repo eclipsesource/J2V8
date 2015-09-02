@@ -4,17 +4,13 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import static org.junit.Assert.assertFalse;
-
-import java.lang.reflect.Field;
-import java.net.URLClassLoader;
-
+import com.eclipsesource.v8.V8RuntimeNotLoadedTest.SeparateClassloaderTestRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +18,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
-import com.eclipsesource.v8.V8RuntimeNotLoadedTest.SeparateClassloaderTestRunner;
+import java.lang.reflect.Field;
+import java.net.URLClassLoader;
+
+import static org.junit.Assert.assertFalse;
 
 // A separate class loaded must be used since we don't want these tests to interfere
 // with other tests.
@@ -30,7 +29,7 @@ import com.eclipsesource.v8.V8RuntimeNotLoadedTest.SeparateClassloaderTestRunner
 public class V8RuntimeNotLoadedTest {
 
     private static final String JAVA_LIBRARY_PATH = "java.library.path";
-    private String              existingLibraryPath;
+    private String existingLibraryPath;
 
     @Before
     public void before() throws Exception {

@@ -4,31 +4,22 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import com.eclipsesource.v8.*;
 import org.junit.After;
 import org.junit.Test;
 
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ScriptCompilationException;
-import com.eclipsesource.v8.V8ScriptException;
-import com.eclipsesource.v8.V8ScriptExecutionException;
-import com.eclipsesource.v8.utils.V8Executor;
+import static org.junit.Assert.*;
 
 public class V8ExecutorTest {
 
     private boolean passed = false;
-    private String  result = "";
+    private String result = "";
 
     @After
     public void tearDown() {
@@ -167,7 +158,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("callback()") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "callback", "callback", new Class<?>[] {});
+                runtime.registerJavaMethod(V8ExecutorTest.this, "callback", "callback", new Class<?>[]{});
             }
         };
         executor.start();
@@ -265,7 +256,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[]{Object[].class});
             }
         };
         executor.start();
@@ -282,7 +273,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[]{Object[].class});
             }
         };
         executor.start();
@@ -299,7 +290,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e[0], e[1]); }", true, "messageHandler") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[]{Object[].class});
             }
         };
         executor.start();
@@ -316,7 +307,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[]{Object[].class});
             }
         };
         executor.start();
@@ -335,7 +326,7 @@ public class V8ExecutorTest {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override
             protected void setup(final V8 runtime) {
-                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[] { Object[].class });
+                runtime.registerJavaMethod(V8ExecutorTest.this, "postMessage", "postMessage", new Class<?>[]{Object[].class});
             }
         };
         executor.start();

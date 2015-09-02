@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -14,31 +14,32 @@ package com.eclipsesource.v8;
  * A base class for all V8 resources. V8 resources must
  * be released. The rules for releasing resources is as
  * follows:
- *
+ * <p>
  * 1. If you created it, you must release it, with one exception;
- *    if the object is being passed pack via a return statement,
- *    the system will release it for you.
- *
+ * if the object is being passed pack via a return statement,
+ * the system will release it for you.
+ * <p>
  * 2. If the system created it, you don’t need to worry about it,
- *    with one caveat; if the object was returned to you as a
- *    result of a method call, you must release it.
+ * with one caveat; if the object was returned to you as a
+ * result of a method call, you must release it.
  */
 abstract public class V8Value implements Releasable {
 
-    public static final int NULL        = 0;
-    public static final int UNKNOWN     = 0;
-    public static final int INTEGER     = 1;
-    public static final int DOUBLE      = 2;
-    public static final int BOOLEAN     = 3;
-    public static final int STRING      = 4;
-    public static final int V8_ARRAY    = 5;
-    public static final int V8_OBJECT   = 6;
+    public static final int NULL = 0;
+    public static final int UNKNOWN = 0;
+    public static final int INTEGER = 1;
+    public static final int DOUBLE = 2;
+    public static final int BOOLEAN = 3;
+    public static final int STRING = 4;
+    public static final int V8_ARRAY = 5;
+    public static final int V8_OBJECT = 6;
     public static final int V8_FUNCTION = 7;
-    public static final int UNDEFINED   = 99;
+    public static final int UNDEFINED = 99;
 
-    protected V8         v8;
-    protected int        objectHandle;
-    protected boolean    released                = true;
+    protected static int v8ObjectInstanceCounter = 1;
+    protected V8 v8;
+    protected int objectHandle;
+    protected boolean released = true;
 
     protected V8Value() {
         super();
@@ -90,7 +91,7 @@ abstract public class V8Value implements Releasable {
      * changing existing ones) then both the original and twin
      * will be updated. Twins are .equal and .strict equals, but
      * not == in Java.
-     *
+     * <p>
      * Twins must be released separately since they have their own
      * native resources.
      *

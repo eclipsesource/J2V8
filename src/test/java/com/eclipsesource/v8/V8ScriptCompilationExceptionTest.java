@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *    EclipseSource - initial API and implementation
+ * EclipseSource - initial API and implementation
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -14,23 +14,21 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class V8ScriptCompilationExceptionTest {
 
     private V8ScriptCompilationException exception;
 
-    private V8                           v8;
+    private V8 v8;
 
-    String                               script = "x = [1,2,3];\n"
-                                                        + "y = 0;\n"
-                                                        + "\n"
-                                                        + "//A JS Script that has a compile error, int should be var\n"
-                                                        + "for (int i = 0; i < x.length; i++) {\n"
-                                                        + "  y = y + x[i];\n"
-                                                        + "}";
+    String script = "x = [1,2,3];\n"
+            + "y = 0;\n"
+            + "\n"
+            + "//A JS Script that has a compile error, int should be var\n"
+            + "for (int i = 0; i < x.length; i++) {\n"
+            + "  y = y + x[i];\n"
+            + "}";
 
     @Before
     public void seutp() {
