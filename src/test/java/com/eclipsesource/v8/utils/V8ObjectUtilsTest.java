@@ -399,6 +399,17 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testCreateV8ArrayFromMaxValueLong() {
+        List<Long> list = new ArrayList<Long>();
+        list.add(Long.MAX_VALUE);
+
+        int size = registerAndRelease("result", list);
+
+        assertEquals(1, size);
+        assertEquals(Long.MAX_VALUE, v8.executeDoubleScript("result[0]"), 0.0000001);
+    }
+
+    @Test
     public void testCreateV8ArrayFromFloatList() {
         List<Float> list = new ArrayList<Float>();
         list.add(1.1f);

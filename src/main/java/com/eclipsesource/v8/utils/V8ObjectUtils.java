@@ -360,7 +360,7 @@ public class V8ObjectUtils {
         } else if (value instanceof Integer) {
             result.push((Integer) value);
         } else if (value instanceof Long) {
-            result.push((int) (long) (Long) value);
+            result.push(new Double((Long) value));
         } else if (value instanceof Double) {
             result.push((Double) value);
         } else if (value instanceof Float) {
