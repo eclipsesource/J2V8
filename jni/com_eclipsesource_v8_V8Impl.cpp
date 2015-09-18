@@ -54,11 +54,11 @@ jclass booleanCls = NULL;
 jclass errorCls = NULL;
 
 void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch);
-void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, long v8RuntimePtr);
+void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr);
 void throwError(JNIEnv *env, const char *message);
 void throwV8RuntimeException(JNIEnv *env, const char *message);
 void throwResultUndefinedException(JNIEnv *env, const char *message);
-Isolate* getIsolate(JNIEnv *env, long handle);
+Isolate* getIsolate(JNIEnv *env, jlong handle);
 int getType(Handle<Value> v8Value);
 jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType);
 
@@ -249,7 +249,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     runtime->objects[0] = new Persistent<Object>;
     runtime->objects[0]->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
   }
-  return reinterpret_cast<long>(runtime);
+  return reinterpret_cast<jlong>(runtime);
 }
 
 void createPersistentContainer(V8Runtime* runtime, int handle) {
@@ -367,7 +367,7 @@ bool compileScript(Isolate *isolate, jstring &jscript, JNIEnv *env, jstring jscr
   return true;
 }
 
-bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, long v8RuntimePtr) {
+bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, jlong v8RuntimePtr) {
   (*script)->Run();
   if (tryCatch->HasCaught()) {
     throwExecutionException(env, isolate, tryCatch, v8RuntimePtr);
@@ -376,7 +376,7 @@ bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* t
   return true;
 }
 
-bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, Local<Value> &result, long v8RuntimePtr) {
+bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* tryCatch, Local<Value> &result, jlong v8RuntimePtr) {
   result = (*script)->Run();
   if (tryCatch->HasCaught()) {
     throwExecutionException(env, isolate, tryCatch, v8RuntimePtr);
@@ -1306,7 +1306,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1identityHash
   return object->GetIdentityHash();
 }
 
-Isolate* getIsolate(JNIEnv *env, long v8RuntimePtr) {
+Isolate* getIsolate(JNIEnv *env, jlong v8RuntimePtr) {
   if (v8RuntimePtr == 0) {
     throwError(env, "V8 isolate not found.");
     return NULL;
@@ -1333,7 +1333,7 @@ void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, cons
 }
 
 void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
-  const char* sourceLine, int startColumn, int endColumn, const char* stackTrace, long v8RuntimePtr) {
+  const char* sourceLine, int startColumn, int endColumn, const char* stackTrace, jlong v8RuntimePtr) {
   jmethodID methodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
   jstring jfileName = env->NewStringUTF(fileName);
   jstring jmessage = env->NewStringUTF(message);
@@ -1377,7 +1377,7 @@ void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch) {
   }
 }
 
-void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, long v8RuntimePtr) {
+void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr) {
   String::Utf8Value exception(tryCatch->Exception());
   const char* exceptionString = ToCString(exception);
   Handle<Message> message = tryCatch->Message();
