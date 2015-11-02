@@ -22,13 +22,9 @@ public class V8Function extends V8Object {
         super(v8);
     }
 
-    protected V8Function(final V8 v8, final int objectHandle) {
-        super(v8, objectHandle);
-    }
-
     @Override
-    protected V8Value createTwin(final int newHandle) {
-        return new V8Function(v8, newHandle);
+    protected V8Value createTwin() {
+        return new V8Function(v8);
     }
 
     /*
@@ -44,8 +40,8 @@ public class V8Function extends V8Object {
      * Invoke the JavaScript function on the current runtime.
      *
      * @param receiver The object on which to call the function on. The
-     * receiver will be mapped to 'this' in JavaScript. If receiver is null,
-     * then the V8 runtime will be used instead.
+     * receiver will be mapped to 'this' in JavaScript. If receiver is null
+     * or undefined, then the V8 runtime will be used instead.
      * @param parameters The parameters passed to the JS Function.
      *
      * @return The result of JavaScript function.
@@ -54,7 +50,8 @@ public class V8Function extends V8Object {
         v8.checkThread();
         checkReleaesd();
         receiver = receiver != null ? receiver : v8;
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
-        return v8.executeFunction(v8.getV8RuntimePtr(), receiver.objectHandle, objectHandle, parametersHandle);
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long receiverHandle = receiver.isUndefined() ? v8.objectHandle : receiver.objectHandle;
+        return v8.executeFunction(v8.getV8RuntimePtr(), receiverHandle, objectHandle, parametersHandle);
     }
 }

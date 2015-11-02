@@ -34,8 +34,8 @@ public class V8Array extends V8Object {
     }
 
     @Override
-    protected V8Value createTwin(final int newHandle) {
-        return new V8Array(v8, newHandle);
+    protected V8Value createTwin() {
+        return new V8Array(v8);
     }
 
     /*
@@ -47,15 +47,12 @@ public class V8Array extends V8Object {
         return (V8Array) super.twin();
     }
 
-    protected V8Array(final V8 v8, final int objectHandle) {
-        super(v8, objectHandle);
-    }
-
     @Override
-    protected void initialize(final long runtimePtr, final int objectHandle) {
-        v8.initNewV8Array(runtimePtr, objectHandle);
+    protected long initialize(final long runtimePtr) {
+        long handle = v8.initNewV8Array(runtimePtr);
         v8.addObjRef();
         released = false;
+        return handle;
     }
 
     /**
@@ -751,15 +748,6 @@ public class V8Array extends V8Object {
          */
         @Override
         public double getDouble(final String key) {
-            throw new UnsupportedOperationException();
-        }
-
-        /*
-        * (non-Javadoc)
-        * @see com.eclipsesource.v8.V8Value#getHandle()
-        */
-        @Override
-        public int getHandle() {
             throw new UnsupportedOperationException();
         }
 

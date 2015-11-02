@@ -326,13 +326,6 @@ public class V8ArrayTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetHandleUndefined() {
-        V8Array undefined = v8.getArray("array");
-
-        undefined.getHandle();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testGetKeysUndefined() {
         V8Array undefined = v8.getArray("array");
 
