@@ -35,12 +35,10 @@ public class V8Object extends V8Value {
      */
     public V8Object(final V8 v8) {
         super(v8);
-        v8.checkThread();
-        initialize(v8.getV8RuntimePtr(), objectHandle);
-    }
-
-    protected V8Object(final V8 v8, final int objectHandle) {
-        super(v8, objectHandle);
+        if (v8 != null) {
+            this.v8.checkThread();
+            objectHandle = initialize(this.v8.getV8RuntimePtr());
+        }
     }
 
     protected V8Object() {
@@ -48,8 +46,8 @@ public class V8Object extends V8Value {
     }
 
     @Override
-    protected V8Value createTwin(final int newHandle) {
-        return new V8Object(v8, newHandle);
+    protected V8Value createTwin() {
+        return new V8Object(v8);
     }
 
     /*
@@ -250,7 +248,7 @@ public class V8Object extends V8Value {
     public int executeIntegerFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeIntegerFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
@@ -268,7 +266,7 @@ public class V8Object extends V8Value {
     public double executeDoubleFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeDoubleFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
@@ -286,7 +284,7 @@ public class V8Object extends V8Value {
     public String executeStringFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeStringFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
@@ -304,7 +302,7 @@ public class V8Object extends V8Value {
     public boolean executeBooleanFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeBooleanFunction(v8.getV8RuntimePtr(), getHandle(), name, parametersHandle);
     }
 
@@ -322,7 +320,7 @@ public class V8Object extends V8Value {
     public V8Array executeArrayFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         Object result = v8.executeFunction(v8.getV8RuntimePtr(), V8_ARRAY, objectHandle, name, parametersHandle);
         if (result instanceof V8Array) {
             return (V8Array) result;
@@ -344,7 +342,7 @@ public class V8Object extends V8Value {
     public V8Object executeObjectFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         Object result = v8.executeFunction(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, name, parametersHandle);
         if (result instanceof V8Object) {
             return (V8Object) result;
@@ -364,7 +362,7 @@ public class V8Object extends V8Value {
     public Object executeFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         return v8.executeFunction(v8.getV8RuntimePtr(), UNKNOWN, objectHandle, name, parametersHandle);
     }
 
@@ -378,7 +376,7 @@ public class V8Object extends V8Value {
     public void executeVoidFunction(final String name, final V8Array parameters) {
         v8.checkThread();
         checkReleaesd();
-        int parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
         v8.executeVoidFunction(v8.getV8RuntimePtr(), objectHandle, name, parametersHandle);
     }
 
@@ -827,15 +825,6 @@ public class V8Object extends V8Value {
          */
         @Override
         public double getDouble(final String key) {
-            throw new UnsupportedOperationException();
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see com.eclipsesource.v8.V8Value#getHandle()
-         */
-        @Override
-        public int getHandle() {
             throw new UnsupportedOperationException();
         }
 

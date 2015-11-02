@@ -36,34 +36,27 @@ abstract public class V8Value implements Releasable {
     public static final int V8_FUNCTION = 7;
     public static final int UNDEFINED   = 99;
 
-    protected V8         v8;
-    protected int        objectHandle;
-    protected boolean    released                = true;
+    protected V8      v8;
+    protected long    objectHandle;
+    protected boolean released = true;
 
     protected V8Value() {
         super();
     }
 
     protected V8Value(final V8 v8) {
-        this.v8 = v8;
-        objectHandle = v8.v8ObjectInstanceCounter++;
-    }
-
-    protected V8Value(final V8 v8, final int objectHandle) {
         if (v8 == null) {
             this.v8 = (V8) this;
         } else {
             this.v8 = v8;
-            v8.addObjRef();
         }
-        this.objectHandle = objectHandle;
-        released = false;
     }
 
-    protected void initialize(final long runtimePtr, final int objectHandle) {
-        v8.initNewV8Object(runtimePtr, objectHandle);
+    protected long initialize(final long runtimePtr) {
+        long objectHandle = v8.initNewV8Object(runtimePtr);
         v8.addObjRef();
         released = false;
+        return objectHandle;
     }
 
     /**
@@ -103,9 +96,9 @@ abstract public class V8Value implements Releasable {
         }
         v8.checkThread();
         v8.checkReleaesd();
-        int twinHandle = v8.v8ObjectInstanceCounter++;
-        v8.createTwin(this, twinHandle);
-        return createTwin(twinHandle);
+        V8Value twin = createTwin();
+        v8.createTwin(this, twin);
+        return twin;
     }
 
     /**
@@ -157,12 +150,12 @@ abstract public class V8Value implements Releasable {
         return v8.strictEquals(v8.getV8RuntimePtr(), getHandle(), ((V8Value) that).getHandle());
     }
 
-    protected int getHandle() {
+    protected long getHandle() {
         checkReleaesd();
         return objectHandle;
     }
 
-    protected abstract V8Value createTwin(int twinObjectHandle);
+    protected abstract V8Value createTwin();
 
     /*
      * (non-Javadoc)

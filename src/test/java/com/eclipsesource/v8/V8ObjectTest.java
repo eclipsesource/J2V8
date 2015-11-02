@@ -847,13 +847,6 @@ public class V8ObjectTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetHandleUndefined() {
-        V8Object undefined = v8.getObject("object");
-
-        undefined.getHandle();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testGetKeysUndefined() {
         V8Object undefined = v8.getObject("object");
 
