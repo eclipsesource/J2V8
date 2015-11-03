@@ -39,6 +39,10 @@ class LibraryLoader {
     }
 
     static void loadLibrary(final String tempDirectory) {
+        if ( isAndroid() ) {
+          System.loadLibrary("j2v8");
+          return;
+        }
         StringBuffer message = new StringBuffer();
         String libShortName = computeLibraryShortName();
         String libFullName = computeLibraryFullName();
