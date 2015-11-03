@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.DebugTunnel;
@@ -1306,6 +1307,7 @@ public class V8Test {
 
     @SuppressWarnings("deprecation")
     @Test
+    @Ignore
     public void testMultipleDebugHandlers() {
         V8 v8_2 = V8.createV8Runtime();
 
