@@ -579,6 +579,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1terminateExecution
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getGlobalObject
   (JNIEnv *, jobject, jlong);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _getBuildID
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

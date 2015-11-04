@@ -666,6 +666,13 @@ public class V8 extends V8Object {
         return locker;
     }
 
+    /**
+     * Returns the unique build ID of the native library.
+     */
+    public long getBuildID() {
+        return _getBuildID();
+    }
+
     void checkThread() {
         locker.checkThread();
         if (isReleased()) {
@@ -1301,6 +1308,8 @@ public class V8 extends V8Object {
     private native void _terminateExecution(final long v8RuntimePtr);
 
     private native long _getGlobalObject(final long v8RuntimePtr);
+
+    private native long _getBuildID();
 
     void addObjRef() {
         objectReferences++;
