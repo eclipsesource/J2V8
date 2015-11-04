@@ -492,7 +492,7 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jlong &o
   Handle<Object> parentObject = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
   int size = 0;
   Handle<Value>* args = NULL;
-  if (parameterHandle >= 0) {
+  if (parameterHandle != 0) {
     Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(parameterHandle));
     size = Array::Cast(*parameters)->Length();
     args = new Handle<Value>[size];
@@ -1467,5 +1467,5 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
   (JNIEnv *, jobject) {
-  return 1;
+  return 2;
 }
