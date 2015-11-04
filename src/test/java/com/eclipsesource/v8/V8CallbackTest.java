@@ -26,7 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.awt.Rectangle;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.Before;
@@ -1168,7 +1168,7 @@ public class V8CallbackTest {
     @Test(expected = V8ScriptExecutionException.class)
     public void testObjectMethodReturnsIncompatibleType() {
         ICallback callback = mock(ICallback.class);
-        doReturn(new Rectangle()).when(callback).objectMethodNoParameter();
+        doReturn(new Date()).when(callback).objectMethodNoParameter();
         v8.registerJavaMethod(callback, "objectMethodNoParameter", "foo", new Class<?>[] {});
 
         v8.executeVoidScript("foo()");

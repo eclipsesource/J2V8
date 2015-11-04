@@ -16,8 +16,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -593,7 +593,7 @@ public class V8ObjectUtilsTest {
     @Test(expected = IllegalStateException.class)
     public void testCreateV8ObjectWithInvalidContents() {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("first", new Rectangle());
+        map.put("first", new Date());
 
         registerAndRelease("result", map);
     }
@@ -601,7 +601,7 @@ public class V8ObjectUtilsTest {
     @Test(expected = IllegalStateException.class)
     public void testCreateV8ArrayWithInvalidContents() {
         List<Object> list = new ArrayList<Object>();
-        list.add(new Rectangle());
+        list.add(new Date());
 
         registerAndRelease("result", list);
     }
