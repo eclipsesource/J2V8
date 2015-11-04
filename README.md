@@ -17,6 +17,7 @@ Tutorials
 Articles
 ========
  * [Shipping J2V8 as an AAR](http://eclipsesource.com/blogs/2015/11/04/shipping-j2v8-as-an-aar/)
+ * [Announcing J2V8 3.0](http://eclipsesource.com/blogs/2015/07/08/j2v8-3-0-released/)
  * [J2V8 2.2 New and Noteworthy](http://eclipsesource.com/blogs/2015/04/23/j2v8-2-2-new-and-noteworthy/)
  * [Announcing J2V8 2.0](http://eclipsesource.com/blogs/2015/02/25/announcing-j2v8-2-0/)
  * [Highly Efficient Java & JavaScript Integration](http://eclipsesource.com/blogs/2014/11/17/highly-efficient-java-javascript-integration/)
