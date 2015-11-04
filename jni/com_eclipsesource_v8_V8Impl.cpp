@@ -464,7 +464,7 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
 bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jlong &receiverHandle, jlong &functionHandle, jlong &parameterHandle, Handle<Value> &result) {
   int size = 0;
   Handle<Value>* args = NULL;
-  if (parameterHandle >= 0) {
+  if (parameterHandle != 0) {
     Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(parameterHandle));
     size = Array::Cast(*parameters)->Length();
     args = new Handle<Value>[size];

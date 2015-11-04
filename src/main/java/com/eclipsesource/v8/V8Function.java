@@ -50,7 +50,7 @@ public class V8Function extends V8Object {
         v8.checkThread();
         checkReleaesd();
         receiver = receiver != null ? receiver : v8;
-        long parametersHandle = parameters == null ? -1 : parameters.getHandle();
+        long parametersHandle = parameters == null ? 0 : parameters.getHandle();
         long receiverHandle = receiver.isUndefined() ? v8.objectHandle : receiver.objectHandle;
         return v8.executeFunction(v8.getV8RuntimePtr(), receiverHandle, objectHandle, parametersHandle);
     }
