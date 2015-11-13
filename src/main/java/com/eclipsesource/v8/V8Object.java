@@ -677,10 +677,10 @@ public class V8Object extends V8Value {
 
         /*
          * (non-Javadoc)
-         * @see com.eclipsesource.v8.V8Value#getRutime()
+         * @see com.eclipsesource.v8.V8Value#getRuntime()
          */
         @Override
-        public V8 getRutime() {
+        public V8 getRuntime() {
             throw new UnsupportedOperationException();
         }
 

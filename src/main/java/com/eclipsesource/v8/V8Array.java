@@ -591,10 +591,10 @@ public class V8Array extends V8Object {
 
         /*
          * (non-Javadoc)
-         * @see com.eclipsesource.v8.V8Value#getRutime()
+         * @see com.eclipsesource.v8.V8Value#getRuntime()
          */
         @Override
-        public V8 getRutime() {
+        public V8 getRuntime() {
             throw new UnsupportedOperationException();
         }
 
