@@ -73,7 +73,7 @@ abstract public class V8Value implements Releasable {
      *
      * @return Returns the V8 runtime this value is associated with.
      */
-    public V8 getRutime() {
+    public V8 getRuntime() {
         return v8;
     }
 

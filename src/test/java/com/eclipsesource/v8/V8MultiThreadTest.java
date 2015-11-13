@@ -83,7 +83,7 @@ public class V8MultiThreadTest {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            return V8ObjectUtils.toV8Array(parameters.getRutime(), result);
+            return V8ObjectUtils.toV8Array(parameters.getRuntime(), result);
         }
     }
 
