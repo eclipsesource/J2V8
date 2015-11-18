@@ -400,7 +400,7 @@ public class V8ObjectUtils {
         } else if (value instanceof Integer) {
             result.add(key, (Integer) value);
         } else if (value instanceof Long) {
-            result.add(key, (int) (long) (Long) value);
+            result.add(key, new Double((Long) value));
         } else if (value instanceof Double) {
             result.add(key, (Double) value);
         } else if (value instanceof Float) {
@@ -426,7 +426,7 @@ public class V8ObjectUtils {
             case V8Value.INTEGER:
                 return array.getInteger(index);
             case V8Value.DOUBLE:
-                return array.getDouble(index);
+                return parseDoubleObject(array.getDouble(index));
             case V8Value.BOOLEAN:
                 return array.getBoolean(index);
             case V8Value.STRING:
@@ -466,7 +466,7 @@ public class V8ObjectUtils {
             case V8Value.INTEGER:
                 return object.getInteger(key);
             case V8Value.DOUBLE:
-                return object.getDouble(key);
+                return parseDoubleObject(object.getDouble(key));
             case V8Value.BOOLEAN:
                 return object.getBoolean(key);
             case V8Value.STRING:
@@ -497,6 +497,15 @@ public class V8ObjectUtils {
                 return V8.getUndefined();
             default:
                 throw new IllegalStateException("Cannot find type for key: " + key);
+        }
+    }
+
+    private static Object parseDoubleObject(double dValue) {
+        BigDecimal bigDecimal = BigDecimal.valueOf(dValue);
+        if (bigDecimal.scale() <= 0) { // Should be Long
+            return bigDecimal.longValue();
+        } else {
+            return dValue;
         }
     }
 
