@@ -188,16 +188,17 @@ static void jsWindowObjectAccessor(Local<String> property,
   info.GetReturnValue().Set(info.GetIsolate()->GetCurrentContext()->Global());
 }
 
-class MallocArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-public:
-  virtual void* Allocate(size_t length) { return std::malloc(length); }
-  virtual void* AllocateUninitialized(size_t length){ return std::malloc(length); }
-  virtual void Free(void* data, size_t length) { std::free(data); }
+class ShellArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+ public:
+  virtual void* Allocate(size_t length) {
+    void* data = AllocateUninitialized(length);
+    return data == NULL ? data : memset(data, 0, length);
+  }
+  virtual void* AllocateUninitialized(size_t length) { return malloc(length); }
+  virtual void Free(void* data, size_t) { free(data); }
 };
 
-static void enableTypedArrays() {
-  V8::SetArrayBufferAllocator(new MallocArrayBufferAllocator());
-}
+
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
@@ -208,8 +209,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (env == NULL) {
         return onLoad_err;
     }
+
     // on first creation, store the JVM and a handle to J2V8 classes
-    enableTypedArrays();
     jvm = vm;
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
@@ -227,23 +228,34 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
-    return JNI_VERSION_1_6;
-}
-
-JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-(JNIEnv *env, jobject v8, jstring globalAlias) {
-  v8::V8::InitializeICU();
+    
+      v8::V8::InitializeICU();
   myplatform = v8::platform::CreateDefaultPlatform();
   v8::V8::InitializePlatform(myplatform);
   v8::V8::Initialize();
   
-  v8Isolates[handle] = new V8Runtime();
-  v8Isolates[handle]->isolate = Isolate::New();
-  Locker locker(runtime->isolate);
-  v8Isolates[handle]->isolate_scope = new Isolate::Scope(v8Isolates[handle]->isolate);
-  v8Isolates[handle]->v8 = env->NewGlobalRef(v8);
-  v8Isolates[handle]->pendingException = NULL;
-  HandleScope handle_scope(v8Isolates[handle]->isolate);
+    return JNI_VERSION_1_6;
+}
+
+  ShellArrayBufferAllocator array_buffer_allocator;
+
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
+(JNIEnv *env, jobject v8, jstring globalAlias) {
+
+  V8Runtime* runtime = new V8Runtime();
+  
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = &array_buffer_allocator;
+  
+  
+  runtime->isolate = v8::Isolate::New(create_params);
+  Locker locker(runtime->isolate);  
+
+  runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
+  runtime->v8 = env->NewGlobalRef(v8);
+  runtime->pendingException = NULL;
+  HandleScope handle_scope(runtime->isolate);
   
 
   Handle<ObjectTemplate> globalObject = ObjectTemplate::New();

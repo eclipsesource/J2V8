@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.utils.DebugTunnel;
 import com.eclipsesource.v8.utils.V8Map;
 
 public class V8Test {
@@ -1269,67 +1268,6 @@ public class V8Test {
         assertEquals(1, v8.executeIntegerScript("window.a;"));
         assertEquals(2, v8.executeIntegerScript("b;"));
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
-    }
-
-    /*** Debug Tests ***/
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testSetupDebugHandler() {
-        int port = 9991;
-
-        v8.enableDebugSupport(port);
-
-        assertTrue(debugEnabled(port));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testEnableTunnel() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
-
-        assertNotNull(debugTunnel);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testEnableDisableTunnel() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
-        debugTunnel.stop();
-        debugTunnel = new DebugTunnel(9992, 9991);
-
-        assertNotNull(debugTunnel);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testRemoveDebugHandler() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        v8.disableDebugSupport();
-
-        assertFalse(debugEnabled(port));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testMultipleDebugHandlers() {
-        V8 v8_2 = V8.createV8Runtime();
-
-        v8.enableDebugSupport(9991);
-        v8_2.enableDebugSupport(9992);
-
-        assertTrue(debugEnabled(9991));
-        assertTrue(debugEnabled(9992));
-        v8_2.disableDebugSupport();
-        v8_2.release();
-        assertTrue(debugEnabled(9991));
     }
 
     static class SubV8 extends V8 {
