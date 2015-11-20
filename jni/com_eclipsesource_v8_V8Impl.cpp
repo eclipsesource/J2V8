@@ -1026,6 +1026,9 @@ int getType(Handle<Value> v8Value) {
   else if (v8Value->IsString()) {
     return com_eclipsesource_v8_V8_STRING;
   }
+  else if (v8Value->IsGeneratorFunction()) {
+  	return com_eclipsesource_v8_V8_V8_GENERATOR_FUNCTION;
+  }
   else if (v8Value->IsFunction()) {
    return com_eclipsesource_v8_V8_V8_FUNCTION;
   }

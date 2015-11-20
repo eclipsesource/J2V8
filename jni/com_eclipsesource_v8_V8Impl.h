@@ -25,6 +25,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_OBJECT 6L
 #undef com_eclipsesource_v8_V8_V8_FUNCTION
 #define com_eclipsesource_v8_V8_V8_FUNCTION 7L
+#undef com_eclipsesource_v8_V8_V8_GENERATOR_FUNCTION
+#define com_eclipsesource_v8_V8_V8_GENERATOR_FUNCTION 8L
 #undef com_eclipsesource_v8_V8_UNDEFINED
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*

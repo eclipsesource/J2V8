@@ -82,6 +82,71 @@ public class V8Test {
     }
 
     @Test
+    public void testArrowFunction() {
+        String script = "var a = [\n"
+                + "'Hydrogen',\n"
+                + "'Helium'];\n";
+
+        v8.executeVoidScript(script);
+
+        V8Function function = (V8Function) v8.executeObjectScript("( s => s.length )");
+        V8Array parameters = new V8Array(v8).push(function);
+
+        V8Array a = v8.getArray("a");
+        V8Array result = a.executeArrayFunction("map", parameters);
+
+        // array.executeArrayFunction("map", " s => s.length", null);
+
+        for (int i = 0; i < result.length(); i++) {
+            System.out.println(result.get(i));
+        }
+
+        result.release();
+
+    }
+
+    public class GeneratorFunction implements Releasable {
+
+        V8Function function;
+
+        public GeneratorFunction(final V8Function function) {
+            this.function = function.twin();
+        }
+
+        public Object nextValue() {
+            return null;
+        }
+
+        @Override
+        public void release() {
+            function.release();
+        }
+
+    }
+
+    @Test
+    public void testGeneratorFunction() {
+        String script = "foo = function* idMaker(){\n"
+                + "var index = 0;\n"
+                + "while(index < 3)\n"
+                + " yield index++;\n"
+                + "}";
+
+        v8.executeVoidScript(script);
+
+        System.out.println(v8.getType("foo"));
+        V8Function function = (V8Function) v8.getObject("foo");
+
+        V8Object o = (V8Object) function.call(null, null);
+
+        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
+        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
+        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
+
+        assertNotNull(function);
+    }
+
+    @Test
     public void testSingleThreadAccess() throws InterruptedException {
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
