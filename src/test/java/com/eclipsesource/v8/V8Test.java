@@ -19,9 +19,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -86,23 +83,19 @@ public class V8Test {
         String script = "var a = [\n"
                 + "'Hydrogen',\n"
                 + "'Helium'];\n";
-
         v8.executeVoidScript(script);
-
         V8Function function = (V8Function) v8.executeObjectScript("( s => s.length )");
         V8Array parameters = new V8Array(v8).push(function);
-
         V8Array a = v8.getArray("a");
         V8Array result = a.executeArrayFunction("map", parameters);
-
-        // array.executeArrayFunction("map", " s => s.length", null);
 
         for (int i = 0; i < result.length(); i++) {
             System.out.println(result.get(i));
         }
-
+        function.release();
+        parameters.release();
         result.release();
-
+        a.release();
     }
 
     public class GeneratorFunction implements Releasable {
@@ -131,19 +124,16 @@ public class V8Test {
                 + "while(index < 3)\n"
                 + " yield index++;\n"
                 + "}";
-
         v8.executeVoidScript(script);
-
-        System.out.println(v8.getType("foo"));
         V8Function function = (V8Function) v8.getObject("foo");
-
         V8Object o = (V8Object) function.call(null, null);
-
-        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
-        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
-        System.out.println(o.executeObjectFunction("next", null).getInteger("value"));
-
-        assertNotNull(function);
+        for (int i = 0; i < 3; i++) {
+            V8Object next = o.executeObjectFunction("next", null);
+            System.out.println(next.getInteger("value"));
+            next.release();
+        }
+        function.release();
+        o.release();
     }
 
     @Test
@@ -1364,24 +1354,6 @@ public class V8Test {
                 + "}";
 
         v8.executeVoidScript(script, "example.js", 0);
-    }
-
-    private boolean debugEnabled(final int port) {
-        Socket socket = new Socket();
-        InetSocketAddress endPoint = new InetSocketAddress("localhost", port);
-        try {
-            socket.connect(endPoint);
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
     }
 
 }
