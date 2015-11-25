@@ -33,7 +33,7 @@ public:
   jthrowable pendingException;
 };
 
-v8::Platform* myplatform;
+v8::Platform* v8Platform;
 
 const char* ToCString(const String::Utf8Value& value) {
   return *value ? *value : "<string conversion failed>";
@@ -198,8 +198,6 @@ class ShellArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   virtual void Free(void* data, size_t) { free(data); }
 };
 
-
-
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
     jint onLoad_err = -1;
@@ -229,35 +227,27 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
     
-      v8::V8::InitializeICU();
-  myplatform = v8::platform::CreateDefaultPlatform();
-  v8::V8::InitializePlatform(myplatform);
-  v8::V8::Initialize();
+    v8::V8::InitializeICU();
+    v8Platform = v8::platform::CreateDefaultPlatform();
+    v8::V8::InitializePlatform(v8Platform);
+    v8::V8::Initialize();
   
     return JNI_VERSION_1_6;
 }
 
-  ShellArrayBufferAllocator array_buffer_allocator;
-
+ShellArrayBufferAllocator array_buffer_allocator;
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 (JNIEnv *env, jobject v8, jstring globalAlias) {
-
   V8Runtime* runtime = new V8Runtime();
-  
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = &array_buffer_allocator;
-  
-  
   runtime->isolate = v8::Isolate::New(create_params);
   Locker locker(runtime->isolate);  
-
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;
   HandleScope handle_scope(runtime->isolate);
-  
-
   Handle<ObjectTemplate> globalObject = ObjectTemplate::New();
   if (globalAlias == NULL) {
     Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
