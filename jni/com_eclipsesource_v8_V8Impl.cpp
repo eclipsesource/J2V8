@@ -234,12 +234,26 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
     
-    v8::V8::InitializeICU();
+    return JNI_VERSION_1_6;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initialize(JNIEnv *env, jclass, jstring icuDataFile, jstring v8flags) {
     v8Platform = v8::platform::CreateDefaultPlatform();
     v8::V8::InitializePlatform(v8Platform);
+
+    char const* str = icuDataFile ? env->GetStringUTFChars(icuDataFile, NULL) : NULL;
+    v8::V8::InitializeICU(str);
+    if (str) {        
+        env->ReleaseStringUTFChars(icuDataFile, str);
+    }
+
+    if (v8flags) {
+        str = env->GetStringUTFChars(v8flags, NULL);
+        v8::V8::SetFlagsFromString(str, env->GetStringUTFLength(v8flags));
+        env->ReleaseStringUTFChars(v8flags, str);
+    }
+    
     v8::V8::Initialize();
-  
-    return JNI_VERSION_1_6;
 }
 
 ShellArrayBufferAllocator array_buffer_allocator;

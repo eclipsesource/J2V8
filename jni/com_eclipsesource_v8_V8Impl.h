@@ -31,6 +31,14 @@ extern "C" {
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _initialize
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1initialize
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _initNewV8Object
  * Signature: (J)J
  */

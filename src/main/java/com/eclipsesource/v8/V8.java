@@ -56,6 +56,20 @@ public class V8 extends V8Object {
     private static V8Value   undefined           = new V8Object.Undefined();
     private static Object    invalid             = new Object();
 
+    /**
+     * ICU data and flags must be set before creating any Isolate
+     * and cannot be changed later
+     */
+    public static String   icuDataFile   = null;
+
+    /**
+     * @see https://github.com/v8/v8/blob/master/src/flag-definitions.h#L165
+     * @see https://github.com/v8/v8/blob/master/src/bootstrapper.cc#L83
+     */
+    public static String v8flags = null;
+
+    private static boolean isInitialized = false;
+
     private class MethodDescriptor {
         Object           object;
         Method           method;
@@ -133,6 +147,12 @@ public class V8 extends V8Object {
             }
         }
         checkNativeLibraryLoaded();
+
+        if (!isInitialized) {
+            isInitialized = true;
+            _initialize(icuDataFile, v8flags);
+        }
+
         if (debugThread == null) {
             debugThread = Thread.currentThread();
         }
@@ -142,6 +162,8 @@ public class V8 extends V8Object {
         }
         return runtime;
     }
+
+    private static native void _initialize(String icuDataFile, String v8flags);
 
     private static void checkNativeLibraryLoaded() {
         if (!nativeLibraryLoaded) {
