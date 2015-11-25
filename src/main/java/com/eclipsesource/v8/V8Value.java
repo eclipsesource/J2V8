@@ -107,7 +107,7 @@ abstract public class V8Value implements Releasable {
             return this;
         }
         v8.checkThread();
-        v8.checkReleaesd();
+        v8.checkReleased();
         V8Value twin = createTwin();
         v8.createTwin(this, twin);
         return twin;
@@ -143,7 +143,7 @@ abstract public class V8Value implements Releasable {
      */
     public boolean strictEquals(final Object that) {
         v8.checkThread();
-        checkReleaesd();
+        checkReleased();
         if (that == this) {
             return true;
         }
@@ -163,7 +163,7 @@ abstract public class V8Value implements Releasable {
     }
 
     protected long getHandle() {
-        checkReleaesd();
+        checkReleased();
         return objectHandle;
     }
 
@@ -185,7 +185,7 @@ abstract public class V8Value implements Releasable {
      */
     public boolean jsEquals(final Object that) {
         v8.checkThread();
-        checkReleaesd();
+        checkReleased();
         if (that == this) {
             return true;
         }
@@ -211,11 +211,11 @@ abstract public class V8Value implements Releasable {
     @Override
     public int hashCode() {
         v8.checkThread();
-        checkReleaesd();
+        checkReleased();
         return v8.identityHash(v8.getV8RuntimePtr(), getHandle());
     }
 
-    protected void checkReleaesd() {
+    protected void checkReleased() {
         if (released) {
             throw new IllegalStateException("Object released");
         }
