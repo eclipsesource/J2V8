@@ -44,6 +44,7 @@ jclass v8cls = NULL;
 jclass v8ObjectCls = NULL;
 jclass v8ArrayCls = NULL;
 jclass v8FunctionCls = NULL;
+jclass v8ErrorCls = NULL;
 jclass undefinedV8ObjectCls = NULL;
 jclass undefinedV8ArrayCls = NULL;
 jclass v8ResultsUndefinedCls = NULL;
@@ -96,6 +97,11 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
                                 }
 void release(JNIEnv* env, jobject object) {
   jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
+  env->CallVoidMethod(object, release);
+}
+
+void releaseV8Error(JNIEnv* env, jobject object) {
+  jmethodID release = env->GetMethodID(v8ErrorCls, "release", "()V");
   env->CallVoidMethod(object, release);
 }
 
@@ -212,6 +218,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     jvm = vm;
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
+    v8ErrorCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Error"));
     v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
     v8FunctionCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Function"));
     undefinedV8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object$Undefined"));
@@ -1103,14 +1110,23 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
-    jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
-    if (exceptionMessage != NULL) {
-      Local<String> v8String = createV8String(env, isolate, exceptionMessage);
-      isolate->ThrowException(v8String);
-    }
-    else {
-      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+    if (env->IsInstanceOf(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, v8ErrorCls)) {
+      jobject v8ErrorInstance = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException;
+      jmethodID getHandle = env->GetMethodID(v8ErrorCls, "getObjectHandle", "()J");
+      jlong v8ErrorHandle = env->CallLongMethod(v8ErrorInstance, getHandle);
+      Handle<Object> jsExceptionObject = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(v8ErrorHandle));
+      isolate->ThrowException(jsExceptionObject);
+	  releaseV8Error(env, v8ErrorInstance);
+    } else {
+      jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
+      jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
+      if (exceptionMessage != NULL) {
+        Local<String> v8String = createV8String(env, isolate, exceptionMessage);
+        isolate->ThrowException(v8String);
+      }
+      else {
+        isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+      }
     }
   }
   jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
@@ -1180,14 +1196,23 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
-    jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
-    if (exceptionMessage != NULL) {
-      Local<String> v8String = createV8String(env, isolate, exceptionMessage);
-      isolate->ThrowException(v8String);
-    }
-    else {
-      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+    if (env->IsInstanceOf(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, v8ErrorCls)) {
+      jobject v8ErrorInstance = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException;
+      jmethodID getHandle = env->GetMethodID(v8ErrorCls, "getObjectHandle", "()J");
+      jlong v8ErrorHandle = env->CallLongMethod(v8ErrorInstance, getHandle);
+      Handle<Object> jsExceptionObject = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(v8ErrorHandle));
+      isolate->ThrowException(jsExceptionObject);
+	  releaseV8Error(env, v8ErrorInstance);
+    } else {
+      jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
+      jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
+      if (exceptionMessage != NULL) {
+        Local<String> v8String = createV8String(env, isolate, exceptionMessage);
+        isolate->ThrowException(v8String);
+      }
+      else {
+        isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+      }
     }
   }
   else if (resultObject == NULL) {

@@ -59,6 +59,14 @@ public class V8Object extends V8Value {
         return (V8Object) super.twin();
     }
 
+    public void throwException() {
+        try {
+            throw new V8Error(this);
+        } finally {
+            release();
+        }
+    }
+
     /**
      * Determine if a key/value pair with this key exists in
      * the Object.
