@@ -22,9 +22,9 @@ import com.eclipsesource.v8.utils.V8PropertyMapTest;
 @RunWith(Suite.class)
 // V8RuntimeNotLoadedTest must be run first. This is because we need to test when the natives are not loaded
 // and once the V8 class is loaded we cannot unload it.
-@SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
+// V8StaticInitTest must be executed before any test creating a V8 runtime, because flags can only be set once upfront.
+@SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8StaticInitTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
         V8CallbackTest.class, V8ScriptCompilationExceptionTest.class, V8ScriptExecutionExceptionTest.class, V8ObjectUtilsTest.class, V8TypedArraysTest.class,
         NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class, V8ExecutorTest.class, V8MapTest.class, V8PropertyMapTest.class })
 public class AllTests {
-
 }

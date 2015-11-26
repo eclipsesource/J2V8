@@ -57,12 +57,15 @@ public class V8 extends V8Object {
     private static Object    invalid             = new Object();
 
     /**
-     * ICU data and flags must be set before creating any Isolate
-     * and cannot be changed later
+     * An ICU data file must be set before creating any Isolate
+     * and cannot be changed later.
      */
     public static String   icuDataFile   = null;
 
     /**
+     * V8 flags must be set before creating any Isolate
+     * and cannot be changed later.
+     *
      * @see https://github.com/v8/v8/blob/master/src/flag-definitions.h#L165
      * @see https://github.com/v8/v8/blob/master/src/bootstrapper.cc#L83
      */
@@ -150,6 +153,7 @@ public class V8 extends V8Object {
 
         if (!isInitialized) {
             isInitialized = true;
+            //System.out.println("Initializing with ICU: " + icuDataFile + ", v8flags: " + v8flags);
             _initialize(icuDataFile, v8flags);
         }
 

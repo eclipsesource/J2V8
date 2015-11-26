@@ -29,11 +29,6 @@ import org.junit.Test;
 import com.eclipsesource.v8.utils.V8Map;
 
 public class V8Test {
-
-    static {
-        V8.v8flags = "--harmony_proxies --expose_gc_as=testGC";
-    }
-
     private V8 v8;
 
     @Before
@@ -100,13 +95,6 @@ public class V8Test {
         parameters.release();
         result.release();
         a.release();
-    }
-
-    @Test
-    public void testFlags() {
-        // V8.v8flags = "--harmony_proxies --expose_gc_as=testGC";
-        v8.executeVoidScript("testGC()");
-        assertEquals("object", v8.executeStringScript("typeof Proxy"));
     }
 
     public class GeneratorFunction implements Releasable {
