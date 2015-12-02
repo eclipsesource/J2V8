@@ -8,3 +8,9 @@ build/
 *.dll
 *.dylib
 hs_err*.log
+
+# Intellij project files
+*.iml
+*.ipr
+*.iws
+.idea
