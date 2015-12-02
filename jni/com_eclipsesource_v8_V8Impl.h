@@ -501,6 +501,30 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _startProfiling
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startProfiling
+  (JNIEnv *, jobject, jlong, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _stopProfiling
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1stopProfiling
+  (JNIEnv *, jobject, jlong, jstring, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _takeHeapSnapshot
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1takeHeapSnapshot
+  (JNIEnv *, jobject, jlong, jstring, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _arrayGetDoubles
  * Signature: (JJII)[D
  */

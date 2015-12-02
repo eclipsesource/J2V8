@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -673,6 +674,49 @@ public class V8 extends V8Object {
         return _getBuildID();
     }
 
+    /**
+     * Starts a new CPU profiling session with the given title
+     *
+     * @param profileTitle the name of the new profiling session
+     */
+    public void startProfiling(String profileTitle) {
+        _startProfiling(getV8RuntimePtr(), profileTitle);
+    }
+
+    /**
+     * Stops the specified CPU profiling session and writes the results
+     * to a file (*.cpuprofile) that can be loaded and analyzed with
+     * the Google Chrome developer tools.
+     *
+     * @param profileTitle the name of the profiling session to stop
+     * @param outputDirectory the output directory for the profiling result file
+     *                        (file name will be profileTitle.cpuprofile)
+     */
+    public void stopProfiling(String profileTitle, String outputDirectory) {
+        _stopProfiling(getV8RuntimePtr(), profileTitle, getFilePath(profileTitle, outputDirectory, ".cpuprofile"));
+    }
+
+    /**
+     * Takes a snapshot of objects on the heap and writes the results
+     * to a file (*.heapsnapshot) that can be loaded and analyzed with
+     * the Google Chrome developer tools.
+     *
+     * @param snapshotTitle the name of the new heap snapshot
+     * @param outputDirectory the output directory for the snapshot result file
+     *                        (file name will be snapshotTitle.heapsnapshot)
+     */
+    public void takeHeapSnapshot(String snapshotTitle, String outputDirectory) {
+        _takeHeapSnapshot(getV8RuntimePtr(), snapshotTitle, getFilePath(snapshotTitle, outputDirectory, ".heapsnapshot"));
+    }
+
+    String getFilePath(String title, String outputDirectory, String suffix) {
+        File outputDirPath = new File(outputDirectory.isEmpty() ? "." : outputDirectory);
+        if(!outputDirPath.exists()){
+            throw new Error("File path does not exist: " + outputDirPath.toString());
+        }
+        return new File(outputDirPath, title + suffix).toString();
+    }
+
     void checkThread() {
         locker.checkThread();
         if (isReleased()) {
@@ -1288,6 +1332,12 @@ public class V8 extends V8Object {
     private native void _disableDebugSupport(long v8RuntimePtr);
 
     private native void _processDebugMessages(long v8RuntimePtr);
+
+    private native void _startProfiling(long v8RuntimePtr, String profileTitle);
+
+    private native void _stopProfiling(long v8RuntimePtr, String profileTitle, String outputDirectory);
+
+    private native void _takeHeapSnapshot(long v8RuntimePtr, String snapshotTitle, String outputDirectory);
 
     private native double[] _arrayGetDoubles(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
 
