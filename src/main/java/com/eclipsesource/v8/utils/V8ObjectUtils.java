@@ -369,7 +369,7 @@ public class V8ObjectUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void pushValue(final V8 v8, final V8Array result, final Object value, final Map<Object, V8Object> cache) {
         if (value == null) {
-            result.pushUndefined();
+            result.pushNull();
         } else if (value instanceof Integer) {
             result.push((Integer) value);
         } else if (value instanceof Long) {
@@ -396,7 +396,7 @@ public class V8ObjectUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void setValue(final V8 v8, final V8Object result, final String key, final Object value, final Map<Object, V8Object> cache) {
         if (value == null) {
-            result.addUndefined(key);
+            result.addNull(key);
         } else if (value instanceof Integer) {
             result.add(key, (Integer) value);
         } else if (value instanceof Long) {
