@@ -7,6 +7,7 @@ sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom.xml
 mvn -Dos=macosx -Darch=x86_64 clean install
 cp pom_template.xml pom.xml
 rm pom1.xml
+rm pom_template.xml
 STATUS=$?
 if [ $STATUS -eq 0 ]; then
  echo "MacOS Build Successful"

@@ -12,8 +12,11 @@
 #include <iostream>
 #include <v8-debug.h>
 #include <v8.h>
+#include <v8-profiler.h>
 #include <map>
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
 #include "com_eclipsesource_v8_V8Impl.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
@@ -1468,4 +1471,216 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
   (JNIEnv *, jobject) {
   return 2;
+}
+
+/***** Serializes objects to JSON on the fly (used by code to serialize profiling information to file) *****/
+
+static void findAndReplace(string& source, const string find, const string replace)
+{
+    string::size_type i = 0;
+    while((i = source.find(find, i)) != string::npos) {
+      source.replace(i, find.length(), replace);
+      i += replace.length();
+    }
+}
+
+class JsonSerializer {
+  public:
+    void startObject(string name = "");
+    void endObject(bool isDoneAdding = false);
+    void startArray(string name = "");
+    void endArray(bool isDoneAdding = false);
+    template<class T> void addValue(T value, bool quoteValue, bool isDoneAdding = false);
+    template<class T> void addProperty(string name, T value, bool quoteValue, bool isDoneAdding = false);
+    string getJson();
+  private:
+    stringstream json;
+    template<class T> void addQuotedValue(T value);
+    template<class T> void addValueImpl(T value, bool quoteValue, bool isDoneAdding = false);
+    void addPropertyName(string name);
+    void doneAdding(bool isDoneAdding);
+};
+
+void JsonSerializer::startObject(string name) {
+  addPropertyName(name);
+  json << "{";
+}
+
+void JsonSerializer::endObject(bool isDoneAdding) {
+  json << "}";
+  doneAdding(isDoneAdding);
+}
+
+void JsonSerializer::startArray(string name) {
+  addPropertyName(name);
+  json << "[";
+}
+
+void JsonSerializer::endArray(bool isDoneAdding) {
+  json << "]";
+  doneAdding(isDoneAdding);
+}
+
+template<class T> void JsonSerializer::addQuotedValue(T value) {
+  json << "\"" << value << "\"";
+}
+
+template<class T> void JsonSerializer::addValueImpl(T value, bool quoteValue, bool isDoneAdding) {
+  if(quoteValue) {
+    addQuotedValue(value);
+  } else {
+    json << value;
+  }
+  doneAdding(isDoneAdding);
+}
+
+template<class T> void JsonSerializer::addValue(T value, bool quoteValue, bool isDoneAdding) {
+  addValueImpl(value, quoteValue, isDoneAdding);
+}
+
+template<> void JsonSerializer::addValue(string value, bool quoteValue, bool isDoneAdding) {
+  findAndReplace(value, "\\", "\\\\"); // backslash needs to be escaped for valid JSON
+  addValueImpl(value, quoteValue, isDoneAdding);
+}
+
+template<class T> void JsonSerializer::addProperty(string name, T value, bool quoteValue, bool isDoneAdding) {
+  addPropertyName(name);
+  addValue(value, quoteValue, isDoneAdding);
+}
+
+void JsonSerializer::addPropertyName(string name) {
+  if(name != "") {
+    addQuotedValue(name);
+    json << ":";
+  }
+}
+
+void JsonSerializer::doneAdding(bool isDoneAdding) {
+  if(!isDoneAdding) {
+    json << ",";
+  }
+}
+
+string JsonSerializer::getJson() {
+  return json.str();
+}
+
+/***** Output stream that writes to file (used by code to serialize heap information to file) *****/
+
+class HeapSnapshotFileOutputStream : public v8::OutputStream {
+  public:
+    HeapSnapshotFileOutputStream(string fileName) { file.open(fileName.c_str()); }
+
+    virtual void EndOfStream() { file.close(); }
+
+    virtual WriteResult WriteAsciiChunk(char* buffer, int size) {
+      file.write(buffer, size);
+      file.flush();
+      return kContinue;
+    }
+
+  private:
+    ofstream file;
+};
+
+/***** Writes the profile information to a file in a standard format (*.cpuprofile) *****/
+
+static void walkCpuProfileNode(const CpuProfileNode* node, JsonSerializer* serializer) {
+  String::Utf8Value functionName(node->GetFunctionName());
+  String::Utf8Value scriptResourceName(node->GetScriptResourceName());
+  serializer->addProperty("functionName", string(*functionName), true);
+  serializer->addProperty("scriptId", node->GetScriptId(), true);
+  serializer->addProperty("url", string(*scriptResourceName), true);
+  serializer->addProperty("lineNumber", node->GetLineNumber(), false);
+  serializer->addProperty("columnNumber", node->GetColumnNumber(), false);
+  serializer->addProperty("hitCount", node->GetHitCount(), false);
+  serializer->addProperty("callUID", node->GetCallUid(), false);
+  serializer->addProperty("id", node->GetNodeId(), false);
+  serializer->addProperty("bailoutReason", node->GetBailoutReason(), true);
+  serializer->startArray("positionTicks");
+  serializer->endArray();
+
+  // recursively walk through the child nodes
+  serializer->startArray("children");
+  int numChildren = node->GetChildrenCount();
+  for(int i = 0; i < numChildren; i++) {
+      serializer->startObject();
+      walkCpuProfileNode(node->GetChild(i), serializer);
+      serializer->endObject(i == (numChildren - 1));
+  }
+  serializer->endArray(true);
+}
+
+static void serializeProfileToFile(CpuProfile* profile, char* filePath) {
+  ofstream cpuProfileFile;
+  cpuProfileFile.open(filePath);
+
+  JsonSerializer* serializer = new JsonSerializer();
+  serializer->startObject();
+
+  serializer->startObject("head");
+  walkCpuProfileNode(profile->GetTopDownRoot(), serializer);
+  serializer->endObject();
+
+  // get times and convert from microseconds to seconds
+  serializer->addProperty("startTime", profile->GetStartTime() / 1000000.0, false);
+  serializer->addProperty("endTime", profile->GetEndTime() / 1000000.0, false);
+
+  int sampleCount = profile->GetSamplesCount();
+
+  serializer->startArray("samples");
+  for(int i = 0; i < sampleCount; i++){
+    serializer->addValue(profile->GetSample(i)->GetNodeId(), false, i == (sampleCount - 1));
+  }
+  serializer->endArray();
+
+  serializer->startArray("timestamps");
+  for(int i = 0; i < sampleCount; i++){
+    serializer->addValue(profile->GetSampleTimestamp(i), false, i == (sampleCount - 1));
+  }
+  serializer->endArray(true);
+
+  serializer-> endObject(true);
+  cpuProfileFile << serializer->getJson();
+  cpuProfileFile.close();
+}
+
+/***** Writes the heap snapshot information to a file in a standard format (*.heapsnapshot) *****/
+
+static void serializeHeapSnapshotToFile(const HeapSnapshot* heapSnapshot, char* filePath) {
+  HeapSnapshotFileOutputStream* heapSnapshotFile = new HeapSnapshotFileOutputStream(filePath);
+  heapSnapshot->Serialize(heapSnapshotFile, HeapSnapshot::kJSON);
+}
+
+/***** Starts and stops the profiling session *****/
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startProfiling
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jstring profileTitle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Local<String> title = createV8String(env, isolate, profileTitle);
+  isolate->GetCpuProfiler()->StartProfiling(title, true);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1stopProfiling
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jstring profileTitle, jstring filePath) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Local<String> title = createV8String(env, isolate, profileTitle);
+  Local<String> path = createV8String(env, isolate, filePath);
+  String::Utf8Value strPath(path);
+  CpuProfile* profile = isolate->GetCpuProfiler()->StopProfiling(title);
+  serializeProfileToFile(profile, *strPath);
+  profile->Delete();
+}
+
+/***** Takes a snapshot of the current objects on the heap *****/
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1takeHeapSnapshot
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jstring profileTitle, jstring filePath) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Local<String> title = createV8String(env, isolate, profileTitle);
+  Local<String> path = createV8String(env, isolate, filePath);
+  String::Utf8Value strPath(path);
+  const HeapSnapshot* heapSnapshot = isolate->GetHeapProfiler()->TakeHeapSnapshot(title);
+  serializeHeapSnapshotToFile(heapSnapshot, *strPath);
+  const_cast<v8::HeapSnapshot*>(heapSnapshot)->Delete();
 }
