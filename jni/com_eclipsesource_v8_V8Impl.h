@@ -502,7 +502,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _startProfiling
- * Signature: (J)V
+ * Signature: (JLjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startProfiling
   (JNIEnv *, jobject, jlong, jstring);
@@ -510,7 +510,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startProfiling
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _stopProfiling
- * Signature: (J)V
+ * Signature: (JLjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1stopProfiling
   (JNIEnv *, jobject, jlong, jstring, jstring);
@@ -518,7 +518,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1stopProfiling
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _takeHeapSnapshot
- * Signature: (J)V
+ * Signature: (JLjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1takeHeapSnapshot
   (JNIEnv *, jobject, jlong, jstring, jstring);
