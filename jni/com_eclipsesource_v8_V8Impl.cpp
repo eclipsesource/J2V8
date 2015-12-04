@@ -60,6 +60,27 @@ jclass integerCls = NULL;
 jclass doubleCls = NULL;
 jclass booleanCls = NULL;
 jclass errorCls = NULL;
+jmethodID v8ArrayInitMethodID = NULL;
+jmethodID v8ArrayGetHandleMethodID = NULL;
+jmethodID v8CallVoidMethodID = NULL;
+jmethodID v8ObjectReleaseMethodID = NULL;
+jmethodID v8ArrayReleaseMethodID = NULL;
+jmethodID v8ObjectIsUndefinedMethodID = NULL;
+jmethodID v8ObjectGetHandleMethodID = NULL;
+jmethodID throwableGetMessageMethodID = NULL;
+jmethodID integerIntValueMethodID = NULL;
+jmethodID booleanBoolValueMethodID = NULL;
+jmethodID doubleDoubleValueMethodID = NULL;
+jmethodID v8CallObjectJavaMethodMethodID = NULL;
+jmethodID v8ScriptCompilationInitMethodID = NULL;
+jmethodID v8ScriptExecutionExceptionInitMethodID = NULL;
+jmethodID undefinedV8ArrayInitMethodID = NULL;
+jmethodID undefinedV8ObjectInitMethodID = NULL;
+jmethodID integerInitMethodID = NULL;
+jmethodID doubleInitMethodID = NULL;
+jmethodID booleanInitMethodID = NULL;
+jmethodID v8FunctionInitMethodID = NULL;
+jmethodID v8ObjectInitMethodID = NULL;
 
 void throwParseException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch);
 void throwExecutionException(JNIEnv *env, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr);
@@ -99,25 +120,19 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
       return 0;\
                                 }
 void release(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ObjectCls, "release", "()V");
-  env->CallVoidMethod(object, release);
+  env->CallVoidMethod(object, v8ObjectReleaseMethodID);
 }
 
 void releaseArray(JNIEnv* env, jobject object) {
-  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
-  env->CallVoidMethod(object, release);
+  env->CallVoidMethod(object, v8ArrayReleaseMethodID);
 }
 
 int isUndefined(JNIEnv* env, jobject object) {
-  jmethodID isUndefined = env->GetMethodID(v8ObjectCls, "isUndefined", "()Z");
-  jboolean result = env->CallBooleanMethod(object, isUndefined);
-  return result;
+  return env->CallBooleanMethod(object, v8ObjectIsUndefinedMethodID);
 }
 
 jlong getHandle(JNIEnv* env, jobject object) {
-  jmethodID getHandle = env->GetMethodID(v8ObjectCls, "getHandle", "()J");
-  jlong handle = env->CallLongMethod(object, getHandle);
-  return handle;
+  return env->CallLongMethod(object, v8ObjectGetHandleMethodID);
 }
 
 Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
@@ -230,6 +245,30 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
+    
+    // Get all method IDs
+    v8ArrayInitMethodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    v8ArrayGetHandleMethodID = env->GetMethodID(v8ArrayCls, "getHandle", "()J");
+    v8CallVoidMethodID = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
+    v8ObjectReleaseMethodID = env->GetMethodID(v8ObjectCls, "release", "()V");
+    v8ArrayReleaseMethodID = env->GetMethodID(v8ArrayCls, "release", "()V");
+    v8ObjectIsUndefinedMethodID = env->GetMethodID(v8ObjectCls, "isUndefined", "()Z");
+    v8ObjectGetHandleMethodID = env->GetMethodID(v8ObjectCls, "getHandle", "()J");
+    throwableGetMessageMethodID = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
+    integerIntValueMethodID = env->GetMethodID(integerCls, "intValue", "()I");
+    booleanBoolValueMethodID = env->GetMethodID(booleanCls, "booleanValue", "()Z");
+    doubleDoubleValueMethodID = env->GetMethodID(doubleCls, "doubleValue", "()D");
+    v8CallObjectJavaMethodMethodID = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
+    v8ScriptCompilationInitMethodID = env->GetMethodID(v8ScriptCompilationCls, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V");
+    v8ScriptExecutionExceptionInitMethodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
+    undefinedV8ArrayInitMethodID = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
+    undefinedV8ObjectInitMethodID = env->GetMethodID(undefinedV8ObjectCls, "<init>", "()V");
+    integerInitMethodID = env->GetMethodID(integerCls, "<init>", "(I)V");
+    doubleInitMethodID = env->GetMethodID(doubleCls, "<init>", "(D)V");
+    booleanInitMethodID = env->GetMethodID(booleanCls, "<init>", "(Z)V");
+    v8FunctionInitMethodID = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    v8ObjectInitMethodID = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+    
     return JNI_VERSION_1_6;
 }
 
@@ -1064,10 +1103,8 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJII
 
 jobject createParameterArray(JNIEnv* env, jlong v8RuntimePtr, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = getIsolate(env, v8RuntimePtr);
-  jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-  jmethodID getHandle = env->GetMethodID(v8ArrayCls, "getHandle", "()J");
-  jobject result = env->NewObject(v8ArrayCls, methodID, v8);
-  jlong parameterHandle = env->CallLongMethod(result, getHandle);
+  jobject result = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
+  jlong parameterHandle = env->CallLongMethod(result, v8ArrayGetHandleMethodID);
   Handle<Object> parameters = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(parameterHandle));
   for (int i = 0; i < size; i++) {
     parameters->Set(i, args[i]);
@@ -1086,14 +1123,12 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
   Handle<Value> receiver = args.This();
   jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);  
-  jmethodID callVoidMethod = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
-  env->CallVoidMethod(v8, callVoidMethod, md->methodID, jreceiver, parameters);
+  env->CallVoidMethod(v8, v8CallVoidMethodID, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
-    jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
+    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, throwableGetMessageMethodID);
     if (exceptionMessage != NULL) {
       Local<String> v8String = createV8String(env, isolate, exceptionMessage);
       isolate->ThrowException(v8String);
@@ -1102,10 +1137,8 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
       isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
     }
   }
-  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
-  env->CallVoidMethod(parameters, release);
-  jmethodID releaseReciver = env->GetMethodID(v8ObjectCls, "release", "()V");
-  env->CallVoidMethod(jreceiver, releaseReciver);
+  env->CallVoidMethod(parameters, v8ArrayReleaseMethodID);
+  env->CallVoidMethod(jreceiver, v8ObjectReleaseMethodID);
   env->DeleteLocalRef(jreceiver);
   env->DeleteLocalRef(parameters);
 }
@@ -1134,21 +1167,15 @@ int getReturnType(JNIEnv* env, jobject &object) {
 }
 
 int getInteger(JNIEnv* env, jobject &object) {
-  jmethodID intValueMethod = env->GetMethodID(integerCls, "intValue", "()I");
-  int result = env->CallIntMethod(object, intValueMethod);
-  return result;
+  return env->CallIntMethod(object, integerIntValueMethodID);
 }
 
 bool getBoolean(JNIEnv* env, jobject &object) {
-  jmethodID boolValueMethod = env->GetMethodID(booleanCls, "booleanValue", "()Z");
-  bool result = env->CallBooleanMethod(object, boolValueMethod);
-  return result;
+  return env->CallBooleanMethod(object, booleanBoolValueMethodID);
 }
 
 double getDouble(JNIEnv* env, jobject &object) {
-  jmethodID doubleValueMethod = env->GetMethodID(doubleCls, "doubleValue", "()D");
-  double result = env->CallDoubleMethod(object, doubleValueMethod);
-  return result;
+  return env->CallDoubleMethod(object, doubleDoubleValueMethodID);
 }
 
 void objectCallback(const FunctionCallbackInfo<Value>& args) {
@@ -1163,14 +1190,12 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
   Handle<Value> receiver = args.This();
   jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);
-  jmethodID callObjectMethod = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
-  jobject resultObject = env->CallObjectMethod(v8, callObjectMethod, md->methodID, jreceiver, parameters);
+  jobject resultObject = env->CallObjectMethod(v8, v8CallObjectJavaMethodMethodID, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
-    jmethodID getMessage = env->GetMethodID(throwableCls, "getMessage", "()Ljava/lang/String;");
-    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, getMessage);
+    jstring exceptionMessage = (jstring)env->CallObjectMethod(reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException, throwableGetMessageMethodID);
     if (exceptionMessage != NULL) {
       Local<String> v8String = createV8String(env, isolate, exceptionMessage);
       isolate->ThrowException(v8String);
@@ -1227,10 +1252,8 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   if (resultObject != NULL) {
     env->DeleteLocalRef(resultObject);
   }
-  jmethodID release = env->GetMethodID(v8ArrayCls, "release", "()V");
-  env->CallVoidMethod(parameters, release);
-  jmethodID releaseReciver = env->GetMethodID(v8ObjectCls, "release", "()V");
-  env->CallVoidMethod(jreceiver, releaseReciver);
+  env->CallVoidMethod(parameters, v8ArrayReleaseMethodID);
+  env->CallVoidMethod(jreceiver, v8ObjectReleaseMethodID);
   env->DeleteLocalRef(jreceiver);
   env->DeleteLocalRef(parameters);
 }
@@ -1326,11 +1349,10 @@ void throwResultUndefinedException(JNIEnv *env, const char *message) {
 
 void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
   const char* sourceLine, int startColumn, int endColumn) {
-  jmethodID methodID = env->GetMethodID(v8ScriptCompilationCls, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V");
   jstring jfileName = env->NewStringUTF(fileName);
   jstring jmessage = env->NewStringUTF(message);
   jstring jsourceLine = env->NewStringUTF(sourceLine);
-  jthrowable result = (jthrowable)env->NewObject(v8ScriptCompilationCls, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn);
+  jthrowable result = (jthrowable)env->NewObject(v8ScriptCompilationCls, v8ScriptCompilationInitMethodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn);
   env->DeleteLocalRef(jfileName);
   env->DeleteLocalRef(jmessage);
   env->DeleteLocalRef(jsourceLine);
@@ -1339,7 +1361,6 @@ void throwParseException(JNIEnv *env, const char* fileName, int lineNumber, cons
 
 void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, const char* message,
   const char* sourceLine, int startColumn, int endColumn, const char* stackTrace, jlong v8RuntimePtr) {
-  jmethodID methodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
   jstring jfileName = env->NewStringUTF(fileName);
   jstring jmessage = env->NewStringUTF(message);
   jstring jsourceLine = env->NewStringUTF(sourceLine);
@@ -1356,7 +1377,7 @@ void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, 
     wrappedException = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException;
     reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException = NULL;
   }
-  jthrowable result = (jthrowable)env->NewObject(v8ScriptExecutionException, methodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
+  jthrowable result = (jthrowable)env->NewObject(v8ScriptExecutionException, v8ScriptExecutionExceptionInitMethodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
   env->DeleteLocalRef(jfileName);
   env->DeleteLocalRef(jmessage);
   env->DeleteLocalRef(jsourceLine);
@@ -1416,55 +1437,46 @@ void throwError(JNIEnv *env, const char *message) {
 
 jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType) {
   if (result->IsUndefined() && expectedType == com_eclipsesource_v8_V8_V8_ARRAY) {
-    jmethodID constructor = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
-    jobject objectResult = env->NewObject(undefinedV8ArrayCls, constructor, v8);
+    jobject objectResult = env->NewObject(undefinedV8ArrayCls, undefinedV8ArrayInitMethodID, v8);
     return objectResult;
   }
   else if (result->IsUndefined() && (expectedType == com_eclipsesource_v8_V8_V8_OBJECT || expectedType == com_eclipsesource_v8_V8_NULL)) {
-    jmethodID constructor = env->GetMethodID(undefinedV8ObjectCls, "<init>", "()V");
-    jobject objectResult = env->NewObject(undefinedV8ObjectCls, constructor, v8);
+    jobject objectResult = env->NewObject(undefinedV8ObjectCls, undefinedV8ObjectInitMethodID, v8);
     return objectResult;
   }
   else if (result->IsInt32()) {
-    jmethodID constructor = env->GetMethodID(integerCls, "<init>", "(I)V");
-    return env->NewObject(integerCls, constructor, result->Int32Value());
+    return env->NewObject(integerCls, integerInitMethodID, result->Int32Value());
   }
   else if (result->IsNumber()) {
-    jmethodID constructor = env->GetMethodID(doubleCls, "<init>", "(D)V");
-    return env->NewObject(doubleCls, constructor, result->NumberValue());
+    return env->NewObject(doubleCls, doubleInitMethodID, result->NumberValue());
   }
   else if (result->IsBoolean()) {
-    jmethodID constructor = env->GetMethodID(booleanCls, "<init>", "(Z)V");
-    return env->NewObject(booleanCls, constructor, result->BooleanValue());
+    return env->NewObject(booleanCls, booleanInitMethodID, result->BooleanValue());
   }
   else if (result->IsString()) {
     String::Utf8Value utf(result->ToString());
     return env->NewStringUTF(*utf);
   }
   else if (result->IsFunction()) {
-    jmethodID constructor = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8FunctionCls, constructor, v8);
+    jobject objectResult = env->NewObject(v8FunctionCls, v8FunctionInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+    jobject objectResult = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsTypedArray()) {
-    jmethodID constructor = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ArrayCls, constructor, v8);
+    jobject objectResult = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
   else if (result->IsObject()) {
-    jmethodID constructor = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    jobject objectResult = env->NewObject(v8ObjectCls, constructor, v8);
+    jobject objectResult = env->NewObject(v8ObjectCls, v8ObjectInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
