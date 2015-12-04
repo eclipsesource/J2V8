@@ -14,6 +14,7 @@
 #include <v8.h>
 #include <map>
 #include <cstdlib>
+#include <vector>
 #include "com_eclipsesource_v8_V8Impl.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
@@ -21,12 +22,19 @@
 using namespace std;
 using namespace v8;
 
+class MethodDescriptor {
+public:
+  int methodID;
+  jlong v8RuntimePtr;
+};
+
 class V8Runtime {
 public:
   Isolate* isolate;
   Isolate::Scope* isolate_scope;
   Persistent<Context> context_;
   Persistent<Object>* globalObject;
+  std::vector<MethodDescriptor*> methodDescriptors;
   jobject v8;
   jthrowable pendingException;
 };
@@ -317,6 +325,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
   delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate_scope);
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate->Dispose();
   env->DeleteGlobalRef(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->v8);
+  V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  for(std::vector<MethodDescriptor>::size_type i = 0; i != runtime->methodDescriptors.size(); i++) {
+    delete(runtime->methodDescriptors[i]);
+  }
   delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr));
 }
 
@@ -1050,12 +1062,6 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJII
   return result;
 }
 
-class MethodDescriptor {
-public:
-  int methodID;
-  jlong v8RuntimePtr;
-};
-
 jobject createParameterArray(JNIEnv* env, jlong v8RuntimePtr, jobject v8, int size, const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = getIsolate(env, v8RuntimePtr);
   jmethodID methodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
@@ -1241,6 +1247,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   MethodDescriptor* md = new MethodDescriptor();
   md->methodID = methodID;
   md->v8RuntimePtr = v8RuntimePtr;
+  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->methodDescriptors.push_back(md);
   object->Set(v8FunctionName, Function::New(isolate, callback, External::New(isolate, md)));
 }
 
