@@ -1,5 +1,5 @@
-#SUFFIX="-P release"
-SUFFIX=""
+SUFFIX="-P release"
+#SUFFIX=""
 
 cp pom.xml pom_template.xml
 
@@ -66,6 +66,8 @@ else
  echo "Linux Deployment Failed"
  exit $STATUS
 fi
+
+rm src/main/resources/*j2v8*
 
 echo "Deploying Android"
 ./gradlew clean build uploadArchives
