@@ -4,15 +4,16 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<os>linux</os>
+  <ws>gtk</ws>
 	<arch>arm64</arch>
   </properties>
-    
+
   <groupId>com.eclipsesource.j2v8</groupId>
   <artifactId>j2v8_${os}_${arch}</artifactId>
-  <version>3.1.1</version>
-  <packaging>jar</packaging>
+  <version>3.1.6</version>
+  <packaging>bundle</packaging>
 
-  <name>j2v8</name>
+  <name>j2v8_${os}_${arch}</name>
   <description>J2V8 is a set of Java bindings for V8</description>
   <url>https://github.com/eclipsesource/j2v8</url>
   <licenses>
@@ -79,6 +80,17 @@
           <forkMode>once</forkMode>
           <workingDirectory>target</workingDirectory>
           <argLine>-Djava.library.path=${basedir}/jni</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>com.eclipsesource.v8.*</Export-Package>
+            <Eclipse-PlatformFilter>(&amp; (osgi.ws=${ws})(osgi.os=${os})(osgi.arch=${arch}))</Eclipse-PlatformFilter>
+          </instructions>
         </configuration>
       </plugin>
     </plugins>
