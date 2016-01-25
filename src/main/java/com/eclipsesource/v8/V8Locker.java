@@ -46,7 +46,12 @@ public class V8Locker {
         thread = null;
     }
 
-    void checkThread() {
+    /**
+     * Checks if the locker has access to the current thread.
+     * If the locker holds a different thread, than an Error
+     * is thrown.
+     */
+    public void checkThread() {
         if ((thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access.");
         }

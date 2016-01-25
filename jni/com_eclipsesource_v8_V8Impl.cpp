@@ -268,12 +268,22 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     booleanInitMethodID = env->GetMethodID(booleanCls, "<init>", "(Z)V");
     v8FunctionInitMethodID = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
     v8ObjectInitMethodID = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    
+
     return JNI_VERSION_1_6;
 }
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
+ (JNIEnv *env, jclass, jstring v8flags) {
+    if (v8flags) {
+        char const* str = env->GetStringUTFChars(v8flags, NULL);
+        v8::V8::SetFlagsFromString(str, env->GetStringUTFLength(v8flags));
+        env->ReleaseStringUTFChars(v8flags, str);
+    }
+    v8::V8::Initialize();
+}
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
-(JNIEnv *env, jobject v8, jstring globalAlias) {
+ (JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();
   runtime->isolate = Isolate::New();
   Locker locker(runtime->isolate);

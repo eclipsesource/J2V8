@@ -86,6 +86,17 @@ public class V8 extends V8Object {
     }
 
     /**
+     * Sets the V8 flags on the platform. All runtimes will be created
+     * with the same flags. Flags must be set before the runtime is
+     * created.
+     *
+     * @param flags The flags to set on V8
+     */
+    public static void setFlags(final String flags) {
+        _setFlags(flags);
+    }
+
+    /**
      * Creates a new V8Runtime and loads the required
      * native libraries if they are not already loaded.
      * The current thread is given the lock to this runtime.
@@ -1310,6 +1321,8 @@ public class V8 extends V8Object {
     private native int _arrayGetBooleans(final long v8RuntimePtr, final long objectHandle, final int index, final int length, boolean[] resultArray);
 
     private native int _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, String[] resultArray);
+
+    private static native void _setFlags(String v8flags);
 
     private native void _terminateExecution(final long v8RuntimePtr);
 

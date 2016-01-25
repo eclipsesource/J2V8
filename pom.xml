@@ -80,6 +80,7 @@
           <forkMode>once</forkMode>
           <workingDirectory>target</workingDirectory>
           <argLine>-Djava.library.path=${basedir}/jni</argLine>
+          <runOrder>alphabetical</runOrder>
         </configuration>
       </plugin>
       <plugin>
