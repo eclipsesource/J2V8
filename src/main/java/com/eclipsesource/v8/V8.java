@@ -766,7 +766,13 @@ public class V8 extends V8Object {
             return ((Float) result).doubleValue();
         }
         if ((result instanceof Integer) || (result instanceof Double) || (result instanceof Boolean)
-                || (result instanceof String) || (result instanceof V8Value)) {
+                || (result instanceof String)) {
+            return result;
+        }
+        if (result instanceof V8Value) {
+            if (((V8Value) result).isReleased()) {
+                throw new V8RuntimeException("V8Value already released.");
+            }
             return result;
         }
         throw new V8RuntimeException("Unknown return type: " + result.getClass());

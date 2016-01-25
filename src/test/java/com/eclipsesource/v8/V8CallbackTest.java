@@ -355,6 +355,24 @@ public class V8CallbackTest {
         verify(callback).v8ObjectMethodNoParameters();
     }
 
+    @Test(expected = V8RuntimeException.class)
+    public void testReturnReleasedV8ObjectThrowsException() {
+        ICallback callback = mock(ICallback.class);
+        doAnswer(new Answer<V8Object>() {
+
+            @Override
+            public V8Object answer(final InvocationOnMock invocation) throws Throwable {
+                V8Object result = new V8Object(v8);
+                result.release();
+                return result;
+            }
+
+        }).when(callback).v8ObjectMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ObjectMethodNoParameters", "foo", new Class<?>[0]);
+
+        v8.executeObjectScript("foo();");
+    }
+
     @Test
     public void testV8ObjectMethodReturnsUndefined() {
         ICallback callback = mock(ICallback.class);
