@@ -25,8 +25,9 @@ import com.eclipsesource.v8.V8Object;
  */
 public class ExecutionState implements Releasable {
 
+    private static final String FRAME        = "frame";
     private static final String PREPARE_STEP = "prepareStep";
-    private static final String FRAME_COUNT = "frameCount";
+    private static final String FRAME_COUNT  = "frameCount";
 
     private V8Object v8Object;
 
@@ -39,7 +40,7 @@ public class ExecutionState implements Releasable {
      *
      * @return The stack frame count.
      */
-    public int frameCount() {
+    public int getFrameCount() {
         return v8Object.executeIntegerFunction(FRAME_COUNT, null);
     }
 
@@ -57,6 +58,27 @@ public class ExecutionState implements Releasable {
             v8Object.executeVoidFunction(PREPARE_STEP, parameters);
         } finally {
             parameters.release();
+        }
+    }
+
+    /**
+     * Returns the Frame at a given index
+     *
+     * @param index The stack index
+     * @return The stack frame at a given index
+     */
+    public Frame getFrame(final int index) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(index);
+        V8Object frame = null;
+        try {
+            frame = v8Object.executeObjectFunction(FRAME, parameters);
+            return new Frame(frame);
+        } finally {
+            parameters.release();
+            if (frame != null) {
+                frame.release();
+            }
         }
     }
 

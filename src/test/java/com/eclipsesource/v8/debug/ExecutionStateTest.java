@@ -11,6 +11,7 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -128,7 +129,7 @@ public class ExecutionStateTest {
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 ExecutionState state = (ExecutionState) invocation.getArguments()[1];
-                result = state.frameCount();
+                result = state.getFrameCount();
                 return null;
             }
 
@@ -137,5 +138,27 @@ public class ExecutionStateTest {
         v8.executeScript(script, "script", 0);
 
         assertEquals(2, result);
+    }
+
+    @Test
+    public void testGetFrame() {
+        doAnswer(new Answer<Object>() {
+
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable {
+                ExecutionState state = (ExecutionState) invocation.getArguments()[1];
+                Frame frame0 = state.getFrame(0);
+                Frame frame1 = state.getFrame(1);
+                result = (frame0 != null) && (frame1 != null);
+                frame0.release();
+                frame1.release();
+                return null;
+            }
+
+        }).when(breakHandler).onBreak(eq(1), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
     }
 }
