@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 EclipseSource and others.
+ * Copyright (c) 2016 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -175,15 +175,18 @@ public class DebugHandler implements Releasable {
             V8Object execState = null;
             V8Object eventData = null;
             V8Object data = null;
+            ExecutionState state = null;
             try {
                 execState = parameters.getObject(1);
                 eventData = parameters.getObject(2);
                 data = parameters.getObject(3);
-                handler.onBreak(event, execState, eventData, data);
+                state = new ExecutionState(execState);
+                handler.onBreak(event, state, eventData, data);
             } finally {
                 safeRelease(execState);
                 safeRelease(eventData);
                 safeRelease(data);
+                safeRelease(state);
             }
         }
 
