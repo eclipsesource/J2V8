@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Function;
 import com.eclipsesource.v8.V8Object;
 
 public class DebugHandlerTest {
@@ -72,6 +73,27 @@ public class DebugHandlerTest {
 
         assertTrue((Boolean) result);
         handler.release();
+    }
+
+    @Test
+    public void testSetBreakpointByFunction() {
+        DebugHandler handler = new DebugHandler(v8);
+        v8.executeScript(script, "script", 0);
+        V8Function function = (V8Function) v8.get("foo");
+        handler.setBreakpoint(function);
+        handler.addBreakHandler(new BreakHandler() {
+
+            @Override
+            public void onBreak(final int event, final V8Object state, final V8Object eventData, final V8Object data) {
+                result = event == 1 ? Boolean.TRUE : Boolean.FALSE;
+            }
+        });
+
+        function.call(null, null);
+
+        assertTrue((Boolean) result);
+        handler.release();
+        function.release();
     }
 
 }
