@@ -39,6 +39,8 @@ public class V8 extends V8Object {
     private volatile static int runtimeCounter = 0;
     private static Runnable     debugHandler   = null;
     private static Thread       debugThread    = null;
+    private static String       v8Flags        = null;
+    private static boolean      initialized    = false;
 
     private final V8Locker                 locker;
     private int                            methodReferenceCounter  = 0;
@@ -93,7 +95,8 @@ public class V8 extends V8Object {
      * @param flags The flags to set on V8
      */
     public static void setFlags(final String flags) {
-        _setFlags(flags);
+        v8Flags = flags;
+        initialized = false;
     }
 
     /**
@@ -144,6 +147,10 @@ public class V8 extends V8Object {
             }
         }
         checkNativeLibraryLoaded();
+        if (!initialized) {
+            _setFlags(v8Flags);
+            initialized = true;
+        }
         if (debugThread == null) {
             debugThread = Thread.currentThread();
         }
