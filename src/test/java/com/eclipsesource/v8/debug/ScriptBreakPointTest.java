@@ -11,15 +11,28 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
 public class ScriptBreakPointTest {
 
+    private static String script = "// 1 \n"
+            + "function foo() {     // 2 \n"
+            + "  var x = 7;         // 3 \n"
+            + "  var y = x + 1;     // 4 \n"
+            + "}                    // 5 \n"
+            + "foo();               // 6 \n";
     private V8            v8;
     private DebugHandler  handler;
 
@@ -65,5 +78,64 @@ public class ScriptBreakPointTest {
 
         assertEquals(3, breakpoint.getLine());
         breakpoint.release();
+    }
+
+    @Test
+    public void testFalseConditionDoesntTriggerBreak() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakPointID = handler.setScriptBreakpoint("script", 3);
+        ScriptBreakPoint breakPoint = handler.getScriptBreakPoint(breakPointID);
+        breakPoint.setCondition("false");
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+
+        v8.executeScript(script, "script", 0);
+
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        breakPoint.release();
+        handler.release();
+    }
+
+    @Test
+    public void testTrueConditionTriggersBreak() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakPointID = handler.setScriptBreakpoint("script", 3);
+        ScriptBreakPoint breakPoint = handler.getScriptBreakPoint(breakPointID);
+        breakPoint.setCondition("true;");
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+
+        v8.executeScript(script, "script", 0);
+
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        breakPoint.release();
+        handler.release();
+    }
+
+    @Test
+    public void testGetCondition() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakPointID = handler.setScriptBreakpoint("script", 3);
+        ScriptBreakPoint breakPoint = handler.getScriptBreakPoint(breakPointID);
+        breakPoint.setCondition("x=7;");
+
+        String result = breakPoint.getCondition();
+
+        assertEquals("x=7;", result);
+        breakPoint.release();
+        handler.release();
+    }
+
+    @Test
+    public void testGetNoConditionReturnsUndefined() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakPointID = handler.setScriptBreakpoint("script", 3);
+        ScriptBreakPoint breakPoint = handler.getScriptBreakPoint(breakPointID);
+
+        String result = breakPoint.getCondition();
+
+        assertEquals("undefined", result);
+        breakPoint.release();
+        handler.release();
     }
 }

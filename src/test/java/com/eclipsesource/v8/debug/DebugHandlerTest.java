@@ -134,6 +134,18 @@ public class DebugHandlerTest {
     }
 
     @Test
+    public void testChangeBreakPointCondition() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakpointID = handler.setScriptBreakpoint("script", 3);
+        handler.changeBreakPointCondition(breakpointID, "x=8;");
+
+        ScriptBreakPoint breakPoint = handler.getScriptBreakPoint(breakpointID);
+        assertEquals("x=8;", breakPoint.getCondition());
+        breakPoint.release();
+        handler.release();
+    }
+
+    @Test
     public void testDisableBreakpoint() {
         DebugHandler handler = new DebugHandler(v8);
         int breakpointID = handler.setScriptBreakpoint("script", 3);

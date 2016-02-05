@@ -52,6 +52,7 @@ public class DebugHandler implements Releasable {
     private static final String SCRIPT_BREAK_POINTS            = "scriptBreakPoints";
     private static final String FIND_SCRIPT_BREAK_POINT        = "findScriptBreakPoint";
     private static final String NUMBER                         = "number";
+    private static final String CHANGE_BREAK_POINT_CONDITION   = "changeBreakPointCondition";
 
     private V8                 runtime;
     private V8Object           debugObject;
@@ -235,6 +236,23 @@ public class DebugHandler implements Releasable {
             if (scriptBreakPoint != null) {
                 scriptBreakPoint.release();
             }
+        }
+    }
+
+    /**
+     * Changes the current condition on the breakpoint as specified by the breakpoint ID
+     *
+     * @param breakpointID The ID of the breakpoint of which to change the condition on
+     * @param condition The new condition to set
+     */
+    public void changeBreakPointCondition(final int breakpointID, final String condition) {
+        V8Array parameters = new V8Array(runtime);
+        parameters.push(breakpointID);
+        parameters.push(condition);
+        try {
+            debugObject.executeVoidFunction(CHANGE_BREAK_POINT_CONDITION, parameters);
+        } finally {
+            parameters.release();
         }
     }
 
