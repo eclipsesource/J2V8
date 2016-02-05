@@ -53,7 +53,7 @@ public class DebugHandler implements Releasable {
 
     private V8                 runtime;
     private V8Object           debugObject;
-    private List<BreakHandler> breakHandlers = null;
+    private List<BreakHandler> breakHandlers = new ArrayList<BreakHandler>();
 
     /**
      * Creates the Debug Handler for a particular V8 runtime.
@@ -73,12 +73,9 @@ public class DebugHandler implements Releasable {
      *
      * @param hanlder The handler to notify.
      */
-    public void addBreakHandler(final BreakHandler hanlder) {
+    public void addBreakHandler(final BreakHandler handler) {
         runtime.getLocker().checkThread();
-        if (breakHandlers == null) {
-            breakHandlers = new ArrayList<BreakHandler>();
-        }
-        breakHandlers.add(hanlder);
+        breakHandlers.add(handler);
     }
 
     /**

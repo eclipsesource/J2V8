@@ -209,4 +209,13 @@ public class DebugHandlerTest {
         function.release();
     }
 
+    @Test
+    public void testRemoveBreakHandlerBeforeSet() {
+        DebugHandler handler = new DebugHandler(v8);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+
+        handler.removeBreakHandler(breakHandler); // Test should not throw NPE
+        handler.release();
+    }
+
 }
