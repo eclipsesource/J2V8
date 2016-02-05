@@ -10,11 +10,12 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.After;
@@ -35,7 +36,6 @@ public class DebugHandlerTest {
             + "}                    // 5 \n"
             + "foo();               // 6 \n";
     private V8            v8;
-    private Object        result = null;
 
     @Before
     public void setup() {
@@ -82,16 +82,51 @@ public class DebugHandlerTest {
     public void testSetBreakpoint() {
         DebugHandler handler = new DebugHandler(v8);
         handler.setScriptBreakpoint("script", 3);
-        handler.addBreakHandler(new BreakHandler() {
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
 
-            @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
-                result = event == DebugEvent.Break ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
         v8.executeScript(script, "script", 0);
 
-        assertTrue((Boolean) result);
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        handler.release();
+    }
+
+    @Test
+    public void testDisableBreakpoint() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakpointID = handler.setScriptBreakpoint("script", 3);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+        handler.disableScriptBreakPoint(breakpointID);
+
+        v8.executeScript(script, "script", 0);
+
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        handler.release();
+    }
+
+    @Test
+    public void testEnableBreakpoint() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakpointID = handler.setScriptBreakpoint("script", 3);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+        handler.disableScriptBreakPoint(breakpointID);
+        handler.enableScriptBreakPoint(breakpointID);
+
+        v8.executeScript(script, "script", 0);
+
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        handler.release();
+    }
+
+    @Test
+    public void testSetBreakpointReturnsID() {
+        DebugHandler handler = new DebugHandler(v8);
+
+        int breakpointID = handler.setScriptBreakpoint("script", 3);
+
+        assertEquals(1, breakpointID);
         handler.release();
     }
 
@@ -101,17 +136,25 @@ public class DebugHandlerTest {
         v8.executeScript(script, "script", 0);
         V8Function function = (V8Function) v8.get("foo");
         handler.setBreakpoint(function);
-        handler.addBreakHandler(new BreakHandler() {
-
-            @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
-                result = event == DebugEvent.Break ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
 
         function.call(null, null);
 
-        assertTrue((Boolean) result);
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        handler.release();
+        function.release();
+    }
+
+    @Test
+    public void testSetBreakpointByFunctionReturnsID() {
+        DebugHandler handler = new DebugHandler(v8);
+        v8.executeScript(script, "script", 0);
+        V8Function function = (V8Function) v8.get("foo");
+
+        int breakpointID = handler.setBreakpoint(function);
+
+        assertEquals(1, breakpointID);
         handler.release();
         function.release();
     }

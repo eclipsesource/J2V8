@@ -45,6 +45,8 @@ public class DebugHandler implements Releasable {
     private static final String SET_BREAK_POINT                = "setBreakPoint";
     private static final String SET_LISTENER                   = "setListener";
     private static final String V8_DEBUG_OBJECT                = "Debug";
+    private static final String DISABLE_SCRIPT_BREAK_POINT     = "disableScriptBreakPoint";
+    private static final String ENABLE_SCRIPT_BREAK_POINT      = "enableScriptBreakPoint";
 
     private V8                 runtime;
     private V8Object           debugObject;
@@ -92,12 +94,13 @@ public class DebugHandler implements Releasable {
      * is invoked, the breakpoint will be 'hit'.
      *
      * @param function The function on which to register the breakpoint.
+     * @return The berakpointID.
      */
-    public void setBreakpoint(final V8Function function) {
+    public int setBreakpoint(final V8Function function) {
         V8Array parameters = new V8Array(runtime);
         parameters.push(function);
         try {
-            debugObject.executeVoidFunction(SET_BREAK_POINT, parameters);
+            return debugObject.executeIntegerFunction(SET_BREAK_POINT, parameters);
         } finally {
             parameters.release();
         }
@@ -109,13 +112,44 @@ public class DebugHandler implements Releasable {
      *
      * @param scriptID The ID of the script on which to set the breakpoint.
      * @param lineNumber The line number on which to set the breakpoint.
+     * @return The berakpointID.
      */
-    public void setScriptBreakpoint(final String scriptID, final int lineNumber) {
+    public int setScriptBreakpoint(final String scriptID, final int lineNumber) {
         V8Array parameters = new V8Array(runtime);
         parameters.push(scriptID);
         parameters.push(lineNumber);
         try {
-            debugObject.executeVoidFunction(SET_SCRIPT_BREAK_POINT_BY_NAME, parameters);
+            return debugObject.executeIntegerFunction(SET_SCRIPT_BREAK_POINT_BY_NAME, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Enables a breakpoint.
+     *
+     * @param breakpointID The breakpoint to enable.
+     */
+    public void enableScriptBreakPoint(final int breakpointID) {
+        V8Array parameters = new V8Array(runtime);
+        parameters.push(breakpointID);
+        try {
+            debugObject.executeVoidFunction(ENABLE_SCRIPT_BREAK_POINT, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Disables a breakpoint.
+     *
+     * @param breakpointID The breakpoint to disable
+     */
+    public void disableScriptBreakPoint(final int breakpointID) {
+        V8Array parameters = new V8Array(runtime);
+        parameters.push(breakpointID);
+        try {
+            debugObject.executeVoidFunction(DISABLE_SCRIPT_BREAK_POINT, parameters);
         } finally {
             parameters.release();
         }
