@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Function;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
@@ -92,6 +93,41 @@ public class DebugHandlerTest {
     }
 
     @Test
+    public void testClearBreakpoint() {
+        DebugHandler handler = new DebugHandler(v8);
+        int breakpointID = handler.setScriptBreakpoint("script", 3);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+
+        handler.clearBreakPoint(breakpointID);
+
+        v8.executeScript(script, "script", 0);
+        V8Array breakpoints = handler.getScriptBreakPoints();
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        assertEquals(0, breakpoints.length());
+        breakpoints.release();
+        handler.release();
+    }
+
+
+    @Test
+    public void testGetBreakpoints() {
+        DebugHandler handler = new DebugHandler(v8);
+        handler.setScriptBreakpoint("script", 3);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+
+        V8Array breakpoints = handler.getScriptBreakPoints();
+
+        assertEquals(1, breakpoints.length());
+        V8Object breakpoint = breakpoints.getObject(0);
+        assertEquals(1, breakpoint.executeIntegerFunction("number", null));
+        breakpoint.release();
+        breakpoints.release();
+        handler.release();
+    }
+
+    @Test
     public void testDisableBreakpoint() {
         DebugHandler handler = new DebugHandler(v8);
         int breakpointID = handler.setScriptBreakpoint("script", 3);
@@ -101,6 +137,20 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
 
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        handler.release();
+    }
+
+    @Test
+    public void testDisableAllBreakpoints() {
+        DebugHandler handler = new DebugHandler(v8);
+        handler.setScriptBreakpoint("script", 3);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.addBreakHandler(breakHandler);
+
+        handler.disableAllBreakPoints();
+
+        v8.executeScript(script, "script", 0);
         verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
         handler.release();
     }

@@ -47,6 +47,9 @@ public class DebugHandler implements Releasable {
     private static final String V8_DEBUG_OBJECT                = "Debug";
     private static final String DISABLE_SCRIPT_BREAK_POINT     = "disableScriptBreakPoint";
     private static final String ENABLE_SCRIPT_BREAK_POINT      = "enableScriptBreakPoint";
+    private static final String CLEAR_BREAK_POINT              = "clearBreakPoint";
+    private static final String DISABLE_ALL_BREAK_POINTS       = "disableAllBreakPoints";
+    private static final String SCRIPT_BREAK_POINTS            = "scriptBreakPoints";
 
     private V8                 runtime;
     private V8Object           debugObject;
@@ -153,6 +156,37 @@ public class DebugHandler implements Releasable {
         } finally {
             parameters.release();
         }
+    }
+
+    /**
+     * Removes a Breakpoint.
+     *
+     * @param breakpointID The ID of the breakpoint to remove.
+     */
+    public void clearBreakPoint(final int breakpointID) {
+        V8Array parameters = new V8Array(runtime);
+        parameters.push(breakpointID);
+        try {
+            debugObject.executeVoidFunction(CLEAR_BREAK_POINT, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Disables all breakpoints.
+     */
+    public void disableAllBreakPoints() {
+        debugObject.executeVoidFunction(DISABLE_ALL_BREAK_POINTS, null);
+    }
+
+    /**
+     * Returns all the breakpoints currently set.
+     *
+     * @return A V8Array of Breakpoints.
+     */
+    public V8Array getScriptBreakPoints() {
+        return debugObject.executeArrayFunction(SCRIPT_BREAK_POINTS, null);
     }
 
     @Override
