@@ -11,7 +11,6 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -25,15 +24,19 @@ import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.Scope.ScopeType;
 
-public class FrameTest {
+public class ScopeTest {
 
     private static String script = "    // 1  \n"
             + "function foo(a, b, c)  { // 2  \n"
             + "  var x = 7;             // 3  \n"
             + "  var y = x + 1;         // 4  \n"
-            + "}                        // 5  \n"
-            + "foo();                   // 6 \n";
+            + "  return function() {    // 5  \n"
+            + "    var z = x;           // 6  \n"
+            + "  }                      // 7  \n"
+            + "}                        // 8  \n"
+            + "foo(1,2,3)();            // 9 \n";
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -44,7 +47,7 @@ public class FrameTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 2);
+        debugHandler.setScriptBreakpoint("script", 6);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -63,75 +66,60 @@ public class FrameTest {
     }
 
     @Test
-    public void testGetLocalCount() {
+    public void testGetLocalScopeType() {
         handleBreak(new BreakHandler() {
 
             @Override
             public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
-                result = frame.getLocalCount();
+                Scope scope = frame.getScope(0);
+                result = scope.getType();
+                scope.release();
                 frame.release();
             }
         });
 
         v8.executeScript(script, "script", 0);
 
-        assertEquals(2, result);
+        assertEquals(ScopeType.Local, result);
     }
 
     @Test
-    public void testGetArgumentCount() {
+    public void testGetGlobalScopeType() {
         handleBreak(new BreakHandler() {
 
             @Override
             public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
-                result = frame.getArgumentCount();
+                Scope scope = frame.getScope(2);
+                result = scope.getType();
+                scope.release();
                 frame.release();
             }
         });
 
         v8.executeScript(script, "script", 0);
 
-        assertEquals(3, result);
+        assertEquals(ScopeType.Global, result);
     }
 
     @Test
-    public void testGetScopeCount() {
+    public void testGetClosureScope() {
         handleBreak(new BreakHandler() {
 
             @Override
             public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
-                result = frame.getScopeCount();
+                Scope scope = frame.getScope(1);
+                result = scope.getType();
+                scope.release();
                 frame.release();
             }
         });
 
         v8.executeScript(script, "script", 0);
 
-        assertEquals(2, result);
-    }
-
-    @Test
-    public void testGetScope() {
-        handleBreak(new BreakHandler() {
-
-            @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
-                Frame frame = state.getFrame(0);
-                Scope scope0 = frame.getScope(0);
-                Scope scope1 = frame.getScope(1);
-                result = (scope0 != null) && (scope1 != null);
-                scope0.release();
-                scope1.release();
-                frame.release();
-            }
-        });
-
-        v8.executeScript(script, "script", 0);
-
-        assertTrue((Boolean) result);
+        assertEquals(ScopeType.Closure, result);
     }
 
     private void handleBreak(final BreakHandler handler) {

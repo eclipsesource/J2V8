@@ -11,6 +11,7 @@
 package com.eclipsesource.v8.debug;
 
 import com.eclipsesource.v8.Releasable;
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 /**
@@ -54,6 +55,27 @@ public class Frame implements Releasable {
      */
     public int getLocalCount() {
         return v8Object.executeIntegerFunction(LOCAL_COUNT, null);
+    }
+
+    /**
+     * Returns the scope at a given index.
+     *
+     * @param index The index
+     * @return The scope
+     */
+    public Scope getScope(final int index) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(index);
+        V8Object scope = null;
+        try {
+            scope = v8Object.executeObjectFunction("scope", parameters);
+            return new Scope(scope);
+        } finally {
+            parameters.release();
+            if (scope != null) {
+                scope.release();
+            }
+        }
     }
 
     @Override
