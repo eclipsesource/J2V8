@@ -15,12 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,7 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.eclipsesource.v8.utils.DebugTunnel;
 import com.eclipsesource.v8.utils.V8Map;
 
 public class V8Test {
@@ -1258,85 +1252,6 @@ public class V8Test {
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
     }
 
-    /*** Debug Tests ***/
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testSetupDebugHandler() {
-        int port = 9991;
-
-        v8.enableDebugSupport(port);
-
-        assertTrue(debugEnabled(port));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testEnableTunnel() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
-
-        assertNotNull(debugTunnel);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testEnableDisableTunnel() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        DebugTunnel debugTunnel = new DebugTunnel(9992, 9991);
-        debugTunnel.stop();
-        debugTunnel = new DebugTunnel(9992, 9991);
-
-        assertNotNull(debugTunnel);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testRemoveDebugHandler() {
-        int port = 9991;
-        v8.enableDebugSupport(port);
-
-        v8.disableDebugSupport();
-
-        assertFalse(debugEnabled(port));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testMultipleDebugHandlers() {
-        V8 v8_2 = V8.createV8Runtime();
-
-        v8.enableDebugSupport(9991);
-        v8_2.enableDebugSupport(9992);
-
-        assertTrue(debugEnabled(9991));
-        assertTrue(debugEnabled(9992));
-        v8_2.disableDebugSupport();
-        v8_2.release();
-        assertTrue(debugEnabled(9991));
-    }
-
-    static class SubV8 extends V8 {
-        public static void debugMessageReceived() {
-            V8.debugMessageReceived();
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testHandlerCalled() {
-        Runnable runnable = mock(Runnable.class);
-        V8.registerDebugHandler(runnable);
-
-        SubV8.debugMessageReceived();
-
-        verify(runnable).run();
-        V8.registerDebugHandler(null);
-    }
-
     @Test(expected = V8ScriptCompilationException.class)
     public void testInvalidJSScript() {
         String script = "x = [1,2,3];\n"
@@ -1348,24 +1263,6 @@ public class V8Test {
                 + "}";
 
         v8.executeVoidScript(script, "example.js", 0);
-    }
-
-    private boolean debugEnabled(final int port) {
-        Socket socket = new Socket();
-        InetSocketAddress endPoint = new InetSocketAddress("localhost", port);
-        try {
-            socket.connect(endPoint);
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
     }
 
 }

@@ -10,7 +10,6 @@
 ******************************************************************************/
 #include <jni.h>
 #include <iostream>
-#include <v8-debug.h>
 #include <v8.h>
 #include <map>
 #include <cstdlib>
@@ -168,37 +167,6 @@ void getJNIEnv(JNIEnv*& env) {
   else if (getEnvStat == JNI_EVERSION) {
     std::cout << "GetEnv: version not supported" << std::endl;
   }
-}
-
-void debugHandler() {
-  JNIEnv * g_env;
-  getJNIEnv(g_env);
-  jmethodID processDebugMessage = g_env->GetStaticMethodID(v8cls, "debugMessageReceived", "()V");
-  g_env->CallStaticVoidMethod(v8cls, processDebugMessage);
-  if (g_env->ExceptionCheck()) {
-    g_env->ExceptionDescribe();
-  }
-  jvm->DetachCurrentThread();
-}
-
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
-(JNIEnv *env, jobject, jlong v8RuntimePtr, jint port, jboolean waitForConnection) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
-  bool result = Debug::EnableAgent("j2v8", port, waitForConnection);
-  Debug::SetDebugMessageDispatchHandler(&debugHandler);
-  return result;
-}
-
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
-(JNIEnv *env, jobject, jlong v8RuntimePtr) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, );
-  Debug::DisableAgent();
-}
-
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
-(JNIEnv *env, jobject, jlong v8RuntimePtr) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, );
-  Debug::ProcessDebugMessages();
 }
 
 static void jsWindowObjectAccessor(Local<String> property,

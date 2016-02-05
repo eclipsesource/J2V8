@@ -37,14 +37,11 @@ public class V8 extends V8Object {
 
     private static Object       lock           = new Object();
     private volatile static int runtimeCounter = 0;
-    private static Runnable     debugHandler   = null;
-    private static Thread       debugThread    = null;
     private static String       v8Flags        = null;
     private static boolean      initialized    = false;
 
     private final V8Locker                 locker;
     private int                            methodReferenceCounter  = 0;
-    private boolean                        debugEnabled            = false;
     private long                           objectReferences        = 0;
     private long                           v8RuntimePtr            = 0;
     private List<Releasable>               resources               = null;
@@ -151,9 +148,6 @@ public class V8 extends V8Object {
             _setFlags(v8Flags);
             initialized = true;
         }
-        if (debugThread == null) {
-            debugThread = Thread.currentThread();
-        }
         V8 runtime = new V8(globalAlias);
         synchronized (lock) {
             runtimeCounter++;
@@ -193,78 +187,6 @@ public class V8 extends V8Object {
      */
     public static V8Value getUndefined() {
         return undefined;
-    }
-
-    /**
-     * Enables debug support for this runtime.
-     *
-     * @param port The port to listen for debug connections.
-     * @param waitForConnection True if the runtime should wait on the first
-     * instruction for the debugger to connect.
-     *
-     * @return true if debug support was successfully enabled, false otherwise
-     *
-     * @deprecated NOTE: This is not API and likely to change
-     */
-    @Deprecated
-    public boolean enableDebugSupport(final int port, final boolean waitForConnection) {
-        V8.checkDebugThread();
-        debugEnabled = enableDebugSupport(getV8RuntimePtr(), port, waitForConnection);
-        return debugEnabled;
-    }
-
-    /**
-     * Enables debug support for this runtime and does not pause for a connection.
-     *
-     * @param port The port to listen for debug connections.
-     *
-     * @return true if debug support was successfully enabled, false otherwise
-     *
-     * @deprecated NOTE: This is not API and likely to change
-     */
-    @Deprecated
-    public boolean enableDebugSupport(final int port) {
-        V8.checkDebugThread();
-        debugEnabled = enableDebugSupport(getV8RuntimePtr(), port, false);
-        return debugEnabled;
-    }
-
-    /**
-     * Processes all outstanding debug messages for this runtime.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    public static void processDebugMessages(final V8 runtime) {
-        runtime.checkThread();
-        runtime._processDebugMessages(runtime.getV8RuntimePtr());
-    }
-
-    /**
-     * Disables debug support for this runtime.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    public void disableDebugSupport() {
-        V8.checkDebugThread();
-        disableDebugSupport(getV8RuntimePtr());
-        debugEnabled = false;
-    }
-
-    /**
-     * Registers a callback that will be invoked whenever a debug message
-     * is received. This can be used so the main thread can call
-     * processDebugMessages to handle the messages.
-     *
-     * @param handler The debug handler to invoke when a debug message
-     * is received.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    public static void registerDebugHandler(final Runnable handler) {
-        debugHandler = handler;
     }
 
     /**
@@ -312,9 +234,6 @@ public class V8 extends V8Object {
             return;
         }
         checkThread();
-        if (debugEnabled) {
-            disableDebugSupport();
-        }
         releaseResources();
         shutdownExecutors(forceTerminateExecutors);
         if (executors != null) {
@@ -698,12 +617,6 @@ public class V8 extends V8Object {
         }
     }
 
-    static void checkDebugThread() {
-        if ((debugThread != null) && (debugThread != Thread.currentThread())) {
-            throw new Error("Invalid V8 thread access.");
-        }
-    }
-
     static void checkScript(final String script) {
         if (script == null) {
             throw new NullPointerException("Script is null");
@@ -916,12 +829,6 @@ public class V8 extends V8Object {
             // do nothing
         }
         return null;
-    }
-
-    protected static void debugMessageReceived() {
-        if (debugHandler != null) {
-            debugHandler.run();
-        }
     }
 
     private Map<Integer, MethodDescriptor> getFunctionRegistry() {
@@ -1147,18 +1054,6 @@ public class V8 extends V8Object {
         _setPrototype(v8RuntimePtr, objectHandle, prototypeHandle);
     }
 
-    protected boolean enableDebugSupport(final long v8RuntimePtr, final int port, final boolean waitForConnection) {
-        return _enableDebugSupport(v8RuntimePtr, port, waitForConnection);
-    }
-
-    protected void disableDebugSupport(final long v8RuntimePtr) {
-        _disableDebugSupport(v8RuntimePtr);
-    }
-
-    protected void processDebugMessages(final long v8RuntimePtr) {
-        _processDebugMessages(v8RuntimePtr);
-    }
-
     protected int[] arrayGetIntegers(final long v8RuntimePtr, final long objectHandle, final int index, final int length) {
         return _arrayGetIntegers(v8RuntimePtr, objectHandle, index, length);
     }
@@ -1306,12 +1201,6 @@ public class V8 extends V8Object {
     private native void _setPrototype(long v8RuntimePtr, long objectHandle, long prototypeHandle);
 
     private native int _getType(long v8RuntimePtr, long objectHandle, final int index, final int length);
-
-    private native boolean _enableDebugSupport(long v8RuntimePtr, int port, boolean waitForConnection);
-
-    private native void _disableDebugSupport(long v8RuntimePtr);
-
-    private native void _processDebugMessages(long v8RuntimePtr);
 
     private native double[] _arrayGetDoubles(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
 

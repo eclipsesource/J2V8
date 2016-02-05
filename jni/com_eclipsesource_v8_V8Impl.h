@@ -477,30 +477,6 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJII
 
 /*
  * Class:     com_eclipsesource_v8_V8
- * Method:    _enableDebugSupport
- * Signature: (JIZ)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1enableDebugSupport
-  (JNIEnv *, jobject, jlong, jint, jboolean);
-
-/*
- * Class:     com_eclipsesource_v8_V8
- * Method:    _disableDebugSupport
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1disableDebugSupport
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     com_eclipsesource_v8_V8
- * Method:    _processDebugMessages
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1processDebugMessages
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     com_eclipsesource_v8_V8
  * Method:    _arrayGetDoubles
  * Signature: (JJII)[D
  */
