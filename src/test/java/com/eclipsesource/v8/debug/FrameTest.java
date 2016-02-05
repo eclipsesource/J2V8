@@ -25,6 +25,7 @@ import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
 public class FrameTest {
 
@@ -67,7 +68,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getLocalCount();
                 frame.release();
@@ -84,7 +85,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getArgumentCount();
                 frame.release();
@@ -101,7 +102,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getScopeCount();
                 frame.release();
@@ -118,7 +119,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope0 = frame.getScope(0);
                 Scope scope1 = frame.getScope(1);
@@ -139,7 +140,7 @@ public class FrameTest {
 
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
-                int arg1 = (Integer) invocation.getArguments()[0];
+                DebugEvent arg1 = (DebugEvent) invocation.getArguments()[0];
                 ExecutionState arg2 = (ExecutionState) invocation.getArguments()[1];
                 V8Object arg3 = (V8Object) invocation.getArguments()[2];
                 V8Object arg4 = (V8Object) invocation.getArguments()[3];
@@ -147,7 +148,7 @@ public class FrameTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(1), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
     }
 
 }

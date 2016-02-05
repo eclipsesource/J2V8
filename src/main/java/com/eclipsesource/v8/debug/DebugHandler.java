@@ -29,16 +29,15 @@ import com.eclipsesource.v8.V8Object;
  */
 public class DebugHandler implements Releasable {
 
-    public static String DEBUG_EVENTS[]    = {
-            "undefined",
-            "BREAK",
-            "EXCEPTION",
-            "NEW_FUNCTION",
-            "BEFORE_COMPILE",
-            "AFTER_COMPILE",
-            "COMPILE_ERROR",
-            "PROMISE_ERROR",
-            "ASYNC_TASK_EVENT" };
+    public static enum DebugEvent {
+        Undefined(0), Break(1), Exception(2), NewFunction(3), BeforeCompile(4), AfterCompile(5), CompileError(6), PromiseError(7), AsyncTaskEvent(8);
+        int index;
+
+        DebugEvent(final int index) {
+            this.index = index;
+        }
+    }
+
     public static String DEBUG_OBJECT_NAME = "__j2v8_Debug";
 
     private static final String DEBUG_BREAK_HANDLER            = "__j2v8_debug_handler";
@@ -181,7 +180,7 @@ public class DebugHandler implements Releasable {
                 eventData = parameters.getObject(2);
                 data = parameters.getObject(3);
                 state = new ExecutionState(execState);
-                handler.onBreak(event, state, eventData, data);
+                handler.onBreak(DebugEvent.values()[event], state, eventData, data);
             } finally {
                 safeRelease(execState);
                 safeRelease(eventData);

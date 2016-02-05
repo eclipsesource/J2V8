@@ -24,6 +24,7 @@ import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.Scope.ScopeType;
 
 public class ScopeTest {
@@ -70,7 +71,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 result = scope.getType();
@@ -89,7 +90,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(2);
                 result = scope.getType();
@@ -108,7 +109,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(1);
                 result = scope.getType();
@@ -127,7 +128,7 @@ public class ScopeTest {
 
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
-                int arg1 = (Integer) invocation.getArguments()[0];
+                DebugEvent arg1 = (DebugEvent) invocation.getArguments()[0];
                 ExecutionState arg2 = (ExecutionState) invocation.getArguments()[1];
                 V8Object arg3 = (V8Object) invocation.getArguments()[2];
                 V8Object arg4 = (V8Object) invocation.getArguments()[3];
@@ -135,7 +136,7 @@ public class ScopeTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(1), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
     }
 
 }

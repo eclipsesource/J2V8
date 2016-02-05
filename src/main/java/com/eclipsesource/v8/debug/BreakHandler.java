@@ -11,9 +11,10 @@
 package com.eclipsesource.v8.debug;
 
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
 public interface BreakHandler {
 
-    public void onBreak(int event, ExecutionState state, V8Object eventData, V8Object data);
+    public void onBreak(DebugEvent event, ExecutionState state, V8Object eventData, V8Object data);
 
 }

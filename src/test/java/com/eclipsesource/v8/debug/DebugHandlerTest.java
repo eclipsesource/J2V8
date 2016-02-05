@@ -20,6 +20,7 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Function;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
 public class DebugHandlerTest {
 
@@ -65,8 +66,8 @@ public class DebugHandlerTest {
         handler.addBreakHandler(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
-                result = event == 1 ? Boolean.TRUE : Boolean.FALSE;
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                result = event == DebugEvent.Break ? Boolean.TRUE : Boolean.FALSE;
             }
         });
         v8.executeScript(script, "script", 0);
@@ -84,8 +85,8 @@ public class DebugHandlerTest {
         handler.addBreakHandler(new BreakHandler() {
 
             @Override
-            public void onBreak(final int event, final ExecutionState state, final V8Object eventData, final V8Object data) {
-                result = event == 1 ? Boolean.TRUE : Boolean.FALSE;
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                result = event == DebugEvent.Break ? Boolean.TRUE : Boolean.FALSE;
             }
         });
 
