@@ -50,6 +50,8 @@ public class DebugHandler implements Releasable {
     private static final String CLEAR_BREAK_POINT              = "clearBreakPoint";
     private static final String DISABLE_ALL_BREAK_POINTS       = "disableAllBreakPoints";
     private static final String SCRIPT_BREAK_POINTS            = "scriptBreakPoints";
+    private static final String FIND_SCRIPT_BREAK_POINT        = "findScriptBreakPoint";
+    private static final String NUMBER                         = "number";
 
     private V8                 runtime;
     private V8Object           debugObject;
@@ -178,12 +180,62 @@ public class DebugHandler implements Releasable {
     }
 
     /**
-     * Returns all the breakpoints currently set.
+     * Returns a count of all the breakpoints
      *
      * @return A V8Array of Breakpoints.
      */
-    public V8Array getScriptBreakPoints() {
-        return debugObject.executeArrayFunction(SCRIPT_BREAK_POINTS, null);
+    public int getScriptBreakPointCount() {
+        V8Array breakPoints = debugObject.executeArrayFunction(SCRIPT_BREAK_POINTS, null);
+        try {
+            return breakPoints.length();
+        } finally {
+            breakPoints.release();
+        }
+    }
+
+    /**
+     * Get all the BreakPoint IDs as an array.
+     *
+     * @return A list of BreakPoint IDs.
+     */
+    public int[] getScriptBreakPointIDs() {
+        V8Array breakPoints = debugObject.executeArrayFunction(SCRIPT_BREAK_POINTS, null);
+        try {
+            int[] result = new int[breakPoints.length()];
+            for (int i = 0; i < breakPoints.length(); i++) {
+                V8Object breakPoint = breakPoints.getObject(i);
+                try {
+                    result[i] = breakPoint.executeIntegerFunction(NUMBER, null);
+                } finally {
+                    breakPoint.release();
+                }
+            }
+            return result;
+        } finally {
+            breakPoints.release();
+        }
+    }
+
+    /**
+     * Get the BreakPoint as referenced by the given ID.
+     *
+     * @param breakPointID The BreakPoint ID.
+     * @return The BreakPoint as referenced by the given ID.
+     */
+    public ScriptBreakPoint getScriptBreakPoint(final int breakPointID) {
+        V8Array parameters = new V8Array(runtime);
+        parameters.push(breakPointID);
+        parameters.push(false);
+        V8Object scriptBreakPoint = null;
+        try {
+            scriptBreakPoint = debugObject.executeObjectFunction(FIND_SCRIPT_BREAK_POINT, parameters);
+            return new ScriptBreakPoint(scriptBreakPoint);
+        } finally {
+            parameters.release();
+            if (scriptBreakPoint != null) {
+                scriptBreakPoint.release();
+            }
+        }
     }
 
     @Override
