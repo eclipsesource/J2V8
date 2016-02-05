@@ -162,9 +162,6 @@ public class DebugHandler implements Releasable {
                 return;
             }
             int event = parameters.getInteger(0);
-            if (event != 1) {
-                return;
-            }
             for (BreakHandler handler : breakHandlers) {
                 invokeHandler(parameters, event, handler);
             }

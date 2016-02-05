@@ -12,6 +12,10 @@ package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
@@ -56,6 +60,21 @@ public class DebugHandlerTest {
         DebugHandler handler = new DebugHandler(v8);
 
         assertNotNull(handler);
+        handler.release();
+    }
+
+    @Test
+    public void testDebugEvents() {
+        DebugHandler handler = new DebugHandler(v8);
+        BreakHandler breakHandler = mock(BreakHandler.class);
+        handler.setScriptBreakpoint("script", 3);
+        handler.addBreakHandler(breakHandler);
+
+        v8.executeScript(script, "script", 0);
+
+        verify(breakHandler).onBreak(eq(DebugEvent.BeforeCompile), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler).onBreak(eq(DebugEvent.AfterCompile), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
         handler.release();
     }
 
