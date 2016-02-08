@@ -33,8 +33,9 @@ public class FrameTest {
             + "function foo(a, b, c)  { // 2  \n"
             + "  var x = 7;             // 3  \n"
             + "  var y = x + 1;         // 4  \n"
-            + "}                        // 5  \n"
-            + "foo();                   // 6 \n";
+            + "  var z = { 'foo' : 3 }; // 5  \n"
+            + "}                        // 6  \n"
+            + "foo(1,2,'yes');          // 7 \n";
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -45,7 +46,7 @@ public class FrameTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 2);
+        debugHandler.setScriptBreakpoint("script", 5);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -77,7 +78,7 @@ public class FrameTest {
 
         v8.executeScript(script, "script", 0);
 
-        assertEquals(2, result);
+        assertEquals(3, result);
     }
 
     @Test
@@ -126,6 +127,110 @@ public class FrameTest {
                 result = (scope0 != null) && (scope1 != null);
                 scope0.release();
                 scope1.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetLocalNames() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                int argumentCount = frame.getLocalCount();
+                String local1 = frame.getLocalName(0);
+                String local2 = frame.getLocalName(1);
+                String local3 = frame.getLocalName(2);
+                result = argumentCount == 3;
+                result = (Boolean) result && local1.equals("x");
+                result = (Boolean) result && local2.equals("y");
+                result = (Boolean) result && local3.equals("z");
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetArgumentNames() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                int argumentCount = frame.getArgumentCount();
+                String arg1 = frame.getArgumentName(0);
+                String arg2 = frame.getArgumentName(1);
+                String arg3 = frame.getArgumentName(2);
+                result = argumentCount == 3;
+                result = (Boolean) result && arg1.equals("a");
+                result = (Boolean) result && arg2.equals("b");
+                result = (Boolean) result && arg3.equals("c");
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetArgumentValues() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                int argumentCount = frame.getArgumentCount();
+                ValueMirror arg1 = frame.getArgumentValue(0);
+                ValueMirror arg2 = frame.getArgumentValue(1);
+                ValueMirror arg3 = frame.getArgumentValue(2);
+                result = argumentCount == 3;
+                result = (Boolean) result && arg1.getValue().equals(1);
+                result = (Boolean) result && arg2.getValue().equals(2);
+                result = (Boolean) result && arg3.getValue().equals("yes");
+                arg1.release();
+                arg2.release();
+                arg3.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetLocalValues() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                int argumentCount = frame.getLocalCount();
+                ValueMirror local1 = frame.getLocalValue(0);
+                ValueMirror local2 = frame.getLocalValue(1);
+                ValueMirror local3 = frame.getLocalValue(2);
+                result = argumentCount == 3;
+                result = (Boolean) result && local1.getValue().equals(7);
+                result = (Boolean) result && local2.getValue().equals(8);
+                V8Object z = (V8Object) local3.getValue();
+                result = (Boolean) result && (z.getInteger("foo") == 3);
+                local1.release();
+                local2.release();
+                local3.release();
+                z.release();
                 frame.release();
             }
         });

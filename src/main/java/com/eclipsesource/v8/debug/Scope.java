@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug;
 
-import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Object;
 
 /**
@@ -18,7 +17,7 @@ import com.eclipsesource.v8.V8Object;
  * during debug break.
  *
  */
-public class Scope implements Releasable {
+public class Scope extends Mirror {
 
     /**
      * Represents the different types of scopes available.
@@ -32,10 +31,8 @@ public class Scope implements Releasable {
         }
     }
 
-    private V8Object v8Object;
-
     Scope(final V8Object v8Object) {
-        this.v8Object = v8Object.twin();
+        super(v8Object);
     }
 
     /**
@@ -45,14 +42,6 @@ public class Scope implements Releasable {
      */
     public ScopeType getType() {
         return ScopeType.values()[v8Object.executeIntegerFunction("scopeType", null)];
-    }
-
-    @Override
-    public void release() {
-        if ((v8Object != null) && !v8Object.isReleased()) {
-            v8Object.release();
-            v8Object = null;
-        }
     }
 
 }
