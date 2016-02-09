@@ -10,7 +10,9 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug.mirror;
 
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
 
 /**
  * Represents a JavaScope scope accessible from the current stack frame
@@ -18,6 +20,8 @@ import com.eclipsesource.v8.V8Object;
  *
  */
 public class Scope extends Mirror {
+
+    private static final String SET_VARIABLE_VALUE = "setVariableValue";
 
     /**
      * Represents the different types of scopes available.
@@ -42,6 +46,91 @@ public class Scope extends Mirror {
      */
     public ScopeType getType() {
         return ScopeType.values()[v8Object.executeIntegerFunction("scopeType", null)];
+    }
+
+    /**
+     * Sets the value of a variable in this scope.
+     *
+     * @param name The name of the variable
+     * @param value The value
+     */
+    public void setVariableValue(final String name, final int value) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(name);
+        parameters.push(value);
+        try {
+            v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Sets the value of a variable in this scope.
+     *
+     * @param name The name of the variable
+     * @param value The value
+     */
+    public void setVariableValue(final String name, final V8Value value) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(name);
+        parameters.push(value);
+        try {
+            v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Sets the value of a variable in this scope.
+     *
+     * @param name The name of the variable
+     * @param value The value
+     */
+    public void setVariableValue(final String name, final boolean value) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(name);
+        parameters.push(value);
+        try {
+            v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Sets the value of a variable in this scope.
+     *
+     * @param name The name of the variable
+     * @param value The value
+     */
+    public void setVariableValue(final String name, final String value) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(name);
+        parameters.push(value);
+        try {
+            v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
+        } finally {
+            parameters.release();
+        }
+    }
+
+    /**
+     * Sets the value of a variable in this scope.
+     *
+     * @param name The name of the variable
+     * @param value The value
+     */
+    public void setVariableValue(final String name, final double value) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(name);
+        parameters.push(value);
+        try {
+            v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
+        } finally {
+            parameters.release();
+        }
     }
 
 }

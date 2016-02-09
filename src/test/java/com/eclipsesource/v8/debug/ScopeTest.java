@@ -11,6 +11,7 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -37,9 +38,10 @@ public class ScopeTest {
             + "  var y = x + 1;         // 4  \n"
             + "  return function() {    // 5  \n"
             + "    var z = x;           // 6  \n"
-            + "  }                      // 7  \n"
-            + "}                        // 8  \n"
-            + "foo(1,2,3)();            // 9 \n";
+            + "    return z;            // 7  \n"
+            + "  }                      // 8  \n"
+            + "}                        // 9  \n"
+            + "foo(1,2,3)();            // 10 \n";
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -123,6 +125,104 @@ public class ScopeTest {
         v8.executeScript(script, "script", 0);
 
         assertEquals(ScopeType.Closure, result);
+    }
+
+    @Test
+    public void testSetVariableValue() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                scope.setVariableValue("z", 0);
+                scope.release();
+                frame.release();
+            }
+        });
+
+        int result = v8.executeIntegerScript(script, "script", 0);
+
+        assertEquals(0, result);
+    }
+
+    @Test
+    public void testChangeVariableTypeV8Object() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                V8Object newValue = new V8Object(v8).add("foo", "bar");
+                scope.setVariableValue("z", newValue);
+                newValue.release();
+                scope.release();
+                frame.release();
+            }
+        });
+
+        V8Object result = v8.executeObjectScript(script, "script", 0);
+
+        assertEquals("bar", result.getString("foo"));
+        result.release();
+    }
+
+    @Test
+    public void testChangeVariableTypeBoolean() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                scope.setVariableValue("z", false);
+                scope.release();
+                frame.release();
+            }
+        });
+
+        boolean result = (Boolean) v8.executeScript(script, "script", 0);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void testChangeVariableTypeDouble() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                scope.setVariableValue("z", 3.14);
+                scope.release();
+                frame.release();
+            }
+        });
+
+        double result = (Double) v8.executeScript(script, "script", 0);
+
+        assertEquals(3.14, result, 0.0001);
+    }
+
+    @Test
+    public void testChangeVariableTypeString() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                scope.setVariableValue("z", "someString");
+                scope.release();
+                frame.release();
+            }
+        });
+
+        String result = (String) v8.executeScript(script, "script", 0);
+
+        assertEquals("someString", result);
     }
 
     private void handleBreak(final BreakHandler handler) {

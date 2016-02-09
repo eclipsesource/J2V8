@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -27,6 +28,7 @@ import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.mirror.ArrayMirror;
 import com.eclipsesource.v8.debug.mirror.Frame;
+import com.eclipsesource.v8.debug.mirror.ObjectMirror;
 import com.eclipsesource.v8.debug.mirror.ValueMirror;
 
 public class MirrorTest {
@@ -40,8 +42,10 @@ public class MirrorTest {
             + "  var string = 'foo';      // 7  \n"
             + "  var nullValue = null;    // 8  \n"
             + "  var undef;               // 9  \n"
-            + "}                          // 10 \n"
-            + "foo(1,2,'yes');            // 11 \n";
+            + "  return obj;              // 10 \n"
+            + "}                          // 11 \n"
+            + "foo(1,2,'yes').foo;        // 12 \n";
+
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -52,7 +56,7 @@ public class MirrorTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 9);
+        debugHandler.setScriptBreakpoint("script", 10);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -205,6 +209,27 @@ public class MirrorTest {
         v8.executeScript(script, "script", 0);
 
         assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testChangeValue() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ObjectMirror mirror = (ObjectMirror) frame.getLocalValue(2);
+                V8Object object = (V8Object) mirror.getValue();
+                object.add("foo", 7);
+                mirror.release();
+                object.release();
+                frame.release();
+            }
+        });
+
+        int result = v8.executeIntegerScript(script, "script", 0);
+
+        assertEquals(7, result);
     }
 
     private void handleBreak(final BreakHandler handler) {
