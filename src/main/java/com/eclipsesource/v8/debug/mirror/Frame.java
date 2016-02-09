@@ -20,6 +20,8 @@ import com.eclipsesource.v8.V8ResultUndefined;
  */
 public class Frame extends Mirror {
 
+    private static final String IS_NULL        = "isNull";
+    private static final String IS_UNDEFINED   = "isUndefined";
     private static final String IS_STRING      = "isString";
     private static final String IS_ARRAY       = "isArray";
     private static final String IS_BOOLEAN     = "isBoolean";
@@ -169,7 +171,29 @@ public class Frame extends Mirror {
         }
     }
 
+    private boolean isUndefined(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_UNDEFINED, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private boolean isNull(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_NULL, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
     private ValueMirror createMirror(final V8Object mirror) {
+        if (isUndefined(mirror)) {
+            return new UndefinedMirror(mirror);
+        }
+        if (isNull(mirror)) {
+            return new NullMirror(mirror);
+        }
         if (isArray(mirror)) {
             return new ArrayMirror(mirror);
         }
