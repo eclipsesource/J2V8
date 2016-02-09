@@ -25,6 +25,7 @@ import org.mockito.stubbing.Answer;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
+import com.eclipsesource.v8.debug.mirror.ArrayMirror;
 import com.eclipsesource.v8.debug.mirror.Frame;
 import com.eclipsesource.v8.debug.mirror.ValueMirror;
 
@@ -35,8 +36,9 @@ public class MirrorTest {
             + "  var integer = 7;         // 3  \n"
             + "  var boolean = false;     // 4  \n"
             + "  var obj = { 'foo' : 3 }; // 5  \n"
-            + "}                          // 6  \n"
-            + "foo(1,2,'yes');            // 7 \n";
+            + "  var array = [1,2,3];     // 6  \n"
+            + "}                          // 7  \n"
+            + "foo(1,2,'yes');            // 8  \n";
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -47,7 +49,7 @@ public class MirrorTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 5);
+        debugHandler.setScriptBreakpoint("script", 6);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -112,9 +114,29 @@ public class MirrorTest {
             @Override
             public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
-                ValueMirror objectValueValue = frame.getLocalValue(2);
-                result = objectValueValue.isValue() && objectValueValue.isObject();
-                objectValueValue.release();
+                ValueMirror objectValue = frame.getLocalValue(2);
+                result = objectValue.isValue() && objectValue.isObject();
+                objectValue.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetArrayValue() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror arrayValue = frame.getLocalValue(3);
+                result = arrayValue.isValue() && arrayValue.isObject() && arrayValue.isArray();
+                result = (Boolean) result && (((ArrayMirror) arrayValue).length() == 3);
+                arrayValue.release();
                 frame.release();
             }
         });
