@@ -10,12 +10,25 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug.mirror;
 
+import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 /**
  * Represents 'Object' mirrors.
  */
 public class ObjectMirror extends ValueMirror {
+
+    private static final String PROPERTIES     = "properties";
+    private static final String PROPERTY_NAMES = "propertyNames";
+
+    public enum PropertyKind {
+        Named(1), Indexed(2);
+        int index;
+
+        private PropertyKind(final int index) {
+            this.index = index;
+        }
+    }
 
     ObjectMirror(final V8Object v8Object) {
         super(v8Object);
@@ -24,6 +37,57 @@ public class ObjectMirror extends ValueMirror {
     @Override
     public boolean isObject() {
         return true;
+    }
+
+    /**
+     * Returns all the property names for the given object.
+     *
+     * @param kind Indicate whether named, indexed or both kinds of properties are requested.
+     * @param limit Limit the number of properties returned to the specified value
+     * @return
+     */
+    public String[] getPropertyNames(final PropertyKind kind, final int limit) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(kind.index);
+        parameters.push(limit);
+        V8Array propertyNames = null;
+        try {
+            propertyNames = v8Object.executeArrayFunction(PROPERTY_NAMES, parameters);
+            String[] result = new String[propertyNames.length()];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = propertyNames.getString(i);
+            }
+            return result;
+        } finally {
+            parameters.release();
+            if (propertyNames != null) {
+                propertyNames.release();
+            }
+        }
+    }
+
+    /**
+     * Return the properties for this object as an array of PropertyMirror objects.
+     *
+     * @param kind Indicate whether named, indexed or both kinds of properties are requested
+     * @param limit Limit the number of properties returned to the specified value
+     * @return {Array} Property mirrors for this object
+     */
+    public PropertiesArray getProperties(final PropertyKind kind, final int limit) {
+        V8Array parameters = new V8Array(v8Object.getRuntime());
+        parameters.push(kind.index);
+        parameters.push(limit);
+        V8Array result = null;
+        try {
+            result = v8Object.executeArrayFunction(PROPERTIES, parameters);
+            return new PropertiesArray(result);
+        } finally {
+            parameters.release();
+            if ((result != null) && !result.isReleased()) {
+                result.release();
+                result = null;
+            }
+        }
     }
 
 }

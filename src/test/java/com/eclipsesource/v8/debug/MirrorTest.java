@@ -29,6 +29,9 @@ import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.mirror.ArrayMirror;
 import com.eclipsesource.v8.debug.mirror.Frame;
 import com.eclipsesource.v8.debug.mirror.ObjectMirror;
+import com.eclipsesource.v8.debug.mirror.ObjectMirror.PropertyKind;
+import com.eclipsesource.v8.debug.mirror.PropertiesArray;
+import com.eclipsesource.v8.debug.mirror.PropertyMirror;
 import com.eclipsesource.v8.debug.mirror.ValueMirror;
 
 public class MirrorTest {
@@ -123,6 +126,31 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror objectValue = frame.getLocalValue(2);
                 result = objectValue.isValue() && objectValue.isObject();
+                objectValue.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetObjectProperties() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ObjectMirror objectValue = (ObjectMirror) frame.getLocalValue(2);
+                PropertiesArray properties = objectValue.getProperties(PropertyKind.Named, 0);
+                result = properties.length() == 1;
+                PropertyMirror property = properties.getProperty(0);
+                result = (Boolean) result && property.isProperty();
+                result = (Boolean) result && property.getName().equals("foo");
+                properties.release();
+                property.release();
                 objectValue.release();
                 frame.release();
             }
