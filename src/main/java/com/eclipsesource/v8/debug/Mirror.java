@@ -16,6 +16,26 @@ import com.eclipsesource.v8.V8Object;
 /**
  * A mirror is used to represent a copy (mirror) of a runtime object
  * during a debug session.
+ *
+ * Mirror hierarchy:
+ *  - Mirror
+ *     - ValueMirror
+ *       - UndefinedMirror
+ *       - NullMirror
+ *       - NumberMirror
+ *       - StringMirror
+ *       - ObjectMirror
+ *         - FunctionMirror
+ *           - UnresolvedFunctionMirror
+ *         - ArrayMirror
+ *         - DateMirror
+ *         - RegExpMirror
+ *         - ErrorMirror
+ *         - PromiseMirror
+ *     - PropertyMirror
+ *     - InternalPropertyMirror
+ *     - FrameMirror
+ *     - ScriptMirror
  */
 public class Mirror implements Releasable {
 
