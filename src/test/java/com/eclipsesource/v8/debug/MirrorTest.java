@@ -37,8 +37,9 @@ public class MirrorTest {
             + "  var boolean = false;     // 4  \n"
             + "  var obj = { 'foo' : 3 }; // 5  \n"
             + "  var array = [1,2,3];     // 6  \n"
-            + "}                          // 7  \n"
-            + "foo(1,2,'yes');            // 8  \n";
+            + "  var string = 'foo';      // 7  \n"
+            + "}                          // 8  \n"
+            + "foo(1,2,'yes');            // 9  \n";
     private Object        result;
     private V8            v8;
     private DebugHandler  debugHandler;
@@ -49,7 +50,7 @@ public class MirrorTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 6);
+        debugHandler.setScriptBreakpoint("script", 7);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -137,6 +138,26 @@ public class MirrorTest {
                 result = arrayValue.isValue() && arrayValue.isObject() && arrayValue.isArray();
                 result = (Boolean) result && (((ArrayMirror) arrayValue).length() == 3);
                 arrayValue.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetStringValue() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror stringValue = frame.getLocalValue(4);
+                result = stringValue.isValue() && stringValue.isString();
+                result = (Boolean) result && stringValue.getValue().equals("foo");
+                stringValue.release();
                 frame.release();
             }
         });

@@ -20,6 +20,7 @@ import com.eclipsesource.v8.V8ResultUndefined;
  */
 public class Frame extends Mirror {
 
+    private static final String IS_STRING      = "isString";
     private static final String IS_ARRAY       = "isArray";
     private static final String IS_BOOLEAN     = "isBoolean";
     private static final String IS_NUMBER      = "isNumber";
@@ -160,12 +161,23 @@ public class Frame extends Mirror {
         }
     }
 
+    private boolean isString(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_STRING, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
     private ValueMirror createMirror(final V8Object mirror) {
         if (isArray(mirror)) {
             return new ArrayMirror(mirror);
         }
         if (isObject(mirror)) {
             return new ObjectMirror(mirror);
+        }
+        if (isString(mirror)) {
+            return new StringMirror(mirror);
         }
         if (isNumber(mirror)) {
             return new NumberMirror(mirror);
