@@ -17,6 +17,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.eclipsesource.v8.debug.DebugHandlerTest;
 import com.eclipsesource.v8.debug.ExecutionStateTest;
 import com.eclipsesource.v8.debug.FrameTest;
+import com.eclipsesource.v8.debug.MirrorTest;
 import com.eclipsesource.v8.debug.ScopeTest;
 import com.eclipsesource.v8.debug.ScriptBreakPointTest;
 import com.eclipsesource.v8.utils.V8ExecutorTest;
@@ -30,7 +31,7 @@ import com.eclipsesource.v8.utils.V8PropertyMapTest;
 @SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
         V8CallbackTest.class, V8ScriptCompilationExceptionTest.class, V8ScriptExecutionExceptionTest.class, V8ObjectUtilsTest.class, V8TypedArraysTest.class,
         NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class, V8ExecutorTest.class, V8MapTest.class, V8PropertyMapTest.class,
-        DebugHandlerTest.class, ExecutionStateTest.class, FrameTest.class, ScopeTest.class, ScriptBreakPointTest.class })
+        DebugHandlerTest.class, ExecutionStateTest.class, FrameTest.class, ScopeTest.class, ScriptBreakPointTest.class, MirrorTest.class })
 public class AllTests {
 
 }
