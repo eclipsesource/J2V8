@@ -12,6 +12,7 @@ package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -27,6 +28,8 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.mirror.Frame;
+import com.eclipsesource.v8.debug.mirror.ObjectMirror;
+import com.eclipsesource.v8.debug.mirror.ObjectMirror.PropertyKind;
 import com.eclipsesource.v8.debug.mirror.Scope;
 import com.eclipsesource.v8.debug.mirror.Scope.ScopeType;
 
@@ -38,11 +41,12 @@ public class ScopeTest {
             + "  var y = x + 1;         // 4  \n"
             + "  return function() {    // 5  \n"
             + "    var z = x;           // 6  \n"
-            + "    return z;            // 7  \n"
-            + "  }                      // 8  \n"
-            + "}                        // 9  \n"
-            + "foo(1,2,3)();            // 10 \n";
-    private Object        result;
+            + "    var k = 8;           // 7  \n"
+            + "    return z;            // 8  \n"
+            + "  }                      // 9  \n"
+            + "}                        // 10 \n"
+            + "foo(1,2,3)();            // 11 \n";
+    private Object        result = false;
     private V8            v8;
     private DebugHandler  debugHandler;
     private BreakHandler  breakHandler;
@@ -52,7 +56,7 @@ public class ScopeTest {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 6);
+        debugHandler.setScriptBreakpoint("script", 7);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -223,6 +227,30 @@ public class ScopeTest {
         String result = (String) v8.executeScript(script, "script", 0);
 
         assertEquals("someString", result);
+    }
+
+    @Test
+    public void testGetScopeObject() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                Scope scope = frame.getScope(0);
+                ObjectMirror scopeObject = scope.getScopeObject();
+                String[] propertyNames = scopeObject.getPropertyNames(PropertyKind.Named, 0);
+                result = propertyNames.length == 2;
+                result = (Boolean) result && propertyNames[0].equals("z");
+                result = (Boolean) result && propertyNames[1].equals("k");
+                scopeObject.release();
+                scope.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
     }
 
     private void handleBreak(final BreakHandler handler) {

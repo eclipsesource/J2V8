@@ -21,6 +21,8 @@ import com.eclipsesource.v8.V8Value;
  */
 public class Scope extends Mirror {
 
+    private static final String SCOPE_OBJECT       = "scopeObject";
+    private static final String SCOPE_TYPE         = "scopeType";
     private static final String SET_VARIABLE_VALUE = "setVariableValue";
 
     /**
@@ -45,7 +47,7 @@ public class Scope extends Mirror {
      * @return The type of scope.
      */
     public ScopeType getType() {
-        return ScopeType.values()[v8Object.executeIntegerFunction("scopeType", null)];
+        return ScopeType.values()[v8Object.executeIntegerFunction(SCOPE_TYPE, null)];
     }
 
     /**
@@ -131,6 +133,24 @@ public class Scope extends Mirror {
         } finally {
             parameters.release();
         }
+    }
+
+    /**
+     * Returns the underlying V8Object that represents this scope.
+     *
+     * @return The underlying V8Object that represents this scope.
+     */
+    public ObjectMirror getScopeObject() {
+        V8Object mirror = null;
+        try {
+            mirror = v8Object.executeObjectFunction(SCOPE_OBJECT, null);
+            return (ObjectMirror) createMirror(mirror);
+        } finally {
+            if ( mirror != null ) {
+                mirror.release();
+            }
+        }
+
     }
 
 }
