@@ -12,7 +12,6 @@ package com.eclipsesource.v8.debug.mirror;
 
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ResultUndefined;
 
 /**
  * Represents a single stack frame accessible from the
@@ -20,15 +19,6 @@ import com.eclipsesource.v8.V8ResultUndefined;
  */
 public class Frame extends Mirror {
 
-    private static final String IS_NULL        = "isNull";
-    private static final String IS_UNDEFINED   = "isUndefined";
-    private static final String IS_STRING      = "isString";
-    private static final String IS_ARRAY       = "isArray";
-    private static final String IS_BOOLEAN     = "isBoolean";
-    private static final String IS_NUMBER      = "isNumber";
-    private static final String IS_OBJECT      = "isObject";
-    private static final String LOCAL_VALUE    = "localValue";
-    private static final String IS_VALUE       = "isValue";
     private static final String SCOPE          = "scope";
     private static final String ARGUMENT_VALUE = "argumentValue";
     private static final String ARGUMENT_NAME  = "argumentName";
@@ -36,6 +26,7 @@ public class Frame extends Mirror {
     private static final String ARGUMENT_COUNT = "argumentCount";
     private static final String SCOPE_COUNT    = "scopeCount";
     private static final String LOCAL_NAME     = "localName";
+    private static final String LOCAL_VALUE    = "localValue";
 
     public Frame(final V8Object v8Object) {
         super(v8Object);
@@ -121,95 +112,6 @@ public class Frame extends Mirror {
                 result.release();
             }
         }
-    }
-
-    private boolean isValue(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_VALUE, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isObject(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_OBJECT, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isNumber(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_NUMBER, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isBoolean(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_BOOLEAN, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isArray(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_ARRAY, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isString(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_STRING, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isUndefined(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_UNDEFINED, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private boolean isNull(final V8Object mirror) {
-        try {
-            return mirror.executeBooleanFunction(IS_NULL, null);
-        } catch (V8ResultUndefined e) {
-            return false;
-        }
-    }
-
-    private ValueMirror createMirror(final V8Object mirror) {
-        if (isUndefined(mirror)) {
-            return new UndefinedMirror(mirror);
-        }
-        if (isNull(mirror)) {
-            return new NullMirror(mirror);
-        }
-        if (isArray(mirror)) {
-            return new ArrayMirror(mirror);
-        }
-        if (isObject(mirror)) {
-            return new ObjectMirror(mirror);
-        }
-        if (isString(mirror)) {
-            return new StringMirror(mirror);
-        }
-        if (isNumber(mirror)) {
-            return new NumberMirror(mirror);
-        }
-        if (isBoolean(mirror)) {
-            return new BooleanMirror(mirror);
-        }
-        return new ValueMirror(mirror);
     }
 
     /**

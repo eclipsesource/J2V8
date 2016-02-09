@@ -12,6 +12,7 @@ package com.eclipsesource.v8.debug.mirror;
 
 import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8ResultUndefined;
 
 /**
  * A mirror is used to represent a copy (mirror) of a runtime object
@@ -40,6 +41,13 @@ import com.eclipsesource.v8.V8Object;
 public class Mirror implements Releasable {
 
     private static final String IS_UNDEFINED = "isUndefined";
+    private static final String IS_NULL      = "isNull";
+    private static final String IS_STRING    = "isString";
+    private static final String IS_ARRAY     = "isArray";
+    private static final String IS_BOOLEAN   = "isBoolean";
+    private static final String IS_NUMBER    = "isNumber";
+    private static final String IS_OBJECT    = "isObject";
+    private static final String IS_VALUE     = "isValue";
 
     protected V8Object v8Object;
 
@@ -138,11 +146,109 @@ public class Mirror implements Releasable {
         return false;
     }
 
+    /**
+     * Returns true if this mirror object points to a 'Property' type.
+     *
+     * @return True iff this mirror object points to a 'Property' type.
+     */
+    public boolean isProperty() {
+        return false;
+    }
+
     @Override
     public void release() {
         if ((v8Object != null) && !v8Object.isReleased()) {
             v8Object.release();
             v8Object = null;
         }
+    }
+
+    protected static boolean isValue(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_VALUE, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isObject(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_OBJECT, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isNumber(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_NUMBER, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isBoolean(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_BOOLEAN, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isArray(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_ARRAY, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isString(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_STRING, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isUndefined(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_UNDEFINED, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private static boolean isNull(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_NULL, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    protected static ValueMirror createMirror(final V8Object mirror) {
+        if (isUndefined(mirror)) {
+            return new UndefinedMirror(mirror);
+        }
+        if (isNull(mirror)) {
+            return new NullMirror(mirror);
+        }
+        if (isArray(mirror)) {
+            return new ArrayMirror(mirror);
+        }
+        if (isObject(mirror)) {
+            return new ObjectMirror(mirror);
+        }
+        if (isString(mirror)) {
+            return new StringMirror(mirror);
+        }
+        if (isNumber(mirror)) {
+            return new NumberMirror(mirror);
+        }
+        if (isBoolean(mirror)) {
+            return new BooleanMirror(mirror);
+        }
+        return new ValueMirror(mirror);
     }
 }
