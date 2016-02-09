@@ -499,7 +499,7 @@ public class V8 extends V8Object {
      */
     public V8Array executeArrayScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        Object result = this.executeScript(script, null, 0);
+        Object result = this.executeScript(script, scriptName, lineNumber);
         if (result instanceof V8Array) {
             return (V8Array) result;
         }
@@ -562,7 +562,7 @@ public class V8 extends V8Object {
      */
     public V8Object executeObjectScript(final String script, final String scriptName, final int lineNumber) {
         checkThread();
-        Object result = this.executeScript(script, null, 0);
+        Object result = this.executeScript(script, scriptName, lineNumber);
         if (result instanceof V8Object) {
             return (V8Object) result;
         }
