@@ -30,4 +30,9 @@ public class ValueMirror extends Mirror {
         return v8Object.executeFunction(VALUE, null);
     }
 
+    @Override
+    public boolean isValue() {
+        return true;
+    }
+
 }

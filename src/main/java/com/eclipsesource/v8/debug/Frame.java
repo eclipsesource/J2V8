@@ -20,6 +20,8 @@ import com.eclipsesource.v8.V8ResultUndefined;
  */
 public class Frame extends Mirror {
 
+    private static final String IS_BOOLEAN     = "isBoolean";
+    private static final String IS_NUMBER      = "isNumber";
     private static final String IS_OBJECT      = "isObject";
     private static final String LOCAL_VALUE    = "localValue";
     private static final String IS_VALUE       = "isValue";
@@ -133,9 +135,31 @@ public class Frame extends Mirror {
         }
     }
 
+    private boolean isNumber(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_NUMBER, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
+    private boolean isBoolean(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_BOOLEAN, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
     private ValueMirror createMirror(final V8Object mirror) {
         if (isObject(mirror)) {
             return new ObjectMirror(mirror);
+        }
+        if (isNumber(mirror)) {
+            return new NumberMirror(mirror);
+        }
+        if (isBoolean(mirror)) {
+            return new BooleanMirror(mirror);
         }
         return new ValueMirror(mirror);
     }
@@ -184,6 +208,11 @@ public class Frame extends Mirror {
                 scope.release();
             }
         }
+    }
+
+    @Override
+    public boolean isFrame() {
+        return true;
     }
 
 }

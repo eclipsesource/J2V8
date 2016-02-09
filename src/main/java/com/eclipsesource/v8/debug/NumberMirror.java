@@ -13,16 +13,16 @@ package com.eclipsesource.v8.debug;
 import com.eclipsesource.v8.V8Object;
 
 /**
- * Represents 'Object' mirrors.
+ * Represents JavaScript 'Number' Mirrors
  */
-public class ObjectMirror extends ValueMirror {
+public class NumberMirror extends ValueMirror {
 
-    ObjectMirror(final V8Object v8Object) {
+    NumberMirror(final V8Object v8Object) {
         super(v8Object);
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isNumber() {
         return true;
     }
 
