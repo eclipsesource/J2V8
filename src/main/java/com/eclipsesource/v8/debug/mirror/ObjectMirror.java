@@ -8,21 +8,21 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package com.eclipsesource.v8.debug;
+package com.eclipsesource.v8.debug.mirror;
 
 import com.eclipsesource.v8.V8Object;
 
 /**
- * Represents JavaScript 'Boolean' Mirrors
+ * Represents 'Object' mirrors.
  */
-public class BooleanMirror extends ValueMirror {
+public class ObjectMirror extends ValueMirror {
 
-    BooleanMirror(final V8Object v8Object) {
+    ObjectMirror(final V8Object v8Object) {
         super(v8Object);
     }
 
     @Override
-    public boolean isBoolean() {
+    public boolean isObject() {
         return true;
     }
 

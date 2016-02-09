@@ -25,7 +25,9 @@ import org.mockito.stubbing.Answer;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
-import com.eclipsesource.v8.debug.Scope.ScopeType;
+import com.eclipsesource.v8.debug.mirror.Frame;
+import com.eclipsesource.v8.debug.mirror.Scope;
+import com.eclipsesource.v8.debug.mirror.Scope.ScopeType;
 
 public class ScopeTest {
 

@@ -13,6 +13,7 @@ package com.eclipsesource.v8.debug;
 import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.debug.mirror.Frame;
 
 /**
  * Represents the current execution state at a break.

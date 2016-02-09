@@ -8,30 +8,21 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package com.eclipsesource.v8.debug;
+package com.eclipsesource.v8.debug.mirror;
 
 import com.eclipsesource.v8.V8Object;
 
 /**
- * Represents 'Value' Mirrors (Objects, Numbers, Strings, ...).
+ * Represents JavaScript 'Number' Mirrors
  */
-public class ValueMirror extends Mirror {
+public class NumberMirror extends ValueMirror {
 
-    private static final String VALUE = "value";
-
-    ValueMirror(final V8Object v8Object) {
+    NumberMirror(final V8Object v8Object) {
         super(v8Object);
     }
 
-    /**
-     * Returns the Object that this mirror represents.
-     */
-    public Object getValue() {
-        return v8Object.executeFunction(VALUE, null);
-    }
-
     @Override
-    public boolean isValue() {
+    public boolean isNumber() {
         return true;
     }
 

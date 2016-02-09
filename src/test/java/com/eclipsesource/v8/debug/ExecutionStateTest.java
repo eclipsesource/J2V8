@@ -28,6 +28,7 @@ import org.mockito.stubbing.Answer;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
+import com.eclipsesource.v8.debug.mirror.Frame;
 
 public class ExecutionStateTest {
 

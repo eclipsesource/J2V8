@@ -8,7 +8,7 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package com.eclipsesource.v8.debug;
+package com.eclipsesource.v8.debug.mirror;
 
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
@@ -33,7 +33,7 @@ public class Frame extends Mirror {
     private static final String SCOPE_COUNT    = "scopeCount";
     private static final String LOCAL_NAME     = "localName";
 
-    Frame(final V8Object v8Object) {
+    public Frame(final V8Object v8Object) {
         super(v8Object);
     }
 
