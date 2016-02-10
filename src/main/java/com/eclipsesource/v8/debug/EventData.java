@@ -18,7 +18,7 @@ import com.eclipsesource.v8.V8Object;
  */
 public class EventData implements Releasable {
 
-    private V8Object v8Object;
+    protected V8Object v8Object;
 
     EventData(final V8Object eventData) {
         v8Object = eventData.twin();
