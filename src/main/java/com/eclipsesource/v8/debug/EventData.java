@@ -10,11 +10,25 @@
  ******************************************************************************/
 package com.eclipsesource.v8.debug;
 
+import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
-public interface BreakHandler {
+/**
+ * Typed information about different debug events.
+ */
+public class EventData implements Releasable {
 
-    public void onBreak(DebugEvent type, ExecutionState state, EventData eventData, V8Object data);
+    private V8Object v8Object;
+
+    EventData(final V8Object eventData) {
+        v8Object = eventData.twin();
+    }
+
+    @Override
+    public void release() {
+        if (!v8Object.isReleased()) {
+            v8Object.release();
+        }
+    }
 
 }

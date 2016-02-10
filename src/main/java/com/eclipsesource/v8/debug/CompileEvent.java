@@ -11,10 +11,14 @@
 package com.eclipsesource.v8.debug;
 
 import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
-public interface BreakHandler {
+/**
+ * Holds information about Compile Events.
+ */
+public class CompileEvent extends EventData {
 
-    public void onBreak(DebugEvent type, ExecutionState state, EventData eventData, V8Object data);
+    CompileEvent(final V8Object eventData) {
+        super(eventData);
+    }
 
 }

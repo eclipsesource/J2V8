@@ -72,7 +72,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getLocalCount();
                 frame.release();
@@ -89,7 +89,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getArgumentCount();
                 frame.release();
@@ -106,7 +106,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getScopeCount();
                 frame.release();
@@ -123,7 +123,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope0 = frame.getScope(0);
                 Scope scope1 = frame.getScope(1);
@@ -144,7 +144,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 int argumentCount = frame.getLocalCount();
                 String local1 = frame.getLocalName(0);
@@ -168,7 +168,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 int argumentCount = frame.getArgumentCount();
                 String arg1 = frame.getArgumentName(0);
@@ -192,7 +192,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 int argumentCount = frame.getArgumentCount();
                 ValueMirror arg1 = frame.getArgumentValue(0);
@@ -219,7 +219,7 @@ public class FrameTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 int argumentCount = frame.getLocalCount();
                 ValueMirror local1 = frame.getLocalValue(0);
@@ -250,13 +250,13 @@ public class FrameTest {
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 DebugEvent arg1 = (DebugEvent) invocation.getArguments()[0];
                 ExecutionState arg2 = (ExecutionState) invocation.getArguments()[1];
-                V8Object arg3 = (V8Object) invocation.getArguments()[2];
+                EventData arg3 = (EventData) invocation.getArguments()[2];
                 V8Object arg4 = (V8Object) invocation.getArguments()[3];
                 handler.onBreak(arg1, arg2, arg3, arg4);
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
 }

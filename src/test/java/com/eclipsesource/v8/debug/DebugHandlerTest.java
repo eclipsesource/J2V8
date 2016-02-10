@@ -12,6 +12,7 @@ package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,7 @@ public class DebugHandlerTest {
             + "}                    // 5 \n"
             + "foo();               // 6 \n";
     private V8            v8;
+    private Object        result = false;
 
     @Before
     public void setup() {
@@ -72,9 +74,69 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler).onBreak(eq(DebugEvent.BeforeCompile), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
-        verify(breakHandler).onBreak(eq(DebugEvent.AfterCompile), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
-        verify(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler).onBreak(eq(DebugEvent.BeforeCompile), any(ExecutionState.class), any(CompileEvent.class), any(V8Object.class));
+        verify(breakHandler).onBreak(eq(DebugEvent.AfterCompile), any(ExecutionState.class), any(CompileEvent.class), any(V8Object.class));
+        verify(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(BreakEvent.class), any(V8Object.class));
+        handler.release();
+    }
+
+    @Test
+    public void testBeforeCompileEvent() {
+        DebugHandler handler = new DebugHandler(v8);
+        handler.setScriptBreakpoint("script", 3);
+        handler.addBreakHandler(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent type, final ExecutionState state, final EventData eventData, final V8Object data) {
+                if (type == DebugEvent.BeforeCompile) {
+                    result = eventData instanceof CompileEvent;
+                }
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+        handler.release();
+    }
+
+    @Test
+    public void testAfterCompileEvent() {
+        DebugHandler handler = new DebugHandler(v8);
+        handler.setScriptBreakpoint("script", 3);
+        handler.addBreakHandler(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent type, final ExecutionState state, final EventData eventData, final V8Object data) {
+                if (type == DebugEvent.AfterCompile) {
+                    result = eventData instanceof CompileEvent;
+                }
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+        handler.release();
+    }
+
+    @Test
+    public void testBreakEvent() {
+        DebugHandler handler = new DebugHandler(v8);
+        handler.setScriptBreakpoint("script", 3);
+        handler.addBreakHandler(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent type, final ExecutionState state, final EventData eventData, final V8Object data) {
+                if (type == DebugEvent.Break) {
+                    result = eventData instanceof BreakEvent;
+                }
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
         handler.release();
     }
 
@@ -87,7 +149,7 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         handler.release();
     }
 
@@ -102,7 +164,7 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
         int breakpointCount = handler.getScriptBreakPointCount();
-        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         assertEquals(0, breakpointCount);
         handler.release();
     }
@@ -155,7 +217,7 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         handler.release();
     }
 
@@ -169,7 +231,7 @@ public class DebugHandlerTest {
         handler.disableAllBreakPoints();
 
         v8.executeScript(script, "script", 0);
-        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         handler.release();
     }
 
@@ -184,7 +246,7 @@ public class DebugHandlerTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         handler.release();
     }
 
@@ -209,7 +271,7 @@ public class DebugHandlerTest {
 
         function.call(null, null);
 
-        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         handler.release();
         function.release();
     }

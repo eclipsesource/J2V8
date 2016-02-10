@@ -91,7 +91,7 @@ public class ScriptBreakPointTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         breakPoint.release();
         handler.release();
     }
@@ -107,7 +107,7 @@ public class ScriptBreakPointTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         breakPoint.release();
         handler.release();
     }

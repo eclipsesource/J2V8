@@ -81,11 +81,11 @@ public class ExecutionStateTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(5)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(5)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
     @Test
@@ -99,11 +99,11 @@ public class ExecutionStateTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(2)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(2)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
     @Test
@@ -117,11 +117,11 @@ public class ExecutionStateTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(8)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        verify(breakHandler, times(8)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class ExecutionStateTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
 
         v8.executeScript(script, "script", 0);
 
@@ -157,7 +157,7 @@ public class ExecutionStateTest {
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
 
         v8.executeScript(script, "script", 0);
 

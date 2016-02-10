@@ -79,7 +79,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 result = scope.getType();
@@ -98,7 +98,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(2);
                 result = scope.getType();
@@ -117,7 +117,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(1);
                 result = scope.getType();
@@ -136,7 +136,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", 0);
@@ -155,7 +155,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 V8Object newValue = new V8Object(v8).add("foo", "bar");
@@ -177,7 +177,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", false);
@@ -196,7 +196,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", 3.14);
@@ -215,7 +215,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", "someString");
@@ -234,7 +234,7 @@ public class ScopeTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 ObjectMirror scopeObject = scope.getScopeObject();
@@ -260,13 +260,13 @@ public class ScopeTest {
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 DebugEvent arg1 = (DebugEvent) invocation.getArguments()[0];
                 ExecutionState arg2 = (ExecutionState) invocation.getArguments()[1];
-                V8Object arg3 = (V8Object) invocation.getArguments()[2];
+                EventData arg3 = (EventData) invocation.getArguments()[2];
                 V8Object arg4 = (V8Object) invocation.getArguments()[3];
                 handler.onBreak(arg1, arg2, arg3, arg4);
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
 }

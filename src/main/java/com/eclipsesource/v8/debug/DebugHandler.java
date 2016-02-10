@@ -307,18 +307,38 @@ public class DebugHandler implements Releasable {
             V8Object eventData = null;
             V8Object data = null;
             ExecutionState state = null;
+            EventData typedEventData = null;
             try {
                 execState = parameters.getObject(1);
                 eventData = parameters.getObject(2);
                 data = parameters.getObject(3);
                 state = new ExecutionState(execState);
-                handler.onBreak(DebugEvent.values()[event], state, eventData, data);
+                DebugEvent type = DebugEvent.values()[event];
+                typedEventData = createDebugEvent(type, eventData);
+                handler.onBreak(type, state, typedEventData, data);
             } finally {
                 safeRelease(execState);
                 safeRelease(eventData);
                 safeRelease(data);
                 safeRelease(state);
+                safeRelease(typedEventData);
             }
+        }
+
+        private EventData createDebugEvent(final DebugEvent type, final V8Object eventData) {
+            switch (type) {
+                case Break:
+                    return new BreakEvent(eventData);
+                case BeforeCompile:
+                    return new CompileEvent(eventData);
+                case AfterCompile:
+                    return new CompileEvent(eventData);
+                case Exception:
+                    return new ExceptionEvent(eventData);
+                default:
+                    break;
+            }
+            return new EventData(eventData);
         }
 
         private void safeRelease(final Releasable object) {

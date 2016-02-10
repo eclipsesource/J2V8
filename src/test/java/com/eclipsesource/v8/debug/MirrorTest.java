@@ -82,7 +82,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror number = frame.getLocalValue(0);
                 result = number.isValue() && number.isNumber();
@@ -102,7 +102,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror booleanValue = frame.getLocalValue(1);
                 result = booleanValue.isValue() && booleanValue.isBoolean();
@@ -122,7 +122,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror objectValue = frame.getLocalValue(2);
                 result = objectValue.isValue() && objectValue.isObject();
@@ -141,7 +141,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ObjectMirror objectValue = (ObjectMirror) frame.getLocalValue(2);
                 PropertiesArray properties = objectValue.getProperties(PropertyKind.Named, 0);
@@ -166,7 +166,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror arrayValue = frame.getLocalValue(3);
                 result = arrayValue.isValue() && arrayValue.isObject() && arrayValue.isArray();
@@ -186,7 +186,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror stringValue = frame.getLocalValue(4);
                 result = stringValue.isValue() && stringValue.isString();
@@ -206,7 +206,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror nullValue = frame.getLocalValue(5);
                 result = nullValue.isValue() && nullValue.isNull();
@@ -225,7 +225,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ValueMirror undefinedValue = frame.getLocalValue(6);
                 result = undefinedValue.isValue() && undefinedValue.isUndefined();
@@ -244,7 +244,7 @@ public class MirrorTest {
         handleBreak(new BreakHandler() {
 
             @Override
-            public void onBreak(final DebugEvent event, final ExecutionState state, final V8Object eventData, final V8Object data) {
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 ObjectMirror mirror = (ObjectMirror) frame.getLocalValue(2);
                 V8Object object = (V8Object) mirror.getValue();
@@ -267,13 +267,13 @@ public class MirrorTest {
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 DebugEvent arg1 = (DebugEvent) invocation.getArguments()[0];
                 ExecutionState arg2 = (ExecutionState) invocation.getArguments()[1];
-                V8Object arg3 = (V8Object) invocation.getArguments()[2];
+                EventData arg3 = (EventData) invocation.getArguments()[2];
                 V8Object arg4 = (V8Object) invocation.getArguments()[3];
                 handler.onBreak(arg1, arg2, arg3, arg4);
                 return null;
             }
 
-        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(V8Object.class), any(V8Object.class));
+        }).when(breakHandler).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
 }
