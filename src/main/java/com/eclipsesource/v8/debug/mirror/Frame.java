@@ -19,14 +19,22 @@ import com.eclipsesource.v8.V8Object;
  */
 public class Frame extends Mirror {
 
-    private static final String SCOPE          = "scope";
-    private static final String ARGUMENT_VALUE = "argumentValue";
-    private static final String ARGUMENT_NAME  = "argumentName";
-    private static final String LOCAL_COUNT    = "localCount";
-    private static final String ARGUMENT_COUNT = "argumentCount";
-    private static final String SCOPE_COUNT    = "scopeCount";
-    private static final String LOCAL_NAME     = "localName";
-    private static final String LOCAL_VALUE    = "localValue";
+    private static final String END             = "end";
+    private static final String START           = "start";
+    private static final String COLUMN          = "column";
+    private static final String LINE            = "line";
+    private static final String POSITION        = "position";
+    private static final String NAME            = "name";
+    private static final String SCRIPT          = "script";
+    private static final String SCOPE           = "scope";
+    private static final String ARGUMENT_VALUE  = "argumentValue";
+    private static final String ARGUMENT_NAME   = "argumentName";
+    private static final String LOCAL_COUNT     = "localCount";
+    private static final String ARGUMENT_COUNT  = "argumentCount";
+    private static final String SCOPE_COUNT     = "scopeCount";
+    private static final String LOCAL_NAME      = "localName";
+    private static final String LOCAL_VALUE     = "localValue";
+    private static final String SOURCE_LOCATION = "sourceLocation";
 
     public Frame(final V8Object v8Object) {
         super(v8Object);
@@ -39,6 +47,28 @@ public class Frame extends Mirror {
      */
     public int getScopeCount() {
         return v8Object.executeIntegerFunction(SCOPE_COUNT, null);
+    }
+
+    /**
+     * Returns the SourceLocation of this Frame.
+     *
+     * @return The SourceLocation of this Frame.
+     */
+    public SourceLocation getSourceLocation() {
+        V8Object sourceLocation = v8Object.executeObjectFunction(SOURCE_LOCATION, null);
+        try {
+            V8Object scriptObject = (V8Object) sourceLocation.get(SCRIPT);
+            String scriptName = scriptObject.getString(NAME);
+            scriptObject.release();
+            return new SourceLocation(scriptName,
+                sourceLocation.getInteger(POSITION),
+                sourceLocation.getInteger(LINE),
+                sourceLocation.getInteger(COLUMN),
+                sourceLocation.getInteger(START),
+                sourceLocation.getInteger(END));
+        } finally {
+            sourceLocation.release();
+        }
     }
 
     /**
