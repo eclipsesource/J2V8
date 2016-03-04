@@ -77,7 +77,7 @@ public class ExecutionStateTest {
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 ExecutionState state = (ExecutionState) invocation.getArguments()[1];
-                state.prepareState(StepAction.STEP_NEXT);
+                state.prepareStep(StepAction.STEP_NEXT);
                 return null;
             }
 
@@ -95,7 +95,7 @@ public class ExecutionStateTest {
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 ExecutionState state = (ExecutionState) invocation.getArguments()[1];
-                state.prepareState(StepAction.STEP_OUT);
+                state.prepareStep(StepAction.STEP_OUT);
                 return null;
             }
 
@@ -113,7 +113,7 @@ public class ExecutionStateTest {
             @Override
             public Object answer(final InvocationOnMock invocation) throws Throwable {
                 ExecutionState state = (ExecutionState) invocation.getArguments()[1];
-                state.prepareState(StepAction.STEP_IN);
+                state.prepareStep(StepAction.STEP_IN);
                 return null;
             }
 

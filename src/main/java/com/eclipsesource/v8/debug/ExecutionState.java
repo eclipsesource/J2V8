@@ -52,7 +52,7 @@ public class ExecutionState implements Releasable {
      *
      * @param action The step action to use.
      */
-    public void prepareState(final StepAction action) {
+    public void prepareStep(final StepAction action) {
         V8Array parameters = new V8Array(v8Object.getRuntime());
         parameters.push(action.index);
         try {
