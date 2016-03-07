@@ -27,6 +27,7 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.mirror.Frame;
+import com.eclipsesource.v8.debug.mirror.FunctionMirror;
 import com.eclipsesource.v8.debug.mirror.Scope;
 import com.eclipsesource.v8.debug.mirror.SourceLocation;
 import com.eclipsesource.v8.debug.mirror.ValueMirror;
@@ -66,6 +67,23 @@ public class FrameTest {
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Test
+    public void testGetFunctionMirror() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                result = frame.getFunction();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertEquals("foo", ((FunctionMirror) result).getName());
     }
 
     @Test

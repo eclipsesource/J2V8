@@ -190,6 +190,18 @@ public class Frame extends Mirror {
         }
     }
 
+    public FunctionMirror getFunction() {
+        V8Object function = null;
+        try {
+            function = v8Object.executeObjectFunction("func", null);
+            return new FunctionMirror(function);
+        } finally {
+            if (function != null) {
+                function.release();
+            }
+        }
+    }
+
     @Override
     public boolean isFrame() {
         return true;
