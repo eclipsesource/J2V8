@@ -66,7 +66,7 @@ rm src/main/resources/*j2v8*
 cp jni/libj2v8_linux_x86_64.so src/main/resources/libj2v8_linux_x86_64.so
 sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
-sed s/\$\{ws\}/gtk/g < pom1.xml  > pom.xml
+sed s/\$\{ws\}/gtk/g < pom2.xml  > pom.xml
 mvn -Dos=linux -Darch=x86_64 clean deploy $SUFFIX
 cp pom_template.xml pom.xml
 rm pom1.xml
