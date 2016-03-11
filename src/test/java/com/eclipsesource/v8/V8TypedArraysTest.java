@@ -156,6 +156,18 @@ public class V8TypedArraysTest {
     }
 
     @Test
+    public void testGetTypedArrayUInt8Type() {
+        v8.registerJavaMethod(new JavaVoidCallback() {
+
+            @Override
+            public void invoke(final V8Object receiver, final V8Array parameters) {
+                assertEquals(V8Value.V8_ARRAY, parameters.getType(0));
+            }
+        }, "javaMethod");
+        v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Uint8ClampedArray(buf); ints[0] = 7; javaMethod(ints);");
+    }
+
+    @Test
     public void testGetTypedArrayFloatArrayType() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float32Array(buf); floats[0] = 7.7; floats[1] = 7; floats");
 

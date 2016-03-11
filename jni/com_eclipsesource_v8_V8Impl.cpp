@@ -1051,7 +1051,7 @@ int getType(Handle<Value> v8Value) {
   else if (v8Value->IsFunction()) {
    return com_eclipsesource_v8_V8_V8_FUNCTION;
   }
-  else if (v8Value->IsArray()) {
+  else if (v8Value->IsArray() || v8Value->IsTypedArray()) {
     return com_eclipsesource_v8_V8_V8_ARRAY;
   }
   else if (v8Value->IsObject()) {
