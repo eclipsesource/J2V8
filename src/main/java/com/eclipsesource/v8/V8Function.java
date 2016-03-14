@@ -18,13 +18,38 @@ package com.eclipsesource.v8;
  */
 public class V8Function extends V8Object {
 
+    /**
+     * Create a JavaScript function, that when invoked will call
+     * the javaCallback passed to the receiver.
+     *
+     * @param v8 The v8 runtime on which to create this function
+     * @param javaCallback The callback to invoke
+     */
+    public V8Function(final V8 v8, final JavaCallback javaCallback) {
+        super(v8, javaCallback);
+    }
+
     protected V8Function(final V8 v8) {
-        super(v8);
+        this(v8, null);
     }
 
     @Override
     protected V8Value createTwin() {
         return new V8Function(v8);
+    }
+
+    @Override
+    protected long initialize(final long runtimePtr, final Object data) {
+        if (data == null) {
+            return super.initialize(runtimePtr, null);
+        }
+        JavaCallback javaCallback = (JavaCallback) data;
+        long[] pointers = v8.initNewV8Function(runtimePtr);
+        // position 0 is the object reference, position 1 is the function reference
+        v8.createAndRegisterMethodDescriptor(javaCallback, pointers[1]);
+        v8.addObjRef();
+        released = false;
+        return pointers[0];
     }
 
     /*
@@ -54,4 +79,5 @@ public class V8Function extends V8Object {
         long receiverHandle = receiver.isUndefined() ? v8.objectHandle : receiver.objectHandle;
         return v8.executeFunction(v8.getV8RuntimePtr(), receiverHandle, objectHandle, parametersHandle);
     }
+
 }

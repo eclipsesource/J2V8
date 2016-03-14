@@ -16,7 +16,6 @@
 #include <string.h>
 #include <map>
 #include <cstdlib>
-#include <vector>
 #include "com_eclipsesource_v8_V8Impl.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
@@ -26,7 +25,7 @@ using namespace v8;
 
 class MethodDescriptor {
 public:
-  int methodID;
+  jlong methodID;
   jlong v8RuntimePtr;
 };
 
@@ -36,7 +35,6 @@ public:
   Isolate::Scope* isolate_scope;
   Persistent<Context> context_;
   Persistent<Object>* globalObject;
-  std::vector<MethodDescriptor*> methodDescriptors;
   jobject v8;
   jthrowable pendingException;
 };
@@ -68,6 +66,7 @@ jmethodID v8ArrayInitMethodID = NULL;
 jmethodID v8ArrayGetHandleMethodID = NULL;
 jmethodID v8CallVoidMethodID = NULL;
 jmethodID v8ObjectReleaseMethodID = NULL;
+jmethodID v8DisposeMethodID = NULL;
 jmethodID v8ArrayReleaseMethodID = NULL;
 jmethodID v8ObjectIsUndefinedMethodID = NULL;
 jmethodID v8ObjectGetHandleMethodID = NULL;
@@ -226,11 +225,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
-    
+
     // Get all method IDs
     v8ArrayInitMethodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
     v8ArrayGetHandleMethodID = env->GetMethodID(v8ArrayCls, "getHandle", "()J");
-    v8CallVoidMethodID = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
+    v8CallVoidMethodID = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(JLcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
     v8ObjectReleaseMethodID = env->GetMethodID(v8ObjectCls, "release", "()V");
     v8ArrayReleaseMethodID = env->GetMethodID(v8ArrayCls, "release", "()V");
     v8ObjectIsUndefinedMethodID = env->GetMethodID(v8ObjectCls, "isUndefined", "()Z");
@@ -239,7 +238,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     integerIntValueMethodID = env->GetMethodID(integerCls, "intValue", "()I");
     booleanBoolValueMethodID = env->GetMethodID(booleanCls, "booleanValue", "()Z");
     doubleDoubleValueMethodID = env->GetMethodID(doubleCls, "doubleValue", "()D");
-    v8CallObjectJavaMethodMethodID = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(ILcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
+    v8CallObjectJavaMethodMethodID = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(JLcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
+    v8DisposeMethodID = (env)->GetMethodID(v8cls, "disposeMethodID", "(J)V");
     v8ScriptCompilationInitMethodID = env->GetMethodID(v8ScriptCompilationCls, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V");
     v8ScriptExecutionExceptionInitMethodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
     undefinedV8ArrayInitMethodID = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
@@ -360,9 +360,6 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate->Dispose();
   env->DeleteGlobalRef(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->v8);
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
-  for(std::vector<MethodDescriptor>::size_type i = 0; i != runtime->methodDescriptors.size(); i++) {
-    delete(runtime->methodDescriptors[i]);
-  }
   delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr));
 }
 
@@ -1259,20 +1256,69 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   env->DeleteLocalRef(parameters);
 }
 
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
-(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle, jstring functionName, jint methodID, jboolean voidMethod) {
-  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+JNIEXPORT jlongArray JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Function
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  MethodDescriptor* md = new MethodDescriptor();
+  Local<External> ext = External::New(isolate, md);
+  Persistent<External> pext(isolate, ext);
+  isolate->IdleNotification(1000);
+  pext.SetWeak(md, [](v8::WeakCallbackInfo<MethodDescriptor> const& data) {
+    MethodDescriptor* md = data.GetParameter();
+    jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
+    JNIEnv * env;
+    getJNIEnv(env);
+    env->CallVoidMethod(v8, v8DisposeMethodID, md->methodID);
+    delete(md);
+  }, WeakCallbackType::kParameter);
+
+  Local<Function> function = Function::New(isolate, objectCallback, External::New(isolate, md));
+  md->v8RuntimePtr = v8RuntimePtr;
+  Persistent<Object>* container = new Persistent<Object>;
+  container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, function);
+  md->methodID = reinterpret_cast<jlong>(md);
+
+  // Position 0 is the pointer to the container, position 1 is the pointer to the descriptor
+  jlongArray result = env->NewLongArray(2);
+  jlong * fill = new jlong[2];
+  fill[0] = reinterpret_cast<jlong>(container);
+  fill[1] = md->methodID;
+  (env)->SetLongArrayRegion(result, 0, 2, fill);
+  return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle, jstring functionName, jboolean voidMethod) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   FunctionCallback callback = voidCallback;
   if (!voidMethod) {
     callback = objectCallback;
   }
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
   Local<String> v8FunctionName = createV8String(env, isolate, functionName);
-  MethodDescriptor* md = new MethodDescriptor();
-  md->methodID = methodID;
+  isolate->IdleNotification(1000);
+  MethodDescriptor* md= new MethodDescriptor();
+  Local<External> ext =  External::New(isolate, md);
+  Persistent<External> pext(isolate, ext);
+  pext.SetWeak(md, [](v8::WeakCallbackInfo<MethodDescriptor> const& data) {
+    MethodDescriptor* md = data.GetParameter();
+    jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
+    JNIEnv * env;
+    getJNIEnv(env);
+    env->CallVoidMethod(v8, v8DisposeMethodID, md->methodID);
+    delete(md);
+  }, WeakCallbackType::kParameter);
+
+  md->methodID = reinterpret_cast<jlong>(md);
   md->v8RuntimePtr = v8RuntimePtr;
-  reinterpret_cast<V8Runtime*>(v8RuntimePtr)->methodDescriptors.push_back(md);
-  object->Set(v8FunctionName, Function::New(isolate, callback, External::New(isolate, md)));
+  object->Set(v8FunctionName, Function::New(isolate, callback, ext));
+  return md->methodID;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseMethodDescriptor
+  (JNIEnv *, jobject, jlong, jlong methodDescriptorPtr) {
+  MethodDescriptor* md = reinterpret_cast<MethodDescriptor*>(methodDescriptorPtr);
+  delete(md);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype

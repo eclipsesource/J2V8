@@ -119,6 +119,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1release
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _releaseMethodDescriptor
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseMethodDescriptor
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _contains
  * Signature: (JJLjava/lang/String;)Z
  */
@@ -328,10 +336,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addNull
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _registerJavaMethod
- * Signature: (JJLjava/lang/String;IZ)V
+ * Signature: (JJLjava/lang/String;Z)J
  */
-JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
-  (JNIEnv *, jobject, jlong, jlong, jstring, jint, jboolean);
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
+  (JNIEnv *, jobject, jlong, jlong, jstring, jboolean);
 
 /*
  * Class:     com_eclipsesource_v8_V8
@@ -339,6 +347,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
  * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Array
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Function
+ * Signature: (J)[J
+ */
+JNIEXPORT jlongArray JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Function
   (JNIEnv *, jobject, jlong);
 
 /*

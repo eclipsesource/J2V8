@@ -21,7 +21,8 @@ import org.junit.Test;
 
 public class V8JSFunctionCallTest {
 
-    private V8 v8;
+    private V8     v8;
+    private Object result;
 
     @Before
     public void seutp() {
@@ -766,6 +767,60 @@ public class V8JSFunctionCallTest {
         obj1.release();
         obj2.release();
         parameters.release();
+    }
+
+    @Test
+    public void testCreateV8Function() {
+        V8Function function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                result = "passed";
+                return null;
+            }
+        });
+        function.call(null, null);
+
+        assertEquals("passed", result);
+        function.release();
+    }
+
+    @Test
+    public void testCreateV8Function_CalledFromJS() {
+        v8.executeScript("function doSomething(callback) { callback(); }");
+        V8Function function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                result = "passed";
+                return null;
+            }
+        });
+        V8Array parameters = new V8Array(v8).push(function);
+        v8.executeVoidFunction("doSomething", parameters);
+        function.release();
+        parameters.release();
+
+        assertEquals("passed", result);
+    }
+
+    @Test
+    public void testCreateV8Function_CalledFromJS_AfterFunctionReleased() {
+        v8.executeScript("function doSomething(callback) { callback(); }");
+        V8Function function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                result = "passed";
+                return null;
+            }
+        });
+        V8Array parameters = new V8Array(v8).push(function);
+        function.release();
+        v8.executeVoidFunction("doSomething", parameters);
+        parameters.release();
+
+        assertEquals("passed", result);
     }
 
 }

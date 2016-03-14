@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
@@ -40,14 +41,13 @@ public class V8 extends V8Object {
     private static String       v8Flags        = null;
     private static boolean      initialized    = false;
 
-    private final V8Locker                 locker;
-    private int                            methodReferenceCounter  = 0;
-    private long                           objectReferences        = 0;
-    private long                           v8RuntimePtr            = 0;
-    private List<Releasable>               resources               = null;
-    private V8Map<V8Executor>              executors               = null;
-    private boolean                        forceTerminateExecutors = false;
-    private Map<Integer, MethodDescriptor> functions               = new HashMap<Integer, MethodDescriptor>();
+    private final V8Locker              locker;
+    private long                        objectReferences        = 0;
+    private long                        v8RuntimePtr            = 0;
+    private List<Releasable>            resources               = null;
+    private V8Map<V8Executor>           executors               = null;
+    private boolean                     forceTerminateExecutors = false;
+    private Map<Long, MethodDescriptor> functionRegistry        = new HashMap<Long, MethodDescriptor>();
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -248,6 +248,7 @@ public class V8 extends V8Object {
         if (executors != null) {
             executors.clear();
         }
+        releaseNativeMethodDescriptors();
         synchronized (lock) {
             runtimeCounter--;
         }
@@ -256,6 +257,13 @@ public class V8 extends V8Object {
         released = true;
         if (reportMemoryLeaks && (objectReferences > 0)) {
             throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+        }
+    }
+
+    private void releaseNativeMethodDescriptors() {
+        Set<Long> nativeMethodDescriptors = functionRegistry.keySet();
+        for (Long nativeMethodDescriptor : nativeMethodDescriptors) {
+            releaseMethodDescriptor(v8RuntimePtr, nativeMethodDescriptor);
         }
     }
 
@@ -637,25 +645,26 @@ public class V8 extends V8Object {
         methodDescriptor.object = object;
         methodDescriptor.method = method;
         methodDescriptor.includeReceiver = includeReceiver;
-        int methodID = methodReferenceCounter++;
-        getFunctionRegistry().put(methodID, methodDescriptor);
-        registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, methodID, isVoidMethod(method));
+        long methodID = registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, isVoidMethod(method));
+        functionRegistry.put(methodID, methodDescriptor);
     }
 
     void registerVoidCallback(final JavaVoidCallback callback, final long objectHandle, final String jsFunctionName) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.voidCallback = callback;
-        int methodID = methodReferenceCounter++;
-        getFunctionRegistry().put(methodID, methodDescriptor);
-        registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, methodID, true);
+        long methodID = registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, true);
+        functionRegistry.put(methodID, methodDescriptor);
     }
 
     void registerCallback(final JavaCallback callback, final long objectHandle, final String jsFunctionName) {
+        long methodID = registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, false);
+        createAndRegisterMethodDescriptor(callback, methodID);
+    }
+
+    void createAndRegisterMethodDescriptor(final JavaCallback callback, final long methodID) {
         MethodDescriptor methodDescriptor = new MethodDescriptor();
         methodDescriptor.callback = callback;
-        int methodID = methodReferenceCounter++;
-        getFunctionRegistry().put(methodID, methodDescriptor);
-        registerJavaMethod(getV8RuntimePtr(), objectHandle, jsFunctionName, methodID, false);
+        functionRegistry.put(methodID, methodDescriptor);
     }
 
     private boolean isVoidMethod(final Method method) {
@@ -675,8 +684,12 @@ public class V8 extends V8Object {
         return invalid;
     }
 
-    protected Object callObjectJavaMethod(final int methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
+    protected void disposeMethodID(final long methodID) {
+        functionRegistry.remove(methodID);
+    }
+
+    protected Object callObjectJavaMethod(final long methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functionRegistry.get(methodID);
         if (methodDescriptor.callback != null) {
             return checkResult(methodDescriptor.callback.invoke(receiver, parameters));
         }
@@ -718,8 +731,8 @@ public class V8 extends V8Object {
         throw new V8RuntimeException("Unknown return type: " + result.getClass());
     }
 
-    protected void callVoidJavaMethod(final int methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
-        MethodDescriptor methodDescriptor = getFunctionRegistry().get(methodID);
+    protected void callVoidJavaMethod(final long methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
+        MethodDescriptor methodDescriptor = functionRegistry.get(methodID);
         if (methodDescriptor.voidCallback != null) {
             methodDescriptor.voidCallback.invoke(receiver, parameters);
             return;
@@ -838,13 +851,6 @@ public class V8 extends V8Object {
             // do nothing
         }
         return null;
-    }
-
-    private Map<Integer, MethodDescriptor> getFunctionRegistry() {
-        if (functions == null) {
-            functions = new HashMap<Integer, V8.MethodDescriptor>();
-        }
-        return functions;
     }
 
     protected long initNewV8Object(final long v8RuntimePtr) {
@@ -987,12 +993,15 @@ public class V8 extends V8Object {
         _addNull(v8RuntimePtr, objectHandle, key);
     }
 
-    protected void registerJavaMethod(final long v8RuntimePtr, final long objectHandle, final String functionName, final int methodID, final boolean voidMethod) {
-        _registerJavaMethod(v8RuntimePtr, objectHandle, functionName, methodID, voidMethod);
+    protected long registerJavaMethod(final long v8RuntimePtr, final long objectHandle, final String functionName, final boolean voidMethod) {
+        return _registerJavaMethod(v8RuntimePtr, objectHandle, functionName, voidMethod);
     }
-
     protected long initNewV8Array(final long v8RuntimePtr) {
         return _initNewV8Array(v8RuntimePtr);
+    }
+
+    protected long[] initNewV8Function(final long v8RuntimePtr) {
+        return _initNewV8Function(v8RuntimePtr);
     }
 
     protected int arrayGetSize(final long v8RuntimePtr, final long arrayHandle) {
@@ -1103,6 +1112,10 @@ public class V8 extends V8Object {
         _terminateExecution(v8RuntimePtr);
     }
 
+    protected void releaseMethodDescriptor(final long v8RuntimePtr, final long methodDescriptor) {
+        _releaseMethodDescriptor(v8RuntimePtr, methodDescriptor);
+    }
+
     private native long _initNewV8Object(long v8RuntimePtr);
 
     private native void _createTwin(long v8RuntimePtr, long objectHandle, long twinHandle);
@@ -1124,6 +1137,8 @@ public class V8 extends V8Object {
     private native void _executeVoidScript(long v8RuntimePtr, String script, String scriptName, int lineNumber);
 
     private native void _release(long v8RuntimePtr, long objectHandle);
+
+    private native void _releaseMethodDescriptor(long v8RuntimePtr, long methodDescriptor);
 
     private native boolean _contains(long v8RuntimePtr, long objectHandle, final String key);
 
@@ -1177,9 +1192,11 @@ public class V8 extends V8Object {
 
     private native void _addNull(long v8RuntimePtr, long objectHandle, final String key);
 
-    private native void _registerJavaMethod(long v8RuntimePtr, long objectHandle, final String functionName, final int methodID, final boolean voidMethod);
+    private native long _registerJavaMethod(long v8RuntimePtr, long objectHandle, final String functionName, final boolean voidMethod);
 
     private native long _initNewV8Array(long v8RuntimePtr);
+
+    private native long[] _initNewV8Function(long v8RuntimePtr);
 
     private native int _arrayGetSize(long v8RuntimePtr, long arrayHandle);
 

@@ -33,12 +33,16 @@ public class V8Object extends V8Value {
      *
      * @param v8 The runtime on which to associate the V8Object.
      */
-    public V8Object(final V8 v8) {
+    public V8Object(final V8 v8, final Object data) {
         super(v8);
         if (v8 != null) {
             this.v8.checkThread();
-            objectHandle = initialize(this.v8.getV8RuntimePtr());
+            objectHandle = initialize(this.v8.getV8RuntimePtr(), data);
         }
+    }
+
+    public V8Object(final V8 v8) {
+        this(v8, null);
     }
 
     protected V8Object() {
