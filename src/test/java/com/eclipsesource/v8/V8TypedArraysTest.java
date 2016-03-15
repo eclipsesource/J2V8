@@ -161,7 +161,7 @@ public class V8TypedArraysTest {
 
             @Override
             public void invoke(final V8Object receiver, final V8Array parameters) {
-                assertEquals(V8Value.V8_ARRAY, parameters.getType(0));
+                assertEquals(V8Value.V8_TYPED_ARRAY, parameters.getType(0));
             }
         }, "javaMethod");
         v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Uint8ClampedArray(buf); ints[0] = 7; javaMethod(ints);");
@@ -363,5 +363,62 @@ public class V8TypedArraysTest {
         int arrayLength = v8.executeIntegerScript("ints.byteLength;"); // 4 bytes for each element
 
         assertEquals(100, arrayLength);
+    }
+
+    @Test
+    public void testGetTypedArray() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n");
+
+        int type = v8.getType("intsArray");
+
+        assertEquals(V8Value.V8_TYPED_ARRAY, type);
+    }
+
+    @Test
+    public void testGetTypedArray_IntegerType() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n");
+
+        V8Array intsArray = (V8Array) v8.get("intsArray");
+
+        assertEquals(V8Value.INTEGER, intsArray.getType());
+        intsArray.release();
+    }
+
+    @Test
+    public void testGetTypedArray_IntegerTypeAfterNull() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = null;\n");
+
+        V8Array intsArray = (V8Array) v8.get("intsArray");
+
+        assertEquals(V8Value.INTEGER, intsArray.getType());
+        intsArray.release();
+    }
+
+    @Test
+    public void testGetTypedArray_IntegerTypeAfterUndefined() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = undefined;\n");
+
+        V8Array intsArray = (V8Array) v8.get("intsArray");
+
+        assertEquals(V8Value.INTEGER, intsArray.getType());
+        intsArray.release();
+    }
+
+    @Test
+    public void testGetTypedArray_IntegerTypeAfterFloat() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = 7.4;\n");
+
+        V8Array intsArray = (V8Array) v8.get("intsArray");
+
+        assertEquals(V8Value.INTEGER, intsArray.getType());
+        intsArray.release();
     }
 }

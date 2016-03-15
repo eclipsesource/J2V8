@@ -1049,9 +1049,12 @@ int getType(Handle<Value> v8Value) {
     return com_eclipsesource_v8_V8_STRING;
   }
   else if (v8Value->IsFunction()) {
-   return com_eclipsesource_v8_V8_V8_FUNCTION;
+    return com_eclipsesource_v8_V8_V8_FUNCTION;
   }
-  else if (v8Value->IsArray() || v8Value->IsTypedArray()) {
+  else if (v8Value->IsTypedArray()) {
+    return com_eclipsesource_v8_V8_V8_TYPED_ARRAY;
+  }
+  else if (v8Value->IsArray()) {
     return com_eclipsesource_v8_V8_V8_ARRAY;
   }
   else if (v8Value->IsObject()) {

@@ -122,6 +122,7 @@ public class V8Object extends V8Value {
             case STRING:
                 return getString(key);
             case V8_ARRAY:
+            case V8_TYPED_ARRAY:
                 return getArray(key);
             case V8_FUNCTION:
             case V8_OBJECT:
