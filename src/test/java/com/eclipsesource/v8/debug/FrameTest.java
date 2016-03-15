@@ -84,6 +84,7 @@ public class FrameTest {
         v8.executeScript(script, "script", 0);
 
         assertEquals("foo", ((FunctionMirror) result).getName());
+        ((FunctionMirror) result).release();
     }
 
     @Test
