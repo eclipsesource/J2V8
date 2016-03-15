@@ -1294,6 +1294,14 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
   return object->Equals(that);
 }
 
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1toString
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
+  String::Utf8Value utf(object->ToString());
+  return env->NewStringUTF(*utf);
+}
+
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1strictEquals
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle, jlong thatHandle) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);

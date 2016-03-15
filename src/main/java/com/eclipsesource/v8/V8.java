@@ -943,6 +943,10 @@ public class V8 extends V8Object {
         return _equals(v8RuntimePtr, objectHandle, that);
     }
 
+    protected String toString(final long v8RuntimePtr, final long objectHandle) {
+        return _toString(v8RuntimePtr, objectHandle);
+    }
+
     protected boolean strictEquals(final long v8RuntimePtr, final long objectHandle, final long that) {
         return _strictEquals(v8RuntimePtr, objectHandle, that);
     }
@@ -1150,6 +1154,8 @@ public class V8 extends V8Object {
     private native void _executeVoidFunction(long v8RuntimePtr, long objectHandle, final String name, final long parametersHandle);
 
     private native boolean _equals(long v8RuntimePtr, long objectHandle, long that);
+
+    private native String _toString(long v8RuntimePtr, long ObjectHandle);
 
     private native boolean _strictEquals(long v8RuntimePtr, long objectHandle, long that);
 

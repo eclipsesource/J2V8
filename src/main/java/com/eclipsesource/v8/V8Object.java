@@ -594,7 +594,7 @@ public class V8Object extends V8Value {
     public String toString() {
         v8.checkThread();
         checkReleased();
-        return executeStringFunction("toString", null);
+        return v8.toString(v8.getV8RuntimePtr(), getHandle());
     }
 
     static class Undefined extends V8Object {

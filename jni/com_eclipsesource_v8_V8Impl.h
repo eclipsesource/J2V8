@@ -239,6 +239,14 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1equals
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _toString
+ * Signature: (JJ)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1toString
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _strictEquals
  * Signature: (JJJ)Z
  */
