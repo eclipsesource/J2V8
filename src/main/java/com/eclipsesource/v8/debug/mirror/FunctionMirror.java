@@ -13,7 +13,7 @@ package com.eclipsesource.v8.debug.mirror;
 import com.eclipsesource.v8.V8Object;
 
 /**
- * Represents JavaScript 'Number' Mirrors
+ * Represents JavaScript 'Function' Mirrors
  */
 public class FunctionMirror extends ObjectMirror {
 
@@ -21,6 +21,11 @@ public class FunctionMirror extends ObjectMirror {
         super(v8Object);
     }
 
+    /**
+     * Returns the name of this Function.
+     *
+     * @return The name of this function
+     */
     public String getName() {
         return v8Object.executeStringFunction("name", null);
     }

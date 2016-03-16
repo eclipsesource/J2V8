@@ -190,6 +190,11 @@ public class Frame extends Mirror {
         }
     }
 
+    /**
+     * Returns the Function associated with this particular debug frame.
+     *
+     * @return The Function for this debug frame.
+     */
     public FunctionMirror getFunction() {
         V8Object function = null;
         try {
