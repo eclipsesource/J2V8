@@ -387,6 +387,17 @@ public class V8TypedArraysTest {
     }
 
     @Test
+    public void testGetTypedArray_DoubleType() {
+        v8.executeVoidScript("var buf = new ArrayBuffer(80);\n"
+                + "var doublesArray = new Float64Array(buf);");
+
+        V8Array doublesArray = (V8Array) v8.get("doublesArray");
+
+        assertEquals(V8Value.DOUBLE, doublesArray.getType());
+        doublesArray.release();
+    }
+
+    @Test
     public void testGetTypedArray_IntegerTypeAfterNull() {
         v8.executeVoidScript("var buf = new ArrayBuffer(100);\n"
                 + "var intsArray = new Int32Array(buf);\n"

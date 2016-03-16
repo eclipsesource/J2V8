@@ -743,7 +743,10 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
   int length = 0;
   if ( array->IsTypedArray() ) {
-	  length = TypedArray::Cast(*array)->Length();
+      if ( array->IsFloat64Array() || array->IsFloat32Array() ) {
+        return com_eclipsesource_v8_V8_DOUBLE;
+      }
+      return com_eclipsesource_v8_V8_INTEGER;
   } else {
 	  length = Array::Cast(*array)->Length();
   }
