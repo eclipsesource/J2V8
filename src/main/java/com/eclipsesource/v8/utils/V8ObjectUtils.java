@@ -433,6 +433,20 @@ public class V8ObjectUtils {
                 return array.getString(index);
             case V8Value.V8_FUNCTION:
                 return IGNORE;
+            case V8Value.V8_TYPED_ARRAY:
+                V8Array typedArray = array.getArray(index);
+                try {
+                    if (typedArray.getType() == V8Value.INTEGER) {
+                        return typedArray.getIntegers(0, typedArray.length());
+                    } else if (typedArray.getType() == V8Value.DOUBLE) {
+                        return typedArray.getDoubles(0, typedArray.length());
+                    }
+                    // fall through to V8_ARRAY
+                } finally {
+                    if (typedArray instanceof V8Array) {
+                        typedArray.release();
+                    }
+                }
             case V8Value.V8_ARRAY:
                 V8Array arrayValue = array.getArray(index);
                 try {
@@ -473,6 +487,20 @@ public class V8ObjectUtils {
                 return object.getString(key);
             case V8Value.V8_FUNCTION:
                 return IGNORE;
+            case V8Value.V8_TYPED_ARRAY:
+                V8Array typedArray = object.getArray(key);
+                try {
+                    if (typedArray.getType() == V8Value.INTEGER) {
+                        return typedArray.getIntegers(0, typedArray.length());
+                    } else if (typedArray.getType() == V8Value.DOUBLE) {
+                        return typedArray.getDoubles(0, typedArray.length());
+                    }
+                    // fall through to V8_ARRAY
+                } finally {
+                    if (typedArray instanceof V8Array) {
+                        typedArray.release();
+                    }
+                }
             case V8Value.V8_ARRAY:
                 V8Array array = object.getArray(key);
                 try {

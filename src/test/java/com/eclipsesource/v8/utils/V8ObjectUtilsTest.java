@@ -1190,6 +1190,276 @@ public class V8ObjectUtilsTest {
         parent.release();
     }
 
+    @Test
+    public void testArrayTypedArrayValue_Int8Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Uint8Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Uint8ClampedArray() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var int8ClampedArray = new Uint8ClampedArray(buf);\n"
+                + "int8ClampedArray[0] = 16;\n"
+                + "var root = [int8ClampedArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Int16Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(50, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Uint16Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(50, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Int32Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(25, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Uint32Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = [intsArray]\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(25, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Float32Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var floatsArray = new Float32Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "var root = [floatsArray];"
+                + "root;\n");
+
+        double[] result = (double[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(25, result.length);
+        assertEquals(16.2, result[0], 0.00001);
+        root.release();
+    }
+
+    @Test
+    public void testArrayTypedArrayValue_Float64Array() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(80);\n"
+                + "var floatsArray = new Float64Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "var root = [floatsArray];\n"
+                + "root;\n");
+
+        double[] result = (double[]) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(10, result.length);
+        assertEquals(16.2, result[0], 0.0001);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Int8Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Uint8Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Uint8ClampedArray() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var int8ClampedArray = new Uint8ClampedArray(buf);\n"
+                + "int8ClampedArray[0] = 16;\n"
+                + "var root = { 'items' : int8ClampedArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(100, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Int16Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(50, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Uint16Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(50, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Int32Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(25, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Uint32Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "var root = { 'items' : intsArray };\n"
+                + "root;\n");
+
+        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(25, result.length);
+        assertEquals(16, result[0]);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Float32Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var floatsArray = new Float32Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "var root = { 'items' : floatsArray };"
+                + "root;\n");
+
+        double[] result = (double[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(25, result.length);
+        assertEquals(16.2, result[0], 0.00001);
+        root.release();
+    }
+
+    @Test
+    public void testTypedArrayValue_Float64Array() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(80);\n"
+                + "var floatsArray = new Float64Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "var root = { 'items' : floatsArray };\n"
+                + "root;\n");
+
+        double[] result = (double[]) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(10, result.length);
+        assertEquals(16.2, result[0], 0.0001);
+        root.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
