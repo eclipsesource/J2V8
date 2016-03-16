@@ -73,17 +73,6 @@ abstract public class V8Value implements Releasable {
      * Gets the runtime this Value was created on.
      *
      * @return Returns the V8 runtime this value is associated with.
-     * @deprecated
-     */
-    @Deprecated
-    public V8 getRutime() {
-        return getRuntime();
-    }
-
-    /**
-     * Gets the runtime this Value was created on.
-     *
-     * @return Returns the V8 runtime this value is associated with.
      */
     public V8 getRuntime() {
         return v8;
