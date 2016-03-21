@@ -228,27 +228,26 @@ public class Mirror implements Releasable {
     }
 
     protected static ValueMirror createMirror(final V8Object mirror) {
-        if (isUndefined(mirror)) {
-            return new UndefinedMirror(mirror);
-        }
         if (isNull(mirror)) {
             return new NullMirror(mirror);
-        }
-        if (isArray(mirror)) {
+        } else if (isUndefined(mirror)) {
+            return new UndefinedMirror(mirror);
+        } else if (isArray(mirror)) {
             return new ArrayMirror(mirror);
-        }
-        if (isObject(mirror)) {
+        } else if (isObject(mirror)) {
             return new ObjectMirror(mirror);
-        }
-        if (isString(mirror)) {
+        } else if (isString(mirror)) {
             return new StringMirror(mirror);
-        }
-        if (isNumber(mirror)) {
+        } else if (isNumber(mirror)) {
             return new NumberMirror(mirror);
-        }
-        if (isBoolean(mirror)) {
+        } else if (isBoolean(mirror)) {
             return new BooleanMirror(mirror);
         }
         return new ValueMirror(mirror);
+    }
+
+    @Override
+    public String toString() {
+        return v8Object.toString();
     }
 }

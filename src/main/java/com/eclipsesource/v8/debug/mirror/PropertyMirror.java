@@ -30,6 +30,20 @@ public class PropertyMirror extends Mirror {
         return v8Object.executeStringFunction("name", null);
     }
 
+    /**
+     * Returns the value of this property.
+     *
+     * @return The value of this property.
+     */
+    public Mirror getValue() {
+        V8Object mirror = v8Object.executeObjectFunction("value", null);
+        try {
+            return createMirror(mirror);
+        } finally {
+            mirror.release();
+        }
+    }
+
     @Override
     public boolean isProperty() {
         return true;

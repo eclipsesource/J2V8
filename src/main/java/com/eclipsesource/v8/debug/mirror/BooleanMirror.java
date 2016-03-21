@@ -26,4 +26,8 @@ public class BooleanMirror extends ValueMirror {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return v8Object.executeStringFunction("toText", null);
+    }
 }

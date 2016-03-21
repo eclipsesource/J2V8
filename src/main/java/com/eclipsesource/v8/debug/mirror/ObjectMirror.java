@@ -30,6 +30,11 @@ public class ObjectMirror extends ValueMirror {
         }
     }
 
+    @Override
+    public String toString() {
+        return v8Object.toString();
+    }
+
     ObjectMirror(final V8Object v8Object) {
         super(v8Object);
     }

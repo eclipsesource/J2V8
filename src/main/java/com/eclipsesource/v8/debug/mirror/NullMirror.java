@@ -27,4 +27,9 @@ public class NullMirror extends ValueMirror {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "null";
+    }
+
 }

@@ -27,4 +27,9 @@ public class UndefinedMirror extends ValueMirror {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "undefined";
+    }
+
 }
