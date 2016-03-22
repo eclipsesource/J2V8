@@ -30,4 +30,9 @@ public class FunctionMirror extends ObjectMirror {
         return v8Object.executeStringFunction("name", null);
     }
 
+    @Override
+    public boolean isFunction() {
+        return true;
+    }
+
 }

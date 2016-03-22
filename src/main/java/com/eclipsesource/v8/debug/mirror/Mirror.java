@@ -44,6 +44,7 @@ public class Mirror implements Releasable {
     private static final String IS_NULL      = "isNull";
     private static final String IS_STRING    = "isString";
     private static final String IS_ARRAY     = "isArray";
+    private static final String IS_FUNCTION  = "isFunction";
     private static final String IS_BOOLEAN   = "isBoolean";
     private static final String IS_NUMBER    = "isNumber";
     private static final String IS_OBJECT    = "isObject";
@@ -195,6 +196,14 @@ public class Mirror implements Releasable {
         }
     }
 
+    private static boolean isFunction(final V8Object mirror) {
+        try {
+            return mirror.executeBooleanFunction(IS_FUNCTION, null);
+        } catch (V8ResultUndefined e) {
+            return false;
+        }
+    }
+
     private static boolean isArray(final V8Object mirror) {
         try {
             return mirror.executeBooleanFunction(IS_ARRAY, null);
@@ -232,6 +241,8 @@ public class Mirror implements Releasable {
             return new NullMirror(mirror);
         } else if (isUndefined(mirror)) {
             return new UndefinedMirror(mirror);
+        } else if (isFunction(mirror)) {
+            return new FunctionMirror(mirror);
         } else if (isArray(mirror)) {
             return new ArrayMirror(mirror);
         } else if (isObject(mirror)) {

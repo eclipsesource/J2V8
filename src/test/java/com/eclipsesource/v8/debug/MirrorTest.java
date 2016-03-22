@@ -51,21 +51,22 @@ public class MirrorTest {
             + "  var string = 'foo';            // 10 \n"
             + "  var nullValue = null;          // 11 \n"
             + "  var undef;                     // 12 \n"
-            + "  return obj;                    // 13 \n"
-            + "}                                // 14 \n"
-            + "foo(1,2,'yes').foo;              // 15 \n";
+            + "  var fun = function() {};       // 13 \n"
+            + "  return obj;                    // 14 \n"
+            + "}                                // 15 \n"
+            + "foo(1,2,'yes').foo;              // 16 \n";
 
-    private Object        result;
-    private V8            v8;
-    private DebugHandler  debugHandler;
-    private BreakHandler  breakHandler;
+    private Object       result;
+    private V8           v8;
+    private DebugHandler debugHandler;
+    private BreakHandler breakHandler;
 
     @Before
     public void setup() {
         V8.setFlags("--expose-debug-as=" + DebugHandler.DEBUG_OBJECT_NAME);
         v8 = V8.createV8Runtime();
         debugHandler = new DebugHandler(v8);
-        debugHandler.setScriptBreakpoint("script", 13);
+        debugHandler.setScriptBreakpoint("script", 14);
         breakHandler = mock(BreakHandler.class);
         debugHandler.addBreakHandler(breakHandler);
     }
@@ -344,6 +345,25 @@ public class MirrorTest {
                 ValueMirror undefinedValue = frame.getLocalValue(6);
                 result = undefinedValue.isValue() && undefinedValue.isUndefined();
                 undefinedValue.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testGetFunctionValue() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror functionValue = frame.getLocalValue(7);
+                result = functionValue.isValue() && functionValue.isFunction();
+                functionValue.release();
                 frame.release();
             }
         });
