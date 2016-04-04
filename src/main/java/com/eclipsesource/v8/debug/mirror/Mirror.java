@@ -261,4 +261,20 @@ public class Mirror implements Releasable {
     public String toString() {
         return v8Object.toString();
     }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Mirror)) {
+            return false;
+        }
+        return v8Object.equals(((Mirror) obj).v8Object);
+    }
+
+    @Override
+    public int hashCode() {
+        return v8Object.hashCode();
+    }
 }

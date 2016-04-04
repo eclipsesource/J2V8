@@ -11,6 +11,7 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -56,7 +57,7 @@ public class MirrorTest {
             + "}                                // 15 \n"
             + "foo(1,2,'yes').foo;              // 16 \n";
 
-    private Object       result;
+    private Object       result = false;;
     private V8           v8;
     private DebugHandler debugHandler;
     private BreakHandler breakHandler;
@@ -82,6 +83,108 @@ public class MirrorTest {
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Test
+    public void testEquals() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror objectValue1 = frame.getLocalValue(2);
+                ValueMirror objectValue2 = frame.getLocalValue(2);
+                result = objectValue1.equals(objectValue2);
+                result = (Boolean) result & objectValue2.equals(objectValue1);
+                objectValue1.release();
+                objectValue2.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testHashEquals() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror objectValue1 = frame.getLocalValue(2);
+                ValueMirror objectValue2 = frame.getLocalValue(2);
+                result = objectValue1.hashCode() == objectValue2.hashCode();
+                objectValue1.release();
+                objectValue2.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testNotEquals() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror objectValue1 = frame.getLocalValue(2);
+                ValueMirror objectValue2 = frame.getLocalValue(1);
+                result = objectValue1.equals(objectValue2);
+                objectValue1.release();
+                objectValue2.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertFalse((Boolean) result);
+    }
+
+    @Test
+    public void testNotEqualsWrongType() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror objectValue1 = frame.getLocalValue(2);
+                result = objectValue1.equals(new Object());
+                objectValue1.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertFalse((Boolean) result);
+    }
+
+    @Test
+    public void testNotEqualsNull() {
+        handleBreak(new BreakHandler() {
+
+            @Override
+            public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
+                Frame frame = state.getFrame(0);
+                ValueMirror objectValue1 = frame.getLocalValue(2);
+                result = objectValue1.equals(null);
+                objectValue1.release();
+                frame.release();
+            }
+        });
+
+        v8.executeScript(script, "script", 0);
+
+        assertFalse((Boolean) result);
     }
 
     @Test
