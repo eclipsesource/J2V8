@@ -1386,6 +1386,10 @@ void throwExecutionException(JNIEnv *env, const char* fileName, int lineNumber, 
     wrappedException = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException;
     reinterpret_cast<V8Runtime*>(v8RuntimePtr)->pendingException = NULL;
   }
+  if ( wrappedException != NULL && !env->IsInstanceOf( wrappedException, throwableCls) ) {
+    std::cout << "Wrapped Exception is not a Throwable" << std::endl;
+    wrappedException = NULL;
+  }
   jthrowable result = (jthrowable)env->NewObject(v8ScriptExecutionException, v8ScriptExecutionExceptionInitMethodID, jfileName, lineNumber, jmessage, jsourceLine, startColumn, endColumn, jstackTrace, wrappedException);
   env->DeleteLocalRef(jfileName);
   env->DeleteLocalRef(jmessage);
