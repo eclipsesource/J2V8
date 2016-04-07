@@ -220,6 +220,35 @@ public class V8DebugServer {
 
     }
 
+    public void stop() {
+        try {
+            server.close();
+
+            synchronized (clientLock) {
+                if (client != null) {
+                    client.close();
+                    client = null;
+                }
+            }
+        } catch (IOException e) {
+            logError(e);
+        }
+
+        //release resources
+        if (runningStateDcp != null) {
+            runningStateDcp.release();
+            runningStateDcp = null;
+        }
+        if (debugObject != null) {
+            debugObject.release();
+            debugObject = null;
+        }
+        if (stoppedStateDcp != null) {
+            stoppedStateDcp.release();
+            stoppedStateDcp = null;
+        }
+    };
+
     private void sendJson(String json) throws IOException {
         json = json.replace("\\/", "/"); // Unescape slashes.
         sendMessage("", json);
