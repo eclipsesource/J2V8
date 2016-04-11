@@ -9,10 +9,10 @@
 *    EclipseSource - initial API and implementation
 ******************************************************************************/
 #include <jni.h>
-#include <include/libplatform/libplatform.h>
+#include <libplatform/libplatform.h>
 #include <iostream>
 
-#include <include/v8.h>
+#include <v8.h>
 #include <string.h>
 #include <map>
 #include <cstdlib>
