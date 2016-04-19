@@ -25,7 +25,7 @@ Articles
 Presentations
 =============
  * [J2V8 A Highly Efficient JS Runtime For Java](https://www.eclipsecon.org/na2015/session/j2v8-highly-efficient-js-runtime-java)
- * [Running Java Efficiently in a Java World](http://www.slideshare.net/irbull/enter-js)
+ * [Running JavaScript Efficiently in a Java World](http://www.slideshare.net/irbull/enter-js)
 
 Other Resources
 ===============
