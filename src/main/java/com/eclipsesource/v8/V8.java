@@ -853,6 +853,18 @@ public class V8 extends V8Object {
         return null;
     }
 
+    void createNodeRuntime(final String fileName) {
+        _startNodeJS(v8RuntimePtr, fileName);
+    }
+
+    boolean pumpMessageLoop() {
+        return _pumpMessageLoop(v8RuntimePtr);
+    }
+
+    boolean isRunning() {
+        return _isRunning(v8RuntimePtr);
+    }
+
     protected long initNewV8Object(final long v8RuntimePtr) {
         return _initNewV8Object(v8RuntimePtr);
     }
@@ -1259,6 +1271,12 @@ public class V8 extends V8Object {
     private native long _getGlobalObject(final long v8RuntimePtr);
 
     private native long _getBuildID();
+
+    private native static void _startNodeJS(final long v8RuntimePtr, final String fileName);
+
+    private native static boolean _pumpMessageLoop(final long v8RuntimePtr);
+
+    private native static boolean _isRunning(final long v8RuntimePtr);
 
     void addObjRef() {
         objectReferences++;

@@ -605,6 +605,30 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getGlobalObject
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
   (JNIEnv *, jobject);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _startNodeJS
+ * Signature: (JLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
+  (JNIEnv *, jclass, jlong, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _pumpMessageLoop
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1pumpMessageLoop
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _isRunning
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isRunning
+  (JNIEnv *, jclass, jlong);
+
 #ifdef __cplusplus
 }
 #endif

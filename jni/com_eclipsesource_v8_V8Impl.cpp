@@ -11,12 +11,18 @@
 #include <jni.h>
 #include <libplatform/libplatform.h>
 #include <iostream>
-
 #include <v8.h>
 #include <string.h>
+#include <v8-debug.h>
 #include <map>
 #include <cstdlib>
 #include "com_eclipsesource_v8_V8Impl.h"
+
+#ifdef NODE_COMPATIBLE
+  #include <deps/uv/include/uv.h>
+  #include <node.h>
+#endif
+
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
 
@@ -37,6 +43,13 @@ public:
   Persistent<Object>* globalObject;
   jobject v8;
   jthrowable pendingException;
+
+#ifdef NODE_COMPATIBLE
+  node::Environment* nodeEnvironment;
+  uv_loop_t* uvLoop;
+  bool running;
+#endif
+
 };
 
 v8::Platform* v8Platform;
@@ -62,6 +75,7 @@ jclass integerCls = NULL;
 jclass doubleCls = NULL;
 jclass booleanCls = NULL;
 jclass errorCls = NULL;
+jclass unsupportedOperationExceptionCls = NULL;
 jmethodID v8ArrayInitMethodID = NULL;
 jmethodID v8ArrayGetHandleMethodID = NULL;
 jmethodID v8CallVoidMethodID = NULL;
@@ -225,6 +239,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8ScriptExecutionException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ScriptExecutionException"));
     v8RuntimeException = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8RuntimeException"));
     errorCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/Error"));
+    unsupportedOperationExceptionCls = (jclass)env->NewGlobalRef((env)->FindClass("java/lang/UnsupportedOperationException"));
 
     // Get all method IDs
     v8ArrayInitMethodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
@@ -265,13 +280,74 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
 
 ShellArrayBufferAllocator array_buffer_allocator;
 
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
+  (JNIEnv * env, jclass, jlong v8RuntimePtr, jstring fileName) {
+#ifdef NODE_COMPATIBLE
+  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  setvbuf(stderr, NULL, _IOLBF, 1024);
+  const char* utfFileName = env->GetStringUTFChars(fileName, NULL);
+  const char *argv[] = {"j2v8", utfFileName, NULL};
+  int argc = sizeof(argv) / sizeof(char*) - 1;
+  V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  rt->uvLoop = new uv_loop_t();
+  uv_loop_init(rt->uvLoop);
+  node::Environment* environment = node::CreateEnvironment(isolate, rt->uvLoop, context, argc, argv, 0, 0);
+  node::LoadEnvironment(environment);
+  rt->nodeEnvironment = environment;
+  rt->running = true;
+#endif
+#ifndef NODE_COMPATIBLE
+  (env)->ThrowNew(unsupportedOperationExceptionCls, "StartNodeJS Not Supported.");
+#endif
+}
+
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1pumpMessageLoop
+  (JNIEnv * env, jclass, jlong v8RuntimePtr) {
+#ifdef NODE_COMPATIBLE
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  node::Environment* environment = rt->nodeEnvironment;
+  SealHandleScope seal(isolate);
+  v8::platform::PumpMessageLoop(v8Platform, isolate);
+  rt->running = uv_run(rt->uvLoop, UV_RUN_ONCE);
+  if (rt->running == false) {
+    v8::platform::PumpMessageLoop(v8Platform, isolate);
+    node::EmitBeforeExit(environment);
+    // Emit `beforeExit` if the loop became alive either after emitting
+    // event, or after running some callbacks.
+    rt->running = uv_loop_alive(rt->uvLoop);
+    if (uv_run(rt->uvLoop, UV_RUN_NOWAIT) != 0) {
+      rt->running = true;
+    }
+  }
+  return rt->running;
+#endif
+#ifndef NODE_COMPATIBLE
+  (env)->ThrowNew(unsupportedOperationExceptionCls, "pumpMessageLoop Not Supported.");
+  return false;
+#endif
+}
+
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isRunning
+  (JNIEnv *env, jclass, jlong v8RuntimePtr) {
+ #ifdef NODE_COMPATIBLE
+   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+   V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+   return rt->running;
+ #endif
+ #ifndef NODE_COMPATIBLE
+   (env)->ThrowNew(unsupportedOperationExceptionCls, "isRunning Not Supported.");
+   return false;
+ #endif
+}
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
  (JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = &array_buffer_allocator;
   runtime->isolate = v8::Isolate::New(create_params);
-  Locker locker(runtime->isolate);  
+  Locker locker(runtime->isolate);
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;

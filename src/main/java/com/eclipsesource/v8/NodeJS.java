@@ -1,0 +1,197 @@
+/*******************************************************************************
+ * Copyright (c) 2016 EclipseSource and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    EclipseSource - initial API and implementation
+ ******************************************************************************/
+package com.eclipsesource.v8;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+/**
+ * An isolate NodeJS runtime.
+ *
+ * This class is only available on some platforms. In particular any methods
+ * on this class, on an Android device, will lead to an UnsupportedOperationException.
+ */
+public class NodeJS {
+
+    private static final String TMP_JS_EXT          = ".js.tmp";
+    private static final String NEXT_TICK           = "nextTick";
+    private static final String PROCESS             = "process";
+    private static final String GLOBAL              = "global";
+    private static final String STARTUP_CALLBACK    = "__run";
+    private static final String STARTUP_SCRIPT      = "global." + STARTUP_CALLBACK + "(require, exports, module, __filename, __dirname);";
+    private static final String STARTUP_SCRIPT_NAME = "startup";
+
+    private V8         v8;
+    private V8Function require;
+
+    /**
+     * Creates a NodeJS Runtime
+     *
+     * May throw an UnsupportedOperationException if node.js integration has not
+     * been compiled for your platform.
+     */
+    public static NodeJS createNodeJS() {
+        return createNodeJS(null);
+    }
+
+    /**
+     * Creates a NodeJS runtime and executes a JS Script
+     *
+     * @param file The JavaScript to execute or null for no script.
+     * @return The NodeJS runtime.
+     *
+     * May throw an UnsupportedOperationException if node.js integration has not
+     * been compiled for your platform.
+     */
+    public static NodeJS createNodeJS(final File file) {
+        V8 v8 = V8.createV8Runtime(GLOBAL);
+        final NodeJS node = new NodeJS(v8);
+        v8.registerJavaMethod(new JavaVoidCallback() {
+
+            @Override
+            public void invoke(final V8Object receiver, final V8Array parameters) {
+                V8Function require = (V8Function) parameters.get(0);
+                try {
+                    node.init(require.twin());
+                } finally {
+                    require.release();
+                }
+            }
+        }, STARTUP_CALLBACK);
+        try {
+            File startupScript = createTemporaryScriptFile(STARTUP_SCRIPT, STARTUP_SCRIPT_NAME);
+            try {
+                v8.createNodeRuntime(startupScript.getAbsolutePath());
+            } finally {
+                startupScript.delete();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (file != null) {
+            node.startup(file);
+        }
+        return node;
+    }
+
+    /**
+     * Returns the V8 runtime being used for this NodeJS instance.
+     *
+     * @return The V8 Runtime.
+     */
+    public V8 getRuntime() {
+        return v8;
+    }
+
+    /**
+     * Handles the next message in the message loop. Returns True
+     * if there are more messages to handle, false otherwise.
+     *
+     * @return True if there are more messages to handle, false otherwise.
+     */
+    public boolean handleMessage() {
+        return v8.pumpMessageLoop();
+    }
+
+    /**
+     * Releases the NodeJS runtime.
+     */
+    public void release() {
+        if (!require.isReleased()) {
+            require.release();
+        }
+        if (!v8.isReleased()) {
+            v8.release();
+        }
+    }
+
+    /**
+     * Returns true if there are more messages to process, false otherwise.
+     *
+     * @return True if there are more messages to process, false otherwise.
+     */
+    public boolean isRunning() {
+        return v8.isRunning();
+    }
+
+    /**
+     * Invokes NodeJS require() on the specified file. This will load the module, execute
+     * it and return the exports object to the caller. The exports object must be released.
+     *
+     * @param file The module to load.
+     * @return The exports object.
+     */
+    public V8Object require(final File file) {
+        V8Array requireParams = new V8Array(v8);
+        try {
+            requireParams.push(file.getAbsolutePath());
+            return (V8Object) require.call(null, requireParams);
+        } finally {
+            requireParams.release();
+        }
+    }
+
+    private void startup(final File file) {
+
+        V8Function v8Function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                V8Array requireParams = new V8Array(v8);
+                try {
+                    requireParams.push(file.getAbsolutePath());
+                    return require.call(null, requireParams);
+                } finally {
+                    requireParams.release();
+                }
+            }
+        });
+
+        V8Object process = null;
+        V8Array parameters = null;
+        try {
+            process = v8.getObject(PROCESS);
+            parameters = new V8Array(v8);
+            parameters.push(v8Function);
+            process.executeObjectFunction(NEXT_TICK, parameters);
+        } finally {
+            safeRelease(process);
+            safeRelease(parameters);
+            safeRelease(v8Function);
+        }
+    }
+
+    private void safeRelease(final Releasable releasable) {
+        if (releasable != null) {
+            releasable.release();
+        }
+    }
+
+    private NodeJS(final V8 v8) {
+        this.v8 = v8;
+    }
+
+    private void init(final V8Function require) {
+        this.require = require;
+    }
+
+    private static File createTemporaryScriptFile(final String script, final String name) throws IOException {
+        File tempFile = File.createTempFile(name, TMP_JS_EXT);
+        PrintWriter writer = new PrintWriter(tempFile, "UTF-8");
+        try {
+            writer.print(script);
+        } finally {
+            writer.close();
+        }
+        return tempFile;
+    }
+}
