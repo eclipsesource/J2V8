@@ -208,6 +208,7 @@ public class V8 extends V8Object {
      * @return The version of the V8 Engine.
      */
     public String getV8Version() {
+        checkThread();
         return _getVersion();
     }
 
@@ -499,7 +500,7 @@ public class V8 extends V8Object {
      * the result is not a V8Array.
      */
     public V8Array executeArrayScript(final String script) {
-        return this.executeArrayScript(script, null, 0);
+        return executeArrayScript(script, null, 0);
     }
 
     /**
@@ -592,7 +593,7 @@ public class V8 extends V8Object {
      * @param script The script to execute.
      */
     public void executeVoidScript(final String script) {
-        this.executeVoidScript(script, null, 0);
+        executeVoidScript(script, null, 0);
     }
 
     /**
@@ -1013,6 +1014,7 @@ public class V8 extends V8Object {
     }
 
     protected long[] initNewV8Function(final long v8RuntimePtr) {
+        checkThread();
         return _initNewV8Function(v8RuntimePtr);
     }
 

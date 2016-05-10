@@ -12,6 +12,7 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +39,65 @@ public class NodeJSTests {
     @Test
     public void testCreateNodeJS() {
         assertNotNull(nodeJS);
+    }
+
+    @Test
+    public void testSingleThreadAccess_Require() throws InterruptedException {
+        final boolean[] result = new boolean[] { false };
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    nodeJS.require(File.createTempFile("temp", ".js"));
+                } catch (Error e) {
+                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        t.start();
+        t.join();
+
+        assertTrue(result[0]);
+    }
+
+    @Test
+    public void testSingleThreadAccess_HandleMessage() throws InterruptedException {
+        final boolean[] result = new boolean[] { false };
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    nodeJS.handleMessage();
+                } catch (Error e) {
+                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                }
+            }
+        });
+        t.start();
+        t.join();
+
+        assertTrue(result[0]);
+    }
+
+    @Test
+    public void testSingleThreadAccess_IsRunning() throws InterruptedException {
+        final boolean[] result = new boolean[] { false };
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    nodeJS.isRunning();
+                } catch (Error e) {
+                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                }
+            }
+        });
+        t.start();
+        t.join();
+
+        assertTrue(result[0]);
     }
 
     @Test

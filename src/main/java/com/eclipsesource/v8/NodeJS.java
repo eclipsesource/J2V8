@@ -99,6 +99,7 @@ public class NodeJS {
      * @return True if there are more messages to handle, false otherwise.
      */
     public boolean handleMessage() {
+        v8.checkThread();
         return v8.pumpMessageLoop();
     }
 
@@ -106,6 +107,7 @@ public class NodeJS {
      * Releases the NodeJS runtime.
      */
     public void release() {
+        v8.checkThread();
         if (!require.isReleased()) {
             require.release();
         }
@@ -120,6 +122,7 @@ public class NodeJS {
      * @return True if there are more messages to process, false otherwise.
      */
     public boolean isRunning() {
+        v8.checkThread();
         return v8.isRunning();
     }
 
@@ -131,6 +134,7 @@ public class NodeJS {
      * @return The exports object.
      */
     public V8Object require(final File file) {
+        v8.checkThread();
         V8Array requireParams = new V8Array(v8);
         try {
             requireParams.push(file.getAbsolutePath());
