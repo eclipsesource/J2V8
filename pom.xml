@@ -10,7 +10,7 @@
 
   <groupId>com.eclipsesource.j2v8</groupId>
   <artifactId>j2v8_${os}_${arch}</artifactId>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.0</version>
   <packaging>bundle</packaging>
 
   <name>j2v8_${os}_${arch}</name>
