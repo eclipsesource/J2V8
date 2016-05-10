@@ -6,6 +6,31 @@ J2V8
 
 J2V8 is a set of Java bindings for V8. J2V8 focuses on performance and tight integration with V8. It also takes a 'primitive first' approach, meaning that if a value can be accessed as a primitive, then it should be. This forces a more static type system between the JS and Java code, but it also improves the performance since intermediate Objects are not created.
 
+Building J2V8
+=============
+Building J2V8 requires building both the native parts and the Java library (.jar file). To build the native parts we first build node.js as a library and then statically link J2V8 to that. The Java parts are built with maven.
+
+Building on MacOS
+-----------------
+```
+ sh ./build-node.sh
+ sh ./buildJ2V8_macos.sh
+ mvn clean verify
+```
+
+Building on Linux
+-----------------
+```
+export JAVA_INCLUDE="$(dirname $(readlink -f $(which javac)))/../include"
+export CCFLAGS="${CCFLAGS} -fPIC"
+export CXXFLAGS="${CXXFLAGS} -fPIC"
+export CPPFLAGS="${CPPFLAGS} -fPIC"
+sh ./build-node.sh
+cd jni
+g++ -I$JAVA_INCLUDE -I$JAVA_INCLUDE/linux -I../node -I../node/deps/v8 -I../node/deps/v8/include -I../node/src com_eclipsesource_v8_V8Impl.cpp -std=c++11 -fPIC -shared -o libj2v8_linux_x86_64.so -Wl,--start-group ../node/out/Release/libnode.a ../node/out/Release/libv8_libbase.a ../node/out/Release/libv8_libplatform.a ../node/out/Release/libv8_base.a ../node/out/Release/libv8_nosnapshot.a ../node/out/Release/libuv.a ../node/out/Release/libopenssl.a ../node/out/Release/libhttp_parser.a ../node/out/Release/libgtest.a ../node/out/Release/libzlib.a ../node/out/Release/libcares.a -Wl,--end-group -lrt
+mvn clean verify
+```
+
 Tutorials
 ==========
  * [Getting Started With J2V8](http://eclipsesource.com/blogs/getting-started-with-j2v8/)
