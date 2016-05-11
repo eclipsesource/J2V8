@@ -32,7 +32,7 @@ import com.eclipsesource.v8.utils.V8PropertyMapTest;
 @SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
         V8CallbackTest.class, V8ScriptCompilationExceptionTest.class, V8ScriptExecutionExceptionTest.class, V8ObjectUtilsTest.class, V8TypedArraysTest.class,
         NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class, V8ExecutorTest.class, V8MapTest.class, V8PropertyMapTest.class,
-        DebugHandlerTest.class, ExecutionStateTest.class, FrameTest.class, ScopeTest.class, ScriptBreakPointTest.class, MirrorTest.class, BreakEventTest.class, NodeJSTests.class })
+        DebugHandlerTest.class, ExecutionStateTest.class, FrameTest.class, ScopeTest.class, ScriptBreakPointTest.class, MirrorTest.class, BreakEventTest.class, NodeJSTest.class })
 public class AllTests {
 
 }
