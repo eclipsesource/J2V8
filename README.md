@@ -21,15 +21,34 @@ Building on MacOS
 Building on Linux
 -----------------
 ```
-export JAVA_INCLUDE="$(dirname $(readlink -f $(which javac)))/../include"
-export CCFLAGS="${CCFLAGS} -fPIC"
-export CXXFLAGS="${CXXFLAGS} -fPIC"
-export CPPFLAGS="${CPPFLAGS} -fPIC"
-sh ./build-node.sh
+export CCFLAGS="${CCFLAGS} -fPIC" 
+export CXXFLAGS="${CXXFLAGS} -fPIC" 
+export CPPFLAGS="${CPPFLAGS} -fPIC" 
+#sh ./build-node.sh
+cp -r /data/jenkins/node .
 cd jni
-g++ -I$JAVA_INCLUDE -I$JAVA_INCLUDE/linux -I../node -I../node/deps/v8 -I../node/deps/v8/include -I../node/src com_eclipsesource_v8_V8Impl.cpp -std=c++11 -fPIC -shared -o libj2v8_linux_x86_64.so -Wl,--start-group ../node/out/Release/libnode.a ../node/out/Release/libv8_libbase.a ../node/out/Release/libv8_libplatform.a ../node/out/Release/libv8_base.a ../node/out/Release/libv8_nosnapshot.a ../node/out/Release/libuv.a ../node/out/Release/libopenssl.a ../node/out/Release/libhttp_parser.a ../node/out/Release/libgtest.a ../node/out/Release/libzlib.a ../node/out/Release/libcares.a -Wl,--end-group -lrt
+g++ -I../node -I../node/deps/v8 -I../node/deps/v8/include \
+    -I../node/src -I /data/jenkins/tools/hudson.model.JDK/jdk-7/include/ \
+    -I /data/jenkins/tools/hudson.model.JDK/jdk-7/include/linux  \
+    com_eclipsesource_v8_V8Impl.cpp -std=c++11 -fPIC -shared -o libj2v8_linux_x86_64.so \
+    -Wl,--whole-archive ../node/out/Release/libnode.a  -Wl,--no-whole-archive \
+    -Wl,--start-group \
+                      ../node/out/Release/libv8_libbase.a \
+                      ../node/out/Release/libv8_libplatform.a \
+                      ../node/out/Release/libv8_base.a \
+                      ../node/out/Release/libv8_nosnapshot.a \
+                      ../node/out/Release/libuv.a \
+                      ../node/out/Release/libopenssl.a \
+                      ../node/out/Release/libhttp_parser.a \
+                      ../node/out/Release/libgtest.a \
+                      ../node/out/Release/libzlib.a \
+                      ../node/out/Release/libcares.a \
+    -Wl,--end-group \
+    -lrt -D NODE_COMPATIBLE=1
 mvn clean verify
 ```
+
+This will build J2V8 with node.js support. To disable this support, remove the `-D NODE_COMPATIBLE=1` option.
 
 Tutorials
 ==========
