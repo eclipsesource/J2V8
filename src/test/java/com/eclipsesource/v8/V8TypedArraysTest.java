@@ -2,6 +2,7 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -266,6 +267,21 @@ public class V8TypedArraysTest {
         }
     }
 
+    @Test
+    public void testCannotPushIntToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(7);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
+    }
+
     @Test(expected = V8RuntimeException.class)
     public void testCannotPushFloatToTypedArray() {
         V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
@@ -275,6 +291,21 @@ public class V8TypedArraysTest {
         } finally {
             array.release();
         }
+    }
+
+    @Test
+    public void testCannotPushFloatToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(7.7);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
     }
 
     @Test(expected = V8RuntimeException.class)
@@ -288,6 +319,21 @@ public class V8TypedArraysTest {
         }
     }
 
+    @Test
+    public void testCannotPushBooleanToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push(true);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
+    }
+
     @Test(expected = V8RuntimeException.class)
     public void testCannotPushStringToTypedArray() {
         V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
@@ -297,6 +343,21 @@ public class V8TypedArraysTest {
         } finally {
             array.release();
         }
+    }
+
+    @Test
+    public void testCannotPushStringToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push("foo");
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
     }
 
     @Test(expected = V8RuntimeException.class)
@@ -310,6 +371,21 @@ public class V8TypedArraysTest {
         }
     }
 
+    @Test
+    public void testCannotPushUndefinedToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.pushUndefined();
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
+    }
+
     @Test(expected = V8RuntimeException.class)
     public void testCannotPushNullToTypedArray() {
         V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
@@ -319,6 +395,21 @@ public class V8TypedArraysTest {
         } finally {
             array.release();
         }
+    }
+
+    @Test
+    public void testCannotPushNullToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+
+        try {
+            array.push((V8Object) null);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+        }
+        fail("Expected failure");
     }
 
     @Test(expected = V8RuntimeException.class)
@@ -334,6 +425,23 @@ public class V8TypedArraysTest {
         }
     }
 
+    @Test
+    public void testCannotPushV8ObjectToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+        V8Object obj = new V8Object(v8);
+
+        try {
+            array.push(obj);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+            obj.release();
+        }
+        fail("Expected failure");
+    }
+
     @Test(expected = V8RuntimeException.class)
     public void testCannotPushV8ArrayToTypedArray() {
         V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
@@ -345,6 +453,23 @@ public class V8TypedArraysTest {
             array.release();
             obj.release();
         }
+    }
+
+    @Test
+    public void testCannotPushV8ArrayToTypedArray_CheckMessage() {
+        V8Array array = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var ints = new Int32Array(buf); ints");
+        V8Array obj = new V8Array(v8);
+
+        try {
+            array.push(obj);
+        } catch (Exception e) {
+            assertEquals("Cannot push to a Typed Array.", e.getMessage());
+            return;
+        } finally {
+            array.release();
+            obj.release();
+        }
+        fail("Expected failure");
     }
 
     @Test

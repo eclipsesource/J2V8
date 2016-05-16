@@ -1405,4 +1405,73 @@ public class V8ObjectTest {
         twin.release();
     }
 
+    @Test
+    public void testUnicodeValue() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("foo", "\uD83C\uDF89");
+
+        assertEquals("\uD83C\uDF89", v8Object.get("foo"));
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testUnicodeValue_Char() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("foo", "\uD83C\uDF89");
+
+        assertEquals("🎉", v8Object.get("foo"));
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testUnicodeValue_SetChar() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("foo", "🎉");
+
+        assertEquals("\uD83C\uDF89", v8Object.get("foo"));
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testUnicodeKey() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("\uD83C\uDF89", "foo");
+
+        assertEquals("foo", v8Object.get("\uD83C\uDF89"));
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testUnicodeKeyWithChar() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("\uD83C\uDF89", "foo");
+
+        assertEquals("foo", v8Object.get("🎉"));
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testUnicodeKeyGetKeys() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("\uD83C\uDF89", "foo");
+        assertEquals("🎉", v8Object.getKeys()[0]);
+
+        v8Object.release();
+    }
+
+    @Test
+    public void testSetUnicodeKeyWithChar() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("🎉", "foo");
+
+        assertEquals("foo", v8Object.get("\uD83C\uDF89"));
+
+        v8Object.release();
+    }
+
 }

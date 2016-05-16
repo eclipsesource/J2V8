@@ -857,6 +857,27 @@ public class V8ArrayTest {
         array.release();
     }
 
+    @Test
+    public void testArrayGetString_Unicode() {
+        V8Array array = v8.executeArrayScript("['🎉','🌞','💐'];");
+
+        assertEquals("🎉", array.getString(0));
+        assertEquals("🌞", array.getString(1));
+        assertEquals("💐", array.getString(2));
+        array.release();
+    }
+
+    @Test
+    public void testArrayGetStrings_Unicode() {
+        V8Array array = v8.executeArrayScript("['🎉','🌞','💐'];");
+
+        String[] result = array.getStrings(0, 3);
+        assertEquals("🎉", result[0]);
+        assertEquals("🌞", result[1]);
+        assertEquals("💐", result[2]);
+        array.release();
+    }
+
     @Test(expected = V8ResultUndefined.class)
     public void testArrayGetStringWrongType() {
         V8Array array = v8.executeArrayScript("[42];");

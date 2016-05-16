@@ -1272,6 +1272,41 @@ public class V8Test {
         assertTrue(v8.executeBooleanScript("window.hasOwnProperty( \"Object\" )"));
     }
 
+    @Test
+    public void testExecuteUnicodeScript() {
+        String result = v8.executeStringScript("var ಠ_ಠ = function() { return '🌞' + '💐'; }; ಠ_ಠ();");
+
+        assertEquals("🌞💐", result);
+    }
+
+    @Test
+    public void testExecuteUnicodeFunction() {
+        v8.executeVoidScript("var ಠ_ಠ = function() { return '🌞' + '💐'; }; ");
+
+        assertEquals("🌞💐", v8.executeStringFunction("ಠ_ಠ", null));
+    }
+
+    @Test
+    public void testCompileErrowWithUnicode() {
+        try {
+            v8.executeVoidScript("🌞");
+        } catch (V8ScriptCompilationException e) {
+            assertTrue(e.toString().contains("🌞"));
+            return;
+        }
+
+        fail("Exception should have been thrown.");
+    }
+
+    @Test
+    public void testExecutionExceptionWithUnicode() {
+        try {
+            v8.executeVoidScript("throw('🌞')");
+        } catch (V8RuntimeException e) {
+            assertTrue(e.toString().contains("throw('🌞"));
+        }
+    }
+
     @Test(expected = V8ScriptCompilationException.class)
     public void testInvalidJSScript() {
         String script = "x = [1,2,3];\n"
