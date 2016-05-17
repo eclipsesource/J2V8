@@ -1348,7 +1348,7 @@ JNIEXPORT jlongArray JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Function
     delete(md);
   }, WeakCallbackType::kParameter);
 
-  Local<Function> function = Function::New(isolate, objectCallback, External::New(isolate, md));
+  Local<Function> function = Function::New(isolate, objectCallback, ext);
   md->v8RuntimePtr = v8RuntimePtr;
   Persistent<Object>* container = new Persistent<Object>;
   container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, function);
