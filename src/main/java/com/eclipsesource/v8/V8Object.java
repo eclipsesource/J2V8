@@ -33,7 +33,11 @@ public class V8Object extends V8Value {
      *
      * @param v8 The runtime on which to associate the V8Object.
      */
-    public V8Object(final V8 v8, final Object data) {
+    public V8Object(final V8 v8) {
+        this(v8, null);
+    }
+
+    protected V8Object(final V8 v8, final Object data) {
         super(v8);
         if (v8 != null) {
             this.v8.checkThread();
@@ -41,9 +45,6 @@ public class V8Object extends V8Value {
         }
     }
 
-    public V8Object(final V8 v8) {
-        this(v8, null);
-    }
 
     protected V8Object() {
 
