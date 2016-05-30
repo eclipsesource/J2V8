@@ -1106,6 +1106,10 @@ public class V8 extends V8Object {
         return _arrayGetBooleans(v8RuntimePtr, objectHandle, index, length);
     }
 
+    protected byte[] arrayGetBytes(final long v8RuntimePtr, final long objectHandle, final int index, final int length) {
+        return _arrayGetBytes(v8RuntimePtr, objectHandle, index, length);
+    }
+
     protected String[] arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length) {
         return _arrayGetStrings(v8RuntimePtr, objectHandle, index, length);
     }
@@ -1120,6 +1124,10 @@ public class V8 extends V8Object {
 
     protected int arrayGetBooleans(final long v8RuntimePtr, final long objectHandle, final int index, final int length, final boolean[] resultArray) {
         return _arrayGetBooleans(v8RuntimePtr, objectHandle, index, length, resultArray);
+    }
+
+    protected int arrayGetBytes(final long v8RuntimePtr, final long objectHandle, final int index, final int length, final byte[] resultArray) {
+        return _arrayGetBytes(v8RuntimePtr, objectHandle, index, length, resultArray);
     }
 
     protected int arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, final String[] resultArray) {
@@ -1260,6 +1268,8 @@ public class V8 extends V8Object {
 
     private native boolean[] _arrayGetBooleans(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
 
+    private native byte[] _arrayGetBytes(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
+
     private native String[] _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
 
     private native int _arrayGetIntegers(final long v8RuntimePtr, final long objectHandle, final int index, final int length, int[] resultArray);
@@ -1267,6 +1277,8 @@ public class V8 extends V8Object {
     private native int _arrayGetDoubles(final long v8RuntimePtr, final long objectHandle, final int index, final int length, double[] resultArray);
 
     private native int _arrayGetBooleans(final long v8RuntimePtr, final long objectHandle, final int index, final int length, boolean[] resultArray);
+
+    private native int _arrayGetBytes(final long v8RuntimePtr, final long objectHandle, final int index, final int length, byte[] resultArray);
 
     private native int _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, String[] resultArray);
 

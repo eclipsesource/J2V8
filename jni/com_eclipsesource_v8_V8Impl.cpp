@@ -896,6 +896,18 @@ int fillDoubleArray(JNIEnv *env, Handle<Object> &array, int start, int length, j
   return length;
 }
 
+int fillByteArray(JNIEnv *env, Handle<Object> &array, int start, int length, jbyteArray &result) {
+  jbyte * fill = new jbyte[length];
+  for (int i = start; i < start + length; i++) {
+    Handle<Value> v8Value = array->Get(i);
+    ASSERT_IS_NUMBER(v8Value);
+    fill[i - start] = (jbyte)v8Value->Int32Value();
+  }
+  (env)->SetByteArrayRegion(result, 0, length, fill);
+  delete[] fill;
+  return length;
+}
+
 int fillBooleanArray(JNIEnv *env, Handle<Object> &array, int start, int length, jbooleanArray &result) {
   jboolean * fill = new jboolean[length];
   for (int i = start; i < start + length; i++) {
@@ -959,6 +971,15 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__JJII_3Z
   return fillBooleanArray(env, array, start, length, result);
 }
 
+JNIEXPORT jbyteArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBytes__JJII
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+  jbyteArray result = env->NewByteArray(length);
+  fillByteArray(env, array, start, length, result);
+  return result;
+}
+
 JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans__JJII
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
@@ -966,6 +987,13 @@ JNIEXPORT jbooleanArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBooleans_
   jbooleanArray result = env->NewBooleanArray(length);
   fillBooleanArray(env, array, start, length, result);
   return result;
+}
+
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBytes__JJII_3B
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length, jbyteArray result) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+  return fillByteArray(env, array, start, length, result);
 }
 
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII_3Ljava_lang_String_2

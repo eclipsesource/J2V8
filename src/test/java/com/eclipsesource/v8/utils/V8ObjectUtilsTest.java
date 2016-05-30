@@ -967,6 +967,21 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testPopulateFromExistingByteArray() {
+        V8Array array = v8.executeArrayScript("[0, 1, 2, 256]");
+        byte[] result = new byte[1000];
+
+        V8ObjectUtils.getTypedArray(array, V8Value.BYTE, result);
+
+        assertEquals(1000, result.length);
+        assertEquals(0, result[0]);
+        assertEquals(1, result[1]);
+        assertEquals(2, result[2]);
+        assertEquals(0, result[3]);
+        array.release();
+    }
+
+    @Test
     public void testPopulateFromExistingBooleanArray() {
         V8Array array = v8.executeArrayScript("[true, true, false, false]");
         boolean[] result = new boolean[1000];
@@ -978,6 +993,20 @@ public class V8ObjectUtilsTest {
         assertTrue(result[1]);
         assertFalse(result[2]);
         assertFalse(result[3]);
+        array.release();
+    }
+
+    @Test
+    public void testPopulateFromNonExistingByteArray() {
+        V8Array array = v8.executeArrayScript("[0, 1, 2, 256]");
+
+        byte[] result = (byte[]) V8ObjectUtils.getTypedArray(array, V8Value.BYTE, null);
+
+        assertEquals(4, result.length);
+        assertEquals(0, result[0]);
+        assertEquals(1, result[1]);
+        assertEquals(2, result[2]);
+        assertEquals(0, result[3]);
         array.release();
     }
 

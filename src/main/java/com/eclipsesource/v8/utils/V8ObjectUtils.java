@@ -112,6 +112,13 @@ public class V8ObjectUtils {
             }
             array.getStrings(0, length, stringArray);
             return stringArray;
+        } else if (arrayType == V8Value.BYTE) {
+            byte[] byteArray = (byte[]) result;
+            if ((byteArray == null) || (byteArray.length < length)) {
+                byteArray = new byte[length];
+            }
+            array.getBytes(0, length, byteArray);
+            return byteArray;
         }
         throw new RuntimeException("Unsupported bulk load type: " + arrayType);
     }

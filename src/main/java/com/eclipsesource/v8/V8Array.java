@@ -287,6 +287,24 @@ public class V8Array extends V8Object {
     }
 
     /**
+     * Returns the bytes contained in a subset of a V8Array. If the subset
+     * contains elements that cannot be cast to bytes, then a V8ResultUndefined exception
+     * is thrown. Furthermore, if the subset is not entirely contained within the array,
+     * then V8ResultUndefined exception is also thrown.
+     *
+     * @param index The starting index.
+     * @param length The length.
+     *
+     * @return The bytes contained in the subset of the array, or V8ResultUndefined
+     * exception.
+     */
+    public byte[] getBytes(final int index, final int length) {
+        v8.checkThread();
+        checkReleased();
+        return v8.arrayGetBytes(v8.getV8RuntimePtr(), getHandle(), index, length);
+    }
+
+    /**
      * Gets the booleans contained in a subset of a V8Array. If the subset
      * contains elements other than booleans, then a V8ResultUndefined exception
      * is thrown. Furthermore, if the subset is not entirely contained within the array,
@@ -306,6 +324,28 @@ public class V8Array extends V8Object {
             throw new IndexOutOfBoundsException();
         }
         return v8.arrayGetBooleans(v8.getV8RuntimePtr(), getHandle(), index, length, resultArray);
+    }
+
+    /**
+     * Gets the bytes contained in a subset of a V8Array. If the subset
+     * contains elements that cannot be cast to bytes, then a V8ResultUndefined exception
+     * is thrown. Furthermore, if the subset is not entirely contained within the array,
+     * then V8ResultUndefined exception is also thrown. Finally, if the resultArray
+     * is not large enough to hold the results then IndexOutOfBoundsException is thrown.
+     *
+     * @param index The starting index.
+     * @param length The length.
+     * @param resultArray The array to put the results in.
+     *
+     * @return The number of elements added to the array.
+     */
+    public int getBytes(final int index, final int length, final byte[] resultArray) {
+        v8.checkThread();
+        checkReleased();
+        if (length > resultArray.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return v8.arrayGetBytes(v8.getV8RuntimePtr(), getHandle(), index, length, resultArray);
     }
 
     /**
@@ -880,6 +920,33 @@ public class V8Array extends V8Object {
          */
         @Override
         public boolean[] getBooleans(final int index, final int length) {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Array#getBytes(int, int)
+         */
+        @Override
+        public byte[] getBytes(final int index, final int length) {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Array#getBytes(int, int)
+         */
+        @Override
+        public int getBytes(final int index, final int length, final byte[] resultArray) {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Array#getByte(int)
+         */
+        @Override
+        public byte getByte(final int index) {
             throw new UnsupportedOperationException();
         }
 
