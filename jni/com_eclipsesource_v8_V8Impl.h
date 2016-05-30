@@ -27,6 +27,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_FUNCTION 7L
 #undef com_eclipsesource_v8_V8_V8_TYPED_ARRAY
 #define com_eclipsesource_v8_V8_V8_TYPED_ARRAY 8L
+#undef com_eclipsesource_v8_V8_BYTE
+#define com_eclipsesource_v8_V8_BYTE 9L
 #undef com_eclipsesource_v8_V8_UNDEFINED
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*
@@ -379,6 +381,14 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetInteger
  * Signature: (JJI)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
+  (JNIEnv *, jobject, jlong, jlong, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _arrayGetByte
+ * Signature: (JJI)B
+ */
+JNIEXPORT jbyte JNICALL Java_com_eclipsesource_v8_V8__1arrayGetByte
   (JNIEnv *, jobject, jlong, jlong, jint);
 
 /*

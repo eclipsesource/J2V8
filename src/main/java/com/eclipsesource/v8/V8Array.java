@@ -142,6 +142,21 @@ public class V8Array extends V8Object {
     }
 
     /**
+     * Returns the byte value associated at this index. If the value at
+     * this index does not exist, or cannot be cast to a byte, then
+     * V8ResultUndefined exception is thrown.
+     *
+     * @param index The index whose value to return
+     * @return The byte value at this index or V8ResultUndefined
+     * if the index does not exist or the value cannot be cast to a byte.
+     */
+    public byte getByte(final int index) {
+        v8.checkThread();
+        checkReleased();
+        return v8.arrayGetByte(v8.getV8RuntimePtr(), getHandle(), index);
+    }
+
+    /**
      * Returns the double value associated at this index. If the value
      * at this index does not exist, or if it's not a double, then
      * V8ResultUndefined exception is thrown.

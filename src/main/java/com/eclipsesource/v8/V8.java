@@ -1030,6 +1030,10 @@ public class V8 extends V8Object {
         return _arrayGetBoolean(v8RuntimePtr, arrayHandle, index);
     }
 
+    protected byte arrayGetByte(final long v8RuntimePtr, final long arrayHandle, final int index) {
+        return _arrayGetByte(v8RuntimePtr, arrayHandle, index);
+    }
+
     protected double arrayGetDouble(final long v8RuntimePtr, final long arrayHandle, final int index) {
         return _arrayGetDouble(v8RuntimePtr, arrayHandle, index);
     }
@@ -1217,6 +1221,8 @@ public class V8 extends V8Object {
     private native int _arrayGetInteger(long v8RuntimePtr, long arrayHandle, int index);
 
     private native boolean _arrayGetBoolean(long v8RuntimePtr, long arrayHandle, int index);
+
+    private native byte _arrayGetByte(long v8RuntimePtr, long arrayHandle, int index);
 
     private native double _arrayGetDouble(long v8RuntimePtr, long arrayHandle, int index);
 

@@ -35,6 +35,7 @@ abstract public class V8Value implements Releasable {
     public static final int V8_OBJECT      = 6;
     public static final int V8_FUNCTION    = 7;
     public static final int V8_TYPED_ARRAY = 8;
+    public static final int BYTE           = 9;
     public static final int UNDEFINED      = 99;
 
     protected V8      v8;

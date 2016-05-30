@@ -703,6 +703,27 @@ public class V8ArrayTest {
         array.release();
     }
 
+    /*** Get Byte ***/
+    @Test
+    public void testGetIntegerAsByte() {
+        V8Array array = v8.executeArrayScript("foo = [3]");
+
+        byte result = array.getByte(0);
+
+        assertEquals(3, result);
+        array.release();
+    }
+
+    @Test
+    public void testGetIntegerAsByte_Overflow() {
+        V8Array array = v8.executeArrayScript("foo = [256]");
+
+        byte result = array.getByte(0);
+
+        assertEquals(0, result);
+        array.release();
+    }
+
     /*** Get Int ***/
     @Test
     public void testArrayGetInt() {

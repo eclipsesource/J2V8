@@ -436,7 +436,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = array.getArray(index);
                 try {
-                    if (typedArray.getType() == V8Value.INTEGER) {
+                    if ((typedArray.getType() == V8Value.INTEGER) || (typedArray.getType() == V8Value.BYTE)) {
                         return typedArray.getIntegers(0, typedArray.length());
                     } else if (typedArray.getType() == V8Value.DOUBLE) {
                         return typedArray.getDoubles(0, typedArray.length());
@@ -490,7 +490,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = object.getArray(key);
                 try {
-                    if (typedArray.getType() == V8Value.INTEGER) {
+                    if ((typedArray.getType() == V8Value.INTEGER) || (typedArray.getType() == V8Value.BYTE)) {
                         return typedArray.getIntegers(0, typedArray.length());
                     } else if (typedArray.getType() == V8Value.DOUBLE) {
                         return typedArray.getDoubles(0, typedArray.length());

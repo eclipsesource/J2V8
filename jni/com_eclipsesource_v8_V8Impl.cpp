@@ -821,10 +821,12 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
   if ( array->IsTypedArray() ) {
       if ( array->IsFloat64Array() || array->IsFloat32Array() ) {
         return com_eclipsesource_v8_V8_DOUBLE;
+      } else if ( array->IsUint8Array() || array->IsUint8ClampedArray() || array->IsInt8Array() ) {
+        return com_eclipsesource_v8_V8_BYTE;
       }
       return com_eclipsesource_v8_V8_INTEGER;
   } else {
-	  length = Array::Cast(*array)->Length();
+      length = Array::Cast(*array)->Length();
   }
   int arrayType = com_eclipsesource_v8_V8_UNDEFINED;
   for (int index = 0; index < length; index++) {
@@ -989,6 +991,15 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBoolean
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_BOOLEAN(v8Value);
   return v8Value->BooleanValue();
+}
+
+JNIEXPORT jbyte JNICALL Java_com_eclipsesource_v8_V8__1arrayGetByte
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint index) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, false);
+  Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+  Handle<Value> v8Value = array->Get(index);
+  ASSERT_IS_NUMBER(v8Value);
+  return v8Value->Int32Value();
 }
 
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1arrayGetDouble
