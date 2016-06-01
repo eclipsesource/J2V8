@@ -29,6 +29,8 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_TYPED_ARRAY 8L
 #undef com_eclipsesource_v8_V8_BYTE
 #define com_eclipsesource_v8_V8_BYTE 9L
+#undef com_eclipsesource_v8_V8_V8_ARRAY_BUFFER
+#define com_eclipsesource_v8_V8_V8_ARRAY_BUFFER 10L
 #undef com_eclipsesource_v8_V8_UNDEFINED
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*
@@ -590,6 +592,22 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetBytes__JJII_3B
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII_3Ljava_lang_String_2
   (JNIEnv *, jobject, jlong, jlong, jint, jint, jobjectArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8ArrayBuffer
+ * Signature: (JI)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer
+  (JNIEnv *, jobject, jlong, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _createV8ArrayBufferBackingStore
+ * Signature: (JJI)Ljava/nio/ByteBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1createV8ArrayBufferBackingStore
+  (JNIEnv *, jobject, jlong, jlong, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

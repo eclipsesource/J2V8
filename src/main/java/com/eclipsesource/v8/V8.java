@@ -12,6 +12,7 @@ package com.eclipsesource.v8;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1009,6 +1010,15 @@ public class V8 extends V8Object {
     protected long registerJavaMethod(final long v8RuntimePtr, final long objectHandle, final String functionName, final boolean voidMethod) {
         return _registerJavaMethod(v8RuntimePtr, objectHandle, functionName, voidMethod);
     }
+
+    protected long initNewV8ArrayBuffer(final long v8RuntimePtr, final int capacity) {
+        return _initNewV8ArrayBuffer(v8RuntimePtr, capacity);
+    }
+
+    protected ByteBuffer createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity) {
+        return _createV8ArrayBufferBackingStore(v8RuntimePtr, objectHandle, capacity);
+    }
+
     protected long initNewV8Array(final long v8RuntimePtr) {
         return _initNewV8Array(v8RuntimePtr);
     }
@@ -1281,6 +1291,10 @@ public class V8 extends V8Object {
     private native int _arrayGetBytes(final long v8RuntimePtr, final long objectHandle, final int index, final int length, byte[] resultArray);
 
     private native int _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, String[] resultArray);
+
+    private native long _initNewV8ArrayBuffer(long v8RuntimePtr, int capacity);
+
+    private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 
     private native String _getVersion();
 

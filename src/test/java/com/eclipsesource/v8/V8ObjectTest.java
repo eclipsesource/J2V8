@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -1345,6 +1346,28 @@ public class V8ObjectTest {
 
         assertTrue(twin instanceof V8Array);
         v8Object.release();
+        twin.release();
+    }
+
+    @Test
+    public void testTwinIsArrayBuffer() {
+        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) v8.executeScript("var buf = new ArrayBuffer(100);  buf;");
+
+        V8ArrayBuffer twin = arrayBuffer.twin();
+
+        assertTrue(twin instanceof V8ArrayBuffer);
+        arrayBuffer.release();
+        twin.release();
+    }
+
+    @Test
+    public void testArrayBufferTwinHasSameBackingStore() {
+        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) v8.executeScript("var buf = new ArrayBuffer(100);  buf;");
+
+        V8ArrayBuffer twin = arrayBuffer.twin();
+
+        assertSame(twin.getBackingStore(), arrayBuffer.getBackingStore());
+        arrayBuffer.release();
         twin.release();
     }
 
