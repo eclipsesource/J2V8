@@ -42,6 +42,34 @@ public class V8JSFunctionCallTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testHandleReleasedReceiver() {
+        V8Object object = v8.executeObjectScript("var x = { a: function() { return 10; } }; x;");
+        V8Function function = (V8Function) object.get("a");
+        object.release();
+        V8Array parameters = new V8Array(v8);
+        try {
+            function.call(object, parameters);
+        } finally {
+            parameters.release();
+            function.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testHandleReleasedParameters() {
+        V8Object object = v8.executeObjectScript("var x = { a: function() { return 10; } }; x;");
+        V8Function function = (V8Function) object.get("a");
+        V8Array parameters = new V8Array(v8);
+        parameters.release();
+        try {
+            function.call(object, parameters);
+        } finally {
+            object.release();
+            function.release();
+        }
+    }
+
     @Test
     public void testGetFunction() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");

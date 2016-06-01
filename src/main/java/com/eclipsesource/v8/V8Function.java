@@ -76,7 +76,7 @@ public class V8Function extends V8Object {
         checkReleased();
         receiver = receiver != null ? receiver : v8;
         long parametersHandle = parameters == null ? 0 : parameters.getHandle();
-        long receiverHandle = receiver.isUndefined() ? v8.objectHandle : receiver.objectHandle;
+        long receiverHandle = receiver.isUndefined() ? v8.getHandle() : receiver.getHandle();
         return v8.executeFunction(v8.getV8RuntimePtr(), receiverHandle, objectHandle, parametersHandle);
     }
 
