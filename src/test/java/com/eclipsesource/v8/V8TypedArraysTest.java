@@ -601,4 +601,5 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.INTEGER, intsArray.getType());
         intsArray.release();
     }
+
 }

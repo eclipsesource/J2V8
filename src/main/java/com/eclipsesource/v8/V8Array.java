@@ -33,6 +33,10 @@ public class V8Array extends V8Object {
         v8.checkThread();
     }
 
+    protected V8Array(final V8 v8, final Object data) {
+        super(v8, data);
+    }
+
     @Override
     protected V8Value createTwin() {
         return new V8Array(v8);

@@ -265,4 +265,16 @@ public class V8ArrayBufferTest {
         array.release();
         buffer.release();
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetBackingStoreV8Released() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        v8.release();
+
+        try {
+            buffer.getBackingStore();
+        } finally {
+            v8 = V8.createV8Runtime();
+        }
+    }
 }
