@@ -266,6 +266,15 @@ public class V8ArrayBufferTest {
         buffer.release();
     }
 
+    @Test
+    public void getArrayBuffer() {
+        v8.executeVoidScript("var buffer = new ArrayBuffer(8);");
+
+        V8ArrayBuffer buffer = (V8ArrayBuffer) v8.get("buffer");
+
+        assertNotNull(buffer);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testGetBackingStoreV8Released() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
