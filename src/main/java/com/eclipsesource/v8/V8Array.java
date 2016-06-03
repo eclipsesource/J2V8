@@ -400,25 +400,9 @@ public class V8Array extends V8Object {
      * @return The value at the given index.
      */
     public Object get(final int index) {
-        int type = getType(index);
-        switch (type) {
-            case NULL:
-                return null;
-            case INTEGER:
-                return getInteger(index);
-            case DOUBLE:
-                return getDouble(index);
-            case BOOLEAN:
-                return getBoolean(index);
-            case STRING:
-                return getString(index);
-            case V8_ARRAY:
-                return getArray(index);
-            case V8_FUNCTION:
-            case V8_OBJECT:
-                return getObject(index);
-        }
-        return V8.getUndefined();
+        v8.checkThread();
+        checkReleased();
+        return v8.arrayGet(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, index);
     }
 
     /**
