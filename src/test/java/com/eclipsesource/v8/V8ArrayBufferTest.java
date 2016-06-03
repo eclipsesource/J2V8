@@ -273,6 +273,7 @@ public class V8ArrayBufferTest {
         V8ArrayBuffer buffer = (V8ArrayBuffer) v8.get("buffer");
 
         assertNotNull(buffer);
+        buffer.release();
     }
 
     @Test(expected = IllegalStateException.class)
