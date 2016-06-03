@@ -114,26 +114,9 @@ public class V8Object extends V8Value {
      * @return The value associated with this key.
      */
     public Object get(final String key) {
-        int type = getType(key);
-        switch (type) {
-            case NULL:
-                return null;
-            case INTEGER:
-                return getInteger(key);
-            case DOUBLE:
-                return getDouble(key);
-            case BOOLEAN:
-                return getBoolean(key);
-            case STRING:
-                return getString(key);
-            case V8_ARRAY:
-            case V8_TYPED_ARRAY:
-                return getArray(key);
-            case V8_FUNCTION:
-            case V8_OBJECT:
-                return getObject(key);
-        }
-        return V8.getUndefined();
+        v8.checkThread();
+        checkReleased();
+        return v8.get(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, key);
     }
 
     /**
