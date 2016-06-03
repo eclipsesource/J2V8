@@ -41,6 +41,36 @@ public class V8Int32ArrayTest {
     }
 
     @Test
+    public void testGetArrayBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8Int32Array v8Int32Array = new V8Int32Array(v8, buffer, 0, 2);
+
+        V8ArrayBuffer result = v8Int32Array.getBuffer();
+
+        assertEquals(result, buffer);
+        result.release();
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testUseAccessedArrayBuffer() {
+        V8Int32Array array = (V8Int32Array) v8.executeScript("\n"
+                + "var buffer = new ArrayBuffer(8);"
+                + "var array = new Int32Array(buffer);"
+                + "array[0] = 1; array[1] = 7;"
+                + "array;");
+
+        V8ArrayBuffer buffer = array.getBuffer();
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        assertEquals(1, intBuffer.get(0));
+        assertEquals(7, intBuffer.get(1));
+        buffer.release();
+        array.release();
+    }
+
+    @Test
     public void testCreateInt32TypedArray() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8Int32Array v8Int32Array = new V8Int32Array(v8, buffer, 0, 2);

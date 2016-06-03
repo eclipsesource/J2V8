@@ -35,6 +35,16 @@ public class V8Int32Array extends V8Array {
         super(v8);
     }
 
+    /**
+     * Provide access to the underlying ByteBuffer used for this TypedArray.
+     * The V8ArrayBuffer must be released.
+     *
+     * @return The V8ArrayBuffer used to back this TypedArray.
+     */
+    public V8ArrayBuffer getBuffer() {
+        return (V8ArrayBuffer) get("buffer");
+    }
+
     @Override
     protected long initialize(final long runtimePtr, final Object data) {
         v8.checkThread();
