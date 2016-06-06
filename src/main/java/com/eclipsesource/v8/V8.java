@@ -1019,6 +1019,10 @@ public class V8 extends V8Object {
         return _initNewV8Int32Array(runtimePtr, bufferHandle, offset, size);
     }
 
+    public long initNewV8Int8Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8Int8Array(runtimePtr, bufferHandle, offset, size);
+    }
+
     protected ByteBuffer createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity) {
         return _createV8ArrayBufferBackingStore(v8RuntimePtr, objectHandle, capacity);
     }
@@ -1299,6 +1303,8 @@ public class V8 extends V8Object {
     private native long _initNewV8ArrayBuffer(long v8RuntimePtr, int capacity);
 
     private native long _initNewV8Int32Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8Int8Array(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 

@@ -611,6 +611,14 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Int32Array
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Int8Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Int8Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _createV8ArrayBufferBackingStore
  * Signature: (JJI)Ljava/nio/ByteBuffer;
  */
