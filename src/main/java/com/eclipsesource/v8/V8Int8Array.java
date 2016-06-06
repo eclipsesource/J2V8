@@ -17,6 +17,8 @@ package com.eclipsesource.v8;
  */
 public class V8Int8Array extends V8Array {
 
+    private static final int BYTES = 1;
+
     /**
      * Create a new V8Int8Array from a specified ArrayBuffer, offset and size. An
      * V8Int8Array is a typed array where each value is a byte (8bits). The
@@ -52,10 +54,25 @@ public class V8Int8Array extends V8Array {
             return super.initialize(runtimePtr, data);
         }
         V8Int8ArrayData arrayData = (V8Int8ArrayData) data;
+        checkArrayProperties(arrayData);
         long handle = v8.initNewV8Int8Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
         v8.addObjRef();
         released = false;
         return handle;
+    }
+
+    private void checkArrayProperties(final V8Int8ArrayData arrayData) {
+        checkSize(arrayData);
+    }
+
+    private void checkSize(final V8Int8ArrayData arrayData) {
+        if (arrayData.size < 0) {
+            throw new IllegalStateException("RangeError: Invalid typed array length");
+        }
+        int limit = (arrayData.size * BYTES) + arrayData.offset;
+        if (limit > arrayData.buffer.getBackingStore().limit()) {
+            throw new IllegalStateException("RangeError: Invalid typed array length");
+        }
     }
 
     @Override

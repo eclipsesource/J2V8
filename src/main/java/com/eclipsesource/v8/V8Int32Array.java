@@ -17,6 +17,8 @@ package com.eclipsesource.v8;
  */
 public class V8Int32Array extends V8Array {
 
+    private static final int BYTES = 4;
+
     /**
      * Create a new V8Int32Array from a specified ArrayBuffer, offset and size. An
      * V8Int32Array is a typed array where each value is a 32-bit integer. The
@@ -52,10 +54,32 @@ public class V8Int32Array extends V8Array {
             return super.initialize(runtimePtr, data);
         }
         V8Int32ArrayData arrayData = (V8Int32ArrayData) data;
+        checkArrayProperties(arrayData);
         long handle = v8.initNewV8Int32Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
         v8.addObjRef();
         released = false;
         return handle;
+    }
+
+    private void checkArrayProperties(final V8Int32ArrayData arrayData) {
+        checkOffset(arrayData);
+        checkSize(arrayData);
+    }
+
+    private void checkSize(final V8Int32ArrayData arrayData) {
+        if (arrayData.size < 0) {
+            throw new IllegalStateException("RangeError: Invalid typed array length");
+        }
+        int limit = (arrayData.size * BYTES) + arrayData.offset;
+        if (limit > arrayData.buffer.getBackingStore().limit()) {
+            throw new IllegalStateException("RangeError: Invalid typed array length");
+        }
+    }
+
+    private void checkOffset(final V8Int32ArrayData arrayData) {
+        if ((arrayData.offset % BYTES) != 0) {
+            throw new IllegalStateException("RangeError: Start offset of Int32Array must be a multiple of " + BYTES);
+        }
     }
 
     @Override

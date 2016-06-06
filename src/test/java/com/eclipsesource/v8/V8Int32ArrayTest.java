@@ -40,6 +40,46 @@ public class V8Int32ArrayTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidOffset() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8Int32Array(v8, buffer, 1, 2);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLength() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8Int32Array(v8, buffer, 0, 3);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthNegative() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8Int32Array(v8, buffer, 0, -1);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthWithOffset() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
+        try {
+            new V8Int32Array(v8, buffer, 4, 3);
+        } finally {
+            buffer.release();
+        }
+    }
+
     @Test
     public void testGetArrayBuffer() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
@@ -196,8 +236,8 @@ public class V8Int32ArrayTest {
 
     @Test
     public void testInt32TypedArray_Twin() {
-        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
-        V8Int32Array v8Int32Array = new V8Int32Array(v8, buffer, 0, 300);
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8Int32Array v8Int32Array = new V8Int32Array(v8, buffer, 0, 2);
         V8Array twinArray = v8Int32Array.twin();
 
         assertTrue(twinArray instanceof V8Int32Array);
@@ -209,8 +249,8 @@ public class V8Int32ArrayTest {
 
     @Test
     public void testInt32TypedArray_TwinHasSameValues() {
-        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
-        V8Int32Array v8Int32Array1 = new V8Int32Array(v8, buffer, 0, 300);
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8Int32Array v8Int32Array1 = new V8Int32Array(v8, buffer, 0, 2);
         V8Int32Array v8Int32Array2 = (V8Int32Array) v8Int32Array1.twin();
 
         v8Int32Array1.add("0", 7);

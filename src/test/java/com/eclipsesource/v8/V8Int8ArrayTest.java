@@ -40,6 +40,36 @@ public class V8Int8ArrayTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLength() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8Int8Array(v8, buffer, 0, 9);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthNegative() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8Int8Array(v8, buffer, 0, -1);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthWithOffset() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
+        try {
+            new V8Int8Array(v8, buffer, 4, 11);
+        } finally {
+            buffer.release();
+        }
+    }
+
     @Test
     public void testGetArrayBuffer() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
@@ -195,7 +225,7 @@ public class V8Int8ArrayTest {
     @Test
     public void testInt8TypedArray_Twin() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
-        V8Int8Array v8Int8Array = new V8Int8Array(v8, buffer, 0, 300);
+        V8Int8Array v8Int8Array = new V8Int8Array(v8, buffer, 0, 4);
         V8Array twinArray = v8Int8Array.twin();
 
         assertTrue(twinArray instanceof V8Int8Array);
@@ -208,7 +238,7 @@ public class V8Int8ArrayTest {
     @Test
     public void testInt8TypedArray_TwinHasSameValues() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
-        V8Int8Array v8Int8Array1 = new V8Int8Array(v8, buffer, 0, 300);
+        V8Int8Array v8Int8Array1 = new V8Int8Array(v8, buffer, 0, 4);
         V8Int8Array v8Int8Array2 = (V8Int8Array) v8Int8Array1.twin();
 
         v8Int8Array1.add("0", 7);
