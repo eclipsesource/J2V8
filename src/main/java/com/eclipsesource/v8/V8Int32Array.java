@@ -10,6 +10,8 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import java.nio.IntBuffer;
+
 /**
  * A representation of a JS Int32Array in Java. An Int32Array is a typed array
  * in which each value is a 32-bit integer. The typed array is simply a 'view' onto
@@ -46,6 +48,21 @@ public class V8Int32Array extends V8Array {
     public V8ArrayBuffer getBuffer() {
         return (V8ArrayBuffer) get("buffer");
     }
+
+    /**
+     * Returns the underlying IntBuffer used to back this TypedArray.
+     *
+     * @return The IntBuffer used as the backing store for this TypedArray
+     */
+    public IntBuffer getIntBuffer() {
+        V8ArrayBuffer buffer = getBuffer();
+        try {
+            return buffer.getBackingStore().asIntBuffer();
+        } finally {
+            buffer.release();
+        }
+    }
+
 
     @Override
     protected long initialize(final long runtimePtr, final Object data) {

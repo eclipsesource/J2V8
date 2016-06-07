@@ -40,6 +40,18 @@ public class V8Int8ArrayTest {
         }
     }
 
+    @Test
+    public void testGetByteBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8Int8Array v8Int8Array = new V8Int8Array(v8, buffer, 0, 2);
+
+        ByteBuffer intBuffer = v8Int8Array.getByteBuffer();
+
+        assertEquals(intBuffer, buffer.getBackingStore());
+        buffer.release();
+        v8Int8Array.release();
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testCreateArrayInvalidLength() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);

@@ -16,6 +16,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1227,10 +1229,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1302,10 +1304,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        IntBuffer result = (IntBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(25, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(25, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1362,10 +1364,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1437,10 +1439,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        IntBuffer result = (IntBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(25, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(25, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 

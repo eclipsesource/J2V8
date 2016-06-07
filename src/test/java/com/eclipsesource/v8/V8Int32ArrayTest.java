@@ -40,6 +40,18 @@ public class V8Int32ArrayTest {
         }
     }
 
+    @Test
+    public void testGetIntBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8Int32Array v8Int32Array = new V8Int32Array(v8, buffer, 0, 2);
+
+        IntBuffer intBuffer = v8Int32Array.getIntBuffer();
+
+        assertEquals(intBuffer, buffer.getBackingStore().asIntBuffer());
+        buffer.release();
+        v8Int32Array.release();
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testCreateArrayInvalidOffset() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);

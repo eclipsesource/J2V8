@@ -10,6 +10,8 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
+import java.nio.ByteBuffer;
+
 /**
  * A representation of a JS Int8Array in Java. An Int8Array is a typed array
  * in which each value is a byte (8 bits). The typed array is simply a 'view' onto
@@ -45,6 +47,20 @@ public class V8Int8Array extends V8Array {
      */
     public V8ArrayBuffer getBuffer() {
         return (V8ArrayBuffer) get("buffer");
+    }
+
+    /**
+     * Returns the underlying ByteBuffer used to back this TypedArray.
+     *
+     * @return The ByteBuffer used as the backing store for this TypedArray
+     */
+    public ByteBuffer getByteBuffer() {
+        V8ArrayBuffer buffer = getBuffer();
+        try {
+            return buffer.getBackingStore();
+        } finally {
+            buffer.release();
+        }
     }
 
     @Override
