@@ -457,6 +457,27 @@ public class V8CallbackTest {
     }
 
     @Test
+    public void testV8TypedArrayMethodCalledFromScriptWithResult() {
+        ICallback callback = mock(ICallback.class);
+        V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 100);
+        V8Int32Array array = new V8Int32Array(v8, arrayBuffer, 0, 25);
+        for (int i = 0; i < 25; i++) {
+            array.add("" + i, i);
+        }
+        doReturn(array).when(callback).v8ArrayMethodNoParameters();
+        v8.registerJavaMethod(callback, "v8ArrayMethodNoParameters", "foo", new Class<?>[0]);
+
+        V8Array result = v8.executeArrayScript("foo();");
+
+        assertTrue(result instanceof V8Int32Array);
+        for (int i = 0; i < 25; i++) {
+            assertEquals(i, result.getInteger(i));
+        }
+        arrayBuffer.release();
+        result.release();
+    }
+
+    @Test
     public void testV8ArrayMethodReleasesResults() {
         ICallback callback = mock(ICallback.class);
         V8Array object = new V8Array(v8);
