@@ -166,7 +166,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env
 
 Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
   const uint16_t* unicodeString = env->GetStringChars(string, NULL);
-  Local<String> result = String::NewFromTwoByte(isolate, unicodeString);
+  int length = env->GetStringLength(string);
+  Local<String> result = String::NewFromTwoByte(isolate, unicodeString, String::NewStringType::kNormalString, length);
   env->ReleaseStringChars(string, unicodeString);
   return result;
 }
@@ -180,7 +181,8 @@ Handle<Value> getValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr
 void addValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr, jlong &objectHandle, jstring &key, Handle<Value> value) {
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
   const uint16_t* unicodeString_key = env->GetStringChars(key, NULL);
-  Local<String> v8Key = String::NewFromTwoByte(isolate, unicodeString_key);
+  int length = env->GetStringLength(key);
+  Local<String> v8Key = String::NewFromTwoByte(isolate, unicodeString_key, String::NewStringType::kNormalString, length);
   object->Set(v8Key, value);
   env->ReleaseStringChars(key, unicodeString_key);
 }
