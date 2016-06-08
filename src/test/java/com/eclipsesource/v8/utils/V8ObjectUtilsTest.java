@@ -1237,6 +1237,19 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testArrayTypedArrayValue_Int8ArrayWithoutBackingStore() {
+        V8Array root = v8.executeArrayScript(""
+                + "var intsArray = new Int8Array(24);\n"
+                + "var root = [intsArray];\n"
+                + "root;\n");
+
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(24, result.limit());
+        root.release();
+    }
+
+    @Test
     public void testArrayTypedArrayValue_Uint8Array() {
         V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
                 + "var intsArray = new Uint8Array(buf);\n"

@@ -26,6 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.nio.IntBuffer;
 import java.util.Date;
 
 import org.junit.After;
@@ -33,6 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import com.eclipsesource.v8.utils.V8ObjectUtils;
 
 public class V8CallbackTest {
 
@@ -475,6 +478,23 @@ public class V8CallbackTest {
         }
         arrayBuffer.release();
         result.release();
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof IntBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Int32Array(24));");
+
+        assertTrue((Boolean) result);
     }
 
     @Test
