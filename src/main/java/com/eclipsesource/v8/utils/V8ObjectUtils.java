@@ -19,9 +19,8 @@ import java.util.Map.Entry;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Int32Array;
-import com.eclipsesource.v8.V8Int8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
 
 /**
@@ -445,16 +444,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = array.getArray(index);
                 try {
-                    if (typedArray instanceof V8Int32Array) {
-                        return ((V8Int32Array) typedArray).getIntBuffer();
-                    } else if (typedArray instanceof V8Int8Array) {
-                        return ((V8Int8Array) typedArray).getByteBuffer();
-                    } else if ((typedArray.getType() == V8Value.INTEGER) || (typedArray.getType() == V8Value.BYTE)) {
-                        return typedArray.getIntegers(0, typedArray.length());
-                    } else if (typedArray.getType() == V8Value.DOUBLE) {
-                        return typedArray.getDoubles(0, typedArray.length());
-                    }
-                    // fall through to V8_ARRAY
+                    return ((V8TypedArray) typedArray).getByteBuffer();
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();
@@ -503,16 +493,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = object.getArray(key);
                 try {
-                    if (typedArray instanceof V8Int32Array) {
-                        return ((V8Int32Array) typedArray).getIntBuffer();
-                    } else if (typedArray instanceof V8Int8Array) {
-                        return ((V8Int8Array) typedArray).getByteBuffer();
-                    } else if ((typedArray.getType() == V8Value.INTEGER) || (typedArray.getType() == V8Value.BYTE)) {
-                        return typedArray.getIntegers(0, typedArray.length());
-                    } else if (typedArray.getType() == V8Value.DOUBLE) {
-                        return typedArray.getDoubles(0, typedArray.length());
-                    }
-                    // fall through to V8_ARRAY
+                    return ((V8TypedArray) typedArray).getByteBuffer();
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();

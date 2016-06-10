@@ -26,7 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.junit.After;
@@ -463,7 +463,7 @@ public class V8CallbackTest {
     public void testV8TypedArrayMethodCalledFromScriptWithResult() {
         ICallback callback = mock(ICallback.class);
         V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 100);
-        V8Int32Array array = new V8Int32Array(v8, arrayBuffer, 0, 25);
+        V8TypedArray array = new V8TypedArray(v8, arrayBuffer, V8Value.INTEGER, 0, 25);
         for (int i = 0; i < 25; i++) {
             array.add("" + i, i);
         }
@@ -472,7 +472,7 @@ public class V8CallbackTest {
 
         V8Array result = v8.executeArrayScript("foo();");
 
-        assertTrue(result instanceof V8Int32Array);
+        assertTrue(result instanceof V8TypedArray);
         for (int i = 0; i < 25; i++) {
             assertEquals(i, result.getInteger(i));
         }
@@ -487,7 +487,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof IntBuffer;
+                return result instanceof ByteBuffer;
             }
         };
         v8.registerJavaMethod(callback, "callback");

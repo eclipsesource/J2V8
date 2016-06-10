@@ -62,8 +62,7 @@ JavaVM* jvm = NULL;
 jclass v8cls = NULL;
 jclass v8ObjectCls = NULL;
 jclass v8ArrayCls = NULL;
-jclass v8Int8ArrayCls = NULL;
-jclass v8Int32ArrayCls = NULL;
+jclass v8TypedArrayCls = NULL;
 jclass v8ArrayBufferCls = NULL;
 jclass v8FunctionCls = NULL;
 jclass undefinedV8ObjectCls = NULL;
@@ -80,8 +79,7 @@ jclass booleanCls = NULL;
 jclass errorCls = NULL;
 jclass unsupportedOperationExceptionCls = NULL;
 jmethodID v8ArrayInitMethodID = NULL;
-jmethodID v8Int8ArrayInitMethodID = NULL;
-jmethodID v8Int32ArrayInitMethodID = NULL;
+jmethodID v8TypedArrayInitMethodID = NULL;
 jmethodID v8ArrayBufferInitMethodID = NULL;
 jmethodID v8ArrayGetHandleMethodID = NULL;
 jmethodID v8CallVoidMethodID = NULL;
@@ -235,8 +233,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
     v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
-    v8Int8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Int8Array"));
-    v8Int32ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Int32Array"));
+    v8TypedArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8TypedArray"));
     v8ArrayBufferCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8ArrayBuffer"));
     v8FunctionCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Function"));
     undefinedV8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object$Undefined"));
@@ -255,8 +252,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     // Get all method IDs
     v8ArrayInitMethodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-	v8Int8ArrayInitMethodID = env->GetMethodID(v8Int8ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
-    v8Int32ArrayInitMethodID = env->GetMethodID(v8Int32ArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
+	v8TypedArrayInitMethodID = env->GetMethodID(v8TypedArrayCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
     v8ArrayBufferInitMethodID = env->GetMethodID(v8ArrayBufferCls, "<init>", "(Lcom/eclipsesource/v8/V8;Ljava/nio/ByteBuffer;)V");
     v8ArrayGetHandleMethodID = env->GetMethodID(v8ArrayCls, "getHandle", "()J");
     v8CallVoidMethodID = (env)->GetMethodID(v8cls, "callVoidJavaMethod", "(JLcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)V");
@@ -1714,14 +1710,8 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;
   }
-  else if (result->IsInt8Array()) {
-      jobject objectResult = env->NewObject(v8Int8ArrayCls, v8Int8ArrayInitMethodID, v8);
-      jlong resultHandle = getHandle(env, objectResult);
-      reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
-      return objectResult;
-  }
-  else if (result->IsInt32Array()) {
-      jobject objectResult = env->NewObject(v8Int32ArrayCls, v8Int32ArrayInitMethodID, v8);
+  else if (result->IsTypedArray()) {
+      jobject objectResult = env->NewObject(v8TypedArrayCls, v8TypedArrayInitMethodID, v8);
       jlong resultHandle = getHandle(env, objectResult);
       reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
       return objectResult;
@@ -1730,12 +1720,6 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
     ArrayBuffer* arrayBuffer = ArrayBuffer::Cast(*result);
     jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), arrayBuffer->ByteLength());
     jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);
-    jlong resultHandle = getHandle(env, objectResult);
-    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
-    return objectResult;
-  }
-  else if (result->IsTypedArray()) {
-    jobject objectResult = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
     reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
     return objectResult;

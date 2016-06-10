@@ -12,7 +12,11 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -600,6 +604,612 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.INTEGER, intsArray.getType());
         intsArray.release();
+    }
+
+    @Test
+    public void testGetIntBufferFromInt32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+
+        IntBuffer intBuffer = v8Int32Array.getByteBuffer().asIntBuffer();
+
+        assertEquals(intBuffer, buffer.getBackingStore().asIntBuffer());
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidOffset_Int32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 1, 2);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLength_Int32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 3);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthNegative_Int32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, -1);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthWithOffset_Int32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 3);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void testGetArrayBuffer_Int32Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+
+        V8ArrayBuffer result = v8Int32Array.getBuffer();
+
+        assertEquals(result, buffer);
+        result.release();
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testUseAccessedArrayBuffer_Int32Array() {
+        V8TypedArray array = (V8TypedArray) v8.executeScript("\n"
+                + "var buffer = new ArrayBuffer(8);"
+                + "var array = new Int32Array(buffer);"
+                + "array[0] = 1; array[1] = 7;"
+                + "array;");
+
+        V8ArrayBuffer buffer = array.getBuffer();
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        assertEquals(1, intBuffer.get(0));
+        assertEquals(7, intBuffer.get(1));
+        buffer.release();
+        array.release();
+    }
+
+    @Test
+    public void testCreateInt32TypedArray() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+
+        v8Int32Array.add("0", 7);
+        v8Int32Array.add("1", 8);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        assertEquals(7, intBuffer.get());
+        assertEquals(8, intBuffer.get());
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testUpdateInt32TypedArrayInJavaScript() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        v8.add("v8Int32Array", v8Int32Array);
+
+        v8.executeVoidScript("v8Int32Array[0] = 7; v8Int32Array[1] = 9;");
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        assertEquals(7, intBuffer.get());
+        assertEquals(9, intBuffer.get());
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testAccessInt32TypedArrayInJavaScript() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(4, v8.executeIntegerScript("v8Int32Array[0];"));
+        assertEquals(8, v8.executeIntegerScript("v8Int32Array[1];"));
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testWriteInt32TypedArrayFromArrayBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(4, v8Int32Array.get(0));
+        assertEquals(8, v8Int32Array.get(1));
+        buffer.release();
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_BufferReleased() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        buffer.release();
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(4, v8Int32Array.get(0));
+        assertEquals(8, v8Int32Array.get(1));
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_Length() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        buffer.release();
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(2, v8Int32Array.length());
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_CustomLength() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 1);
+        buffer.release();
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(1, v8Int32Array.length());
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_CustomOffset() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 1);
+        buffer.release();
+        v8.add("v8Int32Array", v8Int32Array);
+
+        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
+        intBuffer.put(4);
+        intBuffer.put(8);
+
+        assertEquals(1, v8Int32Array.length());
+        assertEquals(8, v8Int32Array.get(0));
+        v8Int32Array.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_Twin() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        V8Array twinArray = v8Int32Array.twin();
+
+        assertTrue(twinArray instanceof V8TypedArray);
+        assertEquals(v8Int32Array, twinArray);
+        v8Int32Array.release();
+        twinArray.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testInt32TypedArray_TwinHasSameValues() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int32Array1 = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+        V8TypedArray v8Int32Array2 = (V8TypedArray) v8Int32Array1.twin();
+
+        v8Int32Array1.add("0", 7);
+        v8Int32Array1.add("1", 8);
+
+        assertEquals(7, v8Int32Array2.get(0));
+        assertEquals(8, v8Int32Array2.get(1));
+        v8Int32Array1.release();
+        v8Int32Array2.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testGetInt32TypedArray() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
+        v8.add("buf", buffer);
+
+        V8Array array = (V8Array) v8.executeScript("new Int32Array(buf);");
+
+        assertTrue(array instanceof V8TypedArray);
+        assertEquals(V8Value.INTEGER, array.getType());
+        array.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testCreateV8Int32ArrayFromJSArrayBuffer() {
+        V8ArrayBuffer buffer = (V8ArrayBuffer) v8.executeScript(""
+                + "var buffer = new ArrayBuffer(8)\n"
+                + "var array = new Int32Array(buffer);\n"
+                + "array[0] = 7; array[1] = 9;\n"
+                + "buffer;");
+
+        V8TypedArray array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
+
+        assertEquals(7, array.get(0));
+        assertEquals(9, array.get(1));
+        array.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testGetByteBuffer_Int8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+
+        ByteBuffer intBuffer = v8Int8Array.getByteBuffer();
+
+        assertEquals(intBuffer, buffer.getBackingStore());
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLength_Int8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 9);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthNegative_Int8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, -1);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreateArrayInvalidLengthWithOffset_Int8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 4, 11);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void testGetArrayBuffer_Int8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+
+        V8ArrayBuffer result = v8Int8Array.getBuffer();
+
+        assertEquals(result, buffer);
+        result.release();
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testUseAccessedArrayBuffer_Int8Array() {
+        V8TypedArray array = (V8TypedArray) v8.executeScript("\n"
+                + "var buffer = new ArrayBuffer(8);"
+                + "var array = new Int8Array(buffer);"
+                + "array[0] = 1; array[1] = 7;"
+                + "array;");
+
+        V8ArrayBuffer buffer = array.getBuffer();
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        assertEquals(1, byteBuffer.get(0));
+        assertEquals(7, byteBuffer.get(1));
+        buffer.release();
+        array.release();
+    }
+
+    @Test
+    public void testCreateInt8TypedArray() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+
+        v8Int8Array.add("0", 7);
+        v8Int8Array.add("1", 8);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        assertEquals(7, byteBuffer.get());
+        assertEquals(8, byteBuffer.get());
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testUpdateInt8TypedArrayInJavaScript() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+        v8.add("v8Int8Array", v8Int8Array);
+
+        v8.executeVoidScript("v8Int8Array[0] = 7; v8Int8Array[1] = 9;");
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        assertEquals(7, byteBuffer.get());
+        assertEquals(9, byteBuffer.get());
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testAccessInt8TypedArrayInJavaScript() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 2);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+        v8.add("v8Int8Array", v8Int8Array);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        byteBuffer.put((byte) 4);
+        byteBuffer.put((byte) 8);
+
+        assertEquals(4, v8.executeIntegerScript("v8Int8Array[0];"));
+        assertEquals(8, v8.executeIntegerScript("v8Int8Array[1];"));
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testWriteInt8TypedArrayFromArrayBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+        v8.add("v8Int8Array", v8Int8Array);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        byteBuffer.put((byte) 4);
+        byteBuffer.put((byte) 8);
+
+        assertEquals(4, v8Int8Array.get(0));
+        assertEquals(8, v8Int8Array.get(1));
+        buffer.release();
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_BufferReleased() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+        buffer.release();
+        v8.add("v8Int8Array", v8Int8Array);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        byteBuffer.put((byte) 4);
+        byteBuffer.put((byte) 8);
+
+        assertEquals(4, v8Int8Array.get(0));
+        assertEquals(8, v8Int8Array.get(1));
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_Length() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+        buffer.release();
+        v8.add("v8Int8Array", v8Int8Array);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        byteBuffer.put((byte) 4);
+        byteBuffer.put((byte) 8);
+
+        assertEquals(2, v8Int8Array.length());
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_CustomLength() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 1);
+        buffer.release();
+        v8.add("v8Int8Array", v8Int8Array);
+
+        buffer.getBackingStore();
+
+        assertEquals(1, v8Int8Array.length());
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_CustomOffset() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 1, 1);
+        buffer.release();
+        v8.add("v8Int8Array", v8Int8Array);
+
+        ByteBuffer byteBuffer = buffer.getBackingStore();
+        byteBuffer.put((byte) 4);
+        byteBuffer.put((byte) 8);
+
+        assertEquals(1, v8Int8Array.length());
+        assertEquals(8, v8Int8Array.get(0));
+        v8Int8Array.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_Twin() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 4);
+        V8Array twinArray = v8Int8Array.twin();
+
+        assertTrue(twinArray instanceof V8TypedArray);
+        assertEquals(V8Value.BYTE, twinArray.getType());
+        assertEquals(v8Int8Array, twinArray);
+        v8Int8Array.release();
+        twinArray.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testInt8TypedArray_TwinHasSameValues() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
+        V8TypedArray v8Int8Array1 = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 4);
+        V8TypedArray v8Int8Array2 = (V8TypedArray) v8Int8Array1.twin();
+
+        v8Int8Array1.add("0", 7);
+        v8Int8Array1.add("1", 8);
+
+        assertEquals(7, v8Int8Array2.get(0));
+        assertEquals(8, v8Int8Array2.get(1));
+        v8Int8Array1.release();
+        v8Int8Array2.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testGetInt8TypedArray() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
+        v8.add("buf", buffer);
+
+        V8Array array = (V8Array) v8.executeScript("new Int8Array(buf);");
+
+        assertTrue(array instanceof V8TypedArray);
+        array.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testCreateV8Int8ArrayFromJSArrayBuffer() {
+        V8ArrayBuffer buffer = (V8ArrayBuffer) v8.executeScript(""
+                + "var buffer = new ArrayBuffer(8)\n"
+                + "var array = new Int8Array(buffer);\n"
+                + "array[0] = 7; array[1] = 9;\n"
+                + "buffer;");
+
+        V8TypedArray array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
+
+        assertEquals(7, array.get(0));
+        assertEquals(9, array.get(1));
+        array.release();
+        buffer.release();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_Boolean() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.BOOLEAN, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_String() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.STRING, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_Double() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.DOUBLE, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_V8Array() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_V8Object() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.V8_OBJECT, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_V8ArrayBuffer() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY_BUFFER, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_V8Function() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.V8_FUNCTION, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_Null() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.NULL, 0, 10);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWithIllegalType_Undefined() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        try {
+            new V8TypedArray(v8, buffer, V8Value.UNDEFINED, 0, 10);
+        } finally {
+            buffer.release();
+        }
     }
 
 }

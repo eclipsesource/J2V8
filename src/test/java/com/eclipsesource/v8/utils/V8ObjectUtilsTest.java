@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1257,10 +1256,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1272,10 +1271,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [int8ClampedArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1287,10 +1286,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(50, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(50, result.asShortBuffer().limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1302,10 +1301,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(50, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(50, result.asShortBuffer().limit());
+        assertEquals(16, result.asShortBuffer().get(0));
         root.release();
     }
 
@@ -1317,10 +1316,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        IntBuffer result = (IntBuffer) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(25, result.limit());
-        assertEquals(16, result.get(0));
+        assertEquals(25, result.asIntBuffer().limit());
+        assertEquals(16, result.asIntBuffer().get(0));
         root.release();
     }
 
@@ -1332,10 +1331,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray]\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(25, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(25, result.asIntBuffer().limit());
+        assertEquals(16, result.asIntBuffer().get(0));
         root.release();
     }
 
@@ -1347,10 +1346,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [floatsArray];"
                 + "root;\n");
 
-        double[] result = (double[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(25, result.length);
-        assertEquals(16.2, result[0], 0.00001);
+        assertEquals(25, result.asFloatBuffer().limit());
+        assertEquals(16.2, result.asFloatBuffer().get(0), 0.00001);
         root.release();
     }
 
@@ -1362,10 +1361,10 @@ public class V8ObjectUtilsTest {
                 + "var root = [floatsArray];\n"
                 + "root;\n");
 
-        double[] result = (double[]) V8ObjectUtils.getValue(root, 0);
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
 
-        assertEquals(10, result.length);
-        assertEquals(16.2, result[0], 0.0001);
+        assertEquals(10, result.asDoubleBuffer().limit());
+        assertEquals(16.2, result.asDoubleBuffer().get(0), 0.0001);
         root.release();
     }
 
@@ -1392,10 +1391,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1407,10 +1406,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : int8ClampedArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(100, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(100, result.limit());
+        assertEquals(16, result.get(0));
         root.release();
     }
 
@@ -1422,10 +1421,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(50, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(50, result.asShortBuffer().limit());
+        assertEquals(16, result.asShortBuffer().get(0));
         root.release();
     }
 
@@ -1437,10 +1436,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(50, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(50, result.asShortBuffer().limit());
+        assertEquals(16, result.asShortBuffer().get(0));
         root.release();
     }
 
@@ -1452,10 +1451,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        IntBuffer result = (IntBuffer) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(25, result.limit());
-        assertEquals(16, result.get(0));
+        assertEquals(25, result.asIntBuffer().limit());
+        assertEquals(16, result.asIntBuffer().get(0));
         root.release();
     }
 
@@ -1467,10 +1466,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        int[] result = (int[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(25, result.length);
-        assertEquals(16, result[0]);
+        assertEquals(25, result.asIntBuffer().limit());
+        assertEquals(16, result.asIntBuffer().get(0));
         root.release();
     }
 
@@ -1482,10 +1481,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : floatsArray };"
                 + "root;\n");
 
-        double[] result = (double[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(25, result.length);
-        assertEquals(16.2, result[0], 0.00001);
+        assertEquals(25, result.asFloatBuffer().limit());
+        assertEquals(16.2, result.asFloatBuffer().get(0), 0.00001);
         root.release();
     }
 
@@ -1497,10 +1496,10 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : floatsArray };\n"
                 + "root;\n");
 
-        double[] result = (double[]) V8ObjectUtils.getValue(root, "items");
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
 
-        assertEquals(10, result.length);
-        assertEquals(16.2, result[0], 0.0001);
+        assertEquals(10, result.asDoubleBuffer().limit());
+        assertEquals(16.2, result.asDoubleBuffer().get(0), 0.0001);
         root.release();
     }
 
