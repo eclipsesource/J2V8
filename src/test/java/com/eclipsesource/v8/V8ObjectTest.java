@@ -58,6 +58,71 @@ public class V8ObjectTest {
     }
 
     @Test
+    public void testV8ValueNull_StringRepresentation() {
+        assertEquals("Null", V8Value.getStringRepresentaion(0));
+    }
+
+    @Test
+    public void testV8ValueInteger_StringRepresentation() {
+        assertEquals("Integer", V8Value.getStringRepresentaion(1));
+    }
+
+    @Test
+    public void testV8ValueDouble_StringRepresentation() {
+        assertEquals("Double", V8Value.getStringRepresentaion(2));
+    }
+
+    @Test
+    public void testV8ValueBoolean_StringRepresentation() {
+        assertEquals("Boolean", V8Value.getStringRepresentaion(3));
+    }
+
+    @Test
+    public void testV8ValueString_StringRepresentation() {
+        assertEquals("String", V8Value.getStringRepresentaion(4));
+    }
+
+    @Test
+    public void testV8ValueV8Array_StringRepresentation() {
+        assertEquals("V8Array", V8Value.getStringRepresentaion(5));
+    }
+
+    @Test
+    public void testV8ValueV8Object_StringRepresentation() {
+        assertEquals("V8Object", V8Value.getStringRepresentaion(6));
+    }
+
+    @Test
+    public void testV8ValueV8Function_StringRepresentation() {
+        assertEquals("V8Function", V8Value.getStringRepresentaion(7));
+    }
+
+    @Test
+    public void testV8ValueV8TypedArray_StringRepresentation() {
+        assertEquals("V8TypedArray", V8Value.getStringRepresentaion(8));
+    }
+
+    @Test
+    public void testV8ValueByte_StringRepresentation() {
+        assertEquals("Byte", V8Value.getStringRepresentaion(9));
+    }
+
+    @Test
+    public void testV8ValueV8ArrayBuffer_StringRepresentation() {
+        assertEquals("V8ArrayBuffer", V8Value.getStringRepresentaion(10));
+    }
+
+    @Test
+    public void testV8ValueUndefined_StringRepresentation() {
+        assertEquals("Undefined", V8Value.getStringRepresentaion(99));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testV8ValueIllegal_StringRepresentation() {
+        V8Value.getStringRepresentaion(11);
+    }
+
+    @Test
     public void testCreateReleaseObject() {
         for (int i = 0; i < 1000; i++) {
             V8Object persistentV8Object = new V8Object(v8);

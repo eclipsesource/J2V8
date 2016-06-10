@@ -63,6 +63,42 @@ abstract public class V8Value implements Releasable {
     }
 
     /**
+     * Returns a string representation of the V8 Type.
+     * @param type Type to return as a string. See constants in V8Value.
+     * @return The V8Value type as a string.
+     */
+    public static String getStringRepresentaion(final int type) {
+        switch (type) {
+            case NULL:
+                return "Null";
+            case INTEGER:
+                return "Integer";
+            case DOUBLE:
+                return "Double";
+            case BOOLEAN:
+                return "Boolean";
+            case STRING:
+                return "String";
+            case V8_ARRAY:
+                return "V8Array";
+            case V8_OBJECT:
+                return "V8Object";
+            case V8_FUNCTION:
+                return "V8Function";
+            case V8_TYPED_ARRAY:
+                return "V8TypedArray";
+            case BYTE:
+                return "Byte";
+            case V8_ARRAY_BUFFER:
+                return "V8ArrayBuffer";
+            case UNDEFINED:
+                return "Undefined";
+            default:
+                throw new IllegalArgumentException("Invalid V8 type: " + type);
+        }
+    }
+
+    /**
      * Determines if this value is undefined.
      *
      * @return Returns true if the value is undefined, false otherwise
