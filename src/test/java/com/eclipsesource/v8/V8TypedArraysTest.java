@@ -166,7 +166,7 @@ public class V8TypedArraysTest {
     public void testGetTypedArrayIntArrayType() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
-        assertEquals(V8Value.INTEGER, result.getType());
+        assertEquals(V8Value.INT_16_ARRAY, result.getType());
         result.release();
     }
 
@@ -213,18 +213,80 @@ public class V8TypedArraysTest {
     }
 
     @Test
-    public void testUint8ClampedIsByteArray() {
-        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8ClampedArray(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+    public void testInt8_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
-        assertEquals(V8Value.BYTE, result.getType());
+        assertEquals(V8Value.INT_8_ARRAY, result.getType());
         result.release();
     }
 
     @Test
-    public void testUint8ArrayIsByteArray() {
+    public void testUint8Clamped_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8ClampedArray(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, result.getType());
+        result.release();
+    }
+
+    @Test
+    public void testUint8Array_GetType() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
-        assertEquals(V8Value.BYTE, result.getType());
+        assertEquals(V8Value.UNSIGNED_INT_8_ARRAY, result.getType());
+        result.release();
+    }
+
+    @Test
+    public void testInt16Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int16Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.INT_16_ARRAY, result.getType());
+        assertEquals(4, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testUnsignedInt16Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint16Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.UNSIGNED_INT_16_ARRAY, result.getType());
+        assertEquals(4, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testInt32Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int32Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.INT_32_ARRAY, result.getType());
+        assertEquals(2, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testUInt32Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint32Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.UNSIGNED_INT_32_ARRAY, result.getType());
+        assertEquals(2, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testFloat32Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Float32Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.FLOAT_32_ARRAY, result.getType());
+        assertEquals(2, result.length());
+        result.release();
+    }
+
+    @Test
+    public void testFloat64Array_GetType() {
+        V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Float64Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
+
+        assertEquals(V8Value.FLOAT_64_ARRAY, result.getType());
+        assertEquals(1, result.length());
         result.release();
     }
 
@@ -242,7 +304,7 @@ public class V8TypedArraysTest {
     public void testGetTypedArrayFloatArrayType() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float32Array(buf); floats[0] = 7.7; floats[1] = 7; floats");
 
-        assertEquals(V8Value.DOUBLE, result.getType());
+        assertEquals(V8Value.FLOAT_32_ARRAY, result.getType());
         result.release();
     }
 

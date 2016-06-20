@@ -13,8 +13,12 @@ extern "C" {
 #define com_eclipsesource_v8_V8_UNKNOWN 0L
 #undef com_eclipsesource_v8_V8_INTEGER
 #define com_eclipsesource_v8_V8_INTEGER 1L
+#undef com_eclipsesource_v8_V8_INT_32_ARRAY
+#define com_eclipsesource_v8_V8_INT_32_ARRAY 1L
 #undef com_eclipsesource_v8_V8_DOUBLE
 #define com_eclipsesource_v8_V8_DOUBLE 2L
+#undef com_eclipsesource_v8_V8_FLOAT_64_ARRAY
+#define com_eclipsesource_v8_V8_FLOAT_64_ARRAY 2L
 #undef com_eclipsesource_v8_V8_BOOLEAN
 #define com_eclipsesource_v8_V8_BOOLEAN 3L
 #undef com_eclipsesource_v8_V8_STRING
@@ -29,8 +33,22 @@ extern "C" {
 #define com_eclipsesource_v8_V8_V8_TYPED_ARRAY 8L
 #undef com_eclipsesource_v8_V8_BYTE
 #define com_eclipsesource_v8_V8_BYTE 9L
+#undef com_eclipsesource_v8_V8_INT_8_ARRAY
+#define com_eclipsesource_v8_V8_INT_8_ARRAY 9L
 #undef com_eclipsesource_v8_V8_V8_ARRAY_BUFFER
 #define com_eclipsesource_v8_V8_V8_ARRAY_BUFFER 10L
+#undef com_eclipsesource_v8_V8_UNSIGNED_INT_8_ARRAY
+#define com_eclipsesource_v8_V8_UNSIGNED_INT_8_ARRAY 11L
+#undef com_eclipsesource_v8_V8_UNSIGNED_INT_8_CLAMPED_ARRAY
+#define com_eclipsesource_v8_V8_UNSIGNED_INT_8_CLAMPED_ARRAY 12L
+#undef com_eclipsesource_v8_V8_INT_16_ARRAY
+#define com_eclipsesource_v8_V8_INT_16_ARRAY 13L
+#undef com_eclipsesource_v8_V8_UNSIGNED_INT_16_ARRAY
+#define com_eclipsesource_v8_V8_UNSIGNED_INT_16_ARRAY 14L
+#undef com_eclipsesource_v8_V8_UNSIGNED_INT_32_ARRAY
+#define com_eclipsesource_v8_V8_UNSIGNED_INT_32_ARRAY 15L
+#undef com_eclipsesource_v8_V8_FLOAT_32_ARRAY
+#define com_eclipsesource_v8_V8_FLOAT_32_ARRAY 16L
 #undef com_eclipsesource_v8_V8_UNDEFINED
 #define com_eclipsesource_v8_V8_UNDEFINED 99L
 /*

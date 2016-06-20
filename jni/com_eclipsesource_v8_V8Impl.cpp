@@ -867,10 +867,24 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getArrayType
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
   int length = 0;
   if ( array->IsTypedArray() ) {
-      if ( array->IsFloat64Array() || array->IsFloat32Array() ) {
+      if ( array->IsFloat64Array() ) {
         return com_eclipsesource_v8_V8_DOUBLE;
-      } else if ( array->IsUint8Array() || array->IsUint8ClampedArray() || array->IsInt8Array() ) {
-        return com_eclipsesource_v8_V8_BYTE;
+      } else if ( array->IsFloat32Array() ) {
+        return com_eclipsesource_v8_V8_FLOAT_32_ARRAY;
+      } else if ( array->IsInt32Array() ) {
+        return com_eclipsesource_v8_V8_INT_32_ARRAY;
+      } else if ( array->IsUint32Array() ) {
+        return com_eclipsesource_v8_V8_UNSIGNED_INT_32_ARRAY;
+      } else if ( array->IsInt16Array() ) {
+        return com_eclipsesource_v8_V8_INT_16_ARRAY;
+      } else if ( array->IsUint16Array() ) {
+        return com_eclipsesource_v8_V8_UNSIGNED_INT_16_ARRAY;
+      } else if ( array->IsInt8Array() ) {
+        return com_eclipsesource_v8_V8_INT_8_ARRAY;
+      } else if ( array->IsUint8Array() ) {
+        return com_eclipsesource_v8_V8_UNSIGNED_INT_8_ARRAY;
+      } else if ( array->IsUint8ClampedArray() ) {
+        return com_eclipsesource_v8_V8_UNSIGNED_INT_8_CLAMPED_ARRAY;
       }
       return com_eclipsesource_v8_V8_INTEGER;
   } else {

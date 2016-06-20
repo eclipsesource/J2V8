@@ -25,19 +25,28 @@ package com.eclipsesource.v8;
  */
 abstract public class V8Value implements Releasable {
 
-    public static final int NULL            = 0;
-    public static final int UNKNOWN         = 0;
-    public static final int INTEGER         = 1;
-    public static final int DOUBLE          = 2;
-    public static final int BOOLEAN         = 3;
-    public static final int STRING          = 4;
-    public static final int V8_ARRAY        = 5;
-    public static final int V8_OBJECT       = 6;
-    public static final int V8_FUNCTION     = 7;
-    public static final int V8_TYPED_ARRAY  = 8;
-    public static final int BYTE            = 9;
-    public static final int V8_ARRAY_BUFFER = 10;
-    public static final int UNDEFINED       = 99;
+    public static final int NULL                         = 0;
+    public static final int UNKNOWN                      = 0;
+    public static final int INTEGER                      = 1;
+    public static final int INT_32_ARRAY                 = 1;
+    public static final int DOUBLE                       = 2;
+    public static final int FLOAT_64_ARRAY               = 2;
+    public static final int BOOLEAN                      = 3;
+    public static final int STRING                       = 4;
+    public static final int V8_ARRAY                     = 5;
+    public static final int V8_OBJECT                    = 6;
+    public static final int V8_FUNCTION                  = 7;
+    public static final int V8_TYPED_ARRAY               = 8;
+    public static final int BYTE                         = 9;
+    public static final int INT_8_ARRAY                  = 9;
+    public static final int V8_ARRAY_BUFFER              = 10;
+    public static final int UNSIGNED_INT_8_ARRAY         = 11;
+    public static final int UNSIGNED_INT_8_CLAMPED_ARRAY = 12;
+    public static final int INT_16_ARRAY                 = 13;
+    public static final int UNSIGNED_INT_16_ARRAY        = 14;
+    public static final int UNSIGNED_INT_32_ARRAY        = 15;
+    public static final int FLOAT_32_ARRAY               = 16;
+    public static final int UNDEFINED                    = 99;
 
     protected V8      v8;
     protected long    objectHandle;
@@ -91,6 +100,18 @@ abstract public class V8Value implements Releasable {
                 return "Byte";
             case V8_ARRAY_BUFFER:
                 return "V8ArrayBuffer";
+            case UNSIGNED_INT_8_ARRAY:
+                return "UInt8Array";
+            case UNSIGNED_INT_8_CLAMPED_ARRAY:
+                return "UInt8ClampedArray";
+            case INT_16_ARRAY:
+                return "Int16Array";
+            case UNSIGNED_INT_16_ARRAY:
+                return "UInt16Array";
+            case UNSIGNED_INT_32_ARRAY:
+                return "UInt32Array";
+            case FLOAT_32_ARRAY:
+                return "Float32Array";
             case UNDEFINED:
                 return "Undefined";
             default:

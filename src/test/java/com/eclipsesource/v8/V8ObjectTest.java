@@ -113,13 +113,43 @@ public class V8ObjectTest {
     }
 
     @Test
+    public void testV8ValueUInt8_StringRepresentation() {
+        assertEquals("UInt8Array", V8Value.getStringRepresentaion(11));
+    }
+
+    @Test
+    public void testV8ValueUInt8Clamped_StringRepresentation() {
+        assertEquals("UInt8ClampedArray", V8Value.getStringRepresentaion(12));
+    }
+
+    @Test
+    public void testV8ValueInt16_StringRepresentation() {
+        assertEquals("Int16Array", V8Value.getStringRepresentaion(13));
+    }
+
+    @Test
+    public void testV8ValueUInt16_StringRepresentation() {
+        assertEquals("UInt16Array", V8Value.getStringRepresentaion(14));
+    }
+
+    @Test
+    public void testV8ValueUInt32_StringRepresentation() {
+        assertEquals("UInt32Array", V8Value.getStringRepresentaion(15));
+    }
+
+    @Test
+    public void testV8ValueFloat32_StringRepresentation() {
+        assertEquals("Float32Array", V8Value.getStringRepresentaion(16));
+    }
+
+    @Test
     public void testV8ValueUndefined_StringRepresentation() {
         assertEquals("Undefined", V8Value.getStringRepresentaion(99));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testV8ValueIllegal_StringRepresentation() {
-        V8Value.getStringRepresentaion(11);
+        V8Value.getStringRepresentaion(17);
     }
 
     @Test
