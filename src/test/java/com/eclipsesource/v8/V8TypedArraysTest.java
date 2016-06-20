@@ -183,6 +183,28 @@ public class V8TypedArraysTest {
     }
 
     @Test
+    public void testAccessSignedValueFromUnsignedByte_Greater128() {
+        V8TypedArray array = (V8TypedArray) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8ClampedArray(buf); bytes[0] = 240; bytes[1] = 7; bytes");
+        ByteBuffer byteBuffer = array.getByteBuffer();
+
+        short result = (short) (byteBuffer.get() & 0xFF);
+
+        assertEquals(240, result);
+        array.release();
+    }
+
+    @Test
+    public void testAccessSignedValueFromUnsignedByte_Less128() {
+        V8TypedArray array = (V8TypedArray) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8Array(buf); bytes[0] = 20; bytes[1] = 7; bytes");
+        ByteBuffer byteBuffer = array.getByteBuffer();
+
+        short result = (short) (byteBuffer.get() & 0xFF);
+
+        assertEquals(20, result);
+        array.release();
+    }
+
+    @Test
     public void testInt8IsByteArray() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
