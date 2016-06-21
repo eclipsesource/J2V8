@@ -1428,6 +1428,9 @@ int getReturnType(JNIEnv* env, jobject &object) {
   else if (env->IsInstanceOf(object, v8ObjectCls)) {
     result = com_eclipsesource_v8_V8_V8_OBJECT;
   }
+  else if (env->IsInstanceOf(object, v8ArrayBufferCls)) {
+    result = com_eclipsesource_v8_V8_V8_ARRAY_BUFFER;
+  }
   return result;
 }
 
@@ -1500,6 +1503,17 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
       }
     }
     else if (returnType == com_eclipsesource_v8_V8_V8_OBJECT) {
+      if (isUndefined(env, resultObject)) {
+        args.GetReturnValue().SetUndefined();
+      }
+      else {
+        jlong resultHandle = getHandle(env, resultObject);
+        Handle<Object> result = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(resultHandle));
+        release(env, resultObject);
+        args.GetReturnValue().Set(result);
+      }
+    }
+    else if (returnType == com_eclipsesource_v8_V8_V8_ARRAY_BUFFER) {
       if (isUndefined(env, resultObject)) {
         args.GetReturnValue().SetUndefined();
       }
