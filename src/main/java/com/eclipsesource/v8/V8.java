@@ -1019,9 +1019,38 @@ public class V8 extends V8Object {
         return _initNewV8Int32Array(runtimePtr, bufferHandle, offset, size);
     }
 
+    public long initNewV8Float32Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8Float32Array(runtimePtr, bufferHandle, offset, size);
+    }
+
+    public long initNewV8Float64Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8Float64Array(runtimePtr, bufferHandle, offset, size);
+    }
+
+    public long initNewV8UInt32Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8UInt32Array(runtimePtr, bufferHandle, offset, size);
+    }
+
+    public long initNewV8UInt16Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8UInt16Array(runtimePtr, bufferHandle, offset, size);
+    }
+
+    public long initNewV8Int16Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8Int16Array(runtimePtr, bufferHandle, offset, size);
+    }
+
+    public long initNewV8UInt8Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8UInt8Array(runtimePtr, bufferHandle, offset, size);
+    }
+
     public long initNewV8Int8Array(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
         return _initNewV8Int8Array(runtimePtr, bufferHandle, offset, size);
     }
+
+    public long initNewV8UInt8ClampedArray(final long runtimePtr, final long bufferHandle, final int offset, final int size) {
+        return _initNewV8UInt8ClampedArray(runtimePtr, bufferHandle, offset, size);
+    }
+
 
     protected ByteBuffer createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity) {
         return _createV8ArrayBufferBackingStore(v8RuntimePtr, objectHandle, capacity);
@@ -1304,7 +1333,21 @@ public class V8 extends V8Object {
 
     private native long _initNewV8Int32Array(long runtimePtr, long bufferHandle, int offset, int size);
 
+    private native long _initNewV8UInt32Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8Float32Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8Float64Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8Int16Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8UInt16Array(long runtimePtr, long bufferHandle, int offset, int size);
+
     private native long _initNewV8Int8Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8UInt8Array(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native long _initNewV8UInt8ClampedArray(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 

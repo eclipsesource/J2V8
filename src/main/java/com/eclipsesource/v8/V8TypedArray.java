@@ -77,10 +77,24 @@ public class V8TypedArray extends V8Array {
 
     private long createTypedArray(final long runtimePtr, final V8ArrayData arrayData) {
         switch (arrayData.type) {
+            case V8Value.FLOAT_32_ARRAY:
+                return v8.initNewV8Float32Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.FLOAT_64_ARRAY:
+                return v8.initNewV8Float64Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.UNSIGNED_INT_32_ARRAY:
+                return v8.initNewV8UInt32Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.INT_16_ARRAY:
+                return v8.initNewV8Int16Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.UNSIGNED_INT_16_ARRAY:
+                return v8.initNewV8UInt16Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
             case V8Value.INTEGER:
                 return v8.initNewV8Int32Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
-            case V8Value.BYTE:
+            case V8Value.UNSIGNED_INT_8_ARRAY:
+                return v8.initNewV8UInt8Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.INT_8_ARRAY:
                 return v8.initNewV8Int8Array(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
+            case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
+                return v8.initNewV8UInt8ClampedArray(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
             default:
                 throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentaion(arrayData.type));
         }
@@ -88,9 +102,18 @@ public class V8TypedArray extends V8Array {
 
     private static int getStructureSize(final int type) {
         switch (type) {
-            case V8Value.INTEGER:
+            case V8Value.FLOAT_64_ARRAY:
+                return 8;
+            case V8Value.INT_32_ARRAY:
+            case V8Value.UNSIGNED_INT_32_ARRAY:
+            case V8Value.FLOAT_32_ARRAY:
                 return 4;
-            case V8Value.BYTE:
+            case V8Value.UNSIGNED_INT_16_ARRAY:
+            case V8Value.INT_16_ARRAY:
+                return 2;
+            case V8Value.INT_8_ARRAY:
+            case V8Value.UNSIGNED_INT_8_ARRAY:
+            case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
                 return 1;
             default:
                 throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentaion(type));

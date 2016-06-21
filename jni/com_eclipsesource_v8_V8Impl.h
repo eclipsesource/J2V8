@@ -629,10 +629,66 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Int32Array
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8UInt32Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt32Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Float32Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Float32Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Float64Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Float64Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8Int16Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Int16Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8UInt16Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt16Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _initNewV8Int8Array
  * Signature: (JJII)J
  */
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Int8Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8UInt8Array
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt8Array
+  (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8UInt8ClampedArray
+ * Signature: (JJII)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt8ClampedArray
   (JNIEnv *, jobject, jlong, jlong, jint, jint);
 
 /*
