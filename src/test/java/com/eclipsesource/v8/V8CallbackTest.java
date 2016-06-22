@@ -13,6 +13,7 @@ package com.eclipsesource.v8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -306,6 +307,7 @@ public class V8CallbackTest {
         verify(callback).voidMethodV8ObjectVarArgs(any(V8Array.class));
         verify(callback).voidMethodV8ObjectVarArgs(notNull(V8Array.class));
     }
+
     @Test
     public void testCallbackWithNullInParameterList() {
         ICallback callback = mock(ICallback.class);
@@ -515,6 +517,71 @@ public class V8CallbackTest {
                 + "new Int8Array(buffer)[0]");
 
         assertEquals(8, result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithArrayAsParameter_PassedTypedArray() {
+        class MyCallback {
+            @SuppressWarnings("unused")
+            public int testArray(final V8Array array) {
+                return array.length();
+            }
+        }
+        MyCallback callback = new MyCallback();
+        v8.registerJavaMethod(callback, "testArray", "testArray", new Class[] { V8Array.class });
+
+        int result = v8.executeIntegerScript("\n"
+                + "var array = new Float32Array(5);\n"
+                + "for (var i = 0; i < 5; i++) \n"
+                + "  array[i] = i / 1000; "
+                + "testArray(array);");
+
+        assertEquals(5, result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithArrayBufferAsParameter() {
+        class MyCallback {
+            @SuppressWarnings("unused")
+            public int testArray(final V8ArrayBuffer arrayBuffer) {
+                return arrayBuffer.getBackingStore().limit();
+            }
+        }
+        MyCallback callback = new MyCallback();
+        v8.registerJavaMethod(callback, "testArray", "testArray", new Class[] { V8ArrayBuffer.class });
+
+        int result = v8.executeIntegerScript("\n"
+                + "var arrayBuffer = new ArrayBuffer(8);\n"
+                + "testArray(arrayBuffer);");
+
+        assertEquals(8, result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArrayAsParameter() {
+        class MyCallback {
+
+            @SuppressWarnings("unused")
+            public int testArray(final V8Array array) {
+                fail("Test should have invoked the other method.");
+                return 0;
+            }
+
+            @SuppressWarnings("unused")
+            public int testArray(final V8TypedArray array) {
+                return array.length();
+            }
+        }
+        MyCallback callback = new MyCallback();
+        v8.registerJavaMethod(callback, "testArray", "testArray", new Class[] { V8TypedArray.class });
+
+        int result = v8.executeIntegerScript("\n"
+                + "var array = new Float32Array(5);\n"
+                + "for (var i = 0; i < 5; i++) \n"
+                + "  array[i] = i / 1000; "
+                + "testArray(array);");
+
+        assertEquals(5, result);
     }
 
     @Test

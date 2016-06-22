@@ -710,7 +710,6 @@ public class V8 extends V8Object {
         } finally {
             releaseArguments(args, hasVarArgs);
         }
-
     }
 
     private Object checkResult(final Object result) {
@@ -767,13 +766,13 @@ public class V8 extends V8Object {
         if (hasVarArgs && ((args.length > 0) && (args[args.length - 1] instanceof Object[]))) {
             Object[] varArgs = (Object[]) args[args.length - 1];
             for (Object object : varArgs) {
-                if (object instanceof V8Object) {
+                if (object instanceof V8Value) {
                     ((V8Value) object).release();
                 }
             }
         }
         for (Object arg : args) {
-            if (arg instanceof V8Object) {
+            if (arg instanceof V8Value) {
                 ((V8Value) arg).release();
             }
         }
@@ -841,11 +840,14 @@ public class V8 extends V8Object {
                 case STRING:
                     return array.getString(index);
                 case V8_ARRAY:
+                case V8_TYPED_ARRAY:
                     return array.getArray(index);
                 case V8_OBJECT:
                     return array.getObject(index);
                 case V8_FUNCTION:
                     return array.getObject(index);
+                case V8_ARRAY_BUFFER:
+                    return array.get(index);
                 case UNDEFINED:
                     return V8.getUndefined();
             }
