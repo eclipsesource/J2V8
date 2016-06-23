@@ -48,10 +48,17 @@ public class V8Test {
     }
 
     @Test
-    public void getVersion() {
-        String v8version = v8.getV8Version();
+    public void testGetVersion() {
+        String v8version = V8.getV8Version();
 
         assertNotNull(v8version);
+    }
+
+    @Test
+    public void testGetVersion_StartsWith4() {
+        String v8version = V8.getV8Version();
+
+        assertTrue(v8version.startsWith("4"));
     }
 
     @Test

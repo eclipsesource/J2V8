@@ -157,7 +157,7 @@ jlong getHandle(JNIEnv* env, jobject object) {
   return env->CallLongMethod(object, v8ObjectGetHandleMethodID);
 }
 
-JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env, jobject) {
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env, jclass) {
   const char* utfString = v8::V8::GetVersion();
   return env->NewStringUTF(utfString);
 }

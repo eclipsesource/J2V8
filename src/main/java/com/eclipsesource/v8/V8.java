@@ -208,8 +208,7 @@ public class V8 extends V8Object {
      *
      * @return The version of the V8 Engine.
      */
-    public String getV8Version() {
-        checkThread();
+    public static String getV8Version() {
         return _getVersion();
     }
 
@@ -1353,7 +1352,7 @@ public class V8 extends V8Object {
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 
-    private native String _getVersion();
+    private native static String _getVersion();
 
     private static native void _setFlags(String v8flags);
 
