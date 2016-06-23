@@ -798,6 +798,24 @@ public class V8JSFunctionCallTest {
     }
 
     @Test
+    public void testCallFunctionWithEmojiParamter() {
+        V8Function v8Function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                return parameters.get(0);
+            }
+        });
+
+        V8Array paramters = new V8Array(v8).push("👄");
+        Object result = v8Function.call(null, paramters);
+
+        assertEquals("👄", result);
+        paramters.release();
+        v8Function.release();
+    }
+
+    @Test
     public void testCreateV8Function() {
         V8Function function = new V8Function(v8, new JavaCallback() {
 
