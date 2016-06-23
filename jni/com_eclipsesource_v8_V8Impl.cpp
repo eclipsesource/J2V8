@@ -12,7 +12,7 @@
 #include <libplatform/libplatform.h>
 #include <iostream>
 #include <v8.h>
-#include <string.h>
+#include <string.h>c
 #include <v8-debug.h>
 #include <map>
 #include <cstdlib>
@@ -23,8 +23,11 @@
   #include <node.h>
 #endif
 
+#pragma comment(lib, "userenv.lib")
+#pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "WINMM.lib")
+#pragma comment( lib, "psapi.lib" )
 
 using namespace std;
 using namespace v8;
@@ -292,6 +295,110 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
 
 ShellArrayBufferAllocator array_buffer_allocator;
 
+namespace node {
+  void InitContextify(Local<Object> target,
+    Local<Value> unused,
+    Local<Context> context);
+  void InitZlib(Local<Object> target);
+  void InitializeV8Bindings(Local<Object> target,
+    Local<Value> unused,
+    Local<Context> context);
+  void InitFs(Local<Object> target,
+    Local<Value> unused,
+    Local<Context> context,
+    void* priv);
+  void InitHttpParser(Local<Object> target,
+    Local<Value> unused,
+    Local<Context> context,
+    void *);
+  namespace util {
+    void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  }
+  namespace Buffer {
+    void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  }
+  namespace crypto {
+    void InitCrypto(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context,
+      void*);
+  }
+  namespace os {
+    void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  }
+  class ProcessWrap {
+  public:
+   static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class PipeWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class SignalWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class StreamWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class TCPWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class TimerWrap {
+    public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class TLSWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class TTYWrap {
+    public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class UDPWrap {
+  public:
+    static void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  };
+  class FSEventWrap {
+  public:
+      static void Initialize(Local<Object> target,
+        Local<Value> unused,
+        Local<Context> context);
+  };
+  namespace uv {
+    void Initialize(Local<Object> target,
+      Local<Value> unused,
+      Local<Context> context);
+  }
+}
+
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   (JNIEnv * env, jclass, jlong v8RuntimePtr, jstring fileName) {
 #ifdef NODE_COMPATIBLE
@@ -301,8 +408,36 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   const char *argv[] = {"j2v8", utfFileName, NULL};
   int argc = sizeof(argv) / sizeof(char*) - 1;
   V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  if (v8RuntimePtr == 0) {
+    // This is deadcode, but it ensures that libj2v8 'touches' all the
+    // node modules. If the node modules are not 'touched' then the
+    // linker will strip them out
+    Local<v8::Object> arg1;
+    Local<v8::Value> arg2;
+    Local<v8::Context> arg3;
+    node::InitContextify(arg1, arg2, arg3);
+    node::InitFs(arg1, arg2, arg3, NULL);
+    node::uv::Initialize(arg1, arg2, arg3);
+    node::InitHttpParser(arg1, arg2, arg3, NULL);
+    node::InitializeV8Bindings(arg1, arg2, arg3);
+    node::Buffer::Initialize(arg1, arg2, arg3);
+    node::crypto::InitCrypto(arg1, arg2, arg3, NULL);
+    node::os::Initialize(arg1, arg2, arg3);
+    node::util::Initialize(arg1, arg2, arg3);
+    node::TimerWrap::Initialize(arg1, arg2, arg3);
+    node::PipeWrap::Initialize(arg1, arg2, arg3);
+    node::ProcessWrap::Initialize(arg1, arg2, arg3);
+    node::SignalWrap::Initialize(arg1, arg2, arg3);
+    node::FSEventWrap::Initialize(arg1, arg2, arg3);
+    node::StreamWrap::Initialize(arg1, arg2, arg3);
+    node::TCPWrap::Initialize(arg1, arg2, arg3);
+    node::TLSWrap::Initialize(arg1, arg2, arg3);
+    node::TTYWrap::Initialize(arg1, arg2, arg3);
+    node::UDPWrap::Initialize(arg1, arg2, arg3);
+  }
   rt->uvLoop = new uv_loop_t();
   uv_loop_init(rt->uvLoop);
+  isolate->GetCurrentContext();
   node::Environment* environment = node::CreateEnvironment(isolate, rt->uvLoop, context, argc, argv, 0, 0);
   node::LoadEnvironment(environment);
   rt->nodeEnvironment = environment;
@@ -1387,7 +1522,7 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   getJNIEnv(env);
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
   Handle<Value> receiver = args.This();
-  jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);  
+  jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);
   env->CallVoidMethod(v8, v8CallVoidMethodID, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
