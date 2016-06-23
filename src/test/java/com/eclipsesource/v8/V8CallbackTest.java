@@ -28,6 +28,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.Date;
 
 import org.junit.After;
@@ -483,7 +487,24 @@ public class V8CallbackTest {
     }
 
     @Test
-    public void testInvokeCallbackWithTypedArray() {
+    public void testInvokeCallbackWithTypedArray_Int32Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof IntBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Int32Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Int8Array() {
         JavaCallback callback = new JavaCallback() {
 
             @Override
@@ -494,7 +515,126 @@ public class V8CallbackTest {
         };
         v8.registerJavaMethod(callback, "callback");
 
-        Object result = v8.executeScript("callback(new Int32Array(24));");
+        Object result = v8.executeScript("callback(new Int8Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Int16Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof ShortBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Int16Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Float32Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof FloatBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Float32Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Float64Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof DoubleBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Float64Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Uint8Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof ByteBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Uint8Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Uint8ClampledArray() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof ByteBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Uint8ClampedArray(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Uint16Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof ShortBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Uint16Array(24));");
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    public void testInvokeCallbackWithTypedArray_Uint32Array() {
+        JavaCallback callback = new JavaCallback() {
+
+            @Override
+            public Boolean invoke(final V8Object receiver, final V8Array parameters) {
+                Object result = V8ObjectUtils.getValue(parameters, 0);
+                return result instanceof IntBuffer;
+            }
+        };
+        v8.registerJavaMethod(callback, "callback");
+
+        Object result = v8.executeScript("callback(new Uint32Array(24));");
 
         assertTrue((Boolean) result);
     }

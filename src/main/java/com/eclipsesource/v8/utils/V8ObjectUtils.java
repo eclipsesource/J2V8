@@ -444,7 +444,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = array.getArray(index);
                 try {
-                    return ((V8TypedArray) typedArray).getByteBuffer();
+                    return toByteBuffer(typedArray);
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();
@@ -477,6 +477,23 @@ public class V8ObjectUtils {
         }
     }
 
+    private static Object toByteBuffer(final V8Array typedArray) {
+        int arrayType = typedArray.getType();
+        if ((arrayType == V8Value.INT_8_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_8_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY)) {
+            return ((V8TypedArray) typedArray).getByteBuffer();
+        } else if ((arrayType == V8Value.INT_16_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_16_ARRAY)) {
+            return ((V8TypedArray) typedArray).getByteBuffer().asShortBuffer();
+        } else if ((arrayType == V8Value.INT_32_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_32_ARRAY)) {
+            return ((V8TypedArray) typedArray).getByteBuffer().asIntBuffer();
+        } else if (arrayType == V8Value.FLOAT_32_ARRAY) {
+            return ((V8TypedArray) typedArray).getByteBuffer().asFloatBuffer();
+        } else if (arrayType == V8Value.FLOAT_64_ARRAY) {
+            return ((V8TypedArray) typedArray).getByteBuffer().asDoubleBuffer();
+        } else {
+            throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentaion(arrayType));
+        }
+    }
+
     private static Object getValue(final V8Object object, final String key, final V8Map<Object> cache) {
         int valueType = object.getType(key);
         switch (valueType) {
@@ -493,7 +510,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = object.getArray(key);
                 try {
-                    return ((V8TypedArray) typedArray).getByteBuffer();
+                    return toByteBuffer(typedArray);
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();
