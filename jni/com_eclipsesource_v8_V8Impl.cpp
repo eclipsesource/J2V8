@@ -12,7 +12,7 @@
 #include <libplatform/libplatform.h>
 #include <iostream>
 #include <v8.h>
-#include <string.h>c
+#include <string.h>
 #include <v8-debug.h>
 #include <map>
 #include <cstdlib>
@@ -411,7 +411,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   const char *argv[] = {"j2v8", utfFileName, NULL};
   int argc = sizeof(argv) / sizeof(char*) - 1;
   V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
-  if (v8RuntimePtr == 0) {
+  if (v8RuntimePtr == 1) {
     // This is deadcode, but it ensures that libj2v8 'touches' all the
     // node modules. If the node modules are not 'touched' then the
     // linker will strip them out
