@@ -199,6 +199,15 @@ public class V8 extends V8Object {
         return runtimeCounter;
     }
 
+    /**
+     * Returns the number of Object References for this runtime.
+     *
+     * @return The number of Object References on this runtime.
+     */
+    public long getObjectReferenceCount() {
+        return objectReferences;
+    }
+
     protected long getV8RuntimePtr() {
         return v8RuntimePtr;
     }

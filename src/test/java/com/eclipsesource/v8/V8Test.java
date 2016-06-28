@@ -66,6 +66,33 @@ public class V8Test {
         assertNotNull(v8);
     }
 
+    @Test
+    public void testObjectReferenceZero() {
+        long objectReferenceCount = v8.getObjectReferenceCount();
+
+        assertEquals(0, objectReferenceCount);
+    }
+
+    @Test
+    public void testObjectReferenceCountOne() {
+        V8Object object = new V8Object(v8);
+
+        long objectReferenceCount = v8.getObjectReferenceCount();
+
+        assertEquals(1, objectReferenceCount);
+        object.release();
+    }
+
+    @Test
+    public void testObjectReferenceCountReleased() {
+        V8Object object = new V8Object(v8);
+        object.release();
+
+        long objectReferenceCount = v8.getObjectReferenceCount();
+
+        assertEquals(0, objectReferenceCount);
+    }
+
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateVoid() {
         v8.release();
