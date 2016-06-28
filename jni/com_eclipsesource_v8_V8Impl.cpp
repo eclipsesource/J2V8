@@ -295,6 +295,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
 
 ShellArrayBufferAllocator array_buffer_allocator;
 
+#ifdef NODE_COMPATIBLE
 namespace node {
   void InitContextify(Local<Object> target,
     Local<Value> unused,
@@ -398,6 +399,8 @@ namespace node {
       Local<Context> context);
   }
 }
+#endif
+
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   (JNIEnv * env, jclass, jlong v8RuntimePtr, jstring fileName) {
