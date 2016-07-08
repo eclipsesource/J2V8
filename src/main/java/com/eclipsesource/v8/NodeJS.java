@@ -78,7 +78,7 @@ public class NodeJS {
             throw new RuntimeException(e);
         }
         if (file != null) {
-            node.startup(file);
+            node.exec(file);
         }
         return node;
     }
@@ -144,10 +144,32 @@ public class NodeJS {
         }
     }
 
-    private void startup(final File file) {
+    /**
+     * Execute a NodeJS script. This will load the script and execute it on the
+     * next tick. This is the same as how NodeJS executes scripts at startup. Since
+     * the script won't actually run until the next tick, this method does not return
+     * a result.
+     *
+     * @param file The script to execute.
+     */
+    public void exec(final File file) {
+        V8Function scriptExecution = createScriptExecutionCallback(file);
+        V8Object process = null;
+        V8Array parameters = null;
+        try {
+            process = v8.getObject(PROCESS);
+            parameters = new V8Array(v8);
+            parameters.push(scriptExecution);
+            process.executeObjectFunction(NEXT_TICK, parameters);
+        } finally {
+            safeRelease(process);
+            safeRelease(parameters);
+            safeRelease(scriptExecution);
+        }
+    }
 
+    private V8Function createScriptExecutionCallback(final File file) {
         V8Function v8Function = new V8Function(v8, new JavaCallback() {
-
             @Override
             public Object invoke(final V8Object receiver, final V8Array parameters) {
                 V8Array requireParams = new V8Array(v8);
@@ -159,19 +181,7 @@ public class NodeJS {
                 }
             }
         });
-
-        V8Object process = null;
-        V8Array parameters = null;
-        try {
-            process = v8.getObject(PROCESS);
-            parameters = new V8Array(v8);
-            parameters.push(v8Function);
-            process.executeObjectFunction(NEXT_TICK, parameters);
-        } finally {
-            safeRelease(process);
-            safeRelease(parameters);
-            safeRelease(v8Function);
-        }
+        return v8Function;
     }
 
     private void safeRelease(final Releasable releasable) {

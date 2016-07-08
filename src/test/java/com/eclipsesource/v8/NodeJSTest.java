@@ -101,11 +101,24 @@ public class NodeJSTest {
     }
 
     @Test
-    public void testExecuteNodeScript() throws IOException {
+    public void testExecuteNodeScript_Startup() throws IOException {
         nodeJS.release();
         File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
 
         nodeJS = NodeJS.createNodeJS(testScript);
+        runMessageLoop();
+
+        assertEquals(true, nodeJS.getRuntime().getBoolean("passed"));
+        testScript.delete();
+    }
+
+    @Test
+    public void testExecNodeScript() throws IOException {
+        nodeJS.release();
+        File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
+
+        nodeJS = NodeJS.createNodeJS();
+        nodeJS.exec(testScript);
         runMessageLoop();
 
         assertEquals(true, nodeJS.getRuntime().getBoolean("passed"));
