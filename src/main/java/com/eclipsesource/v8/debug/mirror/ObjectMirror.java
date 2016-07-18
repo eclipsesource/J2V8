@@ -49,7 +49,7 @@ public class ObjectMirror extends ValueMirror {
      *
      * @param kind Indicate whether named, indexed or both kinds of properties are requested.
      * @param limit Limit the number of properties returned to the specified value
-     * @return
+     * @return All the property names for a given object
      */
     public String[] getPropertyNames(final PropertyKind kind, final int limit) {
         V8Array parameters = new V8Array(v8Object.getRuntime());
