@@ -25,6 +25,8 @@ public class ValueMirror extends Mirror {
 
     /**
      * Returns the Object that this mirror represents.
+     *
+     * @return The object that this mirror represents.
      */
     public Object getValue() {
         return v8Object.executeFunction(VALUE, null);
