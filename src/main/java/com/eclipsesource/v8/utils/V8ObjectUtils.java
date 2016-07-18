@@ -33,7 +33,7 @@ public class V8ObjectUtils {
     private static final Object IGNORE = new Object();
 
     /**
-     * Creates a Map<String, Object> from a V8Object using a deep copy. All elements
+     * Creates a Map from a V8Object using a deep copy. All elements
      * in the V8Object are released after they are accessed. However, the root
      * object itself is not released.
      *
@@ -51,7 +51,7 @@ public class V8ObjectUtils {
     }
 
     /**
-     * Creates a List<Object> from a V8Array using a deep copy. All elements
+     * Creates a List from a V8Array using a deep copy. All elements
      * in the V8Array are released after they are accessed. However, the root
      * array itself is not released.
      *
