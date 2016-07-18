@@ -74,7 +74,7 @@ public class DebugHandler implements Releasable {
     /**
      * Adds a handler to be notified when a breakpoint is hit.
      *
-     * @param hanlder The handler to notify.
+     * @param handler The handler to notify.
      */
     public void addBreakHandler(final BreakHandler handler) {
         runtime.getLocker().checkThread();
