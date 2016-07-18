@@ -36,6 +36,8 @@ public class NodeJS {
     /**
      * Creates a NodeJS Runtime
      *
+     * @return The NodeJS runtime.
+     *
      * May throw an UnsupportedOperationException if node.js integration has not
      * been compiled for your platform.
      */
