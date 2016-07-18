@@ -536,8 +536,6 @@ public class V8Array extends V8Object {
      * Pushes null to the next available spot in the Array. In
      * particular, this[length] = null;
      *
-     * @param value The value to push to the array.
-     *
      * @return The receiver.
      */
     public V8Array pushNull() {
@@ -550,8 +548,6 @@ public class V8Array extends V8Object {
     /**
      * Pushes undefined to the next available spot in the Array. In
      * particular, this[length] = undefined;
-     *
-     * @param value The value to push to the array.
      *
      * @return The receiver.
      */
