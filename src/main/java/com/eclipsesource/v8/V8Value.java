@@ -187,6 +187,7 @@ abstract public class V8Value implements Releasable {
     /**
      * Performs a JS === on the parameter and the receiver.
      *
+     * @param that The Object to compare this object against.
      * @return Returns true iff this === that
      */
     public boolean strictEquals(final Object that) {
@@ -229,6 +230,7 @@ abstract public class V8Value implements Releasable {
     /**
      * Performs a JS == on the parameter and the receiver.
      *
+     * @param that The Object to compare this object against.
      * @return Returns true iff this == that
      */
     public boolean jsEquals(final Object that) {
