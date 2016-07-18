@@ -632,6 +632,8 @@ public class V8 extends V8Object {
 
     /**
      * Returns the unique build ID of the native library.
+     *
+     * @return The unique build ID of the Native library.
      */
     public long getBuildID() {
         return _getBuildID();
