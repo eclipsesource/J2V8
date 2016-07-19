@@ -296,108 +296,31 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
 ShellArrayBufferAllocator array_buffer_allocator;
 
 #ifdef NODE_COMPATIBLE
-namespace node {
-  void InitContextify(Local<Object> target,
-    Local<Value> unused,
-    Local<Context> context);
-  void InitZlib(Local<Object> target);
-  void InitializeV8Bindings(Local<Object> target,
-    Local<Value> unused,
-    Local<Context> context);
-  void InitFs(Local<Object> target,
-    Local<Value> unused,
-    Local<Context> context,
-    void* priv);
-  void InitHttpParser(Local<Object> target,
-    Local<Value> unused,
-    Local<Context> context,
-    void *);
-  namespace util {
-    void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  }
-  namespace Buffer {
-    void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  }
-  namespace crypto {
-    void InitCrypto(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context,
-      void*);
-  }
-  namespace os {
-    void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  }
-  class ProcessWrap {
-  public:
-   static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class PipeWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class SignalWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class StreamWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class TCPWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class TimerWrap {
-    public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class TLSWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class TTYWrap {
-    public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class UDPWrap {
-  public:
-    static void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  };
-  class FSEventWrap {
-  public:
-      static void Initialize(Local<Object> target,
-        Local<Value> unused,
-        Local<Context> context);
-  };
-  namespace uv {
-    void Initialize(Local<Object> target,
-      Local<Value> unused,
-      Local<Context> context);
-  }
+extern "C" {
+	void _register_async_wrap(void);
+	void _register_cares_wrap(void);
+	void _register_fs_event_wrap(void);
+	void _register_js_stream(void);
+	void _register_buffer(void);
+	void _register_contextify(void);
+	void _register_crypto(void);
+	void _register_fs(void);
+	void _register_http_parser(void);
+	void _register_os(void);
+	void _register_util(void);
+	void _register_v8(void);
+	void _register_zlib(void);
+	void _register_pipe_wrap(void);
+	void _register_process_wrap(void);
+	void _register_signal_wrap(void);
+	void _register_spawn_sync(void);
+	void _register_stream_wrap(void);
+	void _register_tcp_wrap(void);
+	void _register_timer_wrap(void);
+	void _register_tls_wrap(void);
+	void _register_tty_wrap(void);
+	void _register_udp_wrap(void);
+	void _register_uv(void);
 }
 #endif
 
@@ -415,28 +338,30 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
     // This is deadcode, but it ensures that libj2v8 'touches' all the
     // node modules. If the node modules are not 'touched' then the
     // linker will strip them out
-    Local<v8::Object> arg1;
-    Local<v8::Value> arg2;
-    Local<v8::Context> arg3;
-    node::InitContextify(arg1, arg2, arg3);
-    node::InitFs(arg1, arg2, arg3, NULL);
-    node::uv::Initialize(arg1, arg2, arg3);
-    node::InitHttpParser(arg1, arg2, arg3, NULL);
-    node::InitializeV8Bindings(arg1, arg2, arg3);
-    node::Buffer::Initialize(arg1, arg2, arg3);
-    node::crypto::InitCrypto(arg1, arg2, arg3, NULL);
-    node::os::Initialize(arg1, arg2, arg3);
-    node::util::Initialize(arg1, arg2, arg3);
-    node::TimerWrap::Initialize(arg1, arg2, arg3);
-    node::PipeWrap::Initialize(arg1, arg2, arg3);
-    node::ProcessWrap::Initialize(arg1, arg2, arg3);
-    node::SignalWrap::Initialize(arg1, arg2, arg3);
-    node::FSEventWrap::Initialize(arg1, arg2, arg3);
-    node::StreamWrap::Initialize(arg1, arg2, arg3);
-    node::TCPWrap::Initialize(arg1, arg2, arg3);
-    node::TLSWrap::Initialize(arg1, arg2, arg3);
-    node::TTYWrap::Initialize(arg1, arg2, arg3);
-    node::UDPWrap::Initialize(arg1, arg2, arg3);
+	_register_async_wrap();
+	_register_cares_wrap();
+	_register_fs_event_wrap();
+	_register_js_stream();
+	_register_buffer();
+	_register_contextify();
+	_register_crypto();
+	_register_fs();
+	_register_http_parser();
+	_register_os();
+	_register_util();
+	_register_v8();
+	_register_zlib();
+	_register_pipe_wrap();
+	_register_process_wrap();
+	_register_signal_wrap();
+	_register_spawn_sync();
+	_register_stream_wrap();
+	_register_tcp_wrap();
+	_register_timer_wrap();
+	_register_tls_wrap();
+	_register_tty_wrap();
+	_register_udp_wrap();
+	_register_uv();
   }
   rt->uvLoop = new uv_loop_t();
   uv_loop_init(rt->uvLoop);
