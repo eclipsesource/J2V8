@@ -10,10 +10,10 @@ sed s/\$\{os\}/macosx/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
 sed s/\$\{ws\}/cocoa/g < pom2.xml  > pom.xml
 mvn -Dos=macosx -Darch=x86_64 clean deploy $SUFFIX
+STATUS=$?
 cp pom_template.xml pom.xml
 rm pom1.xml
 rm pom2.xml
-STATUS=$?
 if [ $STATUS -eq 0 ]; then
  echo "MacOS Deployment Successful"
 else
@@ -28,12 +28,11 @@ cp jni/libj2v8_win32_x86.dll src/main/resources/libj2v8_win32_x86.dll
 sed s/\$\{os\}/win32/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86/g < pom1.xml  > pom2.xml
 sed s/\$\{ws\}/win32/g < pom2.xml  > pom.xml
-mvn -Dos=macosx -Darch=x86_64 clean deploy $SUFFIX
 mvn -Dos=win32 -Darch=x86 clean deploy $SUFFIX
+STATUS=$?
 cp pom_template.xml pom.xml
 rm pom1.xml
 rm pom2.xml
-STATUS=$?
 if [ $STATUS -eq 0 ]; then
  echo "Win32 Deployment Successful"
 else
@@ -48,11 +47,11 @@ cp jni/libj2v8_win32_x86_64.dll src/main/resources/libj2v8_win32_x86_64.dll
 sed s/\$\{os\}/win32/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
 sed s/\$\{ws\}/win32/g < pom2.xml  > pom.xml
-mvn -Dos=win32 -Darch=x86 clean deploy $SUFFIX
+mvn -Dos=win32 -Darch=x86_64 clean deploy $SUFFIX
+STATUS=$?
 cp pom_template.xml pom.xml
 rm pom1.xml
 rm pom2.xml
-STATUS=$?
 if [ $STATUS -eq 0 ]; then
  echo "Win32_64 Deployment Successful"
 else
@@ -68,10 +67,10 @@ sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
 sed s/\$\{ws\}/gtk/g < pom2.xml  > pom.xml
 mvn -Dos=linux -Darch=x86_64 clean deploy $SUFFIX
+STATUS=$?
 cp pom_template.xml pom.xml
 rm pom1.xml
 rm pom2.xml
-STATUS=$?
 if [ $STATUS -eq 0 ]; then
  echo "Linux Deployment Successful"
 else
