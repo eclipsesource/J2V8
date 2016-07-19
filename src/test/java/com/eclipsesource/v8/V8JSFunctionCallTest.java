@@ -797,6 +797,155 @@ public class V8JSFunctionCallTest {
         parameters.release();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testExecuteJSFunction_InvalidArg() {
+        v8.executeVoidScript("function add(p1, p2) {return p1 + p2;}");
+
+        v8.executeJSFunction("add", new Object(), 8);
+    }
+
+    @Test
+    public void testExecuteJSFunction_VarArgs() {
+        v8.executeVoidScript("function add() {return arguments.length;}");
+
+        int result = (Integer) v8.executeJSFunction("add", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+        assertEquals(10, result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_Integer() {
+        v8.executeVoidScript("function add(p1, p2) {return p1 + p2;}");
+
+        int result = (Integer) v8.executeJSFunction("add", 7, 8);
+
+        assertEquals(15, result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_Float() {
+        v8.executeVoidScript("function add(p1, p2) {return p1 + p2;}");
+
+        double result = (Double) v8.executeJSFunction("add", 3.1f, 2.2f);
+
+        assertEquals(5.3, result, 0.00001);
+    }
+
+    @Test
+    public void testExecuteJSFunction_Double() {
+        v8.executeVoidScript("function add(p1, p2) {return p1 + p2;}");
+
+        double result = (Double) v8.executeJSFunction("add", 3.1d, 2.2d);
+
+        assertEquals(5.3, result, 0.00001);
+    }
+
+    @Test
+    public void testExecuteJSFunction_IntegerSingleParam() {
+        v8.executeVoidScript("function add(p1) {return p1;}");
+
+        int result = (Integer) v8.executeJSFunction("add", 7);
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_BooleanSingleParam() {
+        v8.executeVoidScript("function add(p1) {return p1;}");
+
+        boolean result = (Boolean) v8.executeJSFunction("add", false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_String() {
+        v8.executeVoidScript("function add(p1, p2) {return p1 + p2;}");
+
+        String result = (String) v8.executeJSFunction("add", "seven", "eight");
+
+        assertEquals("seveneight", result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_V8Object() {
+        V8Object object = new V8Object(v8).add("first", 7).add("second", 8);
+        v8.executeVoidScript("function add(p1) {return p1.first + p1.second;}");
+
+        int result = (Integer) v8.executeJSFunction("add", object);
+
+        assertEquals(15, result);
+        object.release();
+    }
+
+    @Test
+    public void testExecuteJSFunction_V8Array() {
+        V8Object array = new V8Array(v8).push(7).push(8);
+        v8.executeVoidScript("function add(p1) {return p1[0] + p1[1];}");
+
+        int result = (Integer) v8.executeJSFunction("add", array);
+
+        assertEquals(15, result);
+        array.release();
+    }
+
+    @Test
+    public void testExecuteJSFunction_Mixed() {
+        V8Object array = new V8Array(v8).push(7).push(8);
+        V8Object object = new V8Object(v8).add("first", 7).add("second", 8);
+        v8.executeVoidScript("function add(p1, p2) {return p1[0] + p1[1] + p2.first + p2.second ;}");
+
+        int result = (Integer) v8.executeJSFunction("add", array, object);
+
+        assertEquals(30, result);
+        object.release();
+        array.release();
+    }
+
+    @Test
+    public void testExecuteJSFunction_Function() {
+        v8.executeVoidScript("function add(p1, p2) {return p1();}");
+        V8Function function = new V8Function(v8, new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                return 7;
+            }
+        });
+
+        int result = (Integer) v8.executeJSFunction("add", function);
+
+        assertEquals(7, result);
+        function.release();
+    }
+
+    @Test
+    public void testExecuteJSFunction_null() {
+        v8.executeVoidScript("function test(p1) { if (!p1) { return 'passed';} }");
+
+        String result = (String) v8.executeJSFunction("test", new Object[] { null });
+
+        assertEquals("passed", result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_nullArray() {
+        v8.executeVoidScript("function test() { return 'passed';}");
+
+        String result = (String) v8.executeJSFunction("test", (Object[]) null);
+
+        assertEquals("passed", result);
+    }
+
+    @Test
+    public void testExecuteJSFunction_undefined() {
+        v8.executeVoidScript("function test(p1) { if (!p1) { return 'passed';} }");
+
+        String result = (String) v8.executeJSFunction("test", V8.getUndefined());
+
+        assertEquals("passed", result);
+    }
+
     @Test
     public void testCallFunctionWithEmojiParamter() {
         V8Function v8Function = new V8Function(v8, new JavaCallback() {

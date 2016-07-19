@@ -356,6 +356,46 @@ public class V8Object extends V8Value {
     }
 
     /**
+     * Invoke a JavaScript function and return the result as a Java Object.
+     *
+     * @param name The name of the JS Function to call.
+     * @param parameters The parameters to pass to the function.
+     * @return A Java Object representing the result of the function call.
+     */
+    public Object executeJSFunction(final String name, final Object... parameters) {
+        if (parameters == null) {
+            return executeFunction(name, null);
+        }
+        V8Array parameterArray = new V8Array(v8.getRuntime());
+        try {
+            for (Object object : parameters) {
+                if (object == null) {
+                    parameterArray.pushNull();
+                } else if (object instanceof V8Value) {
+                    parameterArray.push((V8Value) object);
+                } else if (object instanceof Integer) {
+                    parameterArray.push((Integer) object);
+                } else if (object instanceof Double) {
+                    parameterArray.push((Double) object);
+                } else if (object instanceof Long) {
+                    parameterArray.push(((Long) object).doubleValue());
+                } else if (object instanceof Float) {
+                    parameterArray.push(((Float) object).floatValue());
+                } else if (object instanceof Boolean) {
+                    parameterArray.push((Boolean) object);
+                } else if (object instanceof String) {
+                    parameterArray.push((String) object);
+                } else {
+                    throw new IllegalArgumentException("Unsupported Object of type: " + object.getClass());
+                }
+            }
+            return executeFunction(name, parameterArray);
+        } finally {
+            parameterArray.release();
+        }
+    }
+
+    /**
      * Invokes a JavaScript function which does not return a result.
      *
      * @param name The name of the JS Function to call.
