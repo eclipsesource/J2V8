@@ -1971,5 +1971,5 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
   (JNIEnv *, jobject) {
-  return 3;
+  return 2;
 }
