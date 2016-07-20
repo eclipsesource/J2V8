@@ -357,6 +357,16 @@ public class V8Object extends V8Value {
     /**
      * Invoke a JavaScript function and return the result as a Java Object.
      *
+     * @param name The name of the JS Function to call
+     * @return The result of this JS Function
+     */
+    public Object executeJSFunction(final String name) {
+        return executeFunction(name, null);
+    }
+
+    /**
+     * Invoke a JavaScript function and return the result as a Java Object.
+     *
      * @param name The name of the JS Function to call.
      * @param parameters The parameters to pass to the function.
      * @return A Java Object representing the result of the function call.

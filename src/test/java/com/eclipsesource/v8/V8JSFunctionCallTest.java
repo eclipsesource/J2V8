@@ -937,6 +937,15 @@ public class V8JSFunctionCallTest {
         assertEquals("passed", result);
     }
 
+    @Test
+    public void testExecuteJSFunction_NoParameters() {
+        v8.executeVoidScript("function test() { return 'passed';}");
+
+        String result = (String) v8.executeJSFunction("test");
+
+        assertEquals("passed", result);
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void testExecuteJSFunction_UndefinedReceiver() {
         v8.executeVoidScript("function test() { }");
