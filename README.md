@@ -60,6 +60,8 @@ Tutorials
 
 Articles
 ========
+ * [Announcing J2V8 4](http://eclipsesource.com/blogs/2016/07/20/announcing-j2v8-4/)
+ * [Running Node.js on the JVM](http://eclipsesource.com/blogs/2016/07/20/running-node-js-on-the-jvm/)
  * [Shipping J2V8 as an AAR](http://eclipsesource.com/blogs/2015/11/04/shipping-j2v8-as-an-aar/)
  * [Announcing J2V8 3.0](http://eclipsesource.com/blogs/2015/07/08/j2v8-3-0-released/)
  * [J2V8 2.2 New and Noteworthy](http://eclipsesource.com/blogs/2015/04/23/j2v8-2-2-new-and-noteworthy/)
