@@ -335,6 +335,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   int argc = sizeof(argv) / sizeof(char*) - 1;
   V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
   if (v8RuntimePtr == 1) {
+  #if defined(_MSC_VER)
     // This is deadcode, but it ensures that libj2v8 'touches' all the
     // node modules. If the node modules are not 'touched' then the
     // linker will strip them out
@@ -362,6 +363,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
 	_register_tty_wrap();
 	_register_udp_wrap();
 	_register_uv();
+  #endif
   }
   rt->uvLoop = new uv_loop_t();
   uv_loop_init(rt->uvLoop);
