@@ -81,6 +81,7 @@ Who is using J2V8?
 Here are some projects that use J2V8:
 * [tabris.js](https://tabrisjs.com)
 * [tern.java](https://github.com/angelozerr/tern.java)
+* [PlantUML](http://plantuml.com/)
 
 
 License
