@@ -45,7 +45,6 @@ public class V8Object extends V8Value {
         }
     }
 
-
     protected V8Object() {
 
     }
@@ -728,6 +727,24 @@ public class V8Object extends V8Value {
          */
         @Override
         public V8Object add(final String key, final int value) {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeJSFunction(java.lang.String, java.lang.Object[])
+         */
+        @Override
+        public Object executeJSFunction(final String name, final Object... parameters) {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Object#executeFunction(java.lang.String, com.eclipsesource.v8.V8Array)
+         */
+        @Override
+        public Object executeFunction(final String name, final V8Array parameters) {
             throw new UnsupportedOperationException();
         }
 

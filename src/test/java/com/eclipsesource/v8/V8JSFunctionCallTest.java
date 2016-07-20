@@ -937,6 +937,22 @@ public class V8JSFunctionCallTest {
         assertEquals("passed", result);
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteJSFunction_UndefinedReceiver() {
+        v8.executeVoidScript("function test() { }");
+        V8Object undefined = new V8Object.Undefined();
+
+        undefined.executeJSFunction("test", (Object[]) null);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteFunction_UndefinedReceiver() {
+        v8.executeVoidScript("function test() { }");
+        V8Object undefined = new V8Object.Undefined();
+
+        undefined.executeFunction("test", null);
+    }
+
     @Test
     public void testExecuteJSFunction_undefined() {
         v8.executeVoidScript("function test(p1) { if (!p1) { return 'passed';} }");
