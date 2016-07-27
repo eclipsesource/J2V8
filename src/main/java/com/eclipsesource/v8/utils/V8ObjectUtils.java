@@ -390,6 +390,8 @@ public class V8ObjectUtils {
             result.push((String) value);
         } else if (value instanceof Boolean) {
             result.push((Boolean) value);
+        } else if (value instanceof V8Object) {
+            result.push((V8Object) value);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.push(object);
@@ -417,6 +419,8 @@ public class V8ObjectUtils {
             result.add(key, (String) value);
         } else if (value instanceof Boolean) {
             result.add(key, (Boolean) value);
+        } else if (value instanceof V8Object) {
+            result.add(key, (V8Object) value);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.add(key, object);
