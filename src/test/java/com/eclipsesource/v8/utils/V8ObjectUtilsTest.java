@@ -34,7 +34,9 @@ import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ArrayBuffer;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
 
 public class V8ObjectUtilsTest {
@@ -1505,6 +1507,53 @@ public class V8ObjectUtilsTest {
         assertEquals(10, result.limit());
         assertEquals(16.2, result.get(0), 0.0001);
         root.release();
+    }
+
+    @Test
+    public void testPushV8ArrayToArray() {
+        V8Array array = new V8Array(v8);
+        V8Array child = new V8Array(v8);
+
+        V8ObjectUtils.pushValue(v8, array, child);
+
+        V8Object result = (V8Object) array.get(0);
+
+        assertEquals(child, result);
+        array.release();
+        result.release();
+        child.release();
+    }
+
+    @Test
+    public void testPushV8ObjectToArray() {
+        V8Array array = new V8Array(v8);
+        V8Object child = new V8Object(v8);
+
+        V8ObjectUtils.pushValue(v8, array, child);
+
+        V8Object result = (V8Object) array.get(0);
+
+        assertEquals(child, result);
+        array.release();
+        result.release();
+        child.release();
+    }
+
+    @Test
+    public void testPushV8TypedArrayToArray() {
+        V8Array array = new V8Array(v8);
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        V8Object child = new V8TypedArray(v8, buffer, V8Value.INT_8_ARRAY, 0, 10);
+
+        V8ObjectUtils.pushValue(v8, array, child);
+
+        V8Object result = (V8Object) array.get(0);
+
+        assertEquals(child, result);
+        array.release();
+        result.release();
+        child.release();
+        buffer.release();
     }
 
     private int registerAndRelease(final String name, final List<? extends Object> list) {
