@@ -60,6 +60,22 @@ public class MemoryManager {
     }
 
     /**
+     * Persist an object that is currently being managed by this Manager.
+     *
+     * Objects that are being managed by a MemoryManager will be released
+     * once the MemoryManager is released. If an object is persisted, it will
+     * be remove from the MemoryManager's control and therefore will not
+     * be released.
+     *
+     * @param object The object to persist
+     */
+    public void persist(final V8Value object) {
+        v8.getLocker().checkThread();
+        checkReleased();
+        references.remove(object);
+    }
+
+    /**
      * Checks if the memory manager has been released or not. Released memory
      * managers can no longer be used.
      *
@@ -87,8 +103,8 @@ public class MemoryManager {
             references.clear();
         } finally {
             releasing = false;
-            released = true;
         }
+        released = true;
     }
 
     private void checkReleased() {
@@ -96,6 +112,7 @@ public class MemoryManager {
             throw new IllegalStateException("Memory manager released");
         }
     }
+
     private class MemoryManagerReferenceHandler implements ReferenceHandler {
 
         @Override

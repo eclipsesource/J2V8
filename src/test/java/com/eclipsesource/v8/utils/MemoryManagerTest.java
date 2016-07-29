@@ -14,12 +14,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ConcurrentModificationException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.eclipsesource.v8.ReferenceHandler;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
 
 public class MemoryManagerTest {
 
@@ -50,6 +54,16 @@ public class MemoryManagerTest {
         memoryManager.release();
 
         assertEquals(0, v8.getObjectReferenceCount());
+    }
+
+    @Test
+    public void testObjectIsReleased() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object object = new V8Object(v8);
+        memoryManager.release();
+
+        assertTrue(object.isReleased());
     }
 
     @Test
@@ -157,4 +171,71 @@ public class MemoryManagerTest {
 
         assertFalse(memoryManager.isReleased());
     }
+
+    @Test
+    public void testPersistObject() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object object = new V8Object(v8);
+        memoryManager.persist(object);
+        memoryManager.release();
+
+        assertFalse(object.isReleased());
+        object.release();
+    }
+
+    @Test
+    public void testPersistNonManagedObject() {
+        V8Object object = new V8Object(v8);
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        memoryManager.persist(object);
+        memoryManager.release();
+
+        assertFalse(object.isReleased());
+        object.release();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCannotCallPersistOnReleasedManager() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object object = new V8Object(v8);
+        memoryManager.release();
+        memoryManager.persist(object);
+    }
+
+    MemoryManager memoryManager;
+
+    @Test
+    public void testExceptionDuringReleaseDoesNotReleaseMemoryManager() {
+        memoryManager = new MemoryManager(v8);
+        ReferenceHandler handler = new ReferenceHandler() {
+
+            @Override
+            public void v8HandleDisposed(final V8Value object) {
+                // Throws CME
+                memoryManager.persist(object);
+            }
+
+            @Override
+            public void v8HandleCreated(final V8Value object) {
+            }
+        };
+        v8.addReferenceHandler(handler);
+
+        new V8Object(v8);
+        try {
+            memoryManager.release();
+        } catch (ConcurrentModificationException e) {
+
+        }
+
+        assertFalse(memoryManager.isReleased());
+
+        v8.removeReferenceHandler(handler);
+        memoryManager.release();
+        assertTrue(memoryManager.isReleased());
+    }
+
 }
