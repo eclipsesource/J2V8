@@ -62,17 +62,17 @@ public class V8TypedArray extends V8Array {
     }
 
     @Override
-    protected long initialize(final long runtimePtr, final Object data) {
+    protected void initialize(final long runtimePtr, final Object data) {
         v8.checkThread();
         if (data == null) {
-            return super.initialize(runtimePtr, data);
+            super.initialize(runtimePtr, data);
+            return;
         }
         V8ArrayData arrayData = (V8ArrayData) data;
         checkArrayProperties(arrayData);
         long handle = createTypedArray(runtimePtr, arrayData);
-        v8.addObjRef();
         released = false;
-        return handle;
+        addObjectReference(handle);
     }
 
     private long createTypedArray(final long runtimePtr, final V8ArrayData arrayData) {

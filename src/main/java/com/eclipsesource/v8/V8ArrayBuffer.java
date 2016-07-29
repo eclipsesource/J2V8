@@ -36,26 +36,25 @@ public class V8ArrayBuffer extends V8Value {
      */
     public V8ArrayBuffer(final V8 v8, final int capacity) {
         super(v8);
-        objectHandle = initialize(v8.getV8RuntimePtr(), capacity);
+        initialize(v8.getV8RuntimePtr(), capacity);
         byteBuffer = v8.createV8ArrayBufferBackingStore(v8.getV8RuntimePtr(), objectHandle, capacity);
         byteBuffer.order(ByteOrder.nativeOrder());
     }
 
     V8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer) {
         super(v8);
-        objectHandle = initialize(v8.getV8RuntimePtr(), byteBuffer.capacity());
+        initialize(v8.getV8RuntimePtr(), byteBuffer.capacity());
         this.byteBuffer = byteBuffer;
         byteBuffer.order(ByteOrder.nativeOrder());
     }
 
     @Override
-    protected long initialize(final long runtimePtr, final Object data) {
+    protected void initialize(final long runtimePtr, final Object data) {
         v8.checkThread();
         int capacity = (Integer) data;
         objectHandle = v8.initNewV8ArrayBuffer(v8.getV8RuntimePtr(), capacity);
-        v8.addObjRef();
         released = false;
-        return objectHandle;
+        addObjectReference(objectHandle);
     }
 
     @Override

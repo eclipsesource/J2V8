@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,13 +43,14 @@ public class V8 extends V8Object {
     private static String       v8Flags        = null;
     private static boolean      initialized    = false;
 
-    private final V8Locker              locker;
-    private long                        objectReferences        = 0;
-    private long                        v8RuntimePtr            = 0;
-    private List<Releasable>            resources               = null;
-    private V8Map<V8Executor>           executors               = null;
-    private boolean                     forceTerminateExecutors = false;
-    private Map<Long, MethodDescriptor> functionRegistry        = new HashMap<Long, MethodDescriptor>();
+    private final V8Locker               locker;
+    private long                         objectReferences        = 0;
+    private long                         v8RuntimePtr            = 0;
+    private List<Releasable>             resources               = null;
+    private V8Map<V8Executor>            executors               = null;
+    private boolean                      forceTerminateExecutors = false;
+    private Map<Long, MethodDescriptor>  functionRegistry        = new HashMap<Long, MethodDescriptor>();
+    private LinkedList<ReferenceHandler> referenceHandlers       = new LinkedList<ReferenceHandler>();
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -154,6 +156,37 @@ public class V8 extends V8Object {
             runtimeCounter++;
         }
         return runtime;
+    }
+
+    /**
+     * Adds a ReferenceHandler to track when new V8Objects are created.
+     *
+     * @param handler The ReferenceHandler to add
+     */
+    public void addReferenceHandler(final ReferenceHandler handler) {
+        referenceHandlers.add(0, handler);
+    }
+
+    /**
+     * Removes an existing ReferenceHandler from the collection of reference handlers.
+     * If the ReferenceHandler does not exist in the collection, it is ignored.
+     *
+     * @param handler The reference handler to remove
+     */
+    public void removeReferenceHandler(final ReferenceHandler handler) {
+        referenceHandlers.remove(handler);
+    }
+
+    private void notifyReferenceCreated(final V8Value object) {
+        for (ReferenceHandler referenceHandler : referenceHandlers) {
+            referenceHandler.v8HandleCreated(object);
+        }
+    }
+
+    private void notifyReferenceDisposed(final V8Value object) {
+        for (ReferenceHandler referenceHandler : referenceHandlers) {
+            referenceHandler.v8HandleDisposed(object);
+        }
     }
 
     private static void checkNativeLibraryLoaded() {
@@ -1379,11 +1412,17 @@ public class V8 extends V8Object {
 
     private native static boolean _isRunning(final long v8RuntimePtr);
 
-    void addObjRef() {
+    void addObjRef(final V8Value reference) {
         objectReferences++;
+        if (!referenceHandlers.isEmpty()) {
+            notifyReferenceCreated(reference);
+        }
     }
 
-    void releaseObjRef() {
+    void releaseObjRef(final V8Value reference) {
+        if (!referenceHandlers.isEmpty()) {
+            notifyReferenceDisposed(reference);
+        }
         objectReferences--;
     }
 

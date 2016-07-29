@@ -52,11 +52,10 @@ public class V8Array extends V8Object {
     }
 
     @Override
-    protected long initialize(final long runtimePtr, final Object data) {
+    protected void initialize(final long runtimePtr, final Object data) {
         long handle = v8.initNewV8Array(runtimePtr);
-        v8.addObjRef();
         released = false;
-        return handle;
+        addObjectReference(handle);
     }
 
     /**

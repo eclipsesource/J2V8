@@ -41,7 +41,7 @@ public class V8Object extends V8Value {
         super(v8);
         if (v8 != null) {
             this.v8.checkThread();
-            objectHandle = initialize(this.v8.getV8RuntimePtr(), data);
+            initialize(this.v8.getV8RuntimePtr(), data);
         }
     }
 

@@ -64,11 +64,23 @@ abstract public class V8Value implements Releasable {
         }
     }
 
-    protected long initialize(final long runtimePtr, final Object data) {
+    protected void initialize(final long runtimePtr, final Object data) {
         long objectHandle = v8.initNewV8Object(runtimePtr);
-        v8.addObjRef();
         released = false;
-        return objectHandle;
+        addObjectReference(objectHandle);
+    }
+
+    protected void addObjectReference(final long objectHandle) throws Error {
+        this.objectHandle = objectHandle;
+        try {
+            v8.addObjRef(this);
+        } catch (Error e) {
+            release();
+            throw e;
+        } catch (RuntimeException e) {
+            release();
+            throw e;
+        }
     }
 
     /**
@@ -168,9 +180,12 @@ abstract public class V8Value implements Releasable {
     public void release() {
         v8.checkThread();
         if (!released) {
-            released = true;
-            v8.release(v8.getV8RuntimePtr(), objectHandle);
-            v8.releaseObjRef();
+            try {
+                v8.releaseObjRef(this);
+            } finally {
+                released = true;
+                v8.release(v8.getV8RuntimePtr(), objectHandle);
+            }
         }
     }
 
