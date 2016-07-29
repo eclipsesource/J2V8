@@ -131,4 +131,12 @@ public class MemoryManagerTest {
 
         memoryManager.getObjectReferenceCount();
     }
+
+    @Test
+    public void testCanReleaseTwice() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        memoryManager.release();
+        memoryManager.release();
+    }
 }
