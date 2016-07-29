@@ -60,6 +60,16 @@ public class MemoryManager {
     }
 
     /**
+     * Checks if the memory manager has been released or not. Released memory
+     * managers can no longer be used.
+     *
+     * @return True if this memory manager has been released, false otherwise.
+     */
+    public boolean isReleased() {
+        return released;
+    }
+
+    /**
      * Releases this Memory Manager and all V8Objects that were created while
      * this memory manager was active.
      */

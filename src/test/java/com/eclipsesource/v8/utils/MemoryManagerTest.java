@@ -11,6 +11,8 @@
 package com.eclipsesource.v8.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
@@ -138,5 +140,21 @@ public class MemoryManagerTest {
 
         memoryManager.release();
         memoryManager.release();
+    }
+
+    @Test
+    public void testIsReleasedTrue() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        memoryManager.release();
+
+        assertTrue(memoryManager.isReleased());
+    }
+
+    @Test
+    public void testIsReleasedFalse() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        assertFalse(memoryManager.isReleased());
     }
 }
