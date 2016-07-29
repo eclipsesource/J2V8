@@ -139,6 +139,38 @@ public class MemoryManagerTest {
         assertEquals(0, v8.getObjectReferenceCount());
     }
 
+    @Test
+    public void testNestedMemoryManagerHasProperObjectCount() {
+        MemoryManager memoryManager1 = new MemoryManager(v8);
+
+        new V8Object(v8);
+        MemoryManager memoryManager2 = new MemoryManager(v8);
+        new V8Object(v8);
+
+        assertEquals(2, memoryManager1.getObjectReferenceCount());
+        assertEquals(1, memoryManager2.getObjectReferenceCount());
+        memoryManager2.release();
+
+        assertEquals(1, memoryManager1.getObjectReferenceCount());
+        memoryManager1.release();
+    }
+
+    @Test
+    public void testNestedMemoryManager_ReverseReleaseOrder() {
+        MemoryManager memoryManager1 = new MemoryManager(v8);
+
+        new V8Object(v8);
+        MemoryManager memoryManager2 = new MemoryManager(v8);
+        new V8Object(v8);
+
+        assertEquals(2, memoryManager1.getObjectReferenceCount());
+        assertEquals(1, memoryManager2.getObjectReferenceCount());
+        memoryManager1.release();
+
+        assertEquals(0, memoryManager2.getObjectReferenceCount());
+        memoryManager2.release();
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testMemoryManagerReleased_CannotCallGetObjectReferenceCount() {
         MemoryManager memoryManager = new MemoryManager(v8);
