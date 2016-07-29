@@ -7,13 +7,3 @@ before_install:
 - chmod -x build-node.sh
 install: sh ./build-node.sh
 script: sh ./buildJ2V8_macos.sh
-deploy:
-  provider: releases
-  api_key:
-    secure: "Wo/ZgE9HDrnJcEhCCl4VDpJpabmI987cNH1P4oujeWQeNwBpdoS2cbPAgiUPKEa5Ouvgb3+Ecmmn/veVBxU2wHJJUlfdOZ/6g/QA72vwP74oDCBcsChK6VfleOPBMKwJ5GLhtGD/VjnIWnRSyAm/tFET0pOmxEWQGqEqcC34f/Q="
-  skip_cleanup: true
-  file: jni/libj2v8_macosx_x86_64.dylib
-  overwrite: true
-  on:
-    branch: master
-    repo: eclipsesource/J2V8
