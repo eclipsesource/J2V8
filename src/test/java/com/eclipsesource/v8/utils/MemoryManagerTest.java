@@ -122,4 +122,13 @@ public class MemoryManagerTest {
         memoryManager1.release();
         assertEquals(0, v8.getObjectReferenceCount());
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testMemoryManagerReleased_CannotCallGetObjectReferenceCount() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        memoryManager.release();
+
+        memoryManager.getObjectReferenceCount();
+    }
 }

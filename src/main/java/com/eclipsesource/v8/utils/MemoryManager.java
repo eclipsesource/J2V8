@@ -31,6 +31,7 @@ public class MemoryManager {
     private V8                            v8;
     private ArrayList<V8Value>            references = new ArrayList<V8Value>();
     private boolean                       releasing = false;
+    private boolean                       released   = false;
 
     /**
      * Creates and registered a Memory Manager. After this, all V8 handles will be
@@ -48,9 +49,13 @@ public class MemoryManager {
      * Returns the number of handles currently being tracked by this
      * memory manager.
      *
+     * Throws an IllegalStateException if the memory manager is used after it's
+     * been released.
+     *
      * @return The object reference count
      */
     public int getObjectReferenceCount() {
+        checkReleased();
         return references.size();
     }
 
@@ -60,6 +65,9 @@ public class MemoryManager {
      */
     public void release() {
         v8.getLocker().checkThread();
+        if (released) {
+            return;
+        }
         releasing = true;
         try {
             for (V8Value reference : references) {
@@ -69,9 +77,15 @@ public class MemoryManager {
             references.clear();
         } finally {
             releasing = false;
+            released = true;
         }
     }
 
+    private void checkReleased() {
+        if (released) {
+            throw new IllegalStateException("Memory manager released");
+        }
+    }
     private class MemoryManagerReferenceHandler implements ReferenceHandler {
 
         @Override
