@@ -228,6 +228,42 @@ public class MemoryManagerTest {
         object.release();
     }
 
+    @Test
+    public void testTwins() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object object = new V8Object(v8);
+        object.twin();
+
+        assertEquals(2, memoryManager.getObjectReferenceCount());
+        memoryManager.release();
+    }
+
+    @Test
+    public void testTwinsReleaseOne() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object object = new V8Object(v8);
+        object.twin();
+        object.release();
+
+        assertEquals(1, memoryManager.getObjectReferenceCount());
+        memoryManager.release();
+    }
+
+    @Test
+    public void testGetObjectTwice() {
+        v8.executeVoidScript("foo = {}");
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        V8Object foo1 = v8.getObject("foo");
+        v8.getObject("foo").release();
+
+        assertEquals(1, memoryManager.getObjectReferenceCount());
+        memoryManager.release();
+        assertTrue(foo1.isReleased());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testCannotCallPersistOnReleasedManager() {
         MemoryManager memoryManager = new MemoryManager(v8);

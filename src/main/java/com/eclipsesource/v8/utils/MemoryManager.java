@@ -11,6 +11,7 @@
 package com.eclipsesource.v8.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.eclipsesource.v8.ReferenceHandler;
 import com.eclipsesource.v8.V8;
@@ -123,7 +124,13 @@ public class MemoryManager {
         @Override
         public void v8HandleDisposed(final V8Value object) {
             if (!releasing) {
-                references.remove(object);
+                Iterator<V8Value> iterator = references.iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next() == object) {
+                        iterator.remove();
+                        return;
+                    }
+                }
             }
         }
     }
