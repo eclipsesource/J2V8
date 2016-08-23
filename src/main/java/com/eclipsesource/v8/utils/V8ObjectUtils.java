@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8ArrayBuffer;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
@@ -455,6 +456,13 @@ public class V8ObjectUtils {
                 return array.getString(index);
             case V8Value.V8_FUNCTION:
                 return IGNORE;
+            case V8Value.V8_ARRAY_BUFFER:
+                V8ArrayBuffer buffer = (V8ArrayBuffer) array.get(index);
+                try {
+                    return buffer.getBackingStore();
+                } finally {
+                    buffer.release();
+                }
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = array.getArray(index);
                 try {
@@ -531,6 +539,13 @@ public class V8ObjectUtils {
                 return object.getString(key);
             case V8Value.V8_FUNCTION:
                 return IGNORE;
+            case V8Value.V8_ARRAY_BUFFER:
+                V8ArrayBuffer buffer = (V8ArrayBuffer) object.get(key);
+                try {
+                    return buffer.getBackingStore();
+                } finally {
+                    buffer.release();
+                }
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = object.getArray(key);
                 try {

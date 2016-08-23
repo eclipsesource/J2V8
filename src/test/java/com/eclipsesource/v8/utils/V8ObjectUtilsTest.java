@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1231,6 +1232,18 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testArrayTypedArrayValue_ArrayBuffer() {
+        V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var root = [buf];\n"
+                + "root;\n");
+
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
+
+        assertEquals(100, result.limit());
+        root.release();
+    }
+
+    @Test
     public void testArrayTypedArrayValue_Int8Array() {
         V8Array root = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
                 + "var intsArray = new Int8Array(buf);\n"
@@ -1375,6 +1388,18 @@ public class V8ObjectUtilsTest {
 
         assertEquals(10, result.length());
         assertEquals(16.2, result.get(0), 0.0001);
+        root.release();
+    }
+
+    @Test
+    public void testArrayBufferAsProperty() {
+        V8Object root = v8.executeObjectScript("var buf = new ArrayBuffer(100);\n"
+                + "var root = { 'items' : buf };\n"
+                + "root;\n");
+
+        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
+
+        assertEquals(100, result.limit());
         root.release();
     }
 
