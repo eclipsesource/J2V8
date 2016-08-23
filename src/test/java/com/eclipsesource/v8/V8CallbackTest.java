@@ -27,11 +27,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.util.Date;
 
 import org.junit.After;
@@ -41,6 +36,15 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.utils.V8ObjectUtils;
+import com.eclipsesource.v8.utils.typedarrays.Float32Array;
+import com.eclipsesource.v8.utils.typedarrays.Float64Array;
+import com.eclipsesource.v8.utils.typedarrays.Int16Array;
+import com.eclipsesource.v8.utils.typedarrays.Int32Array;
+import com.eclipsesource.v8.utils.typedarrays.Int8Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt16Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt32Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt8Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt8ClampedArray;
 
 public class V8CallbackTest {
 
@@ -493,7 +497,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof IntBuffer;
+                return result instanceof Int32Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -510,7 +514,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof ByteBuffer;
+                return result instanceof Int8Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -527,7 +531,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof ShortBuffer;
+                return result instanceof Int16Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -544,7 +548,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof FloatBuffer;
+                return result instanceof Float32Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -561,7 +565,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof DoubleBuffer;
+                return result instanceof Float64Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -578,7 +582,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof ByteBuffer;
+                return result instanceof UInt8Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -595,7 +599,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof ByteBuffer;
+                return result instanceof UInt8ClampedArray;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -612,7 +616,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof ShortBuffer;
+                return result instanceof UInt16Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");
@@ -629,7 +633,7 @@ public class V8CallbackTest {
             @Override
             public Boolean invoke(final V8Object receiver, final V8Array parameters) {
                 Object result = V8ObjectUtils.getValue(parameters, 0);
-                return result instanceof IntBuffer;
+                return result instanceof UInt32Array;
             }
         };
         v8.registerJavaMethod(callback, "callback");

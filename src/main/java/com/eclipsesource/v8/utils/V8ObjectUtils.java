@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -22,6 +23,15 @@ import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
+import com.eclipsesource.v8.utils.typedarrays.Float32Array;
+import com.eclipsesource.v8.utils.typedarrays.Float64Array;
+import com.eclipsesource.v8.utils.typedarrays.Int16Array;
+import com.eclipsesource.v8.utils.typedarrays.Int32Array;
+import com.eclipsesource.v8.utils.typedarrays.Int8Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt16Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt32Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt8Array;
+import com.eclipsesource.v8.utils.typedarrays.UInt8ClampedArray;
 
 /**
  * A set of static helper methods to convert V8Objects / V8Arrays to
@@ -483,18 +493,28 @@ public class V8ObjectUtils {
 
     private static Object toByteBuffer(final V8Array typedArray) {
         int arrayType = typedArray.getType();
-        if ((arrayType == V8Value.INT_8_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_8_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY)) {
-            return ((V8TypedArray) typedArray).getByteBuffer();
-        } else if ((arrayType == V8Value.INT_16_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_16_ARRAY)) {
-            return ((V8TypedArray) typedArray).getByteBuffer().asShortBuffer();
-        } else if ((arrayType == V8Value.INT_32_ARRAY) || (arrayType == V8Value.UNSIGNED_INT_32_ARRAY)) {
-            return ((V8TypedArray) typedArray).getByteBuffer().asIntBuffer();
-        } else if (arrayType == V8Value.FLOAT_32_ARRAY) {
-            return ((V8TypedArray) typedArray).getByteBuffer().asFloatBuffer();
-        } else if (arrayType == V8Value.FLOAT_64_ARRAY) {
-            return ((V8TypedArray) typedArray).getByteBuffer().asDoubleBuffer();
-        } else {
-            throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentaion(arrayType));
+        ByteBuffer buffer = ((V8TypedArray) typedArray).getByteBuffer();
+        switch (arrayType) {
+            case V8Value.INT_8_ARRAY:
+                return new Int8Array(buffer);
+            case V8Value.UNSIGNED_INT_8_ARRAY:
+                return new UInt8Array(buffer);
+            case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
+                return new UInt8ClampedArray(buffer);
+            case V8Value.INT_16_ARRAY:
+                return new Int16Array(buffer);
+            case V8Value.UNSIGNED_INT_16_ARRAY:
+                return new UInt16Array(buffer);
+            case V8Value.INT_32_ARRAY:
+                return new Int32Array(buffer);
+            case V8Value.UNSIGNED_INT_32_ARRAY:
+                return new UInt32Array(buffer);
+            case V8Value.FLOAT_32_ARRAY:
+                return new Float32Array(buffer);
+            case V8Value.FLOAT_64_ARRAY:
+                return new Float64Array(buffer);
+            default:
+                throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentaion(arrayType));
         }
     }
 
