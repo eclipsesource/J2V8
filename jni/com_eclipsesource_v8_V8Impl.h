@@ -616,8 +616,16 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII_3Lja
  * Method:    _initNewV8ArrayBuffer
  * Signature: (JI)J
  */
-JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JI
   (JNIEnv *, jobject, jlong, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _initNewV8ArrayBuffer
+ * Signature: (JLjava/nio/ByteBuffer;I)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JLjava_nio_ByteBuffer_2I
+  (JNIEnv *, jobject, jlong, jobject, jint);
 
 /*
  * Class:     com_eclipsesource_v8_V8

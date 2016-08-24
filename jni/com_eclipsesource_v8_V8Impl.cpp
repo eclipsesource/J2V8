@@ -569,10 +569,19 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Float64Array
   return reinterpret_cast<jlong>(container);
 }
 
-JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JI
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jint capacity) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, capacity);
+  Persistent<Object>* container = new Persistent<Object>;
+  container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, arrayBuffer);
+  return reinterpret_cast<jlong>(container);
+}
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JLjava_nio_ByteBuffer_2I
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jobject byteBuffer, jint capacity) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, env->GetDirectBufferAddress(byteBuffer), capacity);
   Persistent<Object>* container = new Persistent<Object>;
   container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, arrayBuffer);
   return reinterpret_cast<jlong>(container);

@@ -267,6 +267,66 @@ public class V8ArrayBufferTest {
     }
 
     @Test
+    public void testUseCustomByteBuffer_Int32Array() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, byteBuffer);
+        v8.add("buf", buffer);
+
+        V8Array array = (V8Array) v8.executeScript("var ints = new Int32Array(buf); ints");
+
+        buffer.getBackingStore().asIntBuffer().put(0, 7);
+        buffer.getBackingStore().asIntBuffer().put(1, 17);
+
+        assertEquals(2, array.length());
+        assertEquals(7, array.getInteger(0));
+        assertEquals(17, array.getInteger(1));
+        array.release();
+        buffer.release();
+    }
+
+    @Test
+    public void testUseCustomByteBuffer_Float32Array() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, byteBuffer);
+        v8.add("buf", buffer);
+
+        V8Array array = (V8Array) v8.executeScript("var floats = new Float32Array(buf); floats");
+
+        buffer.getBackingStore().asFloatBuffer().put(0, 7.7f);
+        buffer.getBackingStore().asFloatBuffer().put(1, 17.7f);
+
+        assertEquals(2, array.length());
+        assertEquals(7.7, array.getDouble(0), 0.000001);
+        assertEquals(17.7, array.getDouble(1), 0.000001);
+        array.release();
+        buffer.release();
+    }
+
+    @Test
+    public void shareDirectBufferBetweenArrayBuffers() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        V8ArrayBuffer buffer1 = new V8ArrayBuffer(v8, byteBuffer);
+        V8ArrayBuffer buffer2 = new V8ArrayBuffer(v8, byteBuffer);
+        V8TypedArray array1 = new V8TypedArray(v8, buffer1, V8Value.INT_32_ARRAY, 0, 2);
+        V8TypedArray array2 = new V8TypedArray(v8, buffer1, V8Value.INT_32_ARRAY, 0, 2);
+
+        array1.add("0", 7).add("1", 9);
+
+        assertEquals(7, array2.get(0));
+        assertEquals(9, array2.get(1));
+        array1.release();
+        array2.release();
+        buffer1.release();
+        buffer2.release();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testByteBufferMustBeDirectBuffer() {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+        new V8ArrayBuffer(v8, byteBuffer);
+    }
+
+    @Test
     public void getArrayBuffer() {
         v8.executeVoidScript("var buffer = new ArrayBuffer(8);");
 

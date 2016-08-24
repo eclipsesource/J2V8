@@ -41,9 +41,21 @@ public class V8ArrayBuffer extends V8Value {
         byteBuffer.order(ByteOrder.nativeOrder());
     }
 
-    V8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer) {
+    /**
+     * Creates a new V8ArrayBuffer with the provided ByteBuffer as the backing store.
+     * The ByteBuffer must be allocated as a DirectBuffer. If the ByteBuffer is not
+     * a DirectBuffer an IllegalArgumentException will be thrown.
+     *
+     * @param v8 The runtime on which to create the ArrayBuffer
+     * @param byteBuffer The ByteBuffer to use as the backing store. The ByteBuffer must
+     * be allocated as a DirectBuffer.
+     */
+    public V8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer) {
         super(v8);
-        initialize(v8.getV8RuntimePtr(), byteBuffer.capacity());
+        if (!byteBuffer.isDirect()) {
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+        }
+        initialize(v8.getV8RuntimePtr(), byteBuffer);
         this.byteBuffer = byteBuffer;
         byteBuffer.order(ByteOrder.nativeOrder());
     }
@@ -51,8 +63,14 @@ public class V8ArrayBuffer extends V8Value {
     @Override
     protected void initialize(final long runtimePtr, final Object data) {
         v8.checkThread();
-        int capacity = (Integer) data;
-        objectHandle = v8.initNewV8ArrayBuffer(v8.getV8RuntimePtr(), capacity);
+        if (data instanceof ByteBuffer) {
+            ByteBuffer buffer = (ByteBuffer) data;
+            int capacity = buffer.limit();
+            objectHandle = v8.initNewV8ArrayBuffer(v8.getV8RuntimePtr(), buffer, capacity);
+        } else {
+            int capacity = (Integer) data;
+            objectHandle = v8.initNewV8ArrayBuffer(v8.getV8RuntimePtr(), capacity);
+        }
         released = false;
         addObjectReference(objectHandle);
     }

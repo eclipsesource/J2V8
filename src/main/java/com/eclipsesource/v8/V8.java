@@ -1056,6 +1056,10 @@ public class V8 extends V8Object {
         return _registerJavaMethod(v8RuntimePtr, objectHandle, functionName, voidMethod);
     }
 
+    protected long initNewV8ArrayBuffer(final long v8RuntimePtr, final ByteBuffer buffer, final int capacity) {
+        return _initNewV8ArrayBuffer(v8RuntimePtr, buffer, capacity);
+    }
+
     protected long initNewV8ArrayBuffer(final long v8RuntimePtr, final int capacity) {
         return _initNewV8ArrayBuffer(v8RuntimePtr, capacity);
     }
@@ -1375,6 +1379,8 @@ public class V8 extends V8Object {
     private native int _arrayGetStrings(final long v8RuntimePtr, final long objectHandle, final int index, final int length, String[] resultArray);
 
     private native long _initNewV8ArrayBuffer(long v8RuntimePtr, int capacity);
+
+    private native long _initNewV8ArrayBuffer(long v8RuntimePtr, ByteBuffer buffer, int capacity);
 
     private native long _initNewV8Int32Array(long runtimePtr, long bufferHandle, int offset, int size);
 
