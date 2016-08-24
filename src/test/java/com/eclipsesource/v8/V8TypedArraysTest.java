@@ -1445,4 +1445,49 @@ public class V8TypedArraysTest {
         }
     }
 
+    @Test
+    public void testInt8ArrayIs1Byte() {
+        assertEquals(1, V8TypedArray.getStructureSize(V8Value.INT_8_ARRAY));
+    }
+
+    @Test
+    public void testUInt8ArrayIs1Byte() {
+        assertEquals(1, V8TypedArray.getStructureSize(V8Value.UNSIGNED_INT_8_ARRAY));
+    }
+
+    @Test
+    public void testUInt8ClampedArrayIs1Byte() {
+        assertEquals(1, V8TypedArray.getStructureSize(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY));
+    }
+
+    @Test
+    public void testInt16ArrayIs2Bytes() {
+        assertEquals(2, V8TypedArray.getStructureSize(V8Value.INT_16_ARRAY));
+    }
+
+    @Test
+    public void testUInt16ArrayIs2Bytes() {
+        assertEquals(2, V8TypedArray.getStructureSize(V8Value.UNSIGNED_INT_16_ARRAY));
+    }
+
+    @Test
+    public void testInt32ArrayIs4Bytes() {
+        assertEquals(4, V8TypedArray.getStructureSize(V8Value.INT_32_ARRAY));
+    }
+
+    @Test
+    public void testUInt32ArrayIs4Bytes() {
+        assertEquals(4, V8TypedArray.getStructureSize(V8Value.UNSIGNED_INT_32_ARRAY));
+    }
+
+    @Test
+    public void testFloat32ArrayIs4Bytes() {
+        assertEquals(4, V8TypedArray.getStructureSize(V8Value.FLOAT_32_ARRAY));
+    }
+
+    @Test
+    public void testFloat64ArrayIs8Bytes() {
+        assertEquals(8, V8TypedArray.getStructureSize(V8Value.FLOAT_64_ARRAY));
+    }
+
 }

@@ -100,7 +100,13 @@ public class V8TypedArray extends V8Array {
         }
     }
 
-    private static int getStructureSize(final int type) {
+    /**
+     * Computes the size of the structures required for each TypedArray variation.
+     *
+     * @param type The type of the TypeArray
+     * @return The size of the structures required
+     */
+    public static int getStructureSize(final int type) {
         switch (type) {
             case V8Value.FLOAT_64_ARRAY:
                 return 8;
