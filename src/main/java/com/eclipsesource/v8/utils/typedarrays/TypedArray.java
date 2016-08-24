@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8TypedArray;
+
 /**
  * An abstract class that represents TypedArrays
  */
@@ -20,6 +22,12 @@ public abstract class TypedArray {
     protected ByteBuffer buffer;
 
     protected TypedArray(final ByteBuffer buffer) {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+        }
+        if ((buffer.limit() % V8TypedArray.getStructureSize(getType())) != 0) {
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+        }
         this.buffer = buffer;
     }
 
@@ -41,4 +49,10 @@ public abstract class TypedArray {
      */
     public abstract int length();
 
+    /**
+     * Returns the 'Type' of this TypedArray using one of the constants defined in V8Value.
+     *
+     * @return The 'Type' of this typed array.
+     */
+    public abstract int getType();
 }

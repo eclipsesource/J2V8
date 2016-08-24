@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Uint8ClampedArray typed array represents an array of 8-bit unsigned
  * integers clamped to 0-255; if you specified a value that is out of the
@@ -62,6 +64,15 @@ public class UInt8ClampedArray extends TypedArray {
         } else {
             buffer.put(index, (byte) (value));
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY;
     }
 
 }

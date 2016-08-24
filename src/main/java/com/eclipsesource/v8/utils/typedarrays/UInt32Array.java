@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Uint32Array typed array represents an array of 32-bit unsigned
  * integers in the platform byte order.
@@ -54,6 +56,15 @@ public class UInt32Array extends TypedArray {
      */
     public void put(final int index, final long value) {
         buffer.asIntBuffer().put(index, (int) (0x00000000FFFFFFFF & value));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.UNSIGNED_INT_32_ARRAY;
     }
 
 }

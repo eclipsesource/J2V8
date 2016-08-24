@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
+import com.eclipsesource.v8.V8Value;
 import com.eclipsesource.v8.utils.typedarrays.Float32Array;
 import com.eclipsesource.v8.utils.typedarrays.Float64Array;
 import com.eclipsesource.v8.utils.typedarrays.Int16Array;
@@ -30,7 +31,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt8Array_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(10);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(10);
         Int8Array array = new Int8Array(buffer);
 
         int result = array.length();
@@ -40,7 +41,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8Array_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(10);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(10);
         UInt8Array array = new UInt8Array(buffer);
 
         int result = array.length();
@@ -50,7 +51,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8ClampedArray_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(10);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(10);
         UInt8ClampedArray array = new UInt8ClampedArray(buffer);
 
         int result = array.length();
@@ -60,7 +61,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt16Array_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Int16Array array = new Int16Array(buffer);
 
         int result = array.length();
@@ -70,7 +71,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt16Array_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt16Array array = new UInt16Array(buffer);
 
         int result = array.length();
@@ -80,7 +81,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt32ArrayArray_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Int32Array array = new Int32Array(buffer);
 
         int result = array.length();
@@ -90,7 +91,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt32ArrayArray_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt32Array array = new UInt32Array(buffer);
 
         int result = array.length();
@@ -100,7 +101,7 @@ public class TypedArrayTest {
 
     @Test
     public void testFloat32ArrayArray_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Float32Array array = new Float32Array(buffer);
 
         int result = array.length();
@@ -110,7 +111,7 @@ public class TypedArrayTest {
 
     @Test
     public void testFloat64ArrayArray_Length() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Float64Array array = new Float64Array(buffer);
 
         int result = array.length();
@@ -120,7 +121,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt8Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Int8Array array = new Int8Array(buffer);
 
         array.put(0, (byte) 7);
@@ -130,7 +131,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt8Array array = new UInt8Array(buffer);
 
         array.put(0, (byte) 7);
@@ -140,7 +141,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8Array_PutValueGreater128() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt8Array array = new UInt8Array(buffer);
 
         array.put(0, (short) 129);
@@ -150,7 +151,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8Array_PutValueGreater255() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt8ClampedArray array = new UInt8ClampedArray(buffer);
 
         array.put(0, (short) 256);
@@ -160,7 +161,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt8Array_PutValueLess0() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt8ClampedArray array = new UInt8ClampedArray(buffer);
 
         array.put(0, (short) -1);
@@ -170,7 +171,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt16Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Int16Array array = new Int16Array(buffer);
 
         array.put(0, (short) 10000);
@@ -180,7 +181,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt16Array_PutValueGreaterMaxShort() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt16Array array = new UInt16Array(buffer);
 
         array.put(0, Short.MAX_VALUE + 1);
@@ -190,7 +191,7 @@ public class TypedArrayTest {
 
     @Test
     public void testInt32Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Int32Array array = new Int32Array(buffer);
 
         array.put(0, 1000000);
@@ -200,7 +201,7 @@ public class TypedArrayTest {
 
     @Test
     public void testUInt32Array_PutValueGreaterMaxInt() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         UInt32Array array = new UInt32Array(buffer);
 
         array.put(0, Integer.MAX_VALUE + 1);
@@ -210,7 +211,7 @@ public class TypedArrayTest {
 
     @Test
     public void testFloat32Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Float32Array array = new Float32Array(buffer);
 
         array.put(0, 3.14f);
@@ -220,12 +221,77 @@ public class TypedArrayTest {
 
     @Test
     public void testFloat64Array_PutValue() {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         Float64Array array = new Float64Array(buffer);
 
         array.put(0, 3.14159);
 
         assertEquals(3.14159, array.get(0), 0.0001);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWrongSizebuffer_Float32() {
+        new Float32Array(ByteBuffer.allocateDirect(7));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWrongSizebuffer_Float64() {
+        new Float64Array(ByteBuffer.allocateDirect(7));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWrongSizebuffer_Int32() {
+        new Int32Array(ByteBuffer.allocateDirect(3));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTypedArrayWrongSizebuffer_Int16() {
+        new Int16Array(ByteBuffer.allocateDirect(1));
+    }
+
+    @Test
+    public void testGetType_Float64Array() {
+        assertEquals(V8Value.FLOAT_64_ARRAY, new Float64Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_Float32Array() {
+        assertEquals(V8Value.FLOAT_32_ARRAY, new Float32Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_Int32Array() {
+        assertEquals(V8Value.INT_32_ARRAY, new Int32Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_UInt32Array() {
+        assertEquals(V8Value.UNSIGNED_INT_32_ARRAY, new UInt32Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_Int16Array() {
+        assertEquals(V8Value.INT_16_ARRAY, new Int16Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_UInt16Array() {
+        assertEquals(V8Value.UNSIGNED_INT_16_ARRAY, new UInt16Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_Int8Array() {
+        assertEquals(V8Value.INT_8_ARRAY, new Int8Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_UInt8Array() {
+        assertEquals(V8Value.UNSIGNED_INT_8_ARRAY, new UInt8Array(ByteBuffer.allocateDirect(8)).getType());
+    }
+
+    @Test
+    public void testGetType_UInt8ClampledArray() {
+        assertEquals(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, new UInt8ClampedArray(ByteBuffer.allocateDirect(8)).getType());
     }
 
 }

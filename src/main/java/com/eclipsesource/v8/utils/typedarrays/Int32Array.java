@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Int32Array typed array represents an array of twos-complement 32-bit signed
  * integers in the platform byte order.
@@ -50,6 +52,15 @@ public class Int32Array extends TypedArray {
      */
     public void put(final int index, final int value) {
         buffer.asIntBuffer().put(index, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.INT_32_ARRAY;
     }
 
 }

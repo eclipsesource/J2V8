@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Uint8Array typed array represents an array of 8-bit unsigned integers
  */
@@ -53,6 +55,15 @@ public class UInt8Array extends TypedArray {
      */
     public void put(final int index, final short value) {
         buffer.put(index, (byte) (0x00FF & value));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.UNSIGNED_INT_8_ARRAY;
     }
 
 }

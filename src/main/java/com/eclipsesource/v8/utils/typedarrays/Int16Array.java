@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Int16Array typed array represents an array of twos-complement
  * 16-bit signed integers in the platform byte order.
@@ -54,6 +56,15 @@ public class Int16Array extends TypedArray {
      */
     public void put(final int index, final short value) {
         buffer.asShortBuffer().put(index, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.INT_16_ARRAY;
     }
 
 }

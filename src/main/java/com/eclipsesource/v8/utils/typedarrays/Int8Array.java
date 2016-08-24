@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Int8Array typed array represents an array of twos-complement
  * 8-bit signed integers.
@@ -56,4 +58,12 @@ public class Int8Array extends TypedArray {
         buffer.put(index, value);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.INT_8_ARRAY;
+    }
 }

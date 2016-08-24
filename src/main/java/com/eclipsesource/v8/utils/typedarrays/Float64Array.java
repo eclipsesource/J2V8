@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Float64Array typed array represents an array of 64-bit floating
  * point numbers.
@@ -54,6 +56,15 @@ public class Float64Array extends TypedArray {
      */
     public void put(final int index, final double value) {
         buffer.asDoubleBuffer().put(index, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.FLOAT_64_ARRAY;
     }
 
 }

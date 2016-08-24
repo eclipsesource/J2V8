@@ -12,6 +12,8 @@ package com.eclipsesource.v8.utils.typedarrays;
 
 import java.nio.ByteBuffer;
 
+import com.eclipsesource.v8.V8Value;
+
 /**
  * The Uint16Array typed array represents an array of 16-bit unsigned
  * integers in the platform byte order.
@@ -54,6 +56,15 @@ public class UInt16Array extends TypedArray {
      */
     public void put(final int index, final int value) {
         buffer.asShortBuffer().put(index, (short) (0x0000FFFF & value));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.utils.typedarrays.TypedArray#getType()
+     */
+    @Override
+    public int getType() {
+        return V8Value.UNSIGNED_INT_16_ARRAY;
     }
 
 }
