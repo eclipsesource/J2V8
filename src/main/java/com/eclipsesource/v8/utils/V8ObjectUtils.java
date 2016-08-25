@@ -173,11 +173,11 @@ public class V8ObjectUtils {
      * @return A V8Object representing the map.
      */
     public static V8Object toV8Object(final V8 v8, final Map<String, ? extends Object> map) {
-        Map<Object, V8Object> cache = new Hashtable<Object, V8Object>();
+        Map<Object, V8Value> cache = new Hashtable<Object, V8Value>();
         try {
             return toV8Object(v8, map, cache).twin();
         } finally {
-            for (V8Object v8Object : cache.values()) {
+            for (V8Value v8Object : cache.values()) {
                 v8Object.release();
             }
         }
@@ -193,11 +193,11 @@ public class V8ObjectUtils {
      * @return A V8Array representing the list.
      */
     public static V8Array toV8Array(final V8 v8, final List<? extends Object> list) {
-        Map<Object, V8Object> cache = new Hashtable<Object, V8Object>();
+        Map<Object, V8Value> cache = new Hashtable<Object, V8Value>();
         try {
             return toV8Array(v8, list, cache).twin();
         } finally {
-            for (V8Object v8Object : cache.values()) {
+            for (V8Value v8Object : cache.values()) {
                 v8Object.release();
             }
         }
@@ -221,7 +221,7 @@ public class V8ObjectUtils {
         if (value == null) {
             return null;
         }
-        Map<Object, V8Object> cache = new Hashtable<Object, V8Object>();
+        Map<Object, V8Value> cache = new Hashtable<Object, V8Value>();
         try {
             Object result = getV8Result(v8, value, cache);
             if (result instanceof V8Object) {
@@ -229,7 +229,7 @@ public class V8ObjectUtils {
             }
             return result;
         } finally {
-            for (V8Object v8Object : cache.values()) {
+            for (V8Value v8Object : cache.values()) {
                 v8Object.release();
             }
         }
@@ -246,11 +246,11 @@ public class V8ObjectUtils {
      * @param value The value to push to the array.
      */
     public static void pushValue(final V8 v8, final V8Array array, final Object value) {
-        Map<Object, V8Object> cache = new Hashtable<Object, V8Object>();
+        Map<Object, V8Value> cache = new Hashtable<Object, V8Value>();
         try {
             pushValue(v8, array, value, cache);
         } finally {
-            for (V8Object v8Object : cache.values()) {
+            for (V8Value v8Object : cache.values()) {
                 v8Object.release();
             }
         }
@@ -337,9 +337,9 @@ public class V8ObjectUtils {
         return result;
     }
 
-    private static V8Object toV8Object(final V8 v8, final Map<String, ? extends Object> map, final Map<Object, V8Object> cache) {
+    private static V8Object toV8Object(final V8 v8, final Map<String, ? extends Object> map, final Map<Object, V8Value> cache) {
         if (cache.containsKey(map)) {
-            return cache.get(map);
+            return (V8Object) cache.get(map);
         }
         V8Object result = new V8Object(v8);
         cache.put(map, result);
@@ -354,7 +354,7 @@ public class V8ObjectUtils {
         return result;
     }
 
-    private static V8Array toV8Array(final V8 v8, final List<? extends Object> list, final Map<Object, V8Object> cache) {
+    private static V8Array toV8Array(final V8 v8, final List<? extends Object> list, final Map<Object, V8Value> cache) {
         if (cache.containsKey(new ListWrapper(list))) {
             return (V8Array) cache.get(new ListWrapper(list));
         }
@@ -372,7 +372,16 @@ public class V8ObjectUtils {
         return result;
     }
 
-    private static V8TypedArray toV8TypedArray(final V8 v8, final TypedArray typedArray, final Map<Object, V8Object> cache) {
+    private static V8ArrayBuffer toV8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer, final Map<Object, V8Value> cache) {
+        if (cache.containsKey(byteBuffer)) {
+            return (V8ArrayBuffer) cache.get(byteBuffer);
+        }
+        V8ArrayBuffer result = new V8ArrayBuffer(v8, byteBuffer);
+        cache.put(byteBuffer, result);
+        return result;
+    }
+
+    private static V8TypedArray toV8TypedArray(final V8 v8, final TypedArray typedArray, final Map<Object, V8Value> cache) {
         if (cache.containsKey(typedArray)) {
             return (V8TypedArray) cache.get(typedArray);
         }
@@ -387,7 +396,7 @@ public class V8ObjectUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object getV8Result(final V8 v8, final Object value, final Map<Object, V8Object> cache) {
+    private static Object getV8Result(final V8 v8, final Object value, final Map<Object, V8Value> cache) {
         if (cache.containsKey(value)) {
             return cache.get(value);
         }
@@ -397,12 +406,14 @@ public class V8ObjectUtils {
             return toV8Array(v8, (List<? extends Object>) value, cache);
         } else if (value instanceof TypedArray) {
             return toV8TypedArray(v8, (TypedArray) value, cache);
+        } else if (value instanceof ByteBuffer) {
+            return toV8ArrayBuffer(v8, (ByteBuffer) value, cache);
         }
         return value;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static void pushValue(final V8 v8, final V8Array result, final Object value, final Map<Object, V8Object> cache) {
+    private static void pushValue(final V8 v8, final V8Array result, final Object value, final Map<Object, V8Value> cache) {
         if (value == null) {
             result.pushUndefined();
         } else if (value instanceof Integer) {
@@ -422,6 +433,9 @@ public class V8ObjectUtils {
         } else if (value instanceof TypedArray) {
             V8TypedArray v8TypedArray = toV8TypedArray(v8, (TypedArray) value, cache);
             result.push(v8TypedArray);
+        } else if (value instanceof ByteBuffer) {
+            V8ArrayBuffer v8ArrayBuffer = toV8ArrayBuffer(v8, (ByteBuffer) value, cache);
+            result.push(v8ArrayBuffer);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.push(object);
@@ -434,7 +448,7 @@ public class V8ObjectUtils {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static void setValue(final V8 v8, final V8Object result, final String key, final Object value, final Map<Object, V8Object> cache) {
+    private static void setValue(final V8 v8, final V8Object result, final String key, final Object value, final Map<Object, V8Value> cache) {
         if (value == null) {
             result.addUndefined(key);
         } else if (value instanceof Integer) {
@@ -454,6 +468,9 @@ public class V8ObjectUtils {
         } else if (value instanceof TypedArray) {
             V8TypedArray typedArray = toV8TypedArray(v8, (TypedArray) value, cache);
             result.add(key, typedArray);
+        } else if (value instanceof ByteBuffer) {
+            V8ArrayBuffer v8ArrayBuffer = toV8ArrayBuffer(v8, (ByteBuffer) value, cache);
+            result.add(key, v8ArrayBuffer);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.add(key, object);
@@ -488,7 +505,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = array.getArray(index);
                 try {
-                    return toByteBuffer(typedArray);
+                    return toTypedArray(typedArray);
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();
@@ -521,7 +538,7 @@ public class V8ObjectUtils {
         }
     }
 
-    private static Object toByteBuffer(final V8Array typedArray) {
+    private static Object toTypedArray(final V8Array typedArray) {
         int arrayType = typedArray.getType();
         ByteBuffer buffer = ((V8TypedArray) typedArray).getByteBuffer();
         switch (arrayType) {
@@ -571,7 +588,7 @@ public class V8ObjectUtils {
             case V8Value.V8_TYPED_ARRAY:
                 V8Array typedArray = object.getArray(key);
                 try {
-                    return toByteBuffer(typedArray);
+                    return toTypedArray(typedArray);
                 } finally {
                     if (typedArray instanceof V8Array) {
                         typedArray.release();

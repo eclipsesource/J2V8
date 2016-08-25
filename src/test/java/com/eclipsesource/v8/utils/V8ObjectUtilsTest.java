@@ -1567,6 +1567,44 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testByteBufferInMap() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("buffer", byteBuffer);
+
+        V8Object object = V8ObjectUtils.toV8Object(v8, map);
+
+        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) object.get("buffer");
+        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
+        arrayBuffer.release();
+        object.release();
+    }
+
+    @Test
+    public void testByteBufferInList() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        List<Object> list = new ArrayList<Object>();
+        list.add(byteBuffer);
+
+        V8Array array = V8ObjectUtils.toV8Array(v8, list);
+
+        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) array.get(0);
+        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
+        arrayBuffer.release();
+        array.release();
+    }
+
+    @Test
+    public void testGetArrayBuffer() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+
+        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, byteBuffer);
+
+        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
+        arrayBuffer.release();
+    }
+
+    @Test
     public void testTypedArrayInList() {
         Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
         int8Array.put(0, (byte) 7);
