@@ -29,6 +29,7 @@ import com.eclipsesource.v8.utils.typedarrays.Float64Array;
 import com.eclipsesource.v8.utils.typedarrays.Int16Array;
 import com.eclipsesource.v8.utils.typedarrays.Int32Array;
 import com.eclipsesource.v8.utils.typedarrays.Int8Array;
+import com.eclipsesource.v8.utils.typedarrays.TypedArray;
 import com.eclipsesource.v8.utils.typedarrays.UInt16Array;
 import com.eclipsesource.v8.utils.typedarrays.UInt32Array;
 import com.eclipsesource.v8.utils.typedarrays.UInt8Array;
@@ -368,8 +369,21 @@ public class V8ObjectUtils {
             result.release();
             throw e;
         }
-
         return result;
+    }
+
+    private static V8TypedArray toV8TypedArray(final V8 v8, final TypedArray typedArray, final Map<Object, V8Object> cache) {
+        if (cache.containsKey(typedArray)) {
+            return (V8TypedArray) cache.get(typedArray);
+        }
+        V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, typedArray.getBuffer());
+        try {
+            V8TypedArray result = new V8TypedArray(v8, arrayBuffer, typedArray.getType(), 0, typedArray.length());
+            cache.put(typedArray, result);
+            return result;
+        } finally {
+            arrayBuffer.release();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -381,6 +395,8 @@ public class V8ObjectUtils {
             return toV8Object(v8, (Map<String, ? extends Object>) value, cache);
         } else if (value instanceof List<?>) {
             return toV8Array(v8, (List<? extends Object>) value, cache);
+        } else if (value instanceof TypedArray) {
+            return toV8TypedArray(v8, (TypedArray) value, cache);
         }
         return value;
     }
@@ -403,6 +419,9 @@ public class V8ObjectUtils {
             result.push((Boolean) value);
         } else if (value instanceof V8Object) {
             result.push((V8Object) value);
+        } else if (value instanceof TypedArray) {
+            V8TypedArray v8TypedArray = toV8TypedArray(v8, (TypedArray) value, cache);
+            result.push(v8TypedArray);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.push(object);
@@ -432,6 +451,9 @@ public class V8ObjectUtils {
             result.add(key, (Boolean) value);
         } else if (value instanceof V8Object) {
             result.add(key, (V8Object) value);
+        } else if (value instanceof TypedArray) {
+            V8TypedArray typedArray = toV8TypedArray(v8, (TypedArray) value, cache);
+            result.add(key, typedArray);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.add(key, object);

@@ -1539,6 +1539,50 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testTypedArrayInMap() {
+        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
+        int8Array.put(0, (byte) 7);
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("array", int8Array);
+
+        V8Object object = V8ObjectUtils.toV8Object(v8, map);
+
+        V8TypedArray v8Array = (V8TypedArray) object.get("array");
+        assertEquals(7, v8Array.get(0));
+        assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
+        v8Array.release();
+        object.release();
+    }
+
+    @Test
+    public void testGetTypedArray() {
+        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
+        int8Array.put(0, (byte) 7);
+
+        V8TypedArray v8Array = (V8TypedArray) V8ObjectUtils.getV8Result(v8, int8Array);
+
+        assertEquals(7, v8Array.get(0));
+        assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
+        v8Array.release();
+    }
+
+    @Test
+    public void testTypedArrayInList() {
+        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
+        int8Array.put(0, (byte) 7);
+        List<Object> list = new ArrayList<Object>();
+        list.add(int8Array);
+
+        V8Array array = V8ObjectUtils.toV8Array(v8, list);
+
+        V8Array v8Array = (V8Array) array.get(0);
+        assertEquals(7, v8Array.get(0));
+        assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
+        v8Array.release();
+        array.release();
+    }
+
+    @Test
     public void testPushV8ArrayToArray() {
         V8Array array = new V8Array(v8);
         V8Array child = new V8Array(v8);
