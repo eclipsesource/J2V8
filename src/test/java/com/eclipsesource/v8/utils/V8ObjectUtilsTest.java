@@ -34,6 +34,7 @@ import com.eclipsesource.v8.V8ArrayBuffer;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
+import com.eclipsesource.v8.utils.typedarrays.ArrayBuffer;
 import com.eclipsesource.v8.utils.typedarrays.Float32Array;
 import com.eclipsesource.v8.utils.typedarrays.Float64Array;
 import com.eclipsesource.v8.utils.typedarrays.Int16Array;
@@ -1237,7 +1238,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [buf];\n"
                 + "root;\n");
 
-        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, 0);
+        ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(root, 0);
 
         assertEquals(100, result.limit());
         root.release();
@@ -1397,7 +1398,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : buf };\n"
                 + "root;\n");
 
-        ByteBuffer result = (ByteBuffer) V8ObjectUtils.getValue(root, "items");
+        ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(root, "items");
 
         assertEquals(100, result.limit());
         root.release();
@@ -1568,40 +1569,40 @@ public class V8ObjectUtilsTest {
 
     @Test
     public void testByteBufferInMap() {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
         HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("buffer", byteBuffer);
+        map.put("buffer", arrayBuffer);
 
         V8Object object = V8ObjectUtils.toV8Object(v8, map);
 
-        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) object.get("buffer");
-        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
-        arrayBuffer.release();
+        V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) object.get("buffer");
+        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        v8ArrayBuffer.release();
         object.release();
     }
 
     @Test
-    public void testByteBufferInList() {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+    public void testArrayBufferInList() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
         List<Object> list = new ArrayList<Object>();
-        list.add(byteBuffer);
+        list.add(arrayBuffer);
 
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
 
-        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) array.get(0);
-        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
-        arrayBuffer.release();
+        V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) array.get(0);
+        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        v8ArrayBuffer.release();
         array.release();
     }
 
     @Test
     public void testGetArrayBuffer() {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
 
-        V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, byteBuffer);
+        V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
 
-        assertEquals(byteBuffer, arrayBuffer.getBackingStore());
-        arrayBuffer.release();
+        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        v8ArrayBuffer.release();
     }
 
     @Test
