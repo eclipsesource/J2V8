@@ -53,7 +53,7 @@ public class V8ArrayBuffer extends V8Value {
     public V8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer) {
         super(v8);
         if (!byteBuffer.isDirect()) {
-            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer");
         }
         initialize(v8.getV8RuntimePtr(), byteBuffer);
         this.byteBuffer = byteBuffer;

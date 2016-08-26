@@ -197,7 +197,7 @@ class LibraryLoader {
         } else if (isNativeClient()) {
             return "so";
         }
-        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName() + ".");
+        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
     }
 
     static String getOS() {
@@ -210,7 +210,7 @@ class LibraryLoader {
         } else if (isAndroid()) {
             return "android";
         }
-        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName() + ".");
+        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
     }
 
 }

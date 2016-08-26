@@ -62,7 +62,7 @@ public class V8LockerTest {
                 try {
                     v8Locker.checkThread();
                 } catch (Error e) {
-                    assertEquals("Invalid V8 thread access.", e.getMessage());
+                    assertEquals("Invalid V8 thread access", e.getMessage());
                     passed = true;
                 }
             }
@@ -81,7 +81,7 @@ public class V8LockerTest {
         try {
             v8Locker.checkThread();
         } catch (Error e) {
-            assertEquals("Invalid V8 thread access.", e.getMessage());
+            assertEquals("Invalid V8 thread access", e.getMessage());
             return;
         }
         fail("Expected exception");

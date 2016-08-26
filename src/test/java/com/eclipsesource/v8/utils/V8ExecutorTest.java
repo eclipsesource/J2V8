@@ -23,7 +23,6 @@ import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ScriptCompilationException;
 import com.eclipsesource.v8.V8ScriptException;
 import com.eclipsesource.v8.V8ScriptExecutionException;
-import com.eclipsesource.v8.utils.V8Executor;
 
 public class V8ExecutorTest {
 
@@ -33,7 +32,7 @@ public class V8ExecutorTest {
     @After
     public void tearDown() {
         if (V8.getActiveRuntimes() != 0) {
-            throw new IllegalStateException("V8Runtimes not properly released.");
+            throw new IllegalStateException("V8Runtimes not properly released");
         }
     }
 

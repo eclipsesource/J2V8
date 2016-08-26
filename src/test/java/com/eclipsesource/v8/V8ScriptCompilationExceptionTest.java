@@ -10,13 +10,13 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class V8ScriptCompilationExceptionTest {
 
@@ -43,7 +43,7 @@ public class V8ScriptCompilationExceptionTest {
         try {
             v8.release();
             if (V8.getActiveRuntimes() != 0) {
-                throw new IllegalStateException("V8Runtimes not properly released.");
+                throw new IllegalStateException("V8Runtimes not properly released");
             }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());

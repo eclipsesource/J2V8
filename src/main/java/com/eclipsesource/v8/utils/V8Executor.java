@@ -249,7 +249,7 @@ public class V8Executor extends Thread {
         @Override
         public void invoke(final V8Object receiver, final V8Array parameters) {
             if (forceTerminating) {
-                throw new RuntimeException("V8Thread Termination.");
+                throw new RuntimeException("V8Thread Termination");
             }
         }
     }

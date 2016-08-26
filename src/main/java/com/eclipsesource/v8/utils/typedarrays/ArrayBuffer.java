@@ -53,7 +53,7 @@ public class ArrayBuffer {
 
     private ByteBuffer validateByteBuffer(final ByteBuffer byteBuffer) {
         if (!byteBuffer.isDirect()) {
-            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer");
         }
         return byteBuffer;
     }

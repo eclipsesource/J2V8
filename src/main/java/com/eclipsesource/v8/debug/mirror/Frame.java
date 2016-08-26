@@ -109,7 +109,7 @@ public class Frame extends Mirror {
         try {
             result = v8Object.executeObjectFunction(ARGUMENT_VALUE, parameters);
             if (!isValue(result)) {
-                throw new IllegalStateException("Argument value is not a ValueMirror.");
+                throw new IllegalStateException("Argument value is not a ValueMirror");
             }
             return new ValueMirror(result);
         } finally {
@@ -133,7 +133,7 @@ public class Frame extends Mirror {
         try {
             result = v8Object.executeObjectFunction(LOCAL_VALUE, parameters);
             if (!isValue(result)) {
-                throw new IllegalStateException("Local value is not a ValueMirror.");
+                throw new IllegalStateException("Local value is not a ValueMirror");
             }
             return createMirror(result);
         } finally {

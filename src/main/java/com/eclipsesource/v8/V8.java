@@ -192,11 +192,11 @@ public class V8 extends V8Object {
     private static void checkNativeLibraryLoaded() {
         if (!nativeLibraryLoaded) {
             if (nativeLoadError != null) {
-                throw new IllegalStateException("J2V8 native library not loaded.", nativeLoadError);
+                throw new IllegalStateException("J2V8 native library not loaded", nativeLoadError);
             } else if (nativeLoadException != null) {
-                throw new IllegalStateException("J2V8 native library not loaded.", nativeLoadException);
+                throw new IllegalStateException("J2V8 native library not loaded", nativeLoadException);
             } else {
-                throw new IllegalStateException("J2V8 native library not loaded.");
+                throw new IllegalStateException("J2V8 native library not loaded");
             }
         }
     }
@@ -675,7 +675,7 @@ public class V8 extends V8Object {
     void checkThread() {
         locker.checkThread();
         if (isReleased()) {
-            throw new Error("Runtime disposed error.");
+            throw new Error("Runtime disposed error");
         }
     }
 
@@ -768,7 +768,7 @@ public class V8 extends V8Object {
         }
         if (result instanceof V8Value) {
             if (((V8Value) result).isReleased()) {
-                throw new V8RuntimeException("V8Value already released.");
+                throw new V8RuntimeException("V8Value already released");
             }
             return result;
         }

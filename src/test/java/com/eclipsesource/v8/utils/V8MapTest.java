@@ -27,7 +27,6 @@ import org.junit.Test;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
-import com.eclipsesource.v8.utils.V8Map;
 
 public class V8MapTest {
     private V8 v8;
@@ -41,7 +40,7 @@ public class V8MapTest {
     public void tearDown() {
         v8.release();
         if (V8.getActiveRuntimes() != 0) {
-            throw new IllegalStateException("V8Runtimes not properly released.");
+            throw new IllegalStateException("V8Runtimes not properly released");
         }
     }
 

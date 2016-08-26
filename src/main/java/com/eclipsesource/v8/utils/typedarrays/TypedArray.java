@@ -23,10 +23,10 @@ public abstract class TypedArray {
 
     protected TypedArray(final ByteBuffer buffer) {
         if (!buffer.isDirect()) {
-            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer");
         }
         if ((buffer.limit() % V8TypedArray.getStructureSize(getType())) != 0) {
-            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer.");
+            throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer");
         }
         this.buffer = buffer;
     }

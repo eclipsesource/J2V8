@@ -46,7 +46,7 @@ public class V8Test {
         try {
             v8.release();
             if (V8.getActiveRuntimes() != 0) {
-                throw new IllegalStateException("V8Runtimes not properly released.");
+                throw new IllegalStateException("V8Runtimes not properly released");
             }
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
@@ -132,7 +132,7 @@ public class V8Test {
                 try {
                     v8.executeVoidScript("");
                 } catch (Error e) {
-                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                    result[0] = e.getMessage().contains("Invalid V8 thread access");
                 }
             }
         });

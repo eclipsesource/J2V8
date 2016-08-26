@@ -50,7 +50,7 @@ public class NodeJSTest {
                 try {
                     nodeJS.require(File.createTempFile("temp", ".js"));
                 } catch (Error e) {
-                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                    result[0] = e.getMessage().contains("Invalid V8 thread access");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -71,7 +71,7 @@ public class NodeJSTest {
                 try {
                     nodeJS.handleMessage();
                 } catch (Error e) {
-                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                    result[0] = e.getMessage().contains("Invalid V8 thread access");
                 }
             }
         });
@@ -90,7 +90,7 @@ public class NodeJSTest {
                 try {
                     nodeJS.isRunning();
                 } catch (Error e) {
-                    result[0] = e.getMessage().contains("Invalid V8 thread access.");
+                    result[0] = e.getMessage().contains("Invalid V8 thread access");
                 }
             }
         });
