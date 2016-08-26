@@ -36,7 +36,7 @@ public abstract class TypedArray {
      *
      * @return The underlying ByteBuffer behind this view
      */
-    public ByteBuffer getBuffer() {
+    public ByteBuffer getByteBuffer() {
         return buffer;
     }
 

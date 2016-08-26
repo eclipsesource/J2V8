@@ -386,7 +386,7 @@ public class V8ObjectUtils {
         if (cache.containsKey(typedArray)) {
             return (V8TypedArray) cache.get(typedArray);
         }
-        V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, typedArray.getBuffer());
+        V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, typedArray.getByteBuffer());
         try {
             V8TypedArray result = new V8TypedArray(v8, arrayBuffer, typedArray.getType(), 0, typedArray.length());
             cache.put(typedArray, result);

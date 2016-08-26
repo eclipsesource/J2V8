@@ -37,7 +37,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new Float32Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -46,7 +46,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new Float64Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -55,7 +55,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new Int32Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new UInt32Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new Int16Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new UInt16Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new Int8Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new UInt8Array(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
@@ -109,7 +109,7 @@ public class TypedArrayTest {
 
         TypedArray typedArray = new UInt8ClampedArray(arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getByteBuffer());
     }
 
     @Test
