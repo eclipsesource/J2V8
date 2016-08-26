@@ -23,10 +23,19 @@ public class Float32Array extends TypedArray {
     /**
      * Creates a Float32Array projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public Float32Array(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a Float32Array projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public Float32Array(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**

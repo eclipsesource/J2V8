@@ -23,10 +23,19 @@ public class Float64Array extends TypedArray {
     /**
      * Creates a Float64Array projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public Float64Array(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a Float64Array projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public Float64Array(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**

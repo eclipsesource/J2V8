@@ -23,10 +23,19 @@ public class UInt32Array extends TypedArray {
     /**
      * Creates an UInt32Array projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public UInt32Array(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a UInt32Array projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public UInt32Array(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**

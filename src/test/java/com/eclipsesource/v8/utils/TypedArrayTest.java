@@ -17,17 +17,100 @@ import java.nio.ByteBuffer;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8Value;
+import com.eclipsesource.v8.utils.typedarrays.ArrayBuffer;
 import com.eclipsesource.v8.utils.typedarrays.Float32Array;
 import com.eclipsesource.v8.utils.typedarrays.Float64Array;
 import com.eclipsesource.v8.utils.typedarrays.Int16Array;
 import com.eclipsesource.v8.utils.typedarrays.Int32Array;
 import com.eclipsesource.v8.utils.typedarrays.Int8Array;
+import com.eclipsesource.v8.utils.typedarrays.TypedArray;
 import com.eclipsesource.v8.utils.typedarrays.UInt16Array;
 import com.eclipsesource.v8.utils.typedarrays.UInt32Array;
 import com.eclipsesource.v8.utils.typedarrays.UInt8Array;
 import com.eclipsesource.v8.utils.typedarrays.UInt8ClampedArray;
 
 public class TypedArrayTest {
+
+    @Test
+    public void testCreateFloat32ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new Float32Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateFloat64ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new Float64Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateInt32ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new Int32Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateUInt32ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new UInt32Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateInt16ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new Int16Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateUInt16ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new UInt16Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateInt8ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new Int8Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateUInt8ArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new UInt8Array(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
+
+    @Test
+    public void testCreateUInt8ClampedArrayFromArrayBuffer() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        TypedArray typedArray = new UInt8ClampedArray(arrayBuffer);
+
+        assertEquals(arrayBuffer.getByteBuffer(), typedArray.getBuffer());
+    }
 
     @Test
     public void testInt8Array_Length() {

@@ -23,10 +23,19 @@ public class Int16Array extends TypedArray {
     /**
      * Creates an Int16Array projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public Int16Array(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a Int16Array projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public Int16Array(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**

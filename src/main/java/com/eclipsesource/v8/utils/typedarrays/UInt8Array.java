@@ -22,10 +22,19 @@ public class UInt8Array extends TypedArray {
     /**
      * Creates an UInt8Array projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public UInt8Array(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a UInt8Array projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public UInt8Array(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**

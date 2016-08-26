@@ -24,10 +24,19 @@ public class UInt8ClampedArray extends TypedArray {
     /**
      * Creates an UInt8ClampedArray projected onto the given ByteBuffer.
      *
-     * @param buffer The ByteBuffer on which to array is projected on.
+     * @param buffer The ByteBuffer on which the array is projected on.
      */
     public UInt8ClampedArray(final ByteBuffer buffer) {
         super(buffer);
+    }
+
+    /**
+     * Creates a UInt8ClampedArray projected onto the given ArrayBuffer.
+     *
+     * @param arrayBuffer The ArrayBuffer on which the array is projected on.
+     */
+    public UInt8ClampedArray(final ArrayBuffer arrayBuffer) {
+        this(arrayBuffer.getByteBuffer());
     }
 
     /**
