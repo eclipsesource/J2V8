@@ -5,7 +5,7 @@ import org.junit.Test;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class J2V8ScriptEngineTest {
 
@@ -18,5 +18,14 @@ public class J2V8ScriptEngineTest {
 
         engine = manager.getEngineByName("j2v8");
         assertTrue(engine != null);
+    }
+
+    @Test
+    public void testEvalBasic() throws Exception {
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("J2V8");
+
+        Integer val = (Integer) engine.eval("2 * 2");
+        assertNotNull(val);
+        assertEquals(4, val.intValue());
     }
 }
