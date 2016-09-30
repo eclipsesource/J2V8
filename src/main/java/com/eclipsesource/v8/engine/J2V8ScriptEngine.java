@@ -2,10 +2,13 @@ package com.eclipsesource.v8.engine;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.utils.V8ObjectUtils;
 
 import javax.script.*;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ScriptEngine implementation for J2V8
@@ -40,12 +43,12 @@ public class J2V8ScriptEngine extends AbstractScriptEngine implements Invocable 
         if (thiz == null || !(thiz instanceof V8Object)) {
             throw new IllegalArgumentException("Non-null V8Object instance expected");
         }
-        return ((V8Object) thiz).executeJSFunction(name, args);
+        return ((V8Object) thiz).executeJSFunction(name, wrap(args));
     }
 
     @Override
     public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
-        return runtime.executeJSFunction(name, args);
+        return runtime.executeJSFunction(name, wrap(args));
     }
 
     @Override
@@ -92,5 +95,23 @@ public class J2V8ScriptEngine extends AbstractScriptEngine implements Invocable 
         }
 
         return sb.toString();
+    }
+
+    private Object[] wrap(Object... args) {
+        Object[] result = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = wrap(args[i]);
+        }
+        return result;
+    }
+
+    private Object wrap(Object arg) {
+        if (arg instanceof Map) {
+            return V8ObjectUtils.toV8Object(runtime, (Map) arg);
+        } else if (arg instanceof List) {
+            return V8ObjectUtils.toV8Array(runtime, (List) arg);
+        } else {
+            return arg;
+        }
     }
 }
