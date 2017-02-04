@@ -1,6 +1,6 @@
 git clone https://github.com/nodejs/node.git
 cd node
-git checkout v5.9.1
+git checkout v7.4.0
 ./configure --enable-static
 make
 cd ..
