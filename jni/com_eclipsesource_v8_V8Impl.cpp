@@ -9,7 +9,6 @@
 *    EclipseSource - initial API and implementation
 ******************************************************************************/
 #include <jni.h>
-#include <android/log.h>
 #include <libplatform/libplatform.h>
 #include <iostream>
 #include <v8.h>
@@ -332,7 +331,6 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   (JNIEnv * jniEnv, jclass, jlong v8RuntimePtr, jstring fileName) {
 #ifdef NODE_COMPATIBLE
-  __android_log_print(ANDROID_LOG_VERBOSE, TAG, "build is node compatible.");
   Isolate* isolate = SETUP(jniEnv, v8RuntimePtr, );
   setvbuf(stderr, NULL, _IOLBF, 1024);
   const char* utfFileName = jniEnv->GetStringUTFChars(fileName, NULL);
@@ -370,14 +368,10 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
 	_register_uv();
   #endif
   }
-  __android_log_print(ANDROID_LOG_VERBOSE, TAG, "getting default loop.");
   rt->uvLoop = uv_default_loop();
-  __android_log_print(ANDROID_LOG_VERBOSE, TAG, "creating isolate data.");
   rt->isolateData = node::CreateIsolateData(isolate, rt->uvLoop);
-  __android_log_print(ANDROID_LOG_VERBOSE, TAG, "creating environment.");
   node::Environment* env = node::CreateEnvironment(rt->isolateData, context, argc, argv, 0, 0);
   node::LoadEnvironment(env);
-  __android_log_print(ANDROID_LOG_VERBOSE, TAG, "init done.");
   rt->nodeEnvironment = env;
 
   rt->running = true;
