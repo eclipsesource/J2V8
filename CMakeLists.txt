@@ -33,7 +33,7 @@ find_package(Java)
 
 # overridable settings
 set (J2V8_JDK_DIR ${Java_ROOT} CACHE STRING "Path to the Java JDK dependency")
-set (J2V8_NODEJS_DIR "./node" CACHE STRING "Path to the Node.js dependency")
+set (J2V8_NODEJS_DIR "${CMAKE_SOURCE_DIR}/../node" CACHE STRING "Path to the Node.js dependency")
 
 # get lists of the required Node.js link libraries
 get_njs_libs (${J2V8_NODEJS_DIR} "Debug")
