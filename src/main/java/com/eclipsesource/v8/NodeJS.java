@@ -29,6 +29,7 @@ public class NodeJS {
     private static final String STARTUP_CALLBACK    = "__run";
     private static final String STARTUP_SCRIPT      = "global." + STARTUP_CALLBACK + "(require, exports, module, __filename, __dirname);";
     private static final String STARTUP_SCRIPT_NAME = "startup";
+    private String              nodeVersion         = "";
 
     private V8         v8;
     private V8Function require;
@@ -43,6 +44,28 @@ public class NodeJS {
      */
     public static NodeJS createNodeJS() {
         return createNodeJS(null);
+    }
+
+    /**
+     * Returns version of Node
+     *
+     * @return node version string
+     */
+    public String nodeVersion() {
+        if (!nodeVersion.isEmpty()) {
+            return nodeVersion;
+        }
+        V8Object process = null;
+        V8Object versions = null;
+        try {
+            process = v8.getObject(PROCESS);
+            versions = process.getObject("versions");
+            nodeVersion = versions.getString("node");
+        } finally {
+            safeRelease(process);
+            safeRelease(versions);
+        }
+        return nodeVersion;
     }
 
     /**

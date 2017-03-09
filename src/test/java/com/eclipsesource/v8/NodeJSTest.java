@@ -42,6 +42,13 @@ public class NodeJSTest {
     }
 
     @Test
+    public void testNodeVersion() {
+        String nodeVersion = nodeJS.nodeVersion();
+
+        assertNotNull(nodeVersion);
+    }
+
+    @Test
     public void testSingleThreadAccess_Require() throws InterruptedException {
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
