@@ -562,7 +562,7 @@ public class V8ObjectUtils {
             case V8Value.FLOAT_64_ARRAY:
                 return new Float64Array(buffer);
             default:
-                throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentaion(arrayType));
+                throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentation(arrayType));
         }
     }
 
