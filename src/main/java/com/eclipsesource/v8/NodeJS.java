@@ -29,6 +29,7 @@ public class NodeJS {
     private static final String STARTUP_CALLBACK    = "__run";
     private static final String STARTUP_SCRIPT      = "global." + STARTUP_CALLBACK + "(require, exports, module, __filename, __dirname);";
     private static final String STARTUP_SCRIPT_NAME = "startup";
+    private static final String VERSION             = "version";
 
     private V8         v8;
     private V8Function require;
@@ -167,6 +168,22 @@ public class NodeJS {
             safeRelease(process);
             safeRelease(parameters);
             safeRelease(scriptExecution);
+        }
+    }
+
+    /**
+     * Returns the version of Node.js that is runtime is built against.
+     * This uses process.version to get the version.
+     *
+     * @return The version of Node.js.
+     */
+    public String getVersion() {
+        V8Object process = null;
+        try {
+            process = v8.getObject(PROCESS);
+            return process.getString(VERSION);
+        } finally {
+            safeRelease(process);
         }
     }
 
