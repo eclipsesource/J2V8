@@ -83,12 +83,24 @@ abstract public class V8Value implements Releasable {
         }
     }
 
+
+    /**
+     * Returns a string representation of the V8 Type.
+     * @param type Type to return as a string. See constants in V8Value.
+     * @return The V8Value type as a string.
+     * @deprecated Use
+     */
+    @Deprecated
+    public static String getStringRepresentaion(final int type) {
+        return getStringRepresentation(type);
+    }
+
     /**
      * Returns a string representation of the V8 Type.
      * @param type Type to return as a string. See constants in V8Value.
      * @return The V8Value type as a string.
      */
-    public static String getStringRepresentaion(final int type) {
+    public static String getStringRepresentation(final int type) {
         switch (type) {
             case NULL:
                 return "Null";
