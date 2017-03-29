@@ -194,7 +194,11 @@ void addValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr, jlong &
 void getJNIEnv(JNIEnv*& env) {
   int getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
   if (getEnvStat == JNI_EDETACHED) {
+#ifdef __ANDROID_API__
     if (jvm->AttachCurrentThread(&env, NULL) != 0) {
+#else
+    if (jvm->AttachCurrentThread((void **)&env, NULL) != 0) {
+#endif
       std::cout << "Failed to attach" << std::endl;
     }
   }
