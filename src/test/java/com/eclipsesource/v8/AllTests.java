@@ -22,6 +22,7 @@ import com.eclipsesource.v8.debug.MirrorTest;
 import com.eclipsesource.v8.debug.ScopeTest;
 import com.eclipsesource.v8.debug.ScriptBreakPointTest;
 import com.eclipsesource.v8.utils.ArrayBufferTest;
+import com.eclipsesource.v8.utils.ConcurrentV8Test;
 import com.eclipsesource.v8.utils.MemoryManagerTest;
 import com.eclipsesource.v8.utils.TypedArrayTest;
 import com.eclipsesource.v8.utils.V8ExecutorTest;
@@ -35,7 +36,7 @@ import com.eclipsesource.v8.utils.V8PropertyMapTest;
 @SuiteClasses({ V8RuntimeNotLoadedTest.class, LibraryLoaderTest.class, V8ObjectTest.class, V8Test.class, V8ArrayTest.class, V8JSFunctionCallTest.class,
         V8CallbackTest.class, V8ScriptCompilationExceptionTest.class, V8ScriptExecutionExceptionTest.class, V8ObjectUtilsTest.class, V8TypedArraysTest.class,
         V8ArrayBufferTest.class, NullScriptExecuteTest.class, V8MultiThreadTest.class, V8LockerTest.class, V8ExecutorTest.class, V8MapTest.class,
-        TypedArrayTest.class, ArrayBufferTest.class,
+        TypedArrayTest.class, ArrayBufferTest.class, ConcurrentV8Test.class,
         V8PropertyMapTest.class, DebugHandlerTest.class, ExecutionStateTest.class, FrameTest.class, ScopeTest.class, ScriptBreakPointTest.class,
         MirrorTest.class, BreakEventTest.class, MemoryManagerTest.class, NodeJSTest.class })
 public class AllTests {
