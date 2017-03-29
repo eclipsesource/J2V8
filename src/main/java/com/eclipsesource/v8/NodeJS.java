@@ -29,7 +29,9 @@ public class NodeJS {
     private static final String STARTUP_CALLBACK    = "__run";
     private static final String STARTUP_SCRIPT      = "global." + STARTUP_CALLBACK + "(require, exports, module, __filename, __dirname);";
     private static final String STARTUP_SCRIPT_NAME = "startup";
-    private static final String VERSION             = "version";
+    private String              nodeVersion         = null;
+    private static final String VERSIONS            = "versions";
+    private static final String NODE                = "node";
 
     private V8         v8;
     private V8Function require;
@@ -44,6 +46,29 @@ public class NodeJS {
      */
     public static NodeJS createNodeJS() {
         return createNodeJS(null);
+    }
+
+    /**
+     * Returns the version of Node.js that is runtime is built against.
+     * This uses process.versions.node to get the version.
+     *
+     * @return The version of Node.js.
+     */
+    public String getNodeVersion() {
+        if (nodeVersion != null) {
+            return nodeVersion;
+        }
+        V8Object process = null;
+        V8Object versions = null;
+        try {
+            process = v8.getObject(PROCESS);
+            versions = process.getObject(VERSIONS);
+            nodeVersion = versions.getString(NODE);
+        } finally {
+            safeRelease(process);
+            safeRelease(versions);
+        }
+        return nodeVersion;
     }
 
     /**
@@ -168,22 +193,6 @@ public class NodeJS {
             safeRelease(process);
             safeRelease(parameters);
             safeRelease(scriptExecution);
-        }
-    }
-
-    /**
-     * Returns the version of Node.js that is runtime is built against.
-     * This uses process.version to get the version.
-     *
-     * @return The version of Node.js.
-     */
-    public String getVersion() {
-        V8Object process = null;
-        try {
-            process = v8.getObject(PROCESS);
-            return process.getString(VERSION);
-        } finally {
-            safeRelease(process);
         }
     }
 
