@@ -4,7 +4,6 @@
 build/
 .gradle
 .DS_Store
-*.patch
 *.so
 *.dll
 *.dylib

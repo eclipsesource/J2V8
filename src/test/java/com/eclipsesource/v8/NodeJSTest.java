@@ -63,6 +63,13 @@ public class NodeJSTest {
     }
 
     @Test
+    public void testGetVersion() {
+        String result = nodeJS.getNodeVersion();
+
+        assertEquals("7.4.0", result);
+    }
+
+    @Test
     public void testSingleThreadAccess_HandleMessage() throws InterruptedException {
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
