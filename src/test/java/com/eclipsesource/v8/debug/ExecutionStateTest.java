@@ -85,7 +85,7 @@ public class ExecutionStateTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(5)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
+        verify(breakHandler, times(4)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class ExecutionStateTest {
 
         v8.executeScript(script, "script", 0);
 
-        verify(breakHandler, times(8)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
+        verify(breakHandler, times(7)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
     }
 
     @Test
