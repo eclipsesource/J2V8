@@ -56,9 +56,6 @@ public final class ConcurrentV8 {
      * gets a chance to run.
      *
      * @param runnable {@link ConcurrentV8Runnable} to run.
-     *
-     * @throws Exception If the passed runnable throws an exception, this
-     *         method will throw that exact exception.
      */
     public synchronized void run(final V8Runnable runnable) {
         try {
