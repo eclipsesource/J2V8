@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
+import com.eclipsesource.v8.utils.V8Runnable;
 
 /**
  * An isolated V8Runtime. All JavaScript execution must exist
@@ -51,6 +52,7 @@ public class V8 extends V8Object {
     private boolean                      forceTerminateExecutors = false;
     private Map<Long, MethodDescriptor>  functionRegistry        = new HashMap<Long, MethodDescriptor>();
     private LinkedList<ReferenceHandler> referenceHandlers       = new LinkedList<ReferenceHandler>();
+    private LinkedList<V8Runnable>       releaseHandlers         = new LinkedList<V8Runnable>();
 
     private static boolean   nativeLibraryLoaded = false;
     private static Error     nativeLoadError     = null;
@@ -168,6 +170,16 @@ public class V8 extends V8Object {
     }
 
     /**
+     * Adds a handler that will be called when the runtime is being released.
+     * The runtime will still be available when the handler is executed.
+     *
+     * @param handler The handler to invoke when the runtime, is being released
+     */
+    public void addReleaseHandler(final V8Runnable handler) {
+        releaseHandlers.add(handler);
+    }
+
+    /**
      * Removes an existing ReferenceHandler from the collection of reference handlers.
      * If the ReferenceHandler does not exist in the collection, it is ignored.
      *
@@ -175,6 +187,22 @@ public class V8 extends V8Object {
      */
     public void removeReferenceHandler(final ReferenceHandler handler) {
         referenceHandlers.remove(handler);
+    }
+
+    /**
+     * Removes an existing release handler from the collection of release handlers.
+     * If the release handler does not exist in the collection, it is ignored.
+     *
+     * @param handler The handler to remove
+     */
+    public void removeReleaseHandler(final V8Runnable handler) {
+        releaseHandlers.remove(handler);
+    }
+
+    private void notifyReleaseHandlers(final V8 runtime) {
+        for (V8Runnable handler : releaseHandlers) {
+            handler.run(runtime);
+        }
     }
 
     private void notifyReferenceCreated(final V8Value object) {
@@ -286,20 +314,24 @@ public class V8 extends V8Object {
             return;
         }
         checkThread();
-        releaseResources();
-        shutdownExecutors(forceTerminateExecutors);
-        if (executors != null) {
-            executors.clear();
-        }
-        releaseNativeMethodDescriptors();
-        synchronized (lock) {
-            runtimeCounter--;
-        }
-        _releaseRuntime(v8RuntimePtr);
-        v8RuntimePtr = 0L;
-        released = true;
-        if (reportMemoryLeaks && (objectReferences > 0)) {
-            throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+        try {
+            notifyReleaseHandlers(this);
+        } finally {
+            releaseResources();
+            shutdownExecutors(forceTerminateExecutors);
+            if (executors != null) {
+                executors.clear();
+            }
+            releaseNativeMethodDescriptors();
+            synchronized (lock) {
+                runtimeCounter--;
+            }
+            _releaseRuntime(v8RuntimePtr);
+            v8RuntimePtr = 0L;
+            released = true;
+            if (reportMemoryLeaks && (objectReferences > 0)) {
+                throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+            }
         }
     }
 

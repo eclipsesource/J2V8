@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.V8Map;
+import com.eclipsesource.v8.utils.V8Runnable;
 
 public class V8Test {
 
@@ -1430,6 +1431,62 @@ public class V8Test {
         verify(referenceHandler1, times(1)).v8HandleCreated(object);
         verify(referenceHandler2, times(1)).v8HandleCreated(object);
         object.release();
+    }
+
+    @Test
+    public void testV8ReleaseHandleRemoved() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler);
+        testV8.removeReleaseHandler(releaseHandler);
+
+        testV8.release();
+
+        verify(releaseHandler, never()).run(testV8);
+    }
+
+    @Test
+    public void testV8UnknownReleaseHandleRemoved() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler1 = mock(V8Runnable.class);
+        V8Runnable releaseHandler2 = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler1);
+        testV8.removeReleaseHandler(releaseHandler2);
+
+        testV8.release();
+
+        verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+    }
+
+    @Test
+    public void testV8MultipleReleaseHandlers() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler1 = mock(V8Runnable.class);
+        V8Runnable releaseHandler2 = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler1);
+        testV8.addReleaseHandler(releaseHandler2);
+
+        testV8.release();
+
+        verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+        verify(releaseHandler2, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+    }
+
+    @Test
+    public void testExceptionInReleaseHandlerStillReleasesV8() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler = mock(V8Runnable.class);
+        doThrow(new RuntimeException()).when(releaseHandler).run(any(V8.class));
+        testV8.addReleaseHandler(releaseHandler);
+
+        try {
+            testV8.release();
+        } catch (Exception e) {
+            assertTrue(testV8.isReleased());
+            return;
+        }
+
+        fail("Exception should have been caught.");
     }
 
     @Test
