@@ -455,7 +455,7 @@ public class V8ObjectUtils {
         } else if (value instanceof Integer) {
             result.add(key, (Integer) value);
         } else if (value instanceof Long) {
-            result.add(key, (int) (long) (Long) value);
+            result.add(key, (Long) value);
         } else if (value instanceof Double) {
             result.add(key, (Double) value);
         } else if (value instanceof Float) {
