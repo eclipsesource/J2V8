@@ -1595,4 +1595,215 @@ public class V8Test {
         fail("Exception should have been caught.");
     }
 
+    @Test(expected = Error.class)
+    public void testSharingObjectsShouldNotCrashVM() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = { 'c': 'c' }");
+            engine2.executeScript("a = { 'd': 'd' };");
+
+            V8Object a = (V8Object) engine2.get("a");
+            V8Object b = (V8Object) engine.get("b");
+            b.add("data", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsInArrayShouldNotCrashVM() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = [];");
+            engine2.executeScript("a = [];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            V8Array b = (V8Array) engine.get("b");
+            b.push(a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ArrayFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [[1,2,3]];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeArrayFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ObjectFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [{name: 'joe'}];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeObjectFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ExecuteFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [{name: 'joe'}];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_BooleanFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [false];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeBooleanFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_StringFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = ['foo'];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeStringFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_IntegerFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [7];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeIntegerFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_DoubleFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [3.14];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeDoubleFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_VoidFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param1, param2){ param1 + param2;}");
+            engine2.executeScript("a = [3, 4];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeVoidFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_JSFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){ param[0] + param[1];}");
+            engine2.executeScript("a = [3, 4];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeJSFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
 }

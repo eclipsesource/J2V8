@@ -1043,4 +1043,53 @@ public class V8JSFunctionCallTest {
         assertEquals("passed", result);
     }
 
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_JSFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+            V8Function function = new V8Function(engine, new JavaCallback() {
+
+                @Override
+                public Object invoke(final V8Object receiver, final V8Array parameters) {
+                    return parameters.getInteger(0) + parameters.getInteger(1);
+                }
+            });
+            engine2.executeScript("a = [3, 4];");
+            V8Array a = (V8Array) engine2.get("a");
+
+            function.call(null, a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallThis() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+            V8Function function = new V8Function(engine, new JavaCallback() {
+
+                @Override
+                public Object invoke(final V8Object receiver, final V8Array parameters) {
+                    System.out.println(receiver.get("name"));
+                    return receiver.get("name");
+                }
+            });
+            engine2.executeScript("a = {name: 'joe'};");
+            V8Object a = (V8Object) engine2.get("a");
+
+            function.call(a, null);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
 }

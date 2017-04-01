@@ -521,6 +521,7 @@ public class V8Array extends V8Object {
     public V8Array push(final V8Value value) {
         v8.checkThread();
         checkReleased();
+        v8.checkRuntime(value);
         if (value == null) {
             v8.addArrayNullItem(v8.getV8RuntimePtr(), getHandle());
         } else if (value.equals(V8.getUndefined())) {

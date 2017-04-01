@@ -704,6 +704,18 @@ public class V8 extends V8Object {
         return _getBuildID();
     }
 
+    void checkRuntime(final V8Value value) {
+        if ((value == null) || value.isUndefined()) {
+            return;
+        }
+        V8 runtime = value.getRuntime();
+        if ((runtime == null) ||
+                runtime.isReleased() ||
+                (runtime != this)) {
+            throw new Error("Invalid target runtime");
+        }
+    }
+
     void checkThread() {
         locker.checkThread();
         if (isReleased()) {
