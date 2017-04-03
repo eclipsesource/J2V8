@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -1804,6 +1805,49 @@ public class V8Test {
             engine.release(false);
             engine2.release(false);
         }
+    }
+
+    @Test
+    public void testGetData() {
+        Object value = new Object();
+        v8.setData("foo", value);
+
+        Object result = v8.getData("foo");
+
+        assertSame(value, result);
+    }
+
+    @Test
+    public void testReplaceValue() {
+        Object value = new Object();
+        v8.setData("foo", value);
+        v8.setData("foo", "new value");
+
+        Object result = v8.getData("foo");
+
+        assertEquals("new value", result);
+    }
+
+    @Test
+    public void testReplaceWithNull() {
+        Object value = new Object();
+        v8.setData("foo", value);
+        v8.setData("foo", null);
+
+        assertNull(v8.getData("foo"));
+    }
+
+    @Test
+    public void testGetDataNothingSet() {
+        assertNull(v8.getData("foo"));
+    }
+
+    @Test
+    public void testGetNotSet() {
+        Object value = new Object();
+        v8.setData("foo", value);
+
+        assertNull(v8.getData("bar"));
     }
 
 }

@@ -39,11 +39,12 @@ import com.eclipsesource.v8.utils.V8Runnable;
  */
 public class V8 extends V8Object {
 
-    private static Object       lock           = new Object();
-    private volatile static int runtimeCounter = 0;
-    private static String       v8Flags        = null;
-    private static boolean      initialized    = false;
+    private static Object                lock                    = new Object();
+    private volatile static int          runtimeCounter          = 0;
+    private static String                v8Flags                 = null;
+    private static boolean               initialized             = false;
 
+    private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
     private long                         objectReferences        = 0;
     private long                         v8RuntimePtr            = 0;
@@ -54,11 +55,11 @@ public class V8 extends V8Object {
     private LinkedList<ReferenceHandler> referenceHandlers       = new LinkedList<ReferenceHandler>();
     private LinkedList<V8Runnable>       releaseHandlers         = new LinkedList<V8Runnable>();
 
-    private static boolean   nativeLibraryLoaded = false;
-    private static Error     nativeLoadError     = null;
-    private static Exception nativeLoadException = null;
-    private static V8Value   undefined           = new V8Object.Undefined();
-    private static Object    invalid             = new Object();
+    private static boolean               nativeLibraryLoaded     = false;
+    private static Error                 nativeLoadError         = null;
+    private static Exception             nativeLoadException     = null;
+    private static V8Value               undefined               = new V8Object.Undefined();
+    private static Object                invalid                 = new Object();
 
     private class MethodDescriptor {
         Object           object;
@@ -197,6 +198,34 @@ public class V8 extends V8Object {
      */
     public void removeReleaseHandler(final V8Runnable handler) {
         releaseHandlers.remove(handler);
+    }
+
+    /**
+     * Associates an arbitrary object with this runtime.
+     *
+     * @param key The key used to reference this object
+     * @param value The object to associate with this runtime
+     */
+    public synchronized void setData(final String key, final Object value) {
+        if (data == null) {
+            data = new HashMap<String, Object>();
+        }
+        data.put(key, value);
+    }
+
+    /**
+     * Returns the data object associated with this runtime, null if no object
+     * has been associated.
+     *
+     * @param key The key used to reference this object
+     *
+     * @return The data object associated with this runtime, or null.
+     */
+    public Object getData(final String key) {
+        if (data == null) {
+            return null;
+        }
+        return data.get(key);
     }
 
     private void notifyReleaseHandlers(final V8 runtime) {
