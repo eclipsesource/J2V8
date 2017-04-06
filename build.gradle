@@ -44,21 +44,8 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            jni.srcDirs = []
-            jniLibs.srcDirs = [ "jniLibs/" ]
-        }
-    }
-
     lintOptions {
         abortOnError false
-    }
-
-    externalNativeBuild {
-        ndkBuild {
-            path "jni/Android.mk"
-        }
     }
 }
 

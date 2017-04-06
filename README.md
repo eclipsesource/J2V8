@@ -23,9 +23,9 @@ Building on MacOS
 Building on Linux
 -----------------
 ```
-export CCFLAGS="${CCFLAGS} -fPIC" 
-export CXXFLAGS="${CXXFLAGS} -fPIC" 
-export CPPFLAGS="${CPPFLAGS} -fPIC" 
+export CCFLAGS="${CCFLAGS} -fPIC"
+export CXXFLAGS="${CXXFLAGS} -fPIC"
+export CPPFLAGS="${CPPFLAGS} -fPIC"
 #sh ./build-node.sh
 cp -r /data/jenkins/node .
 cd jni
@@ -51,6 +51,17 @@ mvn clean verify
 ```
 
 This will build J2V8 with node.js support. To disable this support, remove the `-D NODE_COMPATIBLE=1` option.
+
+Building for Android
+-----------------
+Building J2V8 for Android requires Docker.
+
+```
+./docker/build.sh
+./gradlew assembleRelease
+```
+
+This will build J2V8 as an AAR for API 19 minimum with node.js support.
 
 Tutorials
 ==========
@@ -78,7 +89,7 @@ Presentations
 Other Resources
 ===============
 Here is a list of articles I've written on J2V8 [http://eclipsesource.com/blogs/tag/j2v8/](http://eclipsesource.com/blogs/tag/j2v8/).
- 
+
 Who is using J2V8?
 ========
 
