@@ -66,7 +66,7 @@ public class NodeJSTest {
     public void testGetVersion() {
         String result = nodeJS.getNodeVersion();
 
-        assertEquals("6.1.0", result);
+        assertEquals("7.4.0", result);
     }
 
     @Test

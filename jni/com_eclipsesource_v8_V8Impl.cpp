@@ -381,7 +381,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
   rt->running = true;
 #endif
 #ifndef NODE_COMPATIBLE
-  (env)->ThrowNew(unsupportedOperationExceptionCls, "StartNodeJS Not Supported.");
+  (jniEnv)->ThrowNew(unsupportedOperationExceptionCls, "StartNodeJS Not Supported.");
 #endif
 }
 
