@@ -24,8 +24,7 @@ RUN echo "[0/3] installing packages..." && \
 	file
 
 RUN echo "[1/2] cloning dependencies..." && \
-	git clone https://github.com/sjitech/android-gcc-toolchain && \
-	git clone https://github.com/nodejs/node -b v7.4.0
+	git clone https://github.com/sjitech/android-gcc-toolchain 
 
 RUN echo "[2/2] setting up..." && \
  	curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
@@ -33,5 +32,6 @@ RUN echo "[2/2] setting up..." && \
 	rm $NDK_NAME.zip
 
 COPY jni /build/jni/
-CMD android-gcc-toolchain arm --api 19 --host gcc-lpthread,gcc-m32 -C \
-	sh -c "cd node; ./configure --dest-cpu=arm --dest-os=android --without-snapshot --enable-static && make && cd ../jni && ndk-build"
+#COPY node /build/node/
+
+#CMD android-gcc-toolchain ${ARCH} --api 15 --host gcc-lpthread -C sh -c "cd jni && ndk-build"
