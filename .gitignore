@@ -1,7 +1,11 @@
 /bin/
 /target/
 /obj/
-build/
+/build/
+/node.out/
+/.vscode/
+/.metadata/
+
 .gradle
 .DS_Store
 *.patch
@@ -9,6 +13,7 @@ build/
 *.dll
 *.dylib
 hs_err*.log
+*.tar.gz
 
 # Intellij project files
 *.iml
