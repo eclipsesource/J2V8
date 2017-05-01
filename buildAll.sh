@@ -17,6 +17,6 @@ docker run -v $PWD/node.out:/build/node --name j2v8.android.x86 j2v8-android-x86
 docker cp j2v8.android.x86:/build/jni/jniLibs $DIR/src/main/
 
 docker build -t "j2v8-linux-x64" -f docker/Dockerfile.linux $DIR
-docker run -v $PWD/node.out:/build/node --name j2v8.linux.x64 j2v8-linux-x64 
+docker run -v $PWD:/build/. -v $PWD/node.out:/build/node --name j2v8.linux.x64 j2v8-linux-x64 
 #docker cp j2v8.linux.x64:/build/jni/jniLibs $DIR/src/main/
 

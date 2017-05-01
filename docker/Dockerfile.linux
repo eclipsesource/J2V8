@@ -18,10 +18,6 @@ RUN echo "[0/3] installing packages..." && \
         execstack \
         maven
 
-COPY jni /build/jni/
-COPY src /build/src/
-COPY pom.xml /build/
-
 CMD cd jni && \
   g++ -I../node/node.linux.x64/deps -I../node/node.linux.x64/deps/v8 -I../node/node.linux.x64 -I../node/node.linux.x64/deps/v8/include \
     -I../node/node.linux.x64/src -I /usr/lib/jvm/java-7-openjdk-amd64/include/ \
