@@ -58,11 +58,6 @@ public class V8ObjectTest {
     }
 
     @Test
-    public void testFail() {
-        fail("Failed");
-    }
-
-    @Test
     public void testV8ValueNull_StringRepresentation() {
         assertEquals("Null", V8Value.getStringRepresentation(0));
     }
