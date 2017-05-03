@@ -73,6 +73,7 @@ public class V8Object extends V8Value {
     public boolean contains(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.contains(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -100,6 +101,7 @@ public class V8Object extends V8Value {
     public int getType(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.getType(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -115,6 +117,7 @@ public class V8Object extends V8Value {
     public Object get(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.get(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, key);
     }
 
@@ -131,6 +134,7 @@ public class V8Object extends V8Value {
     public int getInteger(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.getInteger(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -147,6 +151,7 @@ public class V8Object extends V8Value {
     public boolean getBoolean(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.getBoolean(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -163,6 +168,7 @@ public class V8Object extends V8Value {
     public double getDouble(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.getDouble(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -179,6 +185,7 @@ public class V8Object extends V8Value {
     public String getString(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         return v8.getString(v8.getV8RuntimePtr(), objectHandle, key);
     }
 
@@ -195,6 +202,7 @@ public class V8Object extends V8Value {
     public V8Array getArray(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         Object result = v8.get(v8.getV8RuntimePtr(), V8_ARRAY, objectHandle, key);
         if ((result == null) || (result instanceof V8Array)) {
             return (V8Array) result;
@@ -215,6 +223,7 @@ public class V8Object extends V8Value {
     public V8Object getObject(final String key) {
         v8.checkThread();
         checkReleased();
+        checkKey(key);
         Object result = v8.get(v8.getV8RuntimePtr(), V8_OBJECT, objectHandle, key);
         if ((result == null) || (result instanceof V8Object)) {
             return (V8Object) result;
@@ -641,6 +650,12 @@ public class V8Object extends V8Value {
         v8.checkThread();
         checkReleased();
         return v8.toString(v8.getV8RuntimePtr(), getHandle());
+    }
+
+    private void checkKey(final String key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
+        }
     }
 
     static class Undefined extends V8Object {

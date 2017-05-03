@@ -1025,6 +1025,96 @@ public class V8ObjectTest {
         assertNull(v8.getString("nullString"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetTypeNull() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getType(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testContainsNull() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.contains(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.get(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_Integer() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getInteger(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_String() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getString(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_Double() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getDouble(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_Boolean() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getBoolean(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_Object() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getObject(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullKey_Array() {
+        V8Object v8Object = new V8Object(v8);
+        try {
+            v8Object.getArray(null);
+        } finally {
+            v8Object.release();
+        }
+    }
+
     @Test
     public void testStringScript() {
         assertNull(v8.executeStringScript("null;"));
