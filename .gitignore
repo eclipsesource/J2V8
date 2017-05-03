@@ -1,16 +1,25 @@
 /bin/
 /target/
 /obj/
-build/
+/build/
+/node.out/
+/.vscode/
+/.metadata/
+
 .gradle
 .DS_Store
+*.patch
 *.so
 *.dll
 *.dylib
 hs_err*.log
+*.tar.gz
 
 # Intellij project files
 *.iml
 *.ipr
 *.iws
 .idea
+
+# Build output.
+node

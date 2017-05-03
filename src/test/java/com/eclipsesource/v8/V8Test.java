@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -31,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.eclipsesource.v8.utils.V8Map;
+import com.eclipsesource.v8.utils.V8Runnable;
 
 public class V8Test {
 
@@ -61,10 +63,10 @@ public class V8Test {
     }
 
     @Test
-    public void testGetVersion_StartsWith4() {
+    public void testGetVersion_StartsWith5() {
         String v8version = V8.getV8Version();
 
-        assertTrue(v8version.startsWith("4"));
+        assertTrue(v8version.startsWith("5"));
     }
 
     @Test
@@ -1433,6 +1435,62 @@ public class V8Test {
     }
 
     @Test
+    public void testV8ReleaseHandleRemoved() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler);
+        testV8.removeReleaseHandler(releaseHandler);
+
+        testV8.release();
+
+        verify(releaseHandler, never()).run(testV8);
+    }
+
+    @Test
+    public void testV8UnknownReleaseHandleRemoved() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler1 = mock(V8Runnable.class);
+        V8Runnable releaseHandler2 = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler1);
+        testV8.removeReleaseHandler(releaseHandler2);
+
+        testV8.release();
+
+        verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+    }
+
+    @Test
+    public void testV8MultipleReleaseHandlers() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler1 = mock(V8Runnable.class);
+        V8Runnable releaseHandler2 = mock(V8Runnable.class);
+        testV8.addReleaseHandler(releaseHandler1);
+        testV8.addReleaseHandler(releaseHandler2);
+
+        testV8.release();
+
+        verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+        verify(releaseHandler2, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
+    }
+
+    @Test
+    public void testExceptionInReleaseHandlerStillReleasesV8() {
+        V8 testV8 = V8.createV8Runtime();
+        V8Runnable releaseHandler = mock(V8Runnable.class);
+        doThrow(new RuntimeException()).when(releaseHandler).run(any(V8.class));
+        testV8.addReleaseHandler(releaseHandler);
+
+        try {
+            testV8.release();
+        } catch (Exception e) {
+            assertTrue(testV8.isReleased());
+            return;
+        }
+
+        fail("Exception should have been caught.");
+    }
+
+    @Test
     public void testV8HandleCreated_V8Array() {
         ReferenceHandler referenceHandler = mock(ReferenceHandler.class);
         v8.addReferenceHandler(referenceHandler);
@@ -1536,6 +1594,260 @@ public class V8Test {
         }
 
         fail("Exception should have been caught.");
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsShouldNotCrashVM() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = { 'c': 'c' }");
+            engine2.executeScript("a = { 'd': 'd' };");
+
+            V8Object a = (V8Object) engine2.get("a");
+            V8Object b = (V8Object) engine.get("b");
+            b.add("data", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsInArrayShouldNotCrashVM() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = [];");
+            engine2.executeScript("a = [];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            V8Array b = (V8Array) engine.get("b");
+            b.push(a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ArrayFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [[1,2,3]];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeArrayFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ObjectFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [{name: 'joe'}];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeObjectFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_ExecuteFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [{name: 'joe'}];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_BooleanFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [false];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeBooleanFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_StringFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = ['foo'];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeStringFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_IntegerFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [7];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeIntegerFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_DoubleFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){return param;}");
+            engine2.executeScript("a = [3.14];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeDoubleFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_VoidFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param1, param2){ param1 + param2;}");
+            engine2.executeScript("a = [3, 4];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeVoidFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test(expected = Error.class)
+    public void testSharingObjectsAsFunctionCallParameters_JSFunction() {
+        V8 engine = null;
+        V8 engine2 = null;
+        try {
+            engine = V8.createV8Runtime();
+            engine2 = V8.createV8Runtime();
+
+            engine.executeScript("b = function(param){ param[0] + param[1];}");
+            engine2.executeScript("a = [3, 4];");
+
+            V8Array a = (V8Array) engine2.get("a");
+            engine.executeJSFunction("b", a);
+        } finally {
+            engine.release(false);
+            engine2.release(false);
+        }
+    }
+
+    @Test
+    public void testGetData() {
+        Object value = new Object();
+        v8.setData("foo", value);
+
+        Object result = v8.getData("foo");
+
+        assertSame(value, result);
+    }
+
+    @Test
+    public void testReplaceValue() {
+        Object value = new Object();
+        v8.setData("foo", value);
+        v8.setData("foo", "new value");
+
+        Object result = v8.getData("foo");
+
+        assertEquals("new value", result);
+    }
+
+    @Test
+    public void testReplaceWithNull() {
+        Object value = new Object();
+        v8.setData("foo", value);
+        v8.setData("foo", null);
+
+        assertNull(v8.getData("foo"));
+    }
+
+    @Test
+    public void testGetDataNothingSet() {
+        assertNull(v8.getData("foo"));
+    }
+
+    @Test
+    public void testGetNotSet() {
+        Object value = new Object();
+        v8.setData("foo", value);
+
+        assertNull(v8.getData("bar"));
     }
 
 }

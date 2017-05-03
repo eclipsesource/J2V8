@@ -1,9 +1,4 @@
-os: osx
-language: cpp
-branches:
- only: master
-compiler: clang
-before_install:
-- chmod -x build-node.sh
-install: sh ./build-node.sh
-script: sh ./buildJ2V8_macos.sh
+sudo: required
+services: docker
+before_install: curl -O http://download.eclipsesource.com/j2v8/v8/node.out-7_4_0.tar.gz
+script: sh ./buildAll.sh

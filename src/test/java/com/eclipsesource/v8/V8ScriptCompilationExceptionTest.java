@@ -130,7 +130,7 @@ public class V8ScriptCompilationExceptionTest {
         try {
             v8.executeVoidScript("'a");
         } catch (V8ScriptCompilationException e) {
-            assertEquals("SyntaxError: Unexpected token ILLEGAL", e.getJSMessage());
+            assertEquals("SyntaxError: Invalid or unexpected token", e.getJSMessage());
             return;
         }
         fail("Exception should have been thrown.");

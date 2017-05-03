@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
+import com.eclipsesource.v8.utils.V8Runnable;
 
 /**
  * An isolated V8Runtime. All JavaScript execution must exist
@@ -38,11 +39,12 @@ import com.eclipsesource.v8.utils.V8Map;
  */
 public class V8 extends V8Object {
 
-    private static Object       lock           = new Object();
-    private volatile static int runtimeCounter = 0;
-    private static String       v8Flags        = null;
-    private static boolean      initialized    = false;
+    private static Object                lock                    = new Object();
+    private volatile static int          runtimeCounter          = 0;
+    private static String                v8Flags                 = null;
+    private static boolean               initialized             = false;
 
+    private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
     private long                         objectReferences        = 0;
     private long                         v8RuntimePtr            = 0;
@@ -51,12 +53,13 @@ public class V8 extends V8Object {
     private boolean                      forceTerminateExecutors = false;
     private Map<Long, MethodDescriptor>  functionRegistry        = new HashMap<Long, MethodDescriptor>();
     private LinkedList<ReferenceHandler> referenceHandlers       = new LinkedList<ReferenceHandler>();
+    private LinkedList<V8Runnable>       releaseHandlers         = new LinkedList<V8Runnable>();
 
-    private static boolean   nativeLibraryLoaded = false;
-    private static Error     nativeLoadError     = null;
-    private static Exception nativeLoadException = null;
-    private static V8Value   undefined           = new V8Object.Undefined();
-    private static Object    invalid             = new Object();
+    private static boolean               nativeLibraryLoaded     = false;
+    private static Error                 nativeLoadError         = null;
+    private static Exception             nativeLoadException     = null;
+    private static V8Value               undefined               = new V8Object.Undefined();
+    private static Object                invalid                 = new Object();
 
     private class MethodDescriptor {
         Object           object;
@@ -168,6 +171,16 @@ public class V8 extends V8Object {
     }
 
     /**
+     * Adds a handler that will be called when the runtime is being released.
+     * The runtime will still be available when the handler is executed.
+     *
+     * @param handler The handler to invoke when the runtime, is being released
+     */
+    public void addReleaseHandler(final V8Runnable handler) {
+        releaseHandlers.add(handler);
+    }
+
+    /**
      * Removes an existing ReferenceHandler from the collection of reference handlers.
      * If the ReferenceHandler does not exist in the collection, it is ignored.
      *
@@ -175,6 +188,50 @@ public class V8 extends V8Object {
      */
     public void removeReferenceHandler(final ReferenceHandler handler) {
         referenceHandlers.remove(handler);
+    }
+
+    /**
+     * Removes an existing release handler from the collection of release handlers.
+     * If the release handler does not exist in the collection, it is ignored.
+     *
+     * @param handler The handler to remove
+     */
+    public void removeReleaseHandler(final V8Runnable handler) {
+        releaseHandlers.remove(handler);
+    }
+
+    /**
+     * Associates an arbitrary object with this runtime.
+     *
+     * @param key The key used to reference this object
+     * @param value The object to associate with this runtime
+     */
+    public synchronized void setData(final String key, final Object value) {
+        if (data == null) {
+            data = new HashMap<String, Object>();
+        }
+        data.put(key, value);
+    }
+
+    /**
+     * Returns the data object associated with this runtime, null if no object
+     * has been associated.
+     *
+     * @param key The key used to reference this object
+     *
+     * @return The data object associated with this runtime, or null.
+     */
+    public Object getData(final String key) {
+        if (data == null) {
+            return null;
+        }
+        return data.get(key);
+    }
+
+    private void notifyReleaseHandlers(final V8 runtime) {
+        for (V8Runnable handler : releaseHandlers) {
+            handler.run(runtime);
+        }
     }
 
     private void notifyReferenceCreated(final V8Value object) {
@@ -286,20 +343,24 @@ public class V8 extends V8Object {
             return;
         }
         checkThread();
-        releaseResources();
-        shutdownExecutors(forceTerminateExecutors);
-        if (executors != null) {
-            executors.clear();
-        }
-        releaseNativeMethodDescriptors();
-        synchronized (lock) {
-            runtimeCounter--;
-        }
-        _releaseRuntime(v8RuntimePtr);
-        v8RuntimePtr = 0L;
-        released = true;
-        if (reportMemoryLeaks && (objectReferences > 0)) {
-            throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+        try {
+            notifyReleaseHandlers(this);
+        } finally {
+            releaseResources();
+            shutdownExecutors(forceTerminateExecutors);
+            if (executors != null) {
+                executors.clear();
+            }
+            releaseNativeMethodDescriptors();
+            synchronized (lock) {
+                runtimeCounter--;
+            }
+            _releaseRuntime(v8RuntimePtr);
+            v8RuntimePtr = 0L;
+            released = true;
+            if (reportMemoryLeaks && (objectReferences > 0)) {
+                throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+            }
         }
     }
 
@@ -670,6 +731,18 @@ public class V8 extends V8Object {
      */
     public long getBuildID() {
         return _getBuildID();
+    }
+
+    void checkRuntime(final V8Value value) {
+        if ((value == null) || value.isUndefined()) {
+            return;
+        }
+        V8 runtime = value.getRuntime();
+        if ((runtime == null) ||
+                runtime.isReleased() ||
+                (runtime != this)) {
+            throw new Error("Invalid target runtime");
+        }
     }
 
     void checkThread() {

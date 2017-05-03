@@ -23,6 +23,8 @@
   #include <node.h>
 #endif
 
+#define TAG "J2V8_V8Impl"
+
 #pragma comment(lib, "userenv.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "Ws2_32.lib")
@@ -49,6 +51,7 @@ public:
 
 #ifdef NODE_COMPATIBLE
   node::Environment* nodeEnvironment;
+  node::IsolateData* isolateData;
   uv_loop_t* uvLoop;
   bool running;
 #endif
@@ -191,7 +194,11 @@ void addValueWithKey(JNIEnv* env, Isolate* isolate, jlong &v8RuntimePtr, jlong &
 void getJNIEnv(JNIEnv*& env) {
   int getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
   if (getEnvStat == JNI_EDETACHED) {
+#ifdef __ANDROID_API__
+    if (jvm->AttachCurrentThread(&env, NULL) != 0) {
+#else
     if (jvm->AttachCurrentThread((void **)&env, NULL) != 0) {
+#endif
       std::cout << "Failed to attach" << std::endl;
     }
   }
@@ -326,11 +333,11 @@ extern "C" {
 
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
-  (JNIEnv * env, jclass, jlong v8RuntimePtr, jstring fileName) {
+  (JNIEnv * jniEnv, jclass, jlong v8RuntimePtr, jstring fileName) {
 #ifdef NODE_COMPATIBLE
-  Isolate* isolate = SETUP(env, v8RuntimePtr, );
+  Isolate* isolate = SETUP(jniEnv, v8RuntimePtr, );
   setvbuf(stderr, NULL, _IOLBF, 1024);
-  const char* utfFileName = env->GetStringUTFChars(fileName, NULL);
+  const char* utfFileName = jniEnv->GetStringUTFChars(fileName, NULL);
   const char *argv[] = {"j2v8", utfFileName, NULL};
   int argc = sizeof(argv) / sizeof(char*) - 1;
   V8Runtime* rt = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
@@ -365,16 +372,16 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
 	_register_uv();
   #endif
   }
-  rt->uvLoop = new uv_loop_t();
-  uv_loop_init(rt->uvLoop);
-  isolate->GetCurrentContext();
-  node::Environment* environment = node::CreateEnvironment(isolate, rt->uvLoop, context, argc, argv, 0, 0);
-  node::LoadEnvironment(environment);
-  rt->nodeEnvironment = environment;
+  rt->uvLoop = uv_default_loop();
+  rt->isolateData = node::CreateIsolateData(isolate, rt->uvLoop);
+  node::Environment* env = node::CreateEnvironment(rt->isolateData, context, argc, argv, 0, 0);
+  node::LoadEnvironment(env);
+  rt->nodeEnvironment = env;
+
   rt->running = true;
 #endif
 #ifndef NODE_COMPATIBLE
-  (env)->ThrowNew(unsupportedOperationExceptionCls, "StartNodeJS Not Supported.");
+  (jniEnv)->ThrowNew(unsupportedOperationExceptionCls, "StartNodeJS Not Supported.");
 #endif
 }
 
@@ -1890,6 +1897,9 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
   }
   else if (result->IsArrayBuffer()) {
     ArrayBuffer* arrayBuffer = ArrayBuffer::Cast(*result);
+    if ( arrayBuffer->GetContents().Data() == NULL ) {
+      return NULL;
+    }
     jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), arrayBuffer->ByteLength());
     jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);
     jlong resultHandle = getHandle(env, objectResult);

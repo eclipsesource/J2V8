@@ -59,96 +59,108 @@ public class V8ObjectTest {
 
     @Test
     public void testV8ValueNull_StringRepresentation() {
-        assertEquals("Null", V8Value.getStringRepresentaion(0));
+        assertEquals("Null", V8Value.getStringRepresentation(0));
     }
 
     @Test
     public void testV8ValueInteger_StringRepresentation() {
-        assertEquals("Integer", V8Value.getStringRepresentaion(1));
+        assertEquals("Integer", V8Value.getStringRepresentation(1));
     }
 
     @Test
     public void testV8ValueDouble_StringRepresentation() {
-        assertEquals("Double", V8Value.getStringRepresentaion(2));
+        assertEquals("Double", V8Value.getStringRepresentation(2));
     }
 
     @Test
     public void testV8ValueBoolean_StringRepresentation() {
-        assertEquals("Boolean", V8Value.getStringRepresentaion(3));
+        assertEquals("Boolean", V8Value.getStringRepresentation(3));
     }
 
     @Test
     public void testV8ValueString_StringRepresentation() {
-        assertEquals("String", V8Value.getStringRepresentaion(4));
+        assertEquals("String", V8Value.getStringRepresentation(4));
     }
 
     @Test
     public void testV8ValueV8Array_StringRepresentation() {
-        assertEquals("V8Array", V8Value.getStringRepresentaion(5));
+        assertEquals("V8Array", V8Value.getStringRepresentation(5));
     }
 
     @Test
     public void testV8ValueV8Object_StringRepresentation() {
-        assertEquals("V8Object", V8Value.getStringRepresentaion(6));
+        assertEquals("V8Object", V8Value.getStringRepresentation(6));
     }
 
     @Test
     public void testV8ValueV8Function_StringRepresentation() {
-        assertEquals("V8Function", V8Value.getStringRepresentaion(7));
+        assertEquals("V8Function", V8Value.getStringRepresentation(7));
     }
 
     @Test
     public void testV8ValueV8TypedArray_StringRepresentation() {
-        assertEquals("V8TypedArray", V8Value.getStringRepresentaion(8));
+        assertEquals("V8TypedArray", V8Value.getStringRepresentation(8));
     }
 
     @Test
     public void testV8ValueByte_StringRepresentation() {
-        assertEquals("Byte", V8Value.getStringRepresentaion(9));
+        assertEquals("Byte", V8Value.getStringRepresentation(9));
     }
 
     @Test
     public void testV8ValueV8ArrayBuffer_StringRepresentation() {
-        assertEquals("V8ArrayBuffer", V8Value.getStringRepresentaion(10));
+        assertEquals("V8ArrayBuffer", V8Value.getStringRepresentation(10));
     }
 
     @Test
     public void testV8ValueUInt8_StringRepresentation() {
-        assertEquals("UInt8Array", V8Value.getStringRepresentaion(11));
+        assertEquals("UInt8Array", V8Value.getStringRepresentation(11));
     }
 
     @Test
     public void testV8ValueUInt8Clamped_StringRepresentation() {
-        assertEquals("UInt8ClampedArray", V8Value.getStringRepresentaion(12));
+        assertEquals("UInt8ClampedArray", V8Value.getStringRepresentation(12));
     }
 
     @Test
     public void testV8ValueInt16_StringRepresentation() {
-        assertEquals("Int16Array", V8Value.getStringRepresentaion(13));
+        assertEquals("Int16Array", V8Value.getStringRepresentation(13));
     }
 
     @Test
     public void testV8ValueUInt16_StringRepresentation() {
-        assertEquals("UInt16Array", V8Value.getStringRepresentaion(14));
+        assertEquals("UInt16Array", V8Value.getStringRepresentation(14));
     }
 
     @Test
     public void testV8ValueUInt32_StringRepresentation() {
-        assertEquals("UInt32Array", V8Value.getStringRepresentaion(15));
+        assertEquals("UInt32Array", V8Value.getStringRepresentation(15));
     }
 
     @Test
     public void testV8ValueFloat32_StringRepresentation() {
-        assertEquals("Float32Array", V8Value.getStringRepresentaion(16));
+        assertEquals("Float32Array", V8Value.getStringRepresentation(16));
     }
 
     @Test
     public void testV8ValueUndefined_StringRepresentation() {
-        assertEquals("Undefined", V8Value.getStringRepresentaion(99));
+        assertEquals("Undefined", V8Value.getStringRepresentation(99));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testV8ValueIllegal_StringRepresentation() {
+        V8Value.getStringRepresentation(17);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testV8ValueUndefined_StringRepresentation_deprecated() {
+        assertEquals("Undefined", V8Value.getStringRepresentaion(99));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test(expected = IllegalArgumentException.class)
+    public void testV8ValueIllegal_StringRepresentation_deprecated() {
         V8Value.getStringRepresentaion(17);
     }
 

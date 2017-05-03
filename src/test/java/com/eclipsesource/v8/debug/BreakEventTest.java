@@ -75,7 +75,7 @@ public class BreakEventTest {
 
             @Override
             public void onBreak(final DebugEvent type, final ExecutionState state, final EventData eventData, final V8Object data) {
-                result = (((BreakEvent) eventData).getSourceColumn() == 2);
+                result = (((BreakEvent) eventData).getSourceColumn() == 12);
                 result = (Boolean) result && ((BreakEvent) eventData).getSourceLineText().equals("  var y = x + 1;     // 3 ");
             }
         });

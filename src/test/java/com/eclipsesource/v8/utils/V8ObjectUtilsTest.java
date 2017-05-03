@@ -306,6 +306,30 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testCreateV8ObjectFromLongTimestampMap() {
+        Map<String, Long> map = new HashMap<String, Long>();
+        map.put("a", 1477486236000L);
+
+        int size = registerAndRelease("result", map);
+
+        assertEquals(1, size);
+        assertEquals(1477486236000L, (long) v8.executeDoubleScript("result.a"));
+    }
+
+    @Test
+    public void testCreateV8ObjectFromMaxLongMap() {
+        Map<String, Long> map = new HashMap<String, Long>();
+        map.put("a", Long.MAX_VALUE);
+        map.put("b", Long.MIN_VALUE);
+
+        int size = registerAndRelease("result", map);
+
+        assertEquals(2, size);
+        assertEquals(Long.MAX_VALUE, (long) v8.executeDoubleScript("result.a"));
+        assertEquals(Long.MIN_VALUE, (long) v8.executeDoubleScript("result.b"));
+    }
+
+    @Test
     public void testCreateV8ObjectFromDoubleMap() {
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("a", 1.1);

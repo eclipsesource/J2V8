@@ -96,7 +96,7 @@ public class V8TypedArray extends V8Array {
             case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
                 return v8.initNewV8UInt8ClampedArray(runtimePtr, arrayData.buffer.objectHandle, arrayData.offset, arrayData.size);
             default:
-                throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentaion(arrayData.type));
+                throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentation(arrayData.type));
         }
     }
 
@@ -122,7 +122,7 @@ public class V8TypedArray extends V8Array {
             case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
                 return 1;
             default:
-                throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentaion(type));
+                throw new IllegalArgumentException("Cannot create a typed array of type " + V8Value.getStringRepresentation(type));
         }
     }
 

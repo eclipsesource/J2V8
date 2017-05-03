@@ -1,0 +1,37 @@
+FROM philcryer/min-jessie:latest
+
+WORKDIR /build/
+
+ENV NDK_VERSION r13b
+
+ENV NDK /build/android-ndk-$NDK_VERSION
+ENV NDK_NAME android-ndk-$NDK_VERSION-linux-x86_64
+ENV PATH $PATH:/build/android-gcc-toolchain:$NDK
+
+ENV CCFLAGS -fPIC
+ENV CXXFLAGS -fPIC
+
+
+RUN echo "[0/3] installing packages..." && \
+	apt-get -qq update && \
+
+	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
+	git \
+	unzip \
+	gcc gcc-multilib \
+	g++ g++-multilib \
+	curl \
+	file
+
+RUN echo "[1/2] cloning dependencies..." && \
+	git clone https://github.com/sjitech/android-gcc-toolchain 
+
+RUN echo "[2/2] setting up..." && \
+ 	curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
+	unzip -q $NDK_NAME.zip && \
+	rm $NDK_NAME.zip
+
+COPY jni /build/jni/
+#COPY node /build/node/
+
+#CMD android-gcc-toolchain ${ARCH} --api 15 --host gcc-lpthread -C sh -c "cd jni && ndk-build"

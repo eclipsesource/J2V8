@@ -74,6 +74,8 @@ public class V8Function extends V8Object {
     public Object call(V8Object receiver, final V8Array parameters) {
         v8.checkThread();
         checkReleased();
+        v8.checkRuntime(receiver);
+        v8.checkRuntime(parameters);
         receiver = receiver != null ? receiver : v8;
         long parametersHandle = parameters == null ? 0 : parameters.getHandle();
         long receiverHandle = receiver.isUndefined() ? v8.getHandle() : receiver.getHandle();

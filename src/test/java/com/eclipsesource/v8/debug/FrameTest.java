@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -88,6 +89,7 @@ public class FrameTest {
     }
 
     @Test
+    @Ignore
     public void testGetSourceLocation() {
         handleBreak(new BreakHandler() {
 

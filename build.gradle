@@ -3,7 +3,7 @@ apply plugin: 'signing'
 
 group = 'com.eclipsesource.j2v8'
 archivesBaseName = 'j2v8'
-version = '4.6.0'
+version = '4.7.0-SNAPSHOT'
 
 configurations {
     archives {
@@ -13,37 +13,42 @@ configurations {
 
 buildscript {
     repositories {
-	jcenter()
+        jcenter()
     }
     dependencies {
-	classpath 'com.android.tools.build:gradle:1.3.1'
+        classpath 'com.android.tools.build:gradle:2.2.2'
     }
 }
 
 apply plugin: 'com.android.library'
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 dependencies {
- testCompile 'junit:junit:4.12'
- testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.9.5'
 }
 
 android {
     compileSdkVersion 10
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '24.0.3'
 
     defaultConfig {
-	minSdkVersion 10
-	targetSdkVersion 10
+        minSdkVersion 10
+        targetSdkVersion 10
+
+        ndk {
+            abiFilters 'armeabi'
+        }
     }
 
     lintOptions {
-	abortOnError false
+        abortOnError false
     }
 }
+
 
 signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
@@ -95,4 +100,3 @@ uploadArchives {
       }
     }
   }
-
