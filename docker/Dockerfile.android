@@ -28,7 +28,7 @@ RUN echo "[1/2] cloning dependencies..." && \
 
 RUN echo "[2/2] setting up..." && \
  	curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
-	unzip $NDK_NAME.zip && \
+	unzip -q $NDK_NAME.zip && \
 	rm $NDK_NAME.zip
 
 COPY jni /build/jni/
