@@ -314,6 +314,8 @@ extern "C" {
 	void _register_fs(void);
 	void _register_http_parser(void);
 	void _register_os(void);
+	void _register_config(void);
+	void _register_url(void);
 	void _register_util(void);
 	void _register_v8(void);
 	void _register_zlib(void);
@@ -356,6 +358,8 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
 	_register_fs();
 	_register_http_parser();
 	_register_os();
+	_register_config();
+	_register_url();
 	_register_util();
 	_register_v8();
 	_register_zlib();
