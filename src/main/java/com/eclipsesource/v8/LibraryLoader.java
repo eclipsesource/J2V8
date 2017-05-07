@@ -40,16 +40,20 @@ class LibraryLoader {
 
     static void loadLibrary(final String tempDirectory) {
         if ( isAndroid() ) {
-          System.loadLibrary("j2v8");
-          return;
+            System.loadLibrary("j2v8");
+            return;
         }
         StringBuffer message = new StringBuffer();
         String libShortName = computeLibraryShortName();
         String libFullName = computeLibraryFullName();
         String ideLocation = System.getProperty("user.dir") + SEPARATOR + "jni" + SEPARATOR + computeLibraryFullName();
+
         String path = null;
 
         /* Try loading library from java library path */
+        if (load(libFullName, message)) {
+            return;
+        }
         if (load(libShortName, message)) {
             return;
         }
