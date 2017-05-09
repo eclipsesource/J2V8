@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # 
 # Builds J2V8 on Linux and Android
 # usage: ./buildAll -r /path/to/root/of/project
