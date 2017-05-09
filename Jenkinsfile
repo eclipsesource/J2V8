@@ -14,4 +14,9 @@ node {
   stage('Package AAR') {
     sh './gradlew clean build'
   }
+
+  stage('Results') {
+      junit 'build/test-results/**/*.xml'
+      archive 'build/outputs/aar/*.aar'
+   }
 }
