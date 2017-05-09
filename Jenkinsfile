@@ -8,6 +8,7 @@ node {
   }
 
   stage('Building') {
-    sh '#!/bin/bash $PWD/buildAll.sh -r /data/instances/j2v8-jenkins/workspace/J2V8-nightly'
+    sh '#!/bin/bash echo \"Hello from \$SHELL at \$PWD\"'
+    sh '#!/bin/bash \$PWD/buildAll.sh -r /data/instances/j2v8-jenkins/workspace/J2V8-nightly'
   } 
 }
