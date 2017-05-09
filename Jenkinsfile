@@ -8,7 +8,6 @@ node {
   }
 
   stage('Building') {
-    sh './buildAll.sh'
+    sh './buildAll.sh -r /data/instances/j2v8-jenkins/workspace/J2V8-nightly'
   } 
-
 }
