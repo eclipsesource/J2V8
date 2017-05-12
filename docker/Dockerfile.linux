@@ -19,6 +19,7 @@ RUN echo "[0/3] installing packages..." && \
         maven
 
 CMD cd jni && \
+  echo "building...." && \
   g++ -I../node/node.linux.x64/deps -I../node/node.linux.x64/deps/v8 -I../node/node.linux.x64 -I../node/node.linux.x64/deps/v8/include \
     -I../node/node.linux.x64/src -I /usr/lib/jvm/java-7-openjdk-amd64/include/ \
     -I /usr/lib/jvm/java-7-openjdk-amd64/include/linux  \
@@ -39,6 +40,8 @@ CMD cd jni && \
     -Wl,--end-group \
     -lrt -D NODE_COMPATIBLE=1 && \
     execstack -c libj2v8_linux_x86_64.so && \
+    echo "striping symbols...." && \
+    strip --strip-unneeded -R .note -R .comment libj2v8_linux_x86_64.so && \
     cd .. && \
     mvn clean verify -e
     

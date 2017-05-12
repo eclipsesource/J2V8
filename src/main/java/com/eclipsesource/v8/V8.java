@@ -311,6 +311,17 @@ public class V8 extends V8Object {
         return _getVersion();
     }
 
+    /**
+     * Returns the revision ID of this version as specified
+     * by the source code management system. Currently we use
+     * Git, so this will return the commit ID for this revision.
+     *
+     * @return The revision ID of this version of J2V8
+     */
+    public static String getSCMRevision() {
+        return "Unknown revision ID";
+    }
+
     /*
      * (non-Javadoc)
      * @see com.eclipsesource.v8.V8Value#release()
