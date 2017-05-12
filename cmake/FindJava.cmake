@@ -76,4 +76,21 @@ if(!$ENV{JAVA_HOME})
   message("Cannot find JAVA_HOME. Please setup the path to the base of the Java JDK to JAVA_HOME before compiling.")
 endif()
 
-set(Java_ROOT "$ENV{JAVA_HOME}")
+if(APPLE)
+  EXECUTE_PROCESS(COMMAND "/usr/libexec/java_home"
+    RESULT_VARIABLE res
+    OUTPUT_VARIABLE var
+    ERROR_VARIABLE var
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE)
+
+    if(res)
+      MESSAGE(FATAL_ERROR "Error executing java_home")
+    else()
+      set(Java_ROOT ${var})
+    endif()
+else()
+  set(Java_ROOT "$ENV{JAVA_HOME}")
+endif()
+
+message ("Java-Root: ${Java_ROOT}")

@@ -30,10 +30,8 @@ public class V8Locker {
      * Error will be thrown.
      */
     public synchronized void acquire() {
-        Thread caller = Thread.currentThread();
-
-        if ((thread != null) && (thread != caller)) {
-            throw new Error("Unable to acquire V8 thread access (caller: " + caller.getName() + ", lock-owner: " + thread.getName() + ")");
+        if ((thread != null) && (thread != Thread.currentThread())) {
+            throw new Error("Invalid V8 thread access");
         }
         thread = Thread.currentThread();
     }
@@ -54,10 +52,8 @@ public class V8Locker {
      * is thrown.
      */
     public void checkThread() {
-        Thread caller = Thread.currentThread();
-
-        if ((thread != caller)) {
-            throw new Error("Invalid V8 thread access (caller: " + caller.getName() + ", lock-owner: " + (thread != null ? thread.getName() : "null") + ")");
+        if ((thread != Thread.currentThread())) {
+            throw new Error("Invalid V8 thread access");
         }
     }
 

@@ -1,0 +1,65 @@
+
+$fix_xcode_paths = <<SCRIPT
+# see: http://stackoverflow.com/a/17980786
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+SCRIPT
+
+$provision_java = <<SCRIPT
+echo Downloading JDK...
+curl -L -C - -b "oraclelicense=accept-securebackup-cookie" -O http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-macosx-x64.dmg
+
+echo Installing JDK...
+sudo hdiutil attach jdk-8u131-macosx-x64.dmg
+sudo installer -package /Volumes/JDK\\ 8\\ Update\\ 131/JDK\\ 8\\ Update\\ 131.pkg -target /
+diskutil umount /Volumes/JDK\\ 8\\ Update\\ 131
+SCRIPT
+
+$provision_cmake = <<SCRIPT
+#curl https://cmake.org/files/v3.8/cmake-3.8.1-Darwin-x86_64.dmg -O
+
+#sudo hdiutil attach cmake-3.8.1-Darwin-x86_64.dmg
+#sudo cp -Rf /Volumes/cmake-3.8.1-Darwin-x86_64/CMake.app /Applications/
+#hdiutil detach /Volumes/cmake-3.8.1-Darwin-x86_64
+#sudo /Applications/CMake.app/Contents/bin/cmake-gui --install
+
+echo Downloading CMake...
+curl https://cmake.org/files/v3.8/cmake-3.8.1-Darwin-x86_64.tar.gz -O
+
+echo Installing CMake...
+tar -xzf cmake-3.8.1-Darwin-x86_64.tar.gz
+sudo mv cmake-3.8.1-Darwin-x86_64/CMake.app /Applications
+sudo /Applications/CMake.app/Contents/bin/cmake-gui --install
+SCRIPT
+
+$provision_maven = <<SCRIPT
+echo Downloading Maven...
+curl http://mirror.klaus-uwe.me/apache/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz -O
+
+echo Installing Maven...
+sudo tar xzvf apache-maven-3.5.0-bin.tar.gz -C /opt/
+SCRIPT
+
+$set_env = <<SCRIPT
+sudo cp /vagrant/.profile /Users/vagrant/
+SCRIPT
+
+Vagrant.configure(2) do |config|
+
+    config.vm.box = "http://files.dryga.com/boxes/osx-sierra-0.3.1.box"
+    # config.vm.box = "AndrewDryga/vagrant-box-osx"
+    config.vm.hostname = "j2v8.macos.x64"
+    
+    config.vm.provider "virtualbox" do |v|
+        v.name = "j2v8.macos.x64"
+        v.memory = 2048
+        v.cpus = 4
+    end
+    
+    config.vm.synced_folder ".", "/vagrant", type: "smb"
+    config.vm.synced_folder "../../", "/Users/vagrant/j2v8", type: "smb", smb_username: ENV['VAGRANT_SMB_USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD']
+
+    config.vm.provision "shell", inline: $fix_xcode_paths
+    config.vm.provision "shell", inline: $provision_java
+    config.vm.provision "shell", inline: $provision_cmake
+    config.vm.provision "shell", inline: $set_env
+end

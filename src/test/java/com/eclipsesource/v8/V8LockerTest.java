@@ -17,9 +17,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class V8LockerTest {
 
     private boolean passed = false;
@@ -65,9 +62,7 @@ public class V8LockerTest {
                 try {
                     v8Locker.checkThread();
                 } catch (Error e) {
-                    Pattern p = Pattern.compile("Invalid V8 thread access \\(caller: Thread-[0-9], lock-owner: main\\)");
-                    Matcher m = p.matcher(e.getMessage());
-                    assertTrue("Unexpected exception message format: " + e.getMessage(), m.matches());
+                    assertEquals("Invalid V8 thread access", e.getMessage());
                     passed = true;
                 }
             }
@@ -86,7 +81,7 @@ public class V8LockerTest {
         try {
             v8Locker.checkThread();
         } catch (Error e) {
-            assertEquals("Invalid V8 thread access (caller: main, lock-owner: null)", e.getMessage());
+            assertEquals("Invalid V8 thread access", e.getMessage());
             return;
         }
         fail("Expected exception");

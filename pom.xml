@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<os>linux</os>
+	<os>macosx</os>
   <ws>gtk</ws>
-	<arch>arm64</arch>
+	<arch>x86_x64</arch>
   </properties>
 
   <groupId>com.eclipsesource.j2v8</groupId>
@@ -78,6 +78,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <workingDirectory>target</workingDirectory>
           <argLine>-Djava.library.path=${basedir}/jni</argLine>
           <runOrder>alphabetical</runOrder>

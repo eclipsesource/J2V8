@@ -21,5 +21,9 @@ hs_err*.log
 *.iws
 .idea
 
+# python binaries
+*.pyc
+
 # Build output.
 node
+cmake.out
