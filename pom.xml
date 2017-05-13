@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<os>macosx</os>
+	<os>${env.MVN_PLATFORM_NAME}</os>
   <ws>gtk</ws>
-	<arch>x86_x64</arch>
+	<arch>${env.MVN_ARCH_NAME}</arch>
   </properties>
 
   <groupId>com.eclipsesource.j2v8</groupId>
