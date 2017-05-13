@@ -11,6 +11,7 @@ arch_arm = 'arm'
 
 # core build-steps
 build_node_js = 'nodejs'
+build_j2v8_cmake = 'j2v8cmake'
 build_j2v8_jni = 'j2v8jni'
 build_j2v8_java = 'j2v8java'
 

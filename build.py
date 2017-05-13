@@ -10,6 +10,7 @@ from build_system.config_win32 import win32_config
 
 build_step_sequence = [
     c.build_node_js,
+    c.build_j2v8_cmake,
     c.build_j2v8_jni,
     c.build_j2v8_java,
 ]
@@ -23,6 +24,7 @@ avail_targets = {
 
 avail_build_steps = [
     c.build_node_js,
+    c.build_j2v8_cmake,
     c.build_j2v8_jni,
     c.build_j2v8_java,
     c.build_all,
@@ -79,6 +81,7 @@ def parse_build_step_option(step):
         c.build_native: add_native,
         c.build_java: add_managed,
         c.build_node_js: lambda: buildsteps.add(c.build_node_js),
+        c.build_j2v8_cmake: lambda: buildsteps.add(c.build_j2v8_cmake),
         c.build_j2v8_jni: lambda: buildsteps.add(c.build_j2v8_jni),
         c.build_j2v8_java: lambda: buildsteps.add(c.build_j2v8_java),
     }.get(step, raise_unhandled_option)
@@ -89,6 +92,7 @@ def add_all():
 
 def add_native():
     buildsteps.add(c.build_node_js)
+    buildsteps.add(c.build_j2v8_cmake)
     buildsteps.add(c.build_j2v8_jni)
 
 def add_managed():
