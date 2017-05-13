@@ -2,6 +2,8 @@ import build_platform as b
 
 # b.execute_build(b.target_macos, b.arch_x86, b.build_all, node_enabled = True, cross_compile = True)
 b.execute_build(b.target_macos, b.arch_x64, b.build_all, node_enabled = True, cross_compile = True)
+# b.execute_build(b.target_macos, b.arch_x64, [b.build_j2v8_jni, b.build_j2v8_java], node_enabled = True, cross_compile = True)
+# b.execute_build(b.target_macos, b.arch_x64, [b.build_j2v8_java], node_enabled = True, cross_compile = True)
 
 # b.execute_build(b.target_linux, b.arch_x64, b.build_all, True, True)
 

@@ -59,7 +59,7 @@ function (get_njs_libs nodejs_dir config_name)
             ${njs_out}/libgtest.a
             ${njs_out}/libhttp_parser.a
             ${njs_out}/libuv.a
-            ${njs_out}/libnode.a
+            -force_load ${njs_out}/libnode.a
             ${njs_out}/libopenssl.a
             ${njs_out}/libzlib.a
         )

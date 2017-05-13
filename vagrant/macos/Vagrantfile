@@ -37,11 +37,9 @@ curl http://mirror.klaus-uwe.me/apache/maven/maven-3/3.5.0/binaries/apache-maven
 
 echo Installing Maven...
 sudo tar xzvf apache-maven-3.5.0-bin.tar.gz -C /opt/
+sudo chmod -R 777 /opt/apache-maven-3.5.0
 SCRIPT
 
-$set_env = <<SCRIPT
-sudo cp /vagrant/.profile /Users/vagrant/
-SCRIPT
 
 Vagrant.configure(2) do |config|
 
@@ -61,5 +59,5 @@ Vagrant.configure(2) do |config|
     config.vm.provision "shell", inline: $fix_xcode_paths
     config.vm.provision "shell", inline: $provision_java
     config.vm.provision "shell", inline: $provision_cmake
-    config.vm.provision "shell", inline: $set_env
+    config.vm.provision "shell", inline: $provision_maven
 end

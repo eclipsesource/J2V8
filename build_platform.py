@@ -81,10 +81,9 @@ targets = {
                 platform = "macos",
                 build =
                 [
-                    #"export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home",
-                    #"export PATH=/opt/apache-maven-3.5.0/bin:$PATH",
-                    # "/Users/vagrant/./.profile",
-                    "sudo mvn clean verify",
+                    "export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home",
+                    "export PATH=/opt/apache-maven-3.5.0/bin:$PATH",
+                    "mvn clean verify -e",
                 ]
             ),
         }
