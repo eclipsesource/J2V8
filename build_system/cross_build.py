@@ -4,13 +4,14 @@ import os
 import subprocess
 import sys
 
-cwd = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
+cwd = os.getcwd().replace("\\", "/")
 
 def execute(cmd, cwd = None):
     popen = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
     # for stdout_line in iter(popen.stdout.readline, ""):
     #     yield stdout_line 
     # popen.stdout.close()
+
     return_code = popen.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)

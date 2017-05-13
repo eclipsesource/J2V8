@@ -1,5 +1,5 @@
 import build as b
-import build_constants as c
+import build_system.constants as c
 
 # b.execute_build(c.target_macos, c.arch_x86, c.build_all, node_enabled = True, cross_compile = True)
 b.execute_build(c.target_macos, c.arch_x64, c.build_all, node_enabled = True, cross_compile = True)

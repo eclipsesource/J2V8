@@ -1,34 +1,34 @@
 import argparse
 import sys
-import build_constants as bc
-from shell_build import ShellBuildSystem
+import build_system.constants as c
+from build_system.shell_build import ShellBuildSystem
 
-from config_android import android_config
-from config_linux import linux_config
-from config_macos import macos_config
-from config_win32 import win32_config
+from build_system.config_android import android_config
+from build_system.config_linux import linux_config
+from build_system.config_macos import macos_config
+from build_system.config_win32 import win32_config
 
 build_step_sequence = [
-    bc.build_node_js,
-    bc.build_j2v8_jni,
-    bc.build_j2v8_java,
+    c.build_node_js,
+    c.build_j2v8_jni,
+    c.build_j2v8_java,
 ]
 
 avail_targets = {
-    bc.target_android: android_config,
-    bc.target_linux: linux_config,
-    bc.target_macos: macos_config,
-    bc.target_win32: win32_config,
+    c.target_android: android_config,
+    c.target_linux: linux_config,
+    c.target_macos: macos_config,
+    c.target_win32: win32_config,
 }
 
 avail_build_steps = [
-    bc.build_node_js,
-    bc.build_j2v8_jni,
-    bc.build_j2v8_java,
-    bc.build_all,
-    bc.build_full,
-    bc.build_native,
-    bc.build_java,
+    c.build_node_js,
+    c.build_j2v8_jni,
+    c.build_j2v8_java,
+    c.build_all,
+    c.build_full,
+    c.build_native,
+    c.build_java,
 ]
 
 #-----------------------------------------------------------------------
@@ -40,18 +40,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--target', '-t',
                     dest='target',
                     choices=[
-                        bc.target_android,
-                        bc.target_linux,
-                        bc.target_macos,
-                        bc.target_win32,
+                        c.target_android,
+                        c.target_linux,
+                        c.target_macos,
+                        c.target_win32,
                     ])
 
 parser.add_argument('--arch', '-a',
                     dest='arch',
                     choices=[
-                        bc.arch_x86,
-                        bc.arch_x64,
-                        bc.arch_arm,
+                        c.arch_x86,
+                        c.arch_x64,
+                        c.arch_arm,
                     ])
 
 parser.add_argument('--cross-compile', '-x',
@@ -74,13 +74,13 @@ buildsteps = set()
 
 def parse_build_step_option(step):
     return {
-        bc.build_all: add_all,
-        bc.build_full: add_all,
-        bc.build_native: add_native,
-        bc.build_java: add_managed,
-        bc.build_node_js: lambda: buildsteps.add(bc.build_node_js),
-        bc.build_j2v8_jni: lambda: buildsteps.add(bc.build_j2v8_jni),
-        bc.build_j2v8_java: lambda: buildsteps.add(bc.build_j2v8_java),
+        c.build_all: add_all,
+        c.build_full: add_all,
+        c.build_native: add_native,
+        c.build_java: add_managed,
+        c.build_node_js: lambda: buildsteps.add(c.build_node_js),
+        c.build_j2v8_jni: lambda: buildsteps.add(c.build_j2v8_jni),
+        c.build_j2v8_java: lambda: buildsteps.add(c.build_j2v8_java),
     }.get(step, raise_unhandled_option)
 
 def add_all():
@@ -88,11 +88,11 @@ def add_all():
     add_managed()
 
 def add_native():
-    buildsteps.add(bc.build_node_js)
-    buildsteps.add(bc.build_j2v8_jni)
+    buildsteps.add(c.build_node_js)
+    buildsteps.add(c.build_j2v8_jni)
 
 def add_managed():
-    buildsteps.add(bc.build_j2v8_java)
+    buildsteps.add(c.build_j2v8_java)
 
 def raise_unhandled_option():
     sys.exit("INTERNAL-ERROR: Tried to handle unrecognized build-step")
