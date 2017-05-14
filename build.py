@@ -1,5 +1,9 @@
 import argparse
+import collections
+import os
+import re
 import sys
+
 import build_system.constants as c
 from build_system.shell_build import ShellBuildSystem
 
@@ -104,9 +108,60 @@ def raise_unhandled_option():
 args = parser.parse_args()
 
 #-----------------------------------------------------------------------
+# Sanity check for the builtin node-module links in J2V8 C++ JNI code
+#-----------------------------------------------------------------------
+def check_node_builtins():
+    j2v8_jni_cpp_path = "jni/com_eclipsesource_v8_V8Impl.cpp"
+    j2v8_builtins = []
+
+    with open(j2v8_jni_cpp_path, 'r') as j2v8_jni_cpp:
+        j2v8_code = j2v8_jni_cpp.read()
+
+    tag = "// @node-builtins-force-link"
+    start = j2v8_code.find(tag)
+
+    end1 = j2v8_code.find("}", start)
+    end2 = j2v8_code.find("#endif", start)
+
+    if (end1 < 0 and end2 < 0):
+        return
+
+    end = min(int(e) for e in [end1, end2])
+
+    if (end < 0):
+        return
+
+    j2v8_linked_builtins = j2v8_code[start + len(tag):end]
+
+    j2v8_builtins = [m for m in re.finditer(r"^\s*_register_(?P<name>.+)\(\);\s*$", j2v8_linked_builtins, re.M)]
+
+    comment_tokens = ["//", "/*", "*/"]
+
+    j2v8_builtins = [x.group("name") for x in j2v8_builtins if not any(c in x.group(0) for c in comment_tokens)]
+
+    node_src = "node/src/"
+    node_builtins = []
+    for cc_file in os.listdir(node_src):
+        if (not cc_file.endswith(".cc")):
+            continue
+
+        with open(node_src + cc_file, 'r') as node_cpp:
+            node_code = node_cpp.read()
+
+        m = re.search(r"NODE_MODULE_CONTEXT_AWARE_BUILTIN\((.*),\s*node::.*\)", node_code)
+
+        if (m is not None):
+            node_builtins.append(m.group(1))
+
+    # are all Node.js builtins mentioned?
+    builtins_ok = collections.Counter(j2v8_builtins) == collections.Counter(node_builtins)
+
+    if (not builtins_ok):
+        sys.exit("ERROR: J2V8 linking builtins code does not match Node.js builtin modules, check " + j2v8_jni_cpp_path)
+
+#-----------------------------------------------------------------------
 # Build execution core function
 #-----------------------------------------------------------------------
-
 def execute_build(target, arch, steps, node_enabled = True, cross_compile = False):
 
     if (target is None):
@@ -148,10 +203,16 @@ def execute_build(target, arch, steps, node_enabled = True, cross_compile = Fals
         x_cmd = "python ./build.py -t $PLATFORM -a $ARCH " + ("-ne" if node_enabled else "") + " " + " ".join(buildsteps)
         x_compiler.build(x_config, arch, x_cmd)
     else:
+        # pre-build sanity checks
+        check_node_builtins()
+
         # TODO: get native build system Batch vs Shell
         host_compiler = ShellBuildSystem()
         host_configs = dict(configs)
-        del host_configs['cross']
+
+        if (host_configs.has_key('cross')):
+            del host_configs['cross']
+
         # build all requested build steps
         [host_compiler.build(host_configs[step], arch) for step in buildsteps]
 
