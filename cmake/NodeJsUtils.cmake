@@ -13,12 +13,14 @@ function (get_njs_libs nodejs_dir config_name)
         # project link libraries
         set (njs_libs
             # nodejs/build/$Config/lib
+            ${njs_build_lib}/standalone_inspector.lib
             ${njs_build_lib}/v8_base_0.lib
             ${njs_build_lib}/v8_base_1.lib
             ${njs_build_lib}/v8_base_2.lib
             ${njs_build_lib}/v8_base_3.lib
             ${njs_build_lib}/v8_libbase.lib
             ${njs_build_lib}/v8_libplatform.lib
+            ${njs_build_lib}/v8_libsampler.lib
             ${njs_build_lib}/v8_nosnapshot.lib
             ${njs_build_lib}/v8_snapshot.lib
 
@@ -29,6 +31,11 @@ function (get_njs_libs nodejs_dir config_name)
             ${njs_extra_lib}/cares.lib
             ${njs_extra_lib}/gtest.lib
             ${njs_extra_lib}/http_parser.lib
+            ${njs_extra_lib}/icudata.lib
+            ${njs_extra_lib}/icui18n.lib
+            ${njs_extra_lib}/icustubdata.lib
+            ${njs_extra_lib}/icutools.lib
+            ${njs_extra_lib}/icuucx.lib
             ${njs_extra_lib}/libuv.lib
             ${njs_extra_lib}/node.lib
             ${njs_extra_lib}/openssl.lib
@@ -36,6 +43,10 @@ function (get_njs_libs nodejs_dir config_name)
 
             # nodejs/$Config
             ${njs_extra}/cctest.lib
+
+            # additional windows libs, required by Node.js
+            Dbghelp
+            Shlwapi
         )
 
         set (njs_${config_name}_libs ${njs_libs} PARENT_SCOPE)
