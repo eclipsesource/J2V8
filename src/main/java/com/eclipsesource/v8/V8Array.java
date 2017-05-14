@@ -555,6 +555,10 @@ public class V8Array extends V8Object {
                 v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), (Double) value);
             } else if(value instanceof Integer){
                 v8.addArrayIntItem(v8.getV8RuntimePtr(), getHandle(), (Integer) value);
+            } else if(value instanceof Float) {
+                v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), ((Float) value).doubleValue());
+            } else if(value instanceof Number) {
+                v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), ((Number) value).doubleValue());
             } else if(value instanceof Boolean){
                 v8.addArrayBooleanItem(v8.getV8RuntimePtr(), getHandle(), (Boolean) value);
             } else if(value instanceof String){
