@@ -23,6 +23,7 @@ def build_node_js(config, arch):
             --enable-static""",
         "make -j4",
     ]
+
 macos_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
 def build_j2v8_cmake(config, arch):
@@ -55,5 +56,6 @@ def build_j2v8_java(config, arch):
         "mkdir -p build.out",
         "cp target/j2v8_macosx_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/",
     ]
+
 macos_config.build_step(c.build_j2v8_java, build_j2v8_java)
 #-----------------------------------------------------------------------
