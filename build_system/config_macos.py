@@ -30,7 +30,7 @@ def build_j2v8_cmake(config, arch):
     return [
         "mkdir -p cmake.out/$PLATFORM.$ARCH",
         "cd cmake.out/$PLATFORM.$ARCH",
-        "rm -rf CMakeCache.txt",
+        "rm -rf CMakeCache.txt CMakeFiles/",
         "cmake ../../",
     ]
 

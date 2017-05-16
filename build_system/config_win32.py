@@ -16,9 +16,9 @@ win32_config.build_step(c.build_node_js, build_node_js)
 def build_j2v8_cmake(config, arch):
     cmake_gen_suffix = " Win64" if arch == c.arch_x64 else ""
     return [
-        "if not exist cmake.out\\$PLATFORM.$ARCH mkdir cmake.out\\$PLATFORM.$ARCH",
+        "python build_system/mkdir.py cmake.out/$PLATFORM.$ARCH",
         "cd cmake.out\\$PLATFORM.$ARCH",
-        "rm -rf CMakeCache.txt",
+        "rm -rf CMakeCache.txt CMakeFiles/",
         "cmake ..\\..\\ -G\"Visual Studio 14 2015" + cmake_gen_suffix + "\"",
     ]
 
@@ -39,7 +39,7 @@ def build_j2v8_java(config, arch):
         "set \"MVN_ARCH_NAME=" + file_arch + "\"",
         "mvn clean verify -e",
         # "mvn -DskipTests=true verify",
-        "if not exist build.out mkdir build.out",
+        "python build_system/mkdir.py build.out",
         "cp target/j2v8_win32_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/",
     ]
 

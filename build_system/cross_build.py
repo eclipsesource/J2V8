@@ -89,9 +89,9 @@ class BuildSystem:
             # substitute variables that can contain variables first
             .replace("$MOUNTS", mounts_str)
             # substitute atomic variables later
-            .replace("$CWD", cwd)
             .replace("$BUILD_CWD", config.build_cwd or cwd)
             .replace("$HOST_CWD", config.host_cwd or "")
+            .replace("$CWD", cwd)
             .replace("$PLATFORM", config.platform)
             .replace("$ARCH", arch)
         )

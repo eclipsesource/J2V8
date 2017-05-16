@@ -14,14 +14,36 @@ include(Policies)
 #-----------------------------------------------------------------------
 # BUILD PLATFORM SETUP & VARIABLES
 #-----------------------------------------------------------------------
-if(APPLE)
+
+message ("CMAKE SYSTEM ${CMAKE_SYSTEM_NAME}")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+#{
+    set(JAVA_PLATFORM_NAME "android")
+
+    # output library filename
+    set(J2V8_LIB_PLATFORM_NAME "android")
+    set(J2V8_LIB_PREFIX "")
+    set(J2V8_LIB_ARCH_NAME "armv7l")
+#}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+#{
     set(JAVA_PLATFORM_NAME "darwin")
+
+    # output library filename
     set(J2V8_LIB_PLATFORM_NAME "macosx")
     set(J2V8_LIB_PREFIX "")
-elseif(WIN32)
+    set(J2V8_LIB_ARCH_NAME "x86")
+#}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+#{
     set(JAVA_PLATFORM_NAME "win32")
+
+    # output library filename
     set(J2V8_LIB_PLATFORM_NAME "win32")
     set(J2V8_LIB_PREFIX "lib")
+    set(J2V8_LIB_ARCH_NAME "x86")
+#}
 endif()
 
 #-----------------------------------------------------------------------
@@ -70,9 +92,13 @@ source_group("" FILES ${src_files})
 #-----------------------------------------------------------------------
 
 # tell gcc/clang to use the c++11 standard
-if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-endif()
+set(CMAKE_CXX_STANDARD 11) # TODO: test if this is an ok cross-platform option for all platforms
+
+# if(CMAKE_SYSTEM_NAME STREQUAL "Linux") #TODO: also needed on MacOS !?
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+# else()
+#     set(CMAKE_CXX_STANDARD 11)
+# endif()
 
 # remove the MinSizeRel and RelWithDebInfo configurations
 if(J2V8_BUILD_ONLY_DEBUG_RELEASE)
@@ -114,11 +140,11 @@ target_link_libraries(j2v8
 
 # apply lib suffix if building a 64 bit target
 if(CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCH_SUFFIX "_64")
+    set(J2V8_LIB_ARCH_NAME "${J2V8_LIB_ARCH_NAME}_64")
 endif()
 
 # set library output filename
-set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${PROJECT_NAME}_${J2V8_LIB_PLATFORM_NAME}_x86${ARCH_SUFFIX}")
+set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${PROJECT_NAME}_${J2V8_LIB_PLATFORM_NAME}_${J2V8_LIB_ARCH_NAME}")
 
 # copy native lib to J2V8 project resources directory
 add_custom_command(TARGET j2v8 POST_BUILD
