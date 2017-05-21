@@ -36,7 +36,7 @@ def build_j2v8_cmake(config, arch):
         "cd cmake.out/$PLATFORM.$ARCH",
         "rm -rf CMakeCache.txt CMakeFiles/",
         # "cmake -DCMAKE_TOOLCHAIN_FILE=/build/android-ndk-r13b/build/cmake/android.toolchain.cmake ../../",
-        "cmake -DCMAKE_TOOLCHAIN_FILE=$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake ../../",
+        "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake ../../",
     ]
 
 android_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)

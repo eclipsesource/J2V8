@@ -24,7 +24,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     # output library filename
     set(J2V8_LIB_PLATFORM_NAME "android")
     set(J2V8_LIB_PREFIX "")
-    set(J2V8_LIB_ARCH_NAME "armv7l")
+    set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #{
@@ -100,6 +100,11 @@ set(CMAKE_CXX_STANDARD 11) # TODO: test if this is an ok cross-platform option f
 #     set(CMAKE_CXX_STANDARD 11)
 # endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
+endif()
+
 # remove the MinSizeRel and RelWithDebInfo configurations
 if(J2V8_BUILD_ONLY_DEBUG_RELEASE)
 #{
@@ -146,9 +151,21 @@ endif()
 # set library output filename
 set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${PROJECT_NAME}_${J2V8_LIB_PLATFORM_NAME}_${J2V8_LIB_ARCH_NAME}")
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+#{
+    # Android libs need to go in a special directory for AAR bundling
+    set(J2V8_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libj2v8.so)
+#}
+else()
+#{
+    # put the platform libs into the java resources directory
+    set(J2V8_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/src/main/resources/${J2V8_LIB_PREFIX}$<TARGET_FILE_NAME:j2v8>)
+#}
+endif()
+
 # copy native lib to J2V8 project resources directory
 add_custom_command(TARGET j2v8 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     $<TARGET_FILE:j2v8>
-                    ${CMAKE_SOURCE_DIR}/src/main/resources/${J2V8_LIB_PREFIX}$<TARGET_FILE_NAME:j2v8>
+                    ${J2V8_OUTPUT_PATH}
 )

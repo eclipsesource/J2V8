@@ -21,6 +21,7 @@ def build_node_js(config, arch):
             --dest-cpu=$ARCH        \
             --without-snapshot      \
             --enable-static""",
+        # "make clean", # NOTE: make this an on/off option
         "make -j4",
     ]
 
@@ -52,6 +53,7 @@ def build_j2v8_java(config, arch):
         "export MVN_PLATFORM_NAME=macosx",
         "export MVN_ARCH_NAME=" + file_arch,
         "mvn clean verify -e",
+        # TODO: maybe make j2v8tests a separate build-step
         # "mvn -DskipTests=true verify",
         "mkdir -p build.out",
         "cp target/j2v8_macosx_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/",

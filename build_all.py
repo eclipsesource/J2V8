@@ -5,9 +5,10 @@ import build_system.constants as c
 
 # Android test
 b.execute_build(c.target_android, c.arch_arm, c.build_all, node_enabled = True, cross_compile = True)
+# b.execute_build(c.target_android, c.arch_x86, c.build_all, node_enabled = True, cross_compile = True)
 
 # MacOS test
-#b.execute_build(c.target_macos, c.arch_x64, c.build_all, node_enabled = True, cross_compile = True)
+# b.execute_build(c.target_macos, c.arch_x64, c.build_all, node_enabled = True, cross_compile = True)
 
 # Win32 test
 # b.execute_build(c.target_win32, c.arch_x64, c.build_all, node_enabled = True, cross_compile = False)
