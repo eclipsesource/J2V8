@@ -40,7 +40,7 @@ public class V8Locker {
      */
     public synchronized void acquire() {
         if ((thread != null) && (thread != Thread.currentThread())) {
-            throw new Error("Invalid V8 thread access");
+            throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
         thread = Thread.currentThread();
     }
@@ -62,7 +62,7 @@ public class V8Locker {
      */
     public void checkThread() {
         if ((thread != Thread.currentThread())) {
-            throw new Error("Invalid V8 thread access");
+            throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
     }
 
