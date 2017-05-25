@@ -54,6 +54,16 @@ public class V8LockerTest {
     }
 
     @Test
+    public void testTryAcquireLocker_True() {
+        V8Locker v8Locker = new V8Locker();
+        v8Locker.release();
+        boolean result = v8Locker.tryAcquire();
+
+        assertTrue(result);
+        v8Locker.checkThread();
+    }
+
+    @Test
     public void testHasLock() {
         V8Locker v8Locker = new V8Locker();
 
@@ -69,8 +79,26 @@ public class V8LockerTest {
     }
 
     @Test
+    public void testThreadLocked_tryAcquire() throws InterruptedException {
+        final V8Locker v8Locker = new V8Locker();
+        final boolean result[] = new boolean[1];
+        Thread t = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                result[0] = v8Locker.tryAcquire();
+            }
+        });
+        t.start();
+        t.join();
+
+        assertFalse(result[0]);
+    }
+
+    @Test
     public void testThreadLocked() throws InterruptedException {
         final V8Locker v8Locker = new V8Locker();
+        passed = false;
         Thread t = new Thread(new Runnable() {
 
             @Override
@@ -78,7 +106,7 @@ public class V8LockerTest {
                 try {
                     v8Locker.checkThread();
                 } catch (Error e) {
-                    assertEquals("Invalid V8 thread access", e.getMessage());
+                    assertTrue(e.getMessage().startsWith("Invalid V8 thread access"));
                     passed = true;
                 }
             }
@@ -97,7 +125,7 @@ public class V8LockerTest {
         try {
             v8Locker.checkThread();
         } catch (Error e) {
-            assertEquals("Invalid V8 thread access", e.getMessage());
+            assertTrue(e.getMessage().startsWith("Invalid V8 thread access"));
             return;
         }
         fail("Expected exception");

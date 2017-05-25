@@ -35,7 +35,7 @@ public class V8Locker {
 
     /**
      * Acquire the lock if it's currently not acquired by another
-     * thread. If it's current held by another thread, an
+     * thread. If it's currently held by another thread, an
      * Error will be thrown.
      */
     public synchronized void acquire() {
@@ -43,6 +43,21 @@ public class V8Locker {
             throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
         thread = Thread.currentThread();
+    }
+
+    /**
+     * Acquire the lock if it's currently not acquired by another
+     * thread. If it's currently held by another thread, tryAcquire
+     * will return false, otherwise true is returned.
+     *
+     * @return Returns true if the lock was acquired, false otherwise.
+     */
+    public synchronized boolean tryAcquire() {
+        if ((thread != null) && (thread != Thread.currentThread())) {
+            return false;
+        }
+        thread = Thread.currentThread();
+        return true;
     }
 
     /**
