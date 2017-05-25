@@ -25,6 +25,15 @@ public class V8Locker {
     }
 
     /**
+     * Returns the current thread associated with locker.
+     *
+     * @return The currently locked thread.
+     */
+    public Thread getThread() {
+        return thread;
+    }
+
+    /**
      * Acquire the lock if it's currently not acquired by another
      * thread. If it's current held by another thread, an
      * Error will be thrown.
