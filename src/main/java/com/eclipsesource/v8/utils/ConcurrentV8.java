@@ -48,14 +48,14 @@ public final class ConcurrentV8 {
     }
 
     /**
-     * Runs an {@link ConcurrentV8Runnable} on the V8 thread.
+     * Runs an {@link V8Runnable} on the V8 thread.
      *
      * <b>Note: </b> This method executes synchronously, not asynchronously;
-     * it will not return until the passed {@link ConcurrentV8Runnable} is done
+     * it will not return until the passed {@link V8Runnable} is done
      * executing. The method is also synchronized, so it will block until it
      * gets a chance to run.
      *
-     * @param runnable {@link ConcurrentV8Runnable} to run.
+     * @param runnable {@link V8Runnable} to run.
      */
     public synchronized void run(final V8Runnable runnable) {
         try {
