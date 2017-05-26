@@ -17,3 +17,27 @@ else
 fi
 ./buildAll.sh
 ./gradlew clean build uploadArchives -x test
+
+SUFFIX="-P release"
+#SUFFIX=""
+
+cp pom.xml pom_template.xml
+
+echo "Deploying Linux"
+rm src/main/resources/*j2v8*
+cp jni/libj2v8_linux_x86_64.so src/main/resources/libj2v8_linux_x86_64.so
+sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
+sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
+sed s/\$\{ws\}/gtk/g < pom2.xml  > pom.xml
+mvn -Dos=linux -Darch=x86_64 clean deploy $SUFFIX -Dmaven.test.skip=true
+STATUS=$?
+cp pom_template.xml pom.xml
+rm pom_template.xml
+rm pom1.xml
+rm pom2.xml
+if [ $STATUS -eq 0 ]; then
+ echo "Linux Deployment Successful"
+else
+ echo "Linux Deployment Failed"
+ exit $STATUS
+fi
