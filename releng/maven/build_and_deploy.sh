@@ -24,7 +24,7 @@ SUFFIX="-P release"
 cp pom.xml pom_template.xml
 
 echo "Deploying Linux"
-rm src/main/resources/*j2v8*
+mkdir src/main/resources
 cp jni/libj2v8_linux_x86_64.so src/main/resources/libj2v8_linux_x86_64.so
 sed s/\$\{os\}/linux/g < pom_template.xml  > pom1.xml
 sed s/\$\{arch\}/x86_64/g < pom1.xml  > pom2.xml
