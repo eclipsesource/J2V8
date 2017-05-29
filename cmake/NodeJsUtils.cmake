@@ -109,6 +109,38 @@ function (get_njs_libs nodejs_dir config_name)
 
         set (njs_${config_name}_libs ${njs_libs} PARENT_SCOPE)
     #}
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    #{
+        # base directories for Node.js link libraries
+        set (njs_out_target ${nodejs_dir}/out/${config_name}/obj.target)
+        set (njs_out_v8 ${nodejs_dir}/out/${config_name}/obj.target/deps/v8/src)
+        set (njs_out_deps ${nodejs_dir}/out/${config_name}/obj.target/deps)
+
+        # project link libraries
+        set (njs_libs
+            # node libs
+            -Wl,--start-group
+            ${njs_out_deps}/uv/libuv.a
+            ${njs_out_deps}/openssl/libopenssl.a
+            ${njs_out_deps}/http_parser/libhttp_parser.a
+            ${njs_out_deps}/gtest/libgtest.a
+            ${njs_out_deps}/zlib/libzlib.a
+            ${njs_out_deps}/cares/libcares.a
+
+            # v8 libs
+            ${njs_out_v8}/libv8_base.a
+            ${njs_out_v8}/libv8_nosnapshot.a
+            ${njs_out_v8}/libv8_libplatform.a
+            ${njs_out_v8}/libv8_libbase.a
+            ${njs_out_v8}/libv8_libsampler.a
+
+            -Wl,--whole-archive ${njs_out_target}/libnode.a -Wl,--no-whole-archive
+
+            -Wl,--end-group
+        )
+
+        set (njs_${config_name}_libs ${njs_libs} PARENT_SCOPE)
+    #}
     endif()
 #}
 endfunction (get_njs_libs)

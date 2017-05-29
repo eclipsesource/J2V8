@@ -24,7 +24,8 @@ hs_err*.log
 # python binaries
 *.pyc
 
-# Build output.
+# Build input/output.
 node
-cmake.out
 build.out
+cmake.out
+node.out

@@ -17,6 +17,7 @@ build_step_sequence = [
     c.build_j2v8_cmake,
     c.build_j2v8_jni,
     c.build_j2v8_java,
+    c.build_j2v8_junit,
 ]
 
 avail_targets = {
@@ -27,10 +28,14 @@ avail_targets = {
 }
 
 avail_build_steps = [
+    # detail steps
     c.build_node_js,
     c.build_j2v8_cmake,
     c.build_j2v8_jni,
     c.build_j2v8_java,
+    c.build_j2v8_junit,
+
+    # aggregate steps
     c.build_all,
     c.build_full,
     c.build_native,
@@ -88,6 +93,7 @@ def parse_build_step_option(step):
         c.build_j2v8_cmake: lambda: buildsteps.add(c.build_j2v8_cmake),
         c.build_j2v8_jni: lambda: buildsteps.add(c.build_j2v8_jni),
         c.build_j2v8_java: lambda: buildsteps.add(c.build_j2v8_java),
+        c.build_j2v8_junit: lambda: buildsteps.add(c.build_j2v8_junit),
     }.get(step, raise_unhandled_option)
 
 def add_all():

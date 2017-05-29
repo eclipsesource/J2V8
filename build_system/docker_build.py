@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from shutil import copy2
 from cross_build import BuildSystem
 
 class DockerBuildSystem(BuildSystem):
@@ -20,7 +21,13 @@ class DockerBuildSystem(BuildSystem):
 
     def pre_build(self, config, arch):
         print ("preparing " + config.platform + "@" + arch + " => " + config.name)
-        self.exec_host_cmd("docker build -t \"j2v8-$PLATFORM\" .", config, arch)
+
+        # copy the maven  & gradle config file to the docker shared directory
+        # this allows to download most of the maven dependencies for the build beforehand
+        copy2("pom.xml", "./docker/shared")
+        copy2("build.gradle", "./docker/shared")
+
+        self.exec_host_cmd("docker build -f $PLATFORM/Dockerfile -t \"j2v8-$PLATFORM\" .", config, arch)
 
     def exec_build(self, config, arch, custom_cmd):
         print ("DOCKER building " + config.platform + "@" + arch + " => " + config.name)

@@ -1,0 +1,4 @@
+# these are just copies of the actual files from the main directory
+# no need to track duplicate files
+pom.xml
+build.gradle

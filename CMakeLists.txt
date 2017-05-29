@@ -26,6 +26,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(J2V8_LIB_PREFIX "")
     set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
 #}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#{
+    set(JAVA_PLATFORM_NAME "linux")
+
+    # output library filename
+    set(J2V8_LIB_PLATFORM_NAME "linux")
+    set(J2V8_LIB_PREFIX "")
+    set(J2V8_LIB_ARCH_NAME "x86")
+#}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #{
     set(JAVA_PLATFORM_NAME "darwin")
