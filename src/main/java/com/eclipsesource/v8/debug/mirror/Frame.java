@@ -19,8 +19,8 @@ import com.eclipsesource.v8.V8Object;
  */
 public class Frame extends Mirror {
 
-    private static final String END             = "end";
-    private static final String START           = "start";
+    private static final String SOURCE_TEXT     = "sourceText";
+    private static final String FUNC            = "func";
     private static final String COLUMN          = "column";
     private static final String LINE            = "line";
     private static final String POSITION        = "position";
@@ -56,17 +56,27 @@ public class Frame extends Mirror {
      */
     public SourceLocation getSourceLocation() {
         V8Object sourceLocation = v8Object.executeObjectFunction(SOURCE_LOCATION, null);
+        FunctionMirror function = getFunction();
+        String functionScriptName = function.getScriptName();
         try {
+            String scriptName = null;
             V8Object scriptObject = (V8Object) sourceLocation.get(SCRIPT);
-            String scriptName = scriptObject.getString(NAME);
-            scriptObject.release();
+            if (scriptObject != null) {
+                scriptName = scriptObject.getString(NAME);
+                scriptObject.release();
+            }
+            if ((scriptName == null) && (functionScriptName != null)) {
+                scriptName = functionScriptName;
+            } else {
+                scriptName = "undefined";
+            }
             return new SourceLocation(scriptName,
-                sourceLocation.getInteger(POSITION),
-                sourceLocation.getInteger(LINE),
-                sourceLocation.getInteger(COLUMN),
-                sourceLocation.getInteger(START),
-                sourceLocation.getInteger(END));
+                    sourceLocation.getInteger(POSITION),
+                    sourceLocation.getInteger(LINE),
+                    sourceLocation.getInteger(COLUMN),
+                    sourceLocation.getString(SOURCE_TEXT));
         } finally {
+            function.release();
             sourceLocation.release();
         }
     }
@@ -198,7 +208,7 @@ public class Frame extends Mirror {
     public FunctionMirror getFunction() {
         V8Object function = null;
         try {
-            function = v8Object.executeObjectFunction("func", null);
+            function = v8Object.executeObjectFunction(FUNC, null);
             return new FunctionMirror(function);
         } finally {
             if (function != null) {

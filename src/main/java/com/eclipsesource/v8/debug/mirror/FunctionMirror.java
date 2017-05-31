@@ -17,6 +17,9 @@ import com.eclipsesource.v8.V8Object;
  */
 public class FunctionMirror extends ObjectMirror {
 
+    private static final String NAME   = "name";
+    private static final String SCRIPT = "script";
+
     FunctionMirror(final V8Object v8Object) {
         super(v8Object);
     }
@@ -27,7 +30,22 @@ public class FunctionMirror extends ObjectMirror {
      * @return The name of this function
      */
     public String getName() {
-        return v8Object.executeStringFunction("name", null);
+        return v8Object.executeStringFunction(NAME, null);
+    }
+
+    /**
+     * Returns the name of the Script associated with
+     * this FunctionMirror.
+     * 
+     * @return The name of the script.
+     */
+    public String getScriptName() {
+        V8Object script = v8Object.executeObjectFunction(SCRIPT, null);
+        try {
+            return script.executeStringFunction(NAME, null);
+        } finally {
+            script.release();
+        }
     }
 
     @Override
