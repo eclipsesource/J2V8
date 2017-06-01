@@ -43,7 +43,8 @@ import com.eclipsesource.v8.utils.typedarrays.UInt8ClampedArray;
  */
 public class V8ObjectUtils {
 
-    private static final Object IGNORE = new Object();
+    private static final Object      IGNORE               = new Object();
+    private static final TypeAdapter DEFAULT_TYPE_ADAPTER = new DefaultTypeAdapter();
 
     /**
      * Creates a Map from a V8Object using a deep copy. All elements
@@ -55,9 +56,23 @@ public class V8ObjectUtils {
      * @return A map representing a deep copy of the V8Object rooted at 'object'.
      */
     public static Map<String, ? super Object> toMap(final V8Object object) {
+        return toMap(object, DEFAULT_TYPE_ADAPTER);
+    }
+
+    /**
+     * Creates a Map from a V8Object using a deep copy and a TypeAdapter to handle
+     * type conversions. All elements in the V8Object are released after they are accessed.
+     * However, the root object itself is not released.
+     *
+     * @param object The root of the V8Object graph.
+     * @param adapter The {@link TypeAdapter} to use for the object conversions.
+     *
+     * @return A map representing a deep copy of the V8Object rooted at 'object'.
+     */
+    public static Map<String, ? super Object> toMap(final V8Object object, final TypeAdapter adapter) {
         V8Map<Object> cache = new V8Map<Object>();
         try {
-            return toMap(object, cache);
+            return toMap(object, cache, adapter);
         } finally {
             cache.release();
         }
@@ -73,9 +88,23 @@ public class V8ObjectUtils {
      * @return A list representing a deep copy of the V8Array rooted at 'array'.
      */
     public static List<? super Object> toList(final V8Array array) {
+        return toList(array, DEFAULT_TYPE_ADAPTER);
+    }
+
+    /**
+     * Creates a List from a V8Array using a deep copy and a TypeAdapter to handle
+     * type conversions. All elements in the V8Array are released after they are accessed.
+     * However, the root array itself is not released.
+     *
+     * @param array The root of the V8Array graph.
+     * @param adapter The {@link TypeAdapter} to use for the object conversions.
+     *
+     * @return A list representing a deep copy of the V8Array rooted at 'array'.
+     */
+    public static List<? super Object> toList(final V8Array array, final TypeAdapter adapter) {
         V8Map<Object> cache = new V8Map<Object>();
         try {
-            return toList(array, cache);
+            return toList(array, cache, adapter);
         } finally {
             cache.release();
         }
@@ -272,7 +301,30 @@ public class V8ObjectUtils {
     public static Object getValue(final V8Array array, final int index) {
         V8Map<Object> cache = new V8Map<Object>();
         try {
-            return getValue(array, index, cache);
+            return getValue(array, index, cache, DEFAULT_TYPE_ADAPTER);
+        } finally {
+            cache.release();
+        }
+    }
+
+    /**
+     * Gets a Java Object representing the value at the given index in the V8Array.
+     * A TypeAdapter is used to convert values from V8Objects to Java Objects.
+     * If the value is a primitive (int, boolean or double) then a boxed instance
+     * is returned. If the value is a String, then a String is returned. If
+     * the value is a V8Object or V8Array, then a Map or List is returned.
+     *
+     * @param array The array on which to lookup the value. The array is not
+     *              released.
+     * @param index The index whose element to lookup.
+     * @param adapter The {@link TypeAdapter} to use for the object conversions.
+     *
+     * @return A Java Object representing the value at a given index.
+     */
+    public static Object getValue(final V8Array array, final int index, final TypeAdapter adapter) {
+        V8Map<Object> cache = new V8Map<Object>();
+        try {
+            return getValue(array, index, cache, adapter);
         } finally {
             cache.release();
         }
@@ -291,16 +343,34 @@ public class V8ObjectUtils {
      * @return A Java Object representing the value at a given key.
      */
     public static Object getValue(final V8Object object, final String key) {
+        return getValue(object, key, DEFAULT_TYPE_ADAPTER);
+    }
+
+    /**
+     * Gets a Java Object representing the value with the given key in the V8Object.
+     * A TypeAdapter is used to convert values from V8Objects to Java Objects.
+     * If the value is a primitive (int, boolean or double) then a boxed instance
+     * is returned. If the value is a String, then a String is returned. If
+     * the value is a V8Object or V8Array, then a Map or List is returned.
+     *
+     * @param object The object on which to lookup the value. The object is not
+     *               released.
+     * @param key The key to use to lookup the value.
+     * @param adapter The {@link TypeAdapter} to use for the object conversions.
+     *
+     * @return A Java Object representing the value at a given key.
+     */
+    public static Object getValue(final V8Object object, final String key, final TypeAdapter adapter) {
         V8Map<Object> cache = new V8Map<Object>();
         try {
-            return getValue(object, key, cache);
+            return getValue(object, key, cache, adapter);
         } finally {
             cache.release();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, ? super Object> toMap(final V8Object object, final V8Map<Object> cache) {
+    private static Map<String, ? super Object> toMap(final V8Object object, final V8Map<Object> cache, final TypeAdapter adapter) {
         if (object == null) {
             return Collections.emptyMap();
         }
@@ -311,7 +381,7 @@ public class V8ObjectUtils {
         cache.put(object, result);
         String[] keys = object.getKeys();
         for (String key : keys) {
-            Object value = getValue(object, key, cache);
+            Object value = getValue(object, key, cache, adapter);
             if (value != IGNORE) {
                 result.put(key, value);
             }
@@ -320,7 +390,7 @@ public class V8ObjectUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<? super Object> toList(final V8Array array, final V8Map<Object> cache) {
+    private static List<? super Object> toList(final V8Array array, final V8Map<Object> cache, final TypeAdapter adapter) {
         if (array == null) {
             return Collections.emptyList();
         }
@@ -330,9 +400,9 @@ public class V8ObjectUtils {
         List<? super Object> result = new ArrayList<Object>();
         cache.put(array, result);
         for (int i = 0; i < array.length(); i++) {
-            Object value = getValue(array, i, cache);
+            Object value = getValue(array, i, cache, adapter);
             if (value != IGNORE) {
-                result.add(getValue(array, i, cache));
+                result.add(value);
             }
         }
         return result;
@@ -418,17 +488,17 @@ public class V8ObjectUtils {
         if (value == null) {
             result.pushUndefined();
         } else if (value instanceof Integer) {
-            result.push((Integer) value);
+            result.push(value);
         } else if (value instanceof Long) {
             result.push(new Double((Long) value));
         } else if (value instanceof Double) {
-            result.push((Double) value);
+            result.push(value);
         } else if (value instanceof Float) {
-            result.push((Float) value);
+            result.push(value);
         } else if (value instanceof String) {
             result.push((String) value);
         } else if (value instanceof Boolean) {
-            result.push((Boolean) value);
+            result.push(value);
         } else if (value instanceof V8Object) {
             result.push((V8Object) value);
         } else if (value instanceof TypedArray) {
@@ -483,8 +553,19 @@ public class V8ObjectUtils {
         }
     }
 
-    private static Object getValue(final V8Array array, final int index, final V8Map<Object> cache) {
+    private static Object getValue(final V8Array array, final int index, final V8Map<Object> cache, final TypeAdapter adapter) {
         int valueType = array.getType(index);
+        Object value = array.get(index);
+        try {
+            Object adapterResult = adapter.adapt(valueType, value);
+            if (TypeAdapter.DEFAULT != adapterResult) {
+                return adapterResult;
+            }
+        } finally {
+            if ((value != null) && (value instanceof V8Value)) {
+                ((V8Value) value).release();
+            }
+        }
         switch (valueType) {
             case V8Value.INTEGER:
                 return array.getInteger(index);
@@ -515,7 +596,7 @@ public class V8ObjectUtils {
             case V8Value.V8_ARRAY:
                 V8Array arrayValue = array.getArray(index);
                 try {
-                    return toList(arrayValue, cache);
+                    return toList(arrayValue, cache, adapter);
                 } finally {
                     if (arrayValue instanceof V8Array) {
                         arrayValue.release();
@@ -524,7 +605,7 @@ public class V8ObjectUtils {
             case V8Value.V8_OBJECT:
                 V8Object objectValue = array.getObject(index);
                 try {
-                    return toMap(objectValue, cache);
+                    return toMap(objectValue, cache, adapter);
                 } finally {
                     if (objectValue instanceof V8Object) {
                         objectValue.release();
@@ -566,8 +647,19 @@ public class V8ObjectUtils {
         }
     }
 
-    private static Object getValue(final V8Object object, final String key, final V8Map<Object> cache) {
+    private static Object getValue(final V8Object object, final String key, final V8Map<Object> cache, final TypeAdapter adapter) {
         int valueType = object.getType(key);
+        Object value = object.get(key);
+        try {
+            Object adapterResult = adapter.adapt(valueType, value);
+            if (TypeAdapter.DEFAULT != adapterResult) {
+                return adapterResult;
+            }
+        } finally {
+            if ((value != null) && (value instanceof V8Value)) {
+                ((V8Value) value).release();
+            }
+        }
         switch (valueType) {
             case V8Value.INTEGER:
                 return object.getInteger(key);
@@ -598,7 +690,7 @@ public class V8ObjectUtils {
             case V8Value.V8_ARRAY:
                 V8Array array = object.getArray(key);
                 try {
-                    return toList(array, cache);
+                    return toList(array, cache, adapter);
                 } finally {
                     if (array instanceof V8Array) {
                         array.release();
@@ -607,7 +699,7 @@ public class V8ObjectUtils {
             case V8Value.V8_OBJECT:
                 V8Object child = object.getObject(key);
                 try {
-                    return toMap(child, cache);
+                    return toMap(child, cache, adapter);
                 } finally {
                     if (child instanceof V8Object) {
                         child.release();
@@ -624,6 +716,13 @@ public class V8ObjectUtils {
 
     private V8ObjectUtils() {
 
+    }
+
+    static class DefaultTypeAdapter implements TypeAdapter {
+        @Override
+        public Object adapt(final int type, final Object value) {
+            return TypeAdapter.DEFAULT;
+        }
     }
 
     static class ListWrapper {
