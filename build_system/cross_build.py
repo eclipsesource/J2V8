@@ -34,10 +34,9 @@ class PlatformConfig():
         self.configs['cross'] = cross_config
 
 class BuildConfig:
-    def __init__(self, name, platform, mounts = [], build = [], build_cwd = None, host_cwd = None):
+    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
         self.name = name
         self.platform = platform
-        self.mounts = mounts
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
@@ -82,12 +81,12 @@ class BuildSystem:
         #os.popen(cmd).read()
 
     def inject_env(self, cmd, config, arch):
-        mounts = [self.get_mount_string(x) for x in config.mounts]
-        mounts_str = " ".join(mounts)
+        # mounts = [self.get_mount_string(x) for x in config.mounts]
+        # mounts_str = " ".join(mounts)
 
         return (cmd
             # substitute variables that can contain variables first
-            .replace("$MOUNTS", mounts_str)
+            # .replace("$MOUNTS", mounts_str)
             # substitute atomic variables later
             .replace("$BUILD_CWD", config.build_cwd or cwd)
             .replace("$HOST_CWD", config.host_cwd or "")

@@ -1,0 +1,3 @@
+start-emulator.sh
+supervisord.conf
+AndroidManifest.xml

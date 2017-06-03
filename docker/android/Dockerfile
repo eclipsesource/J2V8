@@ -1,4 +1,5 @@
-FROM philcryer/min-jessie:latest
+# FROM philcryer/min-jessie:latest
+FROM ubuntu:16.04
 
 ENV NDK_VERSION r13b
 
@@ -8,8 +9,10 @@ ENV NDK=/build/android-ndk-$NDK_VERSION \
 ENV PATH=$PATH:/build/android-gcc-toolchain:$NDK
 ENV PATH=$PATH:/opt/cmake/bin
 
+# TODO: move to actual build command ?!
 ENV CCFLAGS=-fPIC CXXFLAGS=-fPIC
 
+# TODO: call into shared scripts for installing common build dependencies instead
 RUN echo "Preparing Debian packages..." && \
 	apt-get -qq update && \
 	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
@@ -59,26 +62,81 @@ RUN echo "Preparing Gradle..." && \
 ENV GRADLE_HOME=/opt/gradle-3.5
 ENV PATH=$PATH:$GRADLE_HOME/bin
 
-RUN echo "Preparing Android SDK..." && \
-	mkdir -p /opt/android-sdk-linux && \
-	cd /opt/android-sdk-linux && \
-	curl -L -O https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip && \
-	unzip sdk-tools-linux-3859397.zip
+# V1 --------------------------------------------------
 
-ENV ANDROID_HOME=/opt/android-sdk-linux
+# ENV ANDROID_HOME=/opt/android-sdk
+# ENV PATH $PATH:$ANDROID_HOME/tools
+# ENV PATH $PATH:$ANDROID_HOME/platform-tools
 
-RUN yes | /opt/android-sdk-linux/tools/bin/sdkmanager --licenses
+# RUN echo "Preparing Android SDK..." && \
+# 	mkdir -p $ANDROID_HOME && \
+# 	cd $ANDROID_HOME && \
+# 	curl -L -O https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip && \
+# 	unzip sdk-tools-linux-3859397.zip && \
+# 	rm -rf sdk-tools-linux-3859397.zip
 
-# RUN /opt/android-sdk-linux/tools/bin/sdkmanager --update --verbose
-RUN /opt/android-sdk-linux/tools/bin/sdkmanager --verbose "build-tools;24.0.3" "platforms;android-10"
+# RUN yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
+
+# # RUN $ANDROID_HOME/tools/bin/sdkmanager --update --verbose
+# RUN $ANDROID_HOME/tools/bin/sdkmanager --verbose	\
+# 	"platform-tools"								\
+# 	"emulator"										\
+# 	"build-tools;25.0.3"							\
+# 	"platforms;android-19"							\
+# 	"system-images;android-19;default;armeabi-v7a"	\
+# 	"system-images;android-19;default;x86"
+
+# ENV LD_LIBRARY_PATH=$ANDROID_HOME/emulator/lib64/qt/lib:$ANDROID_HOME/emulator/lib64/gles_mesa
+
+# RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y libxdamage1 libxfixes3 qemu-kvm cpu-checker supervisor
+
+
+
+# V2 --------------------------------------------------
+
+# TODO: move to packages at top
+RUN echo "Preparing Debian packages..." && \
+	apt-get -qq update && \
+	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
+	wget supervisor
+
+RUN wget -qO- http://dl.google.com/android/android-sdk_r23-linux.tgz | \
+    tar xvz -C /usr/local/ && \
+    mv /usr/local/android-sdk-linux /usr/local/android-sdk && \
+    chown -R root:root /usr/local/android-sdk/
+
+# Add android tools and platform tools to PATH
+ENV ANDROID_HOME /usr/local/android-sdk
+ENV PATH $PATH:$ANDROID_HOME/tools
+ENV PATH $PATH:$ANDROID_HOME/platform-tools
+
+RUN ( sleep 4 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui --force -a --filter \
+    build-tools-24.0.3,tools,platform-tools,android-19,extra-android-m2repository,sys-img-x86-android-19,sys-img-armeabi-v7a-android-19 && \
+    echo "y" | android update adb
+
+# Create fake keymap file
+RUN mkdir /usr/local/android-sdk/tools/keymaps && \
+    touch /usr/local/android-sdk/tools/keymaps/en-us
+
+EXPOSE 22
+EXPOSE 5037
+EXPOSE 5554
+EXPOSE 5555
+EXPOSE 5900
+
+#RUN android update sdk --no-ui --all --filter "build-tools-24.0.3"
+
+# RUN yes | /usr/local/android-sdk/tools/bin/sdkmanager --licenses
+
+# COPY ./android/licenses $ANDROID_HOME/licenses
+
+# sdk-build-tools require the license to be accepted
+RUN mkdir -p $ANDROID_HOME/licenses && echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\n" > $ANDROID_HOME/licenses/android-sdk-license
 
 RUN mkdir -p /temp
 
 # download the most critical gradle dependencies for the build beforehand
 COPY ./shared/build.gradle /temp
+COPY ./android/AndroidManifest.xml /temp/src/main/AndroidManifest.xml
 WORKDIR /temp
-# RUN export MVN_PLATFORM_NAME=temp && \
-#     export MVN_ARCH_NAME=temp && \
-#     mvn verify -DskipTests || true
-RUN cd /temp && gradle || true
-
+RUN cd /temp && gradle --dry-run
