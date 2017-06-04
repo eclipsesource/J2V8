@@ -1,12 +1,13 @@
 import os
 import shutil
 
-def store_nodejs_output(config, arch):
+# TODO: use immutable build-context class to pass arround everything between the build steps (e.g. build_cwd)
+def store_nodejs_output(config, arch, build_cwd):
     prev_node_tag = None
     curr_node_tag = config.platform + "." + arch
 
-    out_dir = "/j2v8/node/out"
-    tagged_dir = lambda tag: "/j2v8/node.out/" + tag + "/out"
+    out_dir = build_cwd + "/node/out"
+    tagged_dir = lambda tag: build_cwd + "/node.out/" + tag + "/out"
 
     if (os.path.isdir(out_dir)):
         curr_f = out_dir + "/j2v8.node.out"

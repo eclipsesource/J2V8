@@ -1,7 +1,6 @@
 import constants as c
 from cross_build import BuildConfig, PlatformConfig
 from docker_build import DockerBuildSystem
-from build_utils import store_nodejs_output
 
 linux_config = PlatformConfig("linux", [c.arch_x86, c.arch_x64], DockerBuildSystem)
 
@@ -16,7 +15,6 @@ linux_config.cross_config(BuildConfig(
 #-----------------------------------------------------------------------
 def build_node_js(config, arch):
     # TODO: create "BuildContext" class and pass BuildSystem arround to use utils like inject_env
-    store_nodejs_output(config, arch)
 
     return [
         "cd ./node",

@@ -5,6 +5,7 @@ import re
 import sys
 
 import build_system.constants as c
+import build_system.build_utils as utils
 from build_system.shell_build import ShellBuildSystem
 
 from build_system.config_android import android_config
@@ -209,6 +210,7 @@ def execute_build(target, arch, steps, node_enabled = True, cross_compile = Fals
         x_cmd = "python ./build.py -t $PLATFORM -a $ARCH " + ("-ne" if node_enabled else "") + " " + " ".join(buildsteps)
         x_compiler.build(x_config, arch, x_cmd)
     else:
+        # TODO: move pre-build checks / steps to main program and run it only in the real program instigator (helps performance & early build abort in error cases)
         # pre-build sanity checks
         check_node_builtins()
 
@@ -216,11 +218,25 @@ def execute_build(target, arch, steps, node_enabled = True, cross_compile = Fals
         host_compiler = ShellBuildSystem()
         host_configs = dict(configs)
 
+        # TODO: use a central / single / immutable source of truth for the CWD
+        build_cwd = os.getcwd().replace("\\", "/")
+
         if (host_configs.has_key('cross')):
+            x_config = host_configs.get('cross')
+            build_cwd = x_config.build_cwd
             del host_configs['cross']
 
         # build all requested build steps
-        [host_compiler.build(host_configs[step], arch) for step in buildsteps]
+        for step in buildsteps:
+            h_config = host_configs[step]
 
+            # TODO: move pre-build checks / steps to main program and run it only in the real program instigator (helps performance & early build abort in error cases)
+            # if we build Node.js then save any potentially existing build artifacts from a different platform
+            if (step == c.build_node_js):
+                utils.store_nodejs_output(h_config, arch, build_cwd)
+
+            host_compiler.build(h_config, arch)
+
+# check if this script was invoked via CLI directly to start a build
 if __name__ == '__main__':
     execute_build(args.target, args.arch, args.buildsteps, args.node_enabled, args.cross_compile)

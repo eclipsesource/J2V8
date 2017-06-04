@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 
+# TODO: use a central / single / immutable source of truth for the CWD
 cwd = os.getcwd().replace("\\", "/")
 
 def execute(cmd, cwd = None):

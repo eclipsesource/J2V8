@@ -1,7 +1,6 @@
 import constants as c
 from cross_build import BuildConfig, PlatformConfig
 from docker_build import DockerBuildSystem
-from build_utils import store_nodejs_output
 
 android_config = PlatformConfig("android", [c.arch_x86, c.arch_arm], DockerBuildSystem)
 
@@ -14,7 +13,9 @@ android_config.cross_config(BuildConfig(
 
 #-----------------------------------------------------------------------
 def build_node_js(config, arch):
-    store_nodejs_output(config, arch)
+    # TODO: apply c++11 & suppress warnings
+    # TODO: redirect stdout of g++ (currently not piped correctly)
+    # CCFLAGS='-std=c++11 -Wno-ignored-qualifiers -Wno-sign-compare' CXXFLAGS='-std=c++11 -Wno-ignored-qualifiers -Wno-sign-compare' make -j4 > /dev/null'  \
 
     return [
         """android-gcc-toolchain $ARCH --api 17 --host gcc-lpthread -C \
@@ -94,7 +95,9 @@ def build_j2v8_junit(config, arch):
             emulator_start = f.read()
 
         # TODO: generic inject env utility ???
-        emulator_start = emulator_start.replace("$ARCH", arch)
+        image_arch = "armeabi-v7a" if arch == c.arch_arm else arch
+        emu_arch = "-arm" if arch == c.arch_arm else "64-x86"
+        emulator_start = emulator_start.replace("$IMG_ARCH", image_arch).replace("$EMU_ARCH", emu_arch)
 
         with open("./docker/android/start-emulator.sh", 'w') as f:
             f.write(emulator_start)
