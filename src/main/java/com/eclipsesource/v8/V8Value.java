@@ -162,6 +162,22 @@ abstract public class V8Value implements Releasable {
     }
 
     /**
+     * Returns the 'type' of this V8Value. The available types are defined
+     * as constants in {@link V8Value}. Only types that inherit from
+     * {@link V8Value} can be returned here.
+     *
+     * @return The 'type of this V8Value.
+     */
+    public int getV8Type() {
+        if (isUndefined()) {
+            return UNDEFINED;
+        }
+        v8.checkThread();
+        v8.checkReleased();
+        return v8.getType(v8.getV8RuntimePtr(), objectHandle);
+    }
+
+    /**
      * Creates a new Java object pointing at the same V8 Value
      * as this. If the value is mutated (by adding new members or
      * changing existing ones) then both the original and twin
