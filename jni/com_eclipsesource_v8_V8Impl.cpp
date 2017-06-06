@@ -1427,6 +1427,13 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJI
   return type;
 }
 
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJ
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Value> v8Value = Local<Value>::New(isolate, *reinterpret_cast<Persistent<Value>*>(objectHandle));
+  return getType(v8Value);
+}
+
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJII
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);

@@ -1254,6 +1254,10 @@ public class V8 extends V8Object {
         _addArrayNullItem(v8RuntimePtr, arrayHandle);
     }
 
+    protected int getType(final long v8RuntimePtr, final long objectHandle) {
+        return _getType(v8RuntimePtr, objectHandle);
+    }
+
     protected int getType(final long v8RuntimePtr, final long objectHandle, final String key) {
         return _getType(v8RuntimePtr, objectHandle, key);
     }
@@ -1439,6 +1443,8 @@ public class V8 extends V8Object {
     private native int _getArrayType(long v8RuntimePtr, long objectHandle);
 
     private native void _setPrototype(long v8RuntimePtr, long objectHandle, long prototypeHandle);
+
+    private native int _getType(long v8RuntimePtr, long objectHandle);
 
     private native int _getType(long v8RuntimePtr, long objectHandle, final int index, final int length);
 
