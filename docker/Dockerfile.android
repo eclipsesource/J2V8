@@ -14,17 +14,20 @@ ENV CXXFLAGS -fPIC
 
 RUN echo "[0/3] installing packages..." && \
 	apt-get -qq update && \
-
-	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
+	DEBIAN_FRONTEND=noninteractive apt-get -qq install --no-install-recommends -y \
 	git \
+  ca-certificates \
 	unzip \
 	gcc gcc-multilib \
 	g++ g++-multilib \
 	curl \
-	file
+	file && \
+  apt-get clean && rm -r /var/lib/apt/lists/*
+
 
 RUN echo "[1/2] cloning dependencies..." && \
-	git clone https://github.com/sjitech/android-gcc-toolchain 
+	git clone --depth=1 --branch=master https://github.com/sjitech/android-gcc-toolchain && \
+  rm -rf android-gcc-toolchain/.git
 
 RUN echo "[2/2] setting up..." && \
  	curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
