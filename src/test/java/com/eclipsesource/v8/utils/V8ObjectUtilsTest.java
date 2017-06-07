@@ -2011,6 +2011,812 @@ public class V8ObjectUtilsTest {
         object.release();
     }
 
+    @Test
+    public void testGetValue_Integer() {
+        int result = (Integer) V8ObjectUtils.getValue(7);
+
+        assertEquals(7, result);
+    }
+
+    @Test
+    public void testGetValue_Double() {
+        double result = (Double) V8ObjectUtils.getValue(3.14);
+
+        assertEquals(3.14, result, 0.00001);
+    }
+
+    @Test
+    public void testGetValue_Boolean() {
+        boolean result = (Boolean) V8ObjectUtils.getValue(false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void testGetValue_String() {
+        String result = (String) V8ObjectUtils.getValue("foo");
+
+        assertEquals("foo", result);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateIntegerMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1, b:2, c:3}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(3, map.size());
+        assertEquals(1, map.get("a"));
+        assertEquals(2, map.get("b"));
+        assertEquals(3, map.get("c"));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateMapWithFunction_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a : function() {return 1;}, b : 'foo'}; x;");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(1, map.size());
+        assertEquals("foo", map.get("b"));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateListWithFunction_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [function() {return 1;}, 'foo']; x;");
+
+        List<Object> list = (List<Object>) V8ObjectUtils.getValue(array);
+
+        assertEquals(1, list.size());
+        assertEquals("foo", list.get(0));
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateDoubleMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1.1, b:2.2, c:3.3, d:4.4}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(4, map.size());
+        assertEquals(1.1, (Double) map.get("a"), 0.000001);
+        assertEquals(2.2, (Double) map.get("b"), 0.000001);
+        assertEquals(3.3, (Double) map.get("c"), 0.000001);
+        assertEquals(4.4, (Double) map.get("d"), 0.000001);
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateStringMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:'foo', b:'bar', c:'baz', d:'boo'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(4, map.size());
+        assertEquals("foo", map.get("a"));
+        assertEquals("bar", map.get("b"));
+        assertEquals("baz", map.get("c"));
+        assertEquals("boo", map.get("d"));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateBooleanMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:true, b:1==1, c:false, d:1!=1}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(4, map.size());
+        assertTrue((Boolean) map.get("a"));
+        assertTrue((Boolean) map.get("b"));
+        assertFalse((Boolean) map.get("c"));
+        assertFalse((Boolean) map.get("d"));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateMixedMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {boolean:true, integer:1, double:3.14159, string:'hello'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(4, map.size());
+        assertTrue((Boolean) map.get("boolean"));
+        assertEquals(1, (int) (Integer) map.get("integer"));
+        assertEquals(3.14159, (Double) map.get("double"), 0.0000001);
+        assertEquals("hello", map.get("string"));
+        object.release();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testCreateNestedMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = { name : { first :'john', last: 'smith'}, age: 7}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(2, map.size());
+        assertEquals(7, map.get("age"));
+        assertEquals("john", ((Map) map.get("name")).get("first"));
+        assertEquals("smith", ((Map) map.get("name")).get("last"));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateListFromV8Array_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1,2,3]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array);
+
+        assertEquals(3, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(2, list.get(1));
+        assertEquals(3, list.get(2));
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateListWithUndefinedFromV8Array_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1,2,3]; x[9] = 10; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array);
+
+        assertEquals(10, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(2, list.get(1));
+        assertEquals(3, list.get(2));
+        assertTrue(((V8Value) list.get(3)).isUndefined());
+        assertTrue(((V8Value) list.get(4)).isUndefined());
+        assertTrue(((V8Value) list.get(5)).isUndefined());
+        assertTrue(((V8Value) list.get(6)).isUndefined());
+        assertTrue(((V8Value) list.get(7)).isUndefined());
+        assertTrue(((V8Value) list.get(8)).isUndefined());
+        assertEquals(10, list.get(9));
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateListWithNullFromV8Array_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [null]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array);
+
+        assertEquals(1, list.size());
+        assertNull(list.get(0));
+        array.release();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testCreateMatrixFromV8Array_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [[1,2,3],[true,false,true],['this','that','other']]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array);
+
+        assertEquals(3, list.size());
+        assertEquals(3, ((List) list.get(0)).size());
+        assertEquals(3, ((List) list.get(1)).size());
+        assertEquals(3, ((List) list.get(2)).size());
+        assertEquals(1, ((List) list.get(0)).get(0));
+        assertEquals(2, ((List) list.get(0)).get(1));
+        assertEquals(3, ((List) list.get(0)).get(2));
+        assertTrue((Boolean) ((List) list.get(1)).get(0));
+        assertFalse((Boolean) ((List) list.get(1)).get(1));
+        assertTrue((Boolean) ((List) list.get(1)).get(2));
+        assertEquals("this", ((List) list.get(2)).get(0));
+        assertEquals("that", ((List) list.get(2)).get(1));
+        assertEquals("other", ((List) list.get(2)).get(2));
+        array.release();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testCreateMapWithLists_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:[1,2,3], b:[4,5,6]}; x;");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(2, map.size());
+        assertEquals(1, ((List) map.get("a")).get(0));
+        assertEquals(2, ((List) map.get("a")).get(1));
+        assertEquals(3, ((List) map.get("a")).get(2));
+        assertEquals(4, ((List) map.get("b")).get(0));
+        assertEquals(5, ((List) map.get("b")).get(1));
+        assertEquals(6, ((List) map.get("b")).get(2));
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateMapWithNulls_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:null}; x;");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
+
+        assertEquals(1, map.size());
+        assertNull(map.get(0));
+        object.release();
+    }
+
+    @Test
+    public void testNullObjectGivesNull_GetValue() {
+        Object result = V8ObjectUtils.getValue(null);
+
+        assertNull(result);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testV8ArrayContainsSelf_GetValue() {
+        V8Array v8Array = new V8Array(v8);
+        v8Array.push(v8Array);
+
+        List<Object> list = (List<Object>) V8ObjectUtils.getValue(v8Array);
+
+        assertEquals(list, list.get(0));
+        v8Array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testV8ObjectContainsSelf_GetValue() {
+        V8Object v8Object = new V8Object(v8);
+        v8Object.add("self", v8Object);
+
+        Map<String, Object> map = (Map<String, Object>) V8ObjectUtils.getValue(v8Object);
+
+        assertEquals(map, map.get("self"));
+        assertEquals(map.hashCode(), map.get("self").hashCode());
+        v8Object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBackpointer_GetValue() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child = child\n;"
+                + "parent;");
+
+        Map<String, Object> map = (Map<String, Object>) V8ObjectUtils.getValue(parent);
+
+        assertEquals(map, ((Map<String, Object>) map.get("child")).get("parent"));
+        parent.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCloneV8Array_GetValue() {
+        V8Array list = v8.executeArrayScript("var l = [{first:'ian', last:'bull'}, {first:'sadie', last:'bull'}]; l;");
+
+        V8Array v8Object = V8ObjectUtils.toV8Array(v8, (List<? extends Object>) V8ObjectUtils.getValue(list));
+
+        v8.add("l2", v8Object);
+        v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
+        list.release();
+        v8Object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCloneV8ObjectsWithCircularStructure_GetValue() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child = child\n;"
+                + "parent;");
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, (Map<String, ? extends Object>) V8ObjectUtils.getValue(parent));
+
+        assertEquals(1, v8Object.getKeys().length);
+        assertEquals("child", v8Object.getKeys()[0]);
+        parent.release();
+        v8Object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testEqualSiblings_GetValue() {
+        V8Object parent = v8.executeObjectScript("var parent = {};\n"
+                + "var child = {parent : parent};\n"
+                + "parent.child1 = child\n;"
+                + "parent.child2 = child\n;"
+                + "parent;");
+
+        Map<String, Object> map = (Map<String, Object>) V8ObjectUtils.getValue(parent);
+
+        assertEquals((map.get("child2")), (map.get("child1")));
+        parent.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Int8Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        Int8Array result = (Int8Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(100, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Int8ArrayWithoutBackingStore() {
+        V8Array intsArray = v8.executeArrayScript(""
+                + "var intsArray = new Int8Array(24);\n"
+                + "intsArray");
+
+        Int8Array result = (Int8Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(24, result.length());
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Uint8Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint8Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        UInt8Array result = (UInt8Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(100, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Uint8ClampedArray() {
+        V8Array int8ClampedArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var int8ClampedArray = new Uint8ClampedArray(buf);\n"
+                + "int8ClampedArray[0] = 16;\n"
+                + "int8ClampedArray;\n");
+
+        UInt8ClampedArray result = (UInt8ClampedArray) V8ObjectUtils.getValue(int8ClampedArray);
+
+        assertEquals(100, result.length());
+        assertEquals(16, result.get(0));
+        int8ClampedArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Int16Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        Int16Array result = (Int16Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(50, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Uint16Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint16Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        UInt16Array result = (UInt16Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(50, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Int32Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Int32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        Int32Array result = (Int32Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(25, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Uint32Array() {
+        V8Array intsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var intsArray = new Uint32Array(buf);\n"
+                + "intsArray[0] = 16;\n"
+                + "intsArray;\n");
+
+        UInt32Array result = (UInt32Array) V8ObjectUtils.getValue(intsArray);
+
+        assertEquals(25, result.length());
+        assertEquals(16, result.get(0));
+        intsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Float32Array() {
+        V8Array floatsArray = v8.executeArrayScript("var buf = new ArrayBuffer(100);\n"
+                + "var floatsArray = new Float32Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "floatsArray;\n");
+
+        Float32Array result = (Float32Array) V8ObjectUtils.getValue(floatsArray);
+
+        assertEquals(25, result.length());
+        assertEquals(16.2, result.get(0), 0.00001);
+        floatsArray.release();
+    }
+
+    @Test
+    public void testTypedArrayGetValue_Float64Array() {
+        V8Array floatsArray = v8.executeArrayScript("var buf = new ArrayBuffer(80);\n"
+                + "var floatsArray = new Float64Array(buf);\n"
+                + "floatsArray[0] = 16.2;\n"
+                + "floatsArray;\n");
+
+        Float64Array result = (Float64Array) V8ObjectUtils.getValue(floatsArray);
+
+        assertEquals(10, result.length());
+        assertEquals(16.2, result.get(0), 0.0001);
+        floatsArray.release();
+    }
+
+    @Test
+    public void testArrayBufferGetValue() {
+        V8ArrayBuffer buf = (V8ArrayBuffer) v8.executeScript("var buf = new ArrayBuffer(100);\n"
+                + "buf;\n");
+
+        ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(buf);
+
+        assertEquals(100, result.limit());
+        buf.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testIntegerTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1, b:3.14, c:false, d:'string'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.INTEGER) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return 7;
+            }
+        });
+
+        assertEquals(4, map.size());
+        assertEquals(7, map.get("a"));
+        assertEquals(3.14, (Double) map.get("b"), 0.00001);
+        assertEquals(false, map.get("c"));
+        assertEquals("string", map.get("d"));
+
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDoubleTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1, b:3.14, c:false, d:'string'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.DOUBLE) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return 7.7;
+            }
+        });
+
+        assertEquals(4, map.size());
+        assertEquals(1, map.get("a"));
+        assertEquals(7.7, (Double) map.get("b"), 0.00001);
+        assertEquals(false, map.get("c"));
+        assertEquals("string", map.get("d"));
+
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBooleanTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1, b:3.14, c:false, d:'string'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.BOOLEAN) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return true;
+            }
+        });
+
+        assertEquals(4, map.size());
+        assertEquals(1, map.get("a"));
+        assertEquals(3.14, (Double) map.get("b"), 0.00001);
+        assertEquals(true, map.get("c"));
+        assertEquals("string", map.get("d"));
+
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testStringTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:1, b:3.14, c:false, d:'string'}; x");
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.STRING) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return "foo";
+            }
+        });
+
+        assertEquals(4, map.size());
+        assertEquals(1, map.get("a"));
+        assertEquals(3.14, (Double) map.get("b"), 0.00001);
+        assertEquals(false, map.get("c"));
+        assertEquals("foo", map.get("d"));
+
+        object.release();
+    }
+
+    @Test
+    public void testObjectTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {b:{a:{}}}; x");
+
+        Object result = V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return "object";
+            }
+        });
+
+        assertEquals("object", result);
+
+        object.release();
+    }
+
+    @Test
+    public void testObjectNullTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {b:{a:{}}}; x");
+
+        Object result = V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return null;
+            }
+        });
+
+        assertNull(result);
+
+        object.release();
+    }
+
+    @Test
+    public void testObjectUndefinedTypeAdapter_Map_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {b:{a:{}}}; x");
+
+        V8Value result = (V8Value) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return V8.getUndefined();
+            }
+        });
+
+        assertTrue(result.isUndefined());
+
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testIntegerTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1, 3.14, false, 'string']; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.INTEGER) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return 7;
+            }
+        });
+
+        assertEquals(4, list.size());
+        assertEquals(7, list.get(0));
+        assertEquals(3.14, (Double) list.get(1), 0.00001);
+        assertEquals(false, list.get(2));
+        assertEquals("string", list.get(3));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDoubleTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1, 3.14, false, 'string']; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.DOUBLE) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return 7.7;
+            }
+        });
+
+        assertEquals(4, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(7.7, (Double) list.get(1), 0.00001);
+        assertEquals(false, list.get(2));
+        assertEquals("string", list.get(3));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBooleanTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1, 3.14, false, 'string']; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.BOOLEAN) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return true;
+            }
+        });
+
+        assertEquals(4, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(3.14, (Double) list.get(1), 0.00001);
+        assertEquals(true, list.get(2));
+        assertEquals("string", list.get(3));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testStringTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [1, 3.14, false, 'string']; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.STRING) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return "foo";
+            }
+        });
+
+        assertEquals(4, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(3.14, (Double) list.get(1), 0.00001);
+        assertEquals(false, list.get(2));
+        assertEquals("foo", list.get(3));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testObjectTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [{a:{}}]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return "object";
+            }
+        });
+
+        assertEquals(1, list.size());
+        assertEquals("object", list.get(0));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testObjectNullTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [{a:{}}]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return null;
+            }
+        });
+
+        assertEquals(1, list.size());
+        assertNull(list.get(0));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testObjectUndefinedTypeAdapter_List_GetValue() {
+        V8Array array = v8.executeArrayScript("x = [{a:{}}]; x");
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(array, new SingleTypeAdapter(V8Value.V8_OBJECT) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return V8.getUndefined();
+            }
+        });
+
+        assertEquals(1, list.size());
+        assertEquals(V8.getUndefined(), list.get(0));
+
+        array.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateFunctionMapFromV8Object_GetValue() {
+        V8Object object = v8.executeObjectScript("x = {a:function() {return 'a'}, b:function(){return 'b'}}; x");
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_FUNCTION) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return ((V8Function) value).twin();
+            }
+        });
+
+        assertEquals(2, map.size());
+        assertEquals("a", ((V8Function) map.get("a")).call(null, null));
+        assertEquals("b", ((V8Function) map.get("b")).call(null, null));
+
+        memoryManager.release();
+        object.release();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateFunctionListFromV8Object_GetValue() {
+        V8Array object = v8.executeArrayScript("x = [function() {return 'a'}, function(){return 'b'}]; x");
+        MemoryManager memoryManager = new MemoryManager(v8);
+
+        List<? super Object> list = (List<? super Object>) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_FUNCTION) {
+
+            @Override
+            public Object adapt(final Object value) {
+                return ((V8Function) value).twin();
+            }
+        });
+
+        assertEquals(2, list.size());
+        assertEquals("a", ((V8Function) list.get(0)).call(null, null));
+        assertEquals("b", ((V8Function) list.get(1)).call(null, null));
+
+        memoryManager.release();
+        object.release();
+    }
+
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
