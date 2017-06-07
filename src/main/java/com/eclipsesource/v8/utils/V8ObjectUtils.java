@@ -56,6 +56,9 @@ public class V8ObjectUtils {
      * If the input is basic Java type (Integer, Double, Boolean, String)
      * it will be returned. If the input is a V8Value, it will be converted.
      *
+     * All elements in the V8Object are released after they are accessed.
+     * However, the root object itself is not released.
+     *
      * @param v8Object The input to convert.
      * @return A Java object representing the input.
      */
@@ -71,6 +74,9 @@ public class V8ObjectUtils {
      *
      * If the input is basic Java type (Integer, Double, Boolean, String)
      * it will be returned. If the input is a V8Value, it will be converted.
+     *
+     * All elements in the V8Object are released after they are accessed.
+     * However, the root object itself is not released.
      *
      * @param v8Object The input to convert.
      * @param adapter The {@link TypeAdapter} to use for the object conversions.
