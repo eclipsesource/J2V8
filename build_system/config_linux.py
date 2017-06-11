@@ -1,21 +1,19 @@
 import constants as c
-from cross_build import BuildConfig, PlatformConfig
+from cross_build import BuildStep, PlatformConfig
 from docker_build import DockerBuildSystem
+import shared_build_steps as u
 
 linux_config = PlatformConfig("linux", [c.arch_x86, c.arch_x64], DockerBuildSystem)
 
-linux_config.cross_config(BuildConfig(
+linux_config.cross_config(BuildStep(
     name="cross-compile-host",
     platform="linux",
-    # host_cwd="$CWD/docker/$PLATFORM",
     host_cwd="$CWD/docker",
     build_cwd="/j2v8",
 ))
 
 #-----------------------------------------------------------------------
-def build_node_js(config, arch):
-    # TODO: create "BuildContext" class and pass BuildSystem arround to use utils like inject_env
-
+def build_node_js(config):
     return [
         "cd ./node",
         """./configure              \
@@ -30,17 +28,16 @@ def build_node_js(config, arch):
 
 linux_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
-def build_j2v8_cmake(config, arch):
-    return [
-        "mkdir -p cmake.out/$PLATFORM.$ARCH",
-        "cd cmake.out/$PLATFORM.$ARCH",
-        "rm -rf CMakeCache.txt CMakeFiles/",
-        "cmake ../../",
-    ]
+def build_j2v8_cmake(config):
+    return \
+        u.shell("mkdir", "cmake.out/$PLATFORM.$ARCH") + \
+        ["cd cmake.out/$PLATFORM.$ARCH"] + \
+        u.shell("rm", "CMakeCache.txt CMakeFiles/") + \
+        ["cmake ../../"]
 
 linux_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
-def build_j2v8_jni(config, arch):
+def build_j2v8_jni(config):
     return [
         "cd cmake.out/$PLATFORM.$ARCH",
         "make -j4",
@@ -48,27 +45,21 @@ def build_j2v8_jni(config, arch):
 
 linux_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
 #-----------------------------------------------------------------------
-def build_j2v8_java(config, arch):
-    file_arch = "x86_64" if arch == c.arch_x64 else "x86"
-    return [
-        "export MVN_PLATFORM_NAME=linux",
-        "export MVN_ARCH_NAME=" + file_arch,
-        "mvn verify -DskipTests -e",
-        # TODO: maybe make j2v8tests a separate build-step
-        # "mvn -DskipTests=true verify",
-        "mkdir -p build.out",
-        "cp target/j2v8_linux_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/",
-    ]
+def build_j2v8_java(config):
+    file_arch = "x86_64" if config.arch == c.arch_x64 else "x86"
+    return \
+        u.copyNativeLibs(config, file_arch) + \
+        u.setBuildEnv(config, file_arch) + \
+        [u.build_cmd] + \
+        u.copyOutput(config, file_arch)
 
 linux_config.build_step(c.build_j2v8_java, build_j2v8_java)
 #-----------------------------------------------------------------------
-def build_j2v8_junit(config, arch):
-    file_arch = "x86_64" if arch == c.arch_x64 else "x86"
-    return [
-        "export MVN_PLATFORM_NAME=linux",
-        "export MVN_ARCH_NAME=" + file_arch,
-        "mvn test -e"
-    ]
+def build_j2v8_junit(config):
+    file_arch = "x86_64" if config.arch == c.arch_x64 else "x86"
+    return \
+        u.setBuildEnv(config, file_arch) + \
+        [u.run_tests_cmd]
 
 linux_config.build_step(c.build_j2v8_junit, build_j2v8_junit)
 #-----------------------------------------------------------------------

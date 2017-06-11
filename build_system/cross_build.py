@@ -3,119 +3,107 @@ import commands
 import os
 import subprocess
 import sys
-
-# TODO: use a central / single / immutable source of truth for the CWD
-cwd = os.getcwd().replace("\\", "/")
+from shutil import copy2
+import build_system.build_utils as utils
 
 def execute(cmd, cwd = None):
     popen = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
-    # for stdout_line in iter(popen.stdout.readline, ""):
-    #     yield stdout_line 
-    # popen.stdout.close()
-
     return_code = popen.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
 
 class PlatformConfig():
-    def __init__(self, platform_name, architectures, cross_compiler):
-        self.platform_name = platform_name
+    def __init__(self, name, architectures, cross_compiler):
+        self.name = name
         self.architectures = architectures
         self.cross_compiler = cross_compiler
-        self.configs = {}
+        self.steps = {}
 
     def build_step(self, target, build_fn):
-        self.configs[target] = BuildConfig(
+        self.steps[target] = BuildStep(
             name=target,
-            platform=self.platform_name,
+            platform=self.name,
             build=build_fn,
         )
 
     def cross_config(self, cross_config):
-        self.configs['cross'] = cross_config
+        self.steps['cross'] = cross_config
 
-class BuildConfig:
+class BuildStep:
     def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
         self.name = name
         self.platform = platform
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
+        self.custom_cmd = None
 
 class BuildSystem:
     __metaclass__ = ABCMeta
 
-    def build(self, config, arch, custom_cmd = None):
+    def build(self, config):
         # perform the health check for the build system first
-        self.health_check(config, arch)
-            
+        self.health_check(config)
+
         # clean previous build outputs
-        self.clean(config, arch)
-        
-        # execute all the builds
-        self.__build(config, arch, custom_cmd)
+        self.clean(config)
 
-    def __build(self, config, arch, custom_cmd):
-        self.pre_build(config, arch)
-        self.exec_build(config, arch, custom_cmd)
-        self.post_build(config, arch)
+        # copy the maven  & gradle config file to the docker shared directory
+        # this allows to pre-fetch most of the maven dependencies before the actual build (e.g. into docker images)
+        copy2("pom.xml", "./docker/shared")
+        copy2("build.gradle", "./docker/shared")
+        copy2("src/main/AndroidManifest.xml", "./docker/android/AndroidManifest.xml")
 
-    def exec_host_cmd(self, cmd, config, arch):
-        cmd = self.inject_env(cmd, config, arch)
+        # execute all the build stages
+        self.pre_build(config)
+        self.exec_build(config)
+        self.post_build(config)
+
+    def exec_host_cmd(self, cmd, config):
+        cmd = self.inject_env(cmd, config)
         dir = None
-        
+
         if (config.host_cwd is not None):
-            dir = self.inject_env(config.host_cwd, config, arch)
-        
+            dir = self.inject_env(config.host_cwd, config)
+
         execute(cmd, dir)
 
-    def exec_cmd(self, cmd, config, arch):
-        cmd = self.inject_env(cmd, config, arch)
+    def exec_cmd(self, cmd, config):
+        cmd = self.inject_env(cmd, config)
         dir = None
-        
+
         if (config.build_cwd is not None):
-            dir = self.inject_env(config.build_cwd, config, arch)
-        
+            dir = self.inject_env(config.build_cwd, config)
+
         execute(cmd, dir)
 
-        #subprocess.call(cmd, shell=True)
-        #os.popen(cmd).read()
-
-    def inject_env(self, cmd, config, arch):
-        # mounts = [self.get_mount_string(x) for x in config.mounts]
-        # mounts_str = " ".join(mounts)
+    def inject_env(self, cmd, config):
+        build_cwd = utils.get_cwd()
 
         return (cmd
-            # substitute variables that can contain variables first
-            # .replace("$MOUNTS", mounts_str)
-            # substitute atomic variables later
-            .replace("$BUILD_CWD", config.build_cwd or cwd)
+            .replace("$BUILD_CWD", config.build_cwd or build_cwd)
             .replace("$HOST_CWD", config.host_cwd or "")
-            .replace("$CWD", cwd)
+            .replace("$CWD", build_cwd)
             .replace("$PLATFORM", config.platform)
-            .replace("$ARCH", arch)
+            .replace("$ARCH", config.arch)
         )
 
     @abstractmethod
-    def get_mount_string(self, mount_point):
+    def health_check(self, config):
         pass
 
     @abstractmethod
-    def health_check(self, config, arch):
+    def clean(self, config):
         pass
 
     @abstractmethod
-    def clean(self, config, arch):
+    def pre_build(self, config):
         pass
 
     @abstractmethod
-    def pre_build(self, config, arch):
+    def exec_build(self, config):
         pass
 
     @abstractmethod
-    def exec_build(self, config, arch, custom_cmd):
-        pass
-
-    @abstractmethod
-    def post_build(self, config, arch):
+    def post_build(self, config):
         pass

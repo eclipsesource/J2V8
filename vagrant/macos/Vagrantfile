@@ -15,13 +15,6 @@ diskutil umount /Volumes/JDK\\ 8\\ Update\\ 131
 SCRIPT
 
 $provision_cmake = <<SCRIPT
-#curl https://cmake.org/files/v3.8/cmake-3.8.1-Darwin-x86_64.dmg -O
-
-#sudo hdiutil attach cmake-3.8.1-Darwin-x86_64.dmg
-#sudo cp -Rf /Volumes/cmake-3.8.1-Darwin-x86_64/CMake.app /Applications/
-#hdiutil detach /Volumes/cmake-3.8.1-Darwin-x86_64
-#sudo /Applications/CMake.app/Contents/bin/cmake-gui --install
-
 echo Downloading CMake...
 curl https://cmake.org/files/v3.8/cmake-3.8.1-Darwin-x86_64.tar.gz -O
 
@@ -40,6 +33,11 @@ sudo tar xzvf apache-maven-3.5.0-bin.tar.gz -C /opt/
 sudo chmod -R 777 /opt/apache-maven-3.5.0
 SCRIPT
 
+$provision_env = <<SCRIPT
+echo Setting up environment variables...
+echo "export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home" >> /Users/vagrant/.bash_profile
+echo "export PATH=/opt/apache-maven-3.5.0/bin:$PATH" >> /Users/vagrant/.bash_profile
+SCRIPT
 
 Vagrant.configure(2) do |config|
 
@@ -60,4 +58,5 @@ Vagrant.configure(2) do |config|
     config.vm.provision "shell", inline: $provision_java
     config.vm.provision "shell", inline: $provision_cmake
     config.vm.provision "shell", inline: $provision_maven
+    config.vm.provision "shell", inline: $provision_env
 end

@@ -1,7 +1,6 @@
 FROM philcryer/min-jessie:latest
 
 RUN mkdir -p /temp/docker/shared/
-
 WORKDIR /temp/docker/shared/
 
 # NOTE: copy shared scripts and run them separately

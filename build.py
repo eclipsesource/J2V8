@@ -13,6 +13,8 @@ from build_system.config_linux import linux_config
 from build_system.config_macos import macos_config
 from build_system.config_win32 import win32_config
 
+import build_system.immutable as immutable
+
 build_step_sequence = [
     c.build_node_js,
     c.build_j2v8_cmake,
@@ -36,7 +38,7 @@ avail_build_steps = [
     c.build_j2v8_java,
     c.build_j2v8_junit,
 
-    # aggregate steps
+    # composite steps
     c.build_all,
     c.build_full,
     c.build_native,
@@ -49,8 +51,9 @@ avail_build_steps = [
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--target', '-t',
-                    dest='target',
+parser.add_argument("--target", "-t",
+                    help="The build target platform name (must be a valid platform string identifier).",
+                    dest="target",
                     choices=[
                         c.target_android,
                         c.target_linux,
@@ -58,31 +61,44 @@ parser.add_argument('--target', '-t',
                         c.target_win32,
                     ])
 
-parser.add_argument('--arch', '-a',
-                    dest='arch',
+parser.add_argument("--arch", "-a",
+                    help="The build target architecture identifier (the available architectures are also dependent on the selected platform for a build).",
+                    dest="arch",
                     choices=[
                         c.arch_x86,
                         c.arch_x64,
                         c.arch_arm,
                     ])
 
-parser.add_argument('--cross-compile', '-x',
-                    dest='cross_compile',
-                    action='store_const',
+parser.add_argument("--cross-compile", "-x",
+                    help="Run the actual build in a virtualized sandbox environment, fully decoupled from the build host machine.",
+                    dest="cross_compile",
+                    action="store_const",
                     const=True)
 
-parser.add_argument('--node-enabled', '-ne',
-                    dest='node_enabled',
-                    action='store_const',
+parser.add_argument("--node-enabled", "-ne",
+                    help="Include the Node.js runtime and builtin node-modules for use in J2V8.",
+                    dest="node_enabled",
+                    action="store_const",
                     const=True)
 
-parser.add_argument('buildsteps',
-                    metavar='build-step',
-                    nargs='*',
-                    default='all',
+# NOTE: this option is only used internally to distinguish the running of the build script within
+# the build-instigator and the actual build-executor (this is relevant when cross-compiling)
+parser.add_argument("--build-agent", "-bd",
+                    help=argparse.SUPPRESS,
+                    dest="build_agent",
+                    action="store_const",
+                    const=True)
+
+parser.add_argument("buildsteps",
+                    help="A list of all the recognized build-steps that should be executed " +
+                        "(the order of the steps given to the CLI does not matter, the correct order will be restored internally).",
+                    metavar="build-steps",
+                    nargs="*",
+                    default="all",
                     choices=avail_build_steps)
 
-buildsteps = set()
+parsed_steps = set()
 
 def parse_build_step_option(step):
     return {
@@ -90,11 +106,11 @@ def parse_build_step_option(step):
         c.build_full: add_all,
         c.build_native: add_native,
         c.build_java: add_managed,
-        c.build_node_js: lambda: buildsteps.add(c.build_node_js),
-        c.build_j2v8_cmake: lambda: buildsteps.add(c.build_j2v8_cmake),
-        c.build_j2v8_jni: lambda: buildsteps.add(c.build_j2v8_jni),
-        c.build_j2v8_java: lambda: buildsteps.add(c.build_j2v8_java),
-        c.build_j2v8_junit: lambda: buildsteps.add(c.build_j2v8_junit),
+        c.build_node_js: lambda: parsed_steps.add(c.build_node_js),
+        c.build_j2v8_cmake: lambda: parsed_steps.add(c.build_j2v8_cmake),
+        c.build_j2v8_jni: lambda: parsed_steps.add(c.build_j2v8_jni),
+        c.build_j2v8_java: lambda: parsed_steps.add(c.build_j2v8_java),
+        c.build_j2v8_junit: lambda: parsed_steps.add(c.build_j2v8_junit),
     }.get(step, raise_unhandled_option)
 
 def add_all():
@@ -102,12 +118,12 @@ def add_all():
     add_managed()
 
 def add_native():
-    buildsteps.add(c.build_node_js)
-    buildsteps.add(c.build_j2v8_cmake)
-    buildsteps.add(c.build_j2v8_jni)
+    parsed_steps.add(c.build_node_js)
+    parsed_steps.add(c.build_j2v8_cmake)
+    parsed_steps.add(c.build_j2v8_jni)
 
 def add_managed():
-    buildsteps.add(c.build_j2v8_java)
+    parsed_steps.add(c.build_j2v8_java)
 
 def raise_unhandled_option():
     sys.exit("INTERNAL-ERROR: Tried to handle unrecognized build-step")
@@ -121,7 +137,7 @@ def check_node_builtins():
     j2v8_jni_cpp_path = "jni/com_eclipsesource_v8_V8Impl.cpp"
     j2v8_builtins = []
 
-    with open(j2v8_jni_cpp_path, 'r') as j2v8_jni_cpp:
+    with open(j2v8_jni_cpp_path, "r") as j2v8_jni_cpp:
         j2v8_code = j2v8_jni_cpp.read()
 
     tag = "// @node-builtins-force-link"
@@ -152,7 +168,7 @@ def check_node_builtins():
         if (not cc_file.endswith(".cc")):
             continue
 
-        with open(node_src + cc_file, 'r') as node_cpp:
+        with open(node_src + cc_file, "r") as node_cpp:
             node_code = node_cpp.read()
 
         m = re.search(r"NODE_MODULE_CONTEXT_AWARE_BUILTIN\((.*),\s*node::.*\)", node_code)
@@ -169,74 +185,102 @@ def check_node_builtins():
 #-----------------------------------------------------------------------
 # Build execution core function
 #-----------------------------------------------------------------------
-def execute_build(target, arch, steps, node_enabled = True, cross_compile = False):
+def execute_build(params):
 
-    if (target is None):
+    if (params.target is None):
         sys.exit("ERROR: No target platform specified, use --target <...>")
 
-    if (not target in avail_targets):
-        sys.exit("ERROR: Unrecognized target platform: " + target)
+    if (not params.target in avail_targets):
+        sys.exit("ERROR: Unrecognized target platform: " + params.target)
 
-    build_target = avail_targets.get(target)
+    build_target = avail_targets.get(params.target)
 
-    if (arch is None):
+    if (params.arch is None):
         sys.exit("ERROR: No target architecture specified, use --arch <...>")
 
     build_architectures = build_target.architectures
 
-    if (not arch in build_architectures):
-        sys.exit("ERROR: Unsupported architecture: \"" + arch + "\" for selected target platform: " + target)
+    if (not params.arch in build_architectures):
+        sys.exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + params.target)
 
-    if (steps is None):
+    if (params.buildsteps is None):
         sys.exit("ERROR: No build-step specified, valid values are: " + ", ".join(avail_build_steps))
 
-    if (not steps is None and not isinstance(steps, list)):
-        steps = [steps]
+    if (not params.buildsteps is None and not isinstance(params.buildsteps, list)):
+        params.buildsteps = [params.buildsteps]
 
-    global buildsteps
-    buildsteps.clear()
+    # apply default values for unspecified params
+    params.build_agent = params.build_agent if (hasattr(params, "build_agent")) else None
 
-    for step in steps:
+    global parsed_steps
+    parsed_steps.clear()
+
+    for step in params.buildsteps:
         parse_build_step_option(step)()
 
     # force build-steps into defined order (see: http://stackoverflow.com/a/23529016)
-    buildsteps = [step for step in build_step_sequence if step in buildsteps]
+    parsed_steps = [step for step in build_step_sequence if step in parsed_steps]
 
-    configs = build_target.configs
+    platform_steps = build_target.steps
 
-    if (cross_compile):
-        x_compiler = build_target.cross_compiler()
-        x_config = configs.get('cross')
-        x_cmd = "python ./build.py -t $PLATFORM -a $ARCH " + ("-ne" if node_enabled else "") + " " + " ".join(buildsteps)
-        x_compiler.build(x_config, arch, x_cmd)
-    else:
-        # TODO: move pre-build checks / steps to main program and run it only in the real program instigator (helps performance & early build abort in error cases)
-        # pre-build sanity checks
+    build_cwd = utils.get_cwd()
+
+    if (platform_steps.get("cross") is None):
+        sys.exit("ERROR: cross-compilation is not available/supported for platform: " + params.target)
+
+    # if we are the build-instigator (not a cross-compile build-agent) we run some initial checks & setups for the build
+    if (hasattr(params, "build_agent") and not params.build_agent):
+        print "Checking Node.js builtins integration consistency..."
         check_node_builtins()
 
-        # TODO: get native build system Batch vs Shell
-        host_compiler = ShellBuildSystem()
-        host_configs = dict(configs)
+        print "Caching Node.js artifacts..."
+        utils.store_nodejs_output(params.target, params.arch, build_cwd)
 
-        # TODO: use a central / single / immutable source of truth for the CWD
-        build_cwd = os.getcwd().replace("\\", "/")
+    def execute_build_step(compiler, build_step):
+        """Executes an immutable copy of the given build-step configuration"""
+        # from this point on, make the build-input immutable to ensure consistency across the whole build process
+        # any actions during the build-step should only be made based on the initial set of variables & conditions
+        # NOTE: this restriction makes it much more easy to reason about the build-process as a whole
+        build_step = immutable.freeze(build_step)
+        compiler.build(build_step)
 
-        if (host_configs.has_key('cross')):
-            x_config = host_configs.get('cross')
-            build_cwd = x_config.build_cwd
-            del host_configs['cross']
+    # a cross-compile was requested, we just launch the build-environment and then delegate the requested build-process to the cross-compile environment
+    if (params.cross_compile):
+        x_compiler = build_target.cross_compiler()
+        x_step = platform_steps.get("cross")
 
-        # build all requested build steps
-        for step in buildsteps:
-            h_config = host_configs[step]
+        # prepare any additional/dynamic parameters for the build and put them into the build-step config
+        x_step.arch = params.arch
+        x_step.custom_cmd = "python ./build.py --build-agent -t $PLATFORM -a $ARCH " + ("-ne" if params.node_enabled else "") + " " + " ".join(parsed_steps)
 
-            # TODO: move pre-build checks / steps to main program and run it only in the real program instigator (helps performance & early build abort in error cases)
-            # if we build Node.js then save any potentially existing build artifacts from a different platform
-            if (step == c.build_node_js):
-                utils.store_nodejs_output(h_config, arch, build_cwd)
+        execute_build_step(x_compiler, x_step)
 
-            host_compiler.build(h_config, arch)
+    # run the requested build-steps with the given parameters to produce the build-artifacts
+    else:
+        target_compiler = ShellBuildSystem()
+        target_steps = dict(platform_steps)
+
+        if (target_steps.has_key("cross")):
+            x_step = target_steps.get("cross")
+            del target_steps["cross"]
+
+            # this is a build-agent for a cross-compile
+            if (params.build_agent):
+                # the cross-compile step dictates which directory will be used to run the actual build
+                build_cwd = x_step.build_cwd
+
+        # execute all requested build steps
+        for step in parsed_steps:
+            target_step = target_steps[step]
+
+            # prepare any additional/dynamic parameters for the build and put them into the build-step config
+            target_step.cross_compile = params.cross_compile
+            target_step.build_agent = params.build_agent if (hasattr(params, "build_agent")) else None
+            target_step.arch = params.arch
+            target_step.build_cwd = build_cwd
+
+            execute_build_step(target_compiler, target_step)
 
 # check if this script was invoked via CLI directly to start a build
-if __name__ == '__main__':
-    execute_build(args.target, args.arch, args.buildsteps, args.node_enabled, args.cross_compile)
+if __name__ == "__main__":
+    execute_build(args)

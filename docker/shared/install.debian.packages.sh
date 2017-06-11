@@ -9,4 +9,6 @@ apt-get -qq update && \
 	curl \
 	file \
 	python \
-	make
+	make \
+	wget \
+	supervisor

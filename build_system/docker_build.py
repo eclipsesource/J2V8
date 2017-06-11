@@ -1,45 +1,43 @@
 import subprocess
 import sys
-from shutil import copy2
 from cross_build import BuildSystem
+import constants as c
 
 class DockerBuildSystem(BuildSystem):
-    def clean(self, config, arch):
+    def clean(self, config):
         try:
-            self.exec_host_cmd("docker rm -f -v j2v8.$PLATFORM.$ARCH", config, arch)
+            self.exec_host_cmd("docker rm -f -v j2v8.$PLATFORM.$ARCH", config)
         except subprocess.CalledProcessError:
             return
 
-    def get_mount_string(self, mount_point, config, arch):
-        return "-v " + mount_point.host_dir + ":" + mount_point.guest_dir
-
-    def health_check(self, config, arch):
+    def health_check(self, config):
         try:
-            self.exec_host_cmd("docker stats --no-stream", config, arch)
+            self.exec_host_cmd("docker stats --no-stream", config)
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Docker build-system health check, make sure Docker is available and running!")
 
-    def pre_build(self, config, arch):
-        print ("preparing " + config.platform + "@" + arch + " => " + config.name)
+    def pre_build(self, config):
+        print ("preparing " + config.platform + "@" + config.arch + " => " + config.name)
 
-        # copy the maven  & gradle config file to the docker shared directory
-        # this allows to download most of the maven dependencies for the build beforehand
-        copy2("pom.xml", "./docker/shared")
-        copy2("build.gradle", "./docker/shared")
-        copy2("src/main/AndroidManifest.xml", "./docker/android/AndroidManifest.xml")
+        self.exec_host_cmd("docker build -f $PLATFORM/Dockerfile -t \"j2v8-$PLATFORM\" .", config)
 
-        self.exec_host_cmd("docker build -f $PLATFORM/Dockerfile -t \"j2v8-$PLATFORM\" .", config, arch)
+    def exec_build(self, config):
+        print ("DOCKER building " + config.platform + "@" + config.arch + " => " + config.name)
 
-    def exec_build(self, config, arch, custom_cmd):
-        print ("DOCKER building " + config.platform + "@" + arch + " => " + config.name)
+        mount_point = "C:/j2v8" if config.platform == c.target_win32 else "/j2v8"
+        shell_invoke = "cmd /C" if config.platform == c.target_win32 else "/bin/bash -c"
+        cmd_separator = "&&" if config.platform == c.target_win32 else ";"
 
-        docker_run_str = self.inject_env("docker run --privileged -P -v $CWD:/j2v8 --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM ", config, arch)
-        build_cmds_str = self.inject_env("/bin/bash -c \"cd $BUILD_CWD; " + (custom_cmd or "; ".join(config.build(config, arch))) + "\"", config, arch)
+        build_cmd = config.custom_cmd or (cmd_separator + " ").join(config.build(config))
 
-        docker_str = docker_run_str + build_cmds_str
-        print docker_str
-        self.exec_host_cmd(docker_str, config, arch)
+        platform_cmd = "docker run --privileged -P -v $CWD:" + mount_point + \
+            " --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
-    def post_build(self, config, arch):
+        docker_run_str = self.inject_env(platform_cmd, config)
+
+        print docker_run_str
+
+        self.exec_host_cmd(docker_run_str, config)
+
+    def post_build(self, config):
         return
-        #self.exec_host_cmd("docker cp j2v8.$PLATFORM.$ARCH:/build/jni/jniLibs $BUILD_CWD/src/main/", config, arch)

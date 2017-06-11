@@ -74,19 +74,35 @@ get_njs_libs(${J2V8_NODEJS_DIR} "Release")
 option(J2V8_NODE_COMPATIBLE "Build the J2V8 native bridge with Node.js support enabled" ON)
 option(J2V8_BUILD_ONLY_DEBUG_RELEASE "Generate only Debug and Release configurations (exclude RelWithDebInfo and MinSizeRel)" ON)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND MSVC)
+#{
+    option(J2V8_LINK_WITH_STATIC_MSVCRT "Link against the static version of the Microsoft Visual C++ Common Runtime (will link against the dynamic DLL version if this option is disabled)" ON)
+#}
+endif()
+
 #-----------------------------------------------------------------------
 # INCLUDE DIRECTORIES & SOURCE FILES
 #-----------------------------------------------------------------------
 
 # project include directories
 set(include_dirs
-    ${J2V8_JDK_DIR}/include
-    ${J2V8_JDK_DIR}/include/${JAVA_PLATFORM_NAME}
     ${J2V8_NODEJS_DIR}
     ${J2V8_NODEJS_DIR}/src
     ${J2V8_NODEJS_DIR}/deps/v8
     ${J2V8_NODEJS_DIR}/deps/v8/include
 )
+
+# do not use JAVA_HOME for Java include files for Android
+# (instead the Android NDK toolchain will introduce them automatically)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+#{
+    set(include_dirs
+        ${include_dirs}
+        ${J2V8_JDK_DIR}/include
+        ${J2V8_JDK_DIR}/include/${JAVA_PLATFORM_NAME}
+    )
+#}
+endif()
 
 # project source files
 set(src_files
@@ -101,13 +117,7 @@ source_group("" FILES ${src_files})
 #-----------------------------------------------------------------------
 
 # tell gcc/clang to use the c++11 standard
-set(CMAKE_CXX_STANDARD 11) # TODO: test if this is an ok cross-platform option for all platforms
-
-# if(CMAKE_SYSTEM_NAME STREQUAL "Linux") #TODO: also needed on MacOS !?
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-# else()
-#     set(CMAKE_CXX_STANDARD 11)
-# endif()
+set(CMAKE_CXX_STANDARD 11)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
@@ -122,7 +132,7 @@ if(J2V8_BUILD_ONLY_DEBUG_RELEASE)
 endif()
 
 # link against the static MS C++ runtime libraries
-if(MSVC)
+if(J2V8_LINK_WITH_STATIC_MSVCRT)
     link_static_crt()
 endif()
 
@@ -159,22 +169,3 @@ endif()
 
 # set library output filename
 set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${PROJECT_NAME}_${J2V8_LIB_PLATFORM_NAME}_${J2V8_LIB_ARCH_NAME}")
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-#{
-    # Android libs need to go in a special directory for AAR bundling
-    set(J2V8_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libj2v8.so)
-#}
-else()
-#{
-    # put the platform libs into the java resources directory
-    set(J2V8_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/src/main/resources/${J2V8_LIB_PREFIX}$<TARGET_FILE_NAME:j2v8>)
-#}
-endif()
-
-# copy native lib to J2V8 project resources directory
-add_custom_command(TARGET j2v8 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    $<TARGET_FILE:j2v8>
-                    ${J2V8_OUTPUT_PATH}
-)

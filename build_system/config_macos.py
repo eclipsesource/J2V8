@@ -1,10 +1,11 @@
 import constants as c
-from cross_build import BuildConfig, PlatformConfig
+from cross_build import BuildStep, PlatformConfig
 from vagrant_build import VagrantBuildSystem
+import shared_build_steps as u
 
 macos_config = PlatformConfig("macos", [c.arch_x86, c.arch_x64], VagrantBuildSystem)
 
-macos_config.cross_config(BuildConfig(
+macos_config.cross_config(BuildStep(
     name="cross-compile-host",
     platform="macos",
     host_cwd="$CWD/vagrant/$PLATFORM",
@@ -12,7 +13,7 @@ macos_config.cross_config(BuildConfig(
 ))
 
 #-----------------------------------------------------------------------
-def build_node_js(config, arch):
+def build_node_js(config):
     return [
         "cd ./node",
         """./configure              \
@@ -27,17 +28,16 @@ def build_node_js(config, arch):
 
 macos_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
-def build_j2v8_cmake(config, arch):
-    return [
-        "mkdir -p cmake.out/$PLATFORM.$ARCH",
-        "cd cmake.out/$PLATFORM.$ARCH",
-        "rm -rf CMakeCache.txt CMakeFiles/",
-        "cmake ../../",
-    ]
+def build_j2v8_cmake(config):
+    return \
+        u.shell("mkdir", "cmake.out/$PLATFORM.$ARCH") + \
+        ["cd cmake.out/$PLATFORM.$ARCH"] + \
+        u.shell("rm", "CMakeCache.txt CMakeFiles/") + \
+        ["cmake ../../"]
 
 macos_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
-def build_j2v8_jni(config, arch):
+def build_j2v8_jni(config):
     return [
         "cd cmake.out/$PLATFORM.$ARCH",
         "make -j4",
@@ -45,19 +45,21 @@ def build_j2v8_jni(config, arch):
 
 macos_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
 #-----------------------------------------------------------------------
-def build_j2v8_java(config, arch):
-    file_arch = "x86_64" if arch == c.arch_x64 else "x86"
-    return [
-        "export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home",
-        "export PATH=/opt/apache-maven-3.5.0/bin:$PATH",
-        "export MVN_PLATFORM_NAME=macosx",
-        "export MVN_ARCH_NAME=" + file_arch,
-        "mvn clean verify -e",
-        # TODO: maybe make j2v8tests a separate build-step
-        # "mvn -DskipTests=true verify",
-        "mkdir -p build.out",
-        "cp target/j2v8_macosx_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/",
-    ]
+def build_j2v8_java(config):
+    file_arch = "x86_64" if config.arch == c.arch_x64 else "x86"
+    return \
+        u.copyNativeLibs(config, file_arch) + \
+        u.setBuildEnv(config, file_arch) + \
+        [u.build_cmd] + \
+        u.copyOutput(config, file_arch)
 
 macos_config.build_step(c.build_j2v8_java, build_j2v8_java)
+#-----------------------------------------------------------------------
+def build_j2v8_junit(config):
+    file_arch = "x86_64" if config.arch == c.arch_x64 else "x86"
+    return \
+        u.setBuildEnv(config, file_arch) + \
+        [u.run_tests_cmd]
+
+macos_config.build_step(c.build_j2v8_junit, build_j2v8_junit)
 #-----------------------------------------------------------------------

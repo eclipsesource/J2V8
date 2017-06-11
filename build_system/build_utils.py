@@ -1,10 +1,12 @@
 import os
 import shutil
 
-# TODO: use immutable build-context class to pass arround everything between the build steps (e.g. build_cwd)
-def store_nodejs_output(config, arch, build_cwd):
+def get_cwd():
+    return os.getcwd().replace("\\", "/")
+
+def store_nodejs_output(platform, arch, build_cwd):
     prev_node_tag = None
-    curr_node_tag = config.platform + "." + arch
+    curr_node_tag = platform + "." + arch
 
     out_dir = build_cwd + "/node/out"
     tagged_dir = lambda tag: build_cwd + "/node.out/" + tag + "/out"
@@ -18,13 +20,13 @@ def store_nodejs_output(config, arch, build_cwd):
     if (prev_node_tag != curr_node_tag):
         if (prev_node_tag is not None):
             print ">>> Stored Node.js build files for later use: " + prev_node_tag
-            # prev_dir = "/j2v8/node.out/" + prev_node_tag + "/out"
             prev_dir = tagged_dir(prev_node_tag)
+
             if (os.path.isdir(prev_dir)):
                 shutil.rmtree(prev_dir)
+
             shutil.move(out_dir, prev_dir)
 
-        # curr_dir = "/j2v8/node.out/" + curr_node_tag + "/out"
         curr_dir = tagged_dir(curr_node_tag)
 
         if (os.path.isdir(curr_dir)):
@@ -37,3 +39,13 @@ def store_nodejs_output(config, arch, build_cwd):
                 f.write(curr_node_tag)
     else:
         print ">>> Used existing Node.js build files: " + curr_node_tag
+
+def applyFileTemplate(src, dest, inject_vars_fn):
+    template_text = None
+    with open(src, "r") as f:
+        template_text = f.read()
+
+    template_text = inject_vars_fn(template_text)
+
+    with open(dest, "w") as f:
+        f.write(template_text)

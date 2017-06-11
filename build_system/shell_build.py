@@ -1,31 +1,29 @@
 import subprocess
 import sys
 from cross_build import BuildSystem
+import constants as c
 
 class ShellBuildSystem(BuildSystem):
-    def clean(self, config, arch):
+    def clean(self, config):
         return
 
-    def get_mount_string(self, mount_point):
-        return
-
-    def health_check(self, config, arch):
+    def health_check(self, config):
         try:
-            # TODO: does bash work for MacOS ?
-            # TODO: add Win32 CMD build-system to avoid dependency on bash or add a platform switch-case here
-            self.exec_cmd("bash --version", config, arch)
+            shell_check_cmd = "ver" if config.platform == c.target_win32 else "bash --version"
+            self.exec_cmd(shell_check_cmd, config)
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Shell build-system health check!")
 
-    def pre_build(self, config, arch):
+    def pre_build(self, config):
         return
 
-    def exec_build(self, config, arch, custom_cmd):
-        print ("SHELL building " + config.platform + "@" + arch + " => " + config.name)
+    def exec_build(self, config):
+        print ("SHELL building " + config.platform + "@" + config.arch + " => " + config.name)
 
-        build_cmds_str = self.inject_env("cd $BUILD_CWD && " + (custom_cmd or " && ".join(config.build(config, arch))), config, arch)
+        build_cmd = config.custom_cmd or " && ".join(config.build(config))
+        shell_str = self.inject_env("cd $BUILD_CWD && " + build_cmd, config)
 
-        self.exec_cmd(build_cmds_str, config, arch)
+        self.exec_cmd(shell_str, config)
 
-    def post_build(self, config, arch):
+    def post_build(self, config):
         return

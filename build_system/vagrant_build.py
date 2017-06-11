@@ -3,28 +3,25 @@ import sys
 from cross_build import BuildSystem
 
 class VagrantBuildSystem(BuildSystem):
-    def clean(self, config, arch):
+    def clean(self, config):
         return
 
-    def get_mount_string(self, mount_point):
-        return
-
-    def health_check(self, config, arch):
+    def health_check(self, config):
         try:
-            self.exec_host_cmd("vagrant global-status", config, arch)
+            self.exec_host_cmd("vagrant global-status", config)
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Vagrant build-system health check, make sure Vagrant is available and running!")
 
-    def pre_build(self, config, arch):
-        self.exec_host_cmd("vagrant up", config, arch)
+    def pre_build(self, config):
+        self.exec_host_cmd("vagrant up", config)
 
-    def exec_build(self, config, arch, custom_cmd):
-        print ("VAGRANT building " + config.platform + "@" + arch + " => " + config.name)
+    def exec_build(self, config):
+        print ("VAGRANT building " + config.platform + "@" + config.arch + " => " + config.name)
 
-        # TODO
-        build_cmds_str = self.inject_env("cd $BUILD_CWD; " + (custom_cmd or "; ".join(config.build(config, arch))), config, arch)
+        build_cmd = config.custom_cmd or "; ".join(config.build(config))
+        platform_cmd = "vagrant ssh -c '" + self.inject_env("cd $BUILD_CWD; " + build_cmd, config) + "'"
 
-        self.exec_host_cmd("vagrant ssh -c '" + build_cmds_str + "'", config, arch)
+        self.exec_host_cmd(platform_cmd, config)
 
-    def post_build(self, config, arch):
-        self.exec_host_cmd("vagrant halt", config, arch)
+    def post_build(self, config):
+        self.exec_host_cmd("vagrant halt", config)
