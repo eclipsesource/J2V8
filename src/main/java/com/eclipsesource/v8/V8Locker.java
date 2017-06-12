@@ -19,6 +19,7 @@ package com.eclipsesource.v8;
 public class V8Locker {
 
     private Thread thread = null;
+    private boolean released = false;
 
     V8Locker() {
         acquire();
@@ -43,6 +44,7 @@ public class V8Locker {
             throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
         thread = Thread.currentThread();
+        released = false;
     }
 
     /**
@@ -57,6 +59,7 @@ public class V8Locker {
             return false;
         }
         thread = Thread.currentThread();
+        released = false;
         return true;
     }
 
@@ -68,6 +71,7 @@ public class V8Locker {
     public synchronized void release() {
         checkThread();
         thread = null;
+        released = true;
     }
 
     /**
@@ -76,6 +80,9 @@ public class V8Locker {
      * is thrown.
      */
     public void checkThread() {
+        if(released && thread == null){
+            throw new Error("Invalid V8 thread access: the locker has been released!");
+        }
         if ((thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
