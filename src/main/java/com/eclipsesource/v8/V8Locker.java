@@ -66,9 +66,13 @@ public class V8Locker {
     /**
      * Release the lock if it's currently held by the calling thread.
      * If the current thread does not hold the lock, and error will be
-     * thrown.
+     * thrown. If no thread holds the lock then nothing will happen.
      */
     public synchronized void release() {
+        if(released && thread == null){
+            return;
+        }
+
         checkThread();
         thread = null;
         released = true;
