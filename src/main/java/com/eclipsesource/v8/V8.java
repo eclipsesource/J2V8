@@ -1015,12 +1015,12 @@ public class V8 extends V8Object {
         return _initNewV8Object(v8RuntimePtr);
     }
 
-    protected void acquireLock() {
-        _acquireLock(getV8RuntimePtr());
+    protected void acquireLock(final long v8RuntimePtr) {
+        _acquireLock(v8RuntimePtr);
     }
 
-    protected void releaseLock() {
-        _releaseLock(getV8RuntimePtr());
+    protected void releaseLock(final long v8RuntimePtr) {
+        _releaseLock(v8RuntimePtr);
     }
 
     protected void createTwin(final long v8RuntimePtr, final long objectHandle, final long twinHandle) {
