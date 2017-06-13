@@ -212,11 +212,24 @@ abstract public class V8Value implements Releasable {
      * the object will be released, so this should only be used if there is no
      * other way to track object usage.
      */
-    public void setWeak() {
+    public V8Value setWeak() {
         v8.checkThread();
         v8.checkReleased();
         v8.v8WeakReferences.put(getHandle(), this);
         v8.setWeak(v8.getV8RuntimePtr(), getHandle());
+        return this;
+    }
+
+    /**
+     * If {@link V8Value#setWeak()} has been called on this Object, this method
+     * will return true. Otherwise it will return false.
+     *
+     * @return Returns true if this object has been set 'Weak', return false otherwise.
+     */
+    public boolean isWeak() {
+        v8.checkThread();
+        v8.checkReleased();
+        return v8.isWeak(v8.getV8RuntimePtr(), getHandle());
     }
 
     /**

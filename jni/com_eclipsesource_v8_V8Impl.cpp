@@ -1698,6 +1698,12 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
     }, WeakCallbackType::kFinalizer);
 }
 
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isWeak
+  (JNIEnv * env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+    return reinterpret_cast<Persistent<Object>*>(objectHandle)->IsWeak();
+}
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle, jstring functionName, jboolean voidMethod) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);

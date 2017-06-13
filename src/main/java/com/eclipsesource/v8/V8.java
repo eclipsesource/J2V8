@@ -296,7 +296,7 @@ public class V8 extends V8Object {
      * @return The number of Object References on this runtime.
      */
     public long getObjectReferenceCount() {
-        return objectReferences;
+        return objectReferences - v8WeakReferences.size();
     }
 
     protected long getV8RuntimePtr() {
@@ -370,7 +370,7 @@ public class V8 extends V8Object {
             _releaseRuntime(v8RuntimePtr);
             v8RuntimePtr = 0L;
             released = true;
-            if (reportMemoryLeaks && ((objectReferences - v8WeakReferences.size()) > 0)) {
+            if (reportMemoryLeaks && (getObjectReferenceCount() > 0)) {
                 throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
             }
         }
@@ -1055,6 +1055,10 @@ public class V8 extends V8Object {
         _setWeak(v8RuntimePtr, objectHandle);
     }
 
+    protected boolean isWeak(final long v8RuntimePtr, final long objectHandle) {
+        return _isWeak(v8RuntimePtr, objectHandle);
+    }
+
     protected void release(final long v8RuntimePtr, final long objectHandle) {
         _release(v8RuntimePtr, objectHandle);
     }
@@ -1522,6 +1526,8 @@ public class V8 extends V8Object {
     private native long _initNewV8UInt8ClampedArray(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native void _setWeak(long runtimePtr, long objectHandle);
+
+    private native boolean _isWeak(long runtimePtr, long objectHandle);
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 

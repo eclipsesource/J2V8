@@ -1733,4 +1733,18 @@ public class V8ObjectTest {
         assertEquals(V8Value.UNDEFINED, V8.getUndefined().getV8Type());
     }
 
+    @Test
+    public void testWeakReferenceReducesObjectCount() {
+        new V8Object(v8).setWeak();
+
+        assertEquals(0, v8.getObjectReferenceCount());
+    }
+
+    @Test
+    public void setWeakMakesObjectWeak() {
+        V8Value object = new V8Object(v8).setWeak();
+
+        assertTrue(object.isWeak());
+    }
+
 }
