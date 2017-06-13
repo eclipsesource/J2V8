@@ -68,7 +68,7 @@ class LibraryLoader {
         if (tempDirectory != null) {
             path = tempDirectory;
         } else {
-            path = System.getProperty("user.home"); //$NON-NLS-1$
+            path = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
         }
 
         if (extract(path + SEPARATOR + libFullName, libFullName, message)) {
