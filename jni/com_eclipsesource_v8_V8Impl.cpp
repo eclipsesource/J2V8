@@ -40,6 +40,12 @@ public:
   jlong v8RuntimePtr;
 };
 
+class WeakReferenceDescriptor {
+public:
+  jlong v8RuntimePtr;
+  jlong objectHandle;
+};
+
 class V8Runtime {
 public:
   Isolate* isolate;
@@ -91,6 +97,7 @@ jmethodID v8ArrayGetHandleMethodID = NULL;
 jmethodID v8CallVoidMethodID = NULL;
 jmethodID v8ObjectReleaseMethodID = NULL;
 jmethodID v8DisposeMethodID = NULL;
+jmethodID v8WeakReferenceReleased = NULL;
 jmethodID v8ArrayReleaseMethodID = NULL;
 jmethodID v8ObjectIsUndefinedMethodID = NULL;
 jmethodID v8ObjectGetHandleMethodID = NULL;
@@ -276,6 +283,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     doubleDoubleValueMethodID = env->GetMethodID(doubleCls, "doubleValue", "()D");
     v8CallObjectJavaMethodMethodID = (env)->GetMethodID(v8cls, "callObjectJavaMethod", "(JLcom/eclipsesource/v8/V8Object;Lcom/eclipsesource/v8/V8Array;)Ljava/lang/Object;");
     v8DisposeMethodID = (env)->GetMethodID(v8cls, "disposeMethodID", "(J)V");
+    v8WeakReferenceReleased = (env)->GetMethodID(v8cls, "weakReferenceReleased", "(J)V");
     v8ScriptCompilationInitMethodID = env->GetMethodID(v8ScriptCompilationCls, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;II)V");
     v8ScriptExecutionExceptionInitMethodID = env->GetMethodID(v8ScriptExecutionException, "<init>", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;IILjava/lang/String;Ljava/lang/Throwable;)V");
     undefinedV8ArrayInitMethodID = env->GetMethodID(undefinedV8ArrayCls, "<init>", "()V");
@@ -1658,6 +1666,22 @@ JNIEXPORT jlongArray JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Function
   fill[1] = md->methodID;
   (env)->SetLongArrayRegion(result, 0, 2, fill);
   return result;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
+  (JNIEnv * env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, );
+    WeakReferenceDescriptor* wrd = new WeakReferenceDescriptor();
+    wrd->v8RuntimePtr = v8RuntimePtr;
+    wrd->objectHandle = objectHandle;
+    reinterpret_cast<Persistent<Object>*>(objectHandle)->SetWeak(wrd, [](v8::WeakCallbackInfo<WeakReferenceDescriptor> const& data) {
+      WeakReferenceDescriptor* wrd = data.GetParameter();
+      JNIEnv * env;
+      getJNIEnv(env);
+      jobject v8 = reinterpret_cast<V8Runtime*>(wrd->v8RuntimePtr)->v8;
+      env->CallVoidMethod(v8, v8WeakReferenceReleased, wrd->objectHandle);
+      delete(wrd);
+    }, WeakCallbackType::kFinalizer);
 }
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod

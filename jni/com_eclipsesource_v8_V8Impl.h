@@ -709,6 +709,14 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt8ClampedArra
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _setWeak
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _createV8ArrayBufferBackingStore
  * Signature: (JJI)Ljava/nio/ByteBuffer;
  */

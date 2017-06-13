@@ -43,6 +43,7 @@ public class V8 extends V8Object {
     private volatile static int          runtimeCounter          = 0;
     private static String                v8Flags                 = null;
     private static boolean               initialized             = false;
+    protected Map<Long, V8Value>         v8WeakReferences        = new HashMap<Long, V8Value>();
 
     private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
@@ -369,7 +370,7 @@ public class V8 extends V8Object {
             _releaseRuntime(v8RuntimePtr);
             v8RuntimePtr = 0L;
             released = true;
-            if (reportMemoryLeaks && (objectReferences > 0)) {
+            if (reportMemoryLeaks && ((objectReferences - v8WeakReferences.size()) > 0)) {
                 throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
             }
         }
@@ -817,6 +818,20 @@ public class V8 extends V8Object {
         functionRegistry.remove(methodID);
     }
 
+    protected void weakReferenceReleased(final long objectID) {
+        V8Value v8Value = v8WeakReferences.get(objectID);
+        if (v8Value != null) {
+            v8WeakReferences.remove(objectID);
+            try {
+                v8Value.release();
+            } catch (Exception e) {
+                // Swallow these exceptions. The V8 GC is running, and
+                // if we return to V8 with Java exception on our stack,
+                // we will be in a world of hurt.
+            }
+        }
+    }
+
     protected Object callObjectJavaMethod(final long methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functionRegistry.get(methodID);
         if (methodDescriptor.callback != null) {
@@ -1026,6 +1041,10 @@ public class V8 extends V8Object {
 
     protected void executeVoidScript(final long v8RuntimePtr, final String script, final String scriptName, final int lineNumber) {
         _executeVoidScript(v8RuntimePtr, script, scriptName, lineNumber);
+    }
+
+    protected void setWeak(final long v8RuntimePtr, final long objectHandle) {
+        _setWeak(v8RuntimePtr, objectHandle);
     }
 
     protected void release(final long v8RuntimePtr, final long objectHandle) {
@@ -1489,6 +1508,8 @@ public class V8 extends V8Object {
     private native long _initNewV8UInt8Array(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native long _initNewV8UInt8ClampedArray(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native void _setWeak(long runtimePtr, long objectHandle);
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 
