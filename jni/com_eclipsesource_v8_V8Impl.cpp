@@ -52,6 +52,7 @@ public:
   Isolate::Scope* isolate_scope;
   Persistent<Context> context_;
   Persistent<Object>* globalObject;
+  Locker* locker;
   jobject v8;
   jthrowable pendingException;
 
@@ -131,7 +132,6 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
       return errorReturnResult;\
                                 }\
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);\
-    Locker locker(isolate);\
     Isolate::Scope isolateScope(isolate);\
     HandleScope handle_scope(isolate);\
     Local<Context> context = Local<Context>::New(isolate,runtime->context_);\
@@ -443,7 +443,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = &array_buffer_allocator;
   runtime->isolate = v8::Isolate::New(create_params);
-  Locker locker(runtime->isolate);
+  runtime->locker = new Locker(runtime->isolate);
   runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;
@@ -463,7 +463,21 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     runtime->globalObject = new Persistent<Object>;
     runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
   }
+  delete(runtime->locker);
   return reinterpret_cast<jlong>(runtime);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
+  (JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  runtime->locker = new Locker(runtime->isolate);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
+  (JNIEnv *nv, jobject, jlong v8RuntimePtr) {
+  V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  delete(runtime->locker);
+  runtime->locker = NULL;
 }
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object

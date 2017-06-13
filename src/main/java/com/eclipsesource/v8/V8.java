@@ -266,9 +266,9 @@ public class V8 extends V8Object {
     protected V8(final String globalAlias) {
         super(null);
         released = false;
-        locker = new V8Locker();
-        checkThread();
         v8RuntimePtr = _createIsolate(globalAlias);
+        locker = new V8Locker(this);
+        checkThread();
         objectHandle = _getGlobalObject(v8RuntimePtr);
     }
 
@@ -1015,6 +1015,14 @@ public class V8 extends V8Object {
         return _initNewV8Object(v8RuntimePtr);
     }
 
+    protected void acquireLock() {
+        _acquireLock(getV8RuntimePtr());
+    }
+
+    protected void releaseLock() {
+        _releaseLock(getV8RuntimePtr());
+    }
+
     protected void createTwin(final long v8RuntimePtr, final long objectHandle, final long twinHandle) {
         _createTwin(v8RuntimePtr, objectHandle, twinHandle);
     }
@@ -1346,6 +1354,10 @@ public class V8 extends V8Object {
     }
 
     private native long _initNewV8Object(long v8RuntimePtr);
+
+    private native void _acquireLock(long v8RuntimePtr);
+
+    private native void _releaseLock(long v8RuntimePtr);
 
     private native void _createTwin(long v8RuntimePtr, long objectHandle, long twinHandle);
 

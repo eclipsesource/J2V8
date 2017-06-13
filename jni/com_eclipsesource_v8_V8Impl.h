@@ -61,6 +61,22 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _acquireLock
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _releaseLock
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _createTwin
  * Signature: (JJJ)V
  */

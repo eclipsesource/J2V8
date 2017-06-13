@@ -18,10 +18,12 @@ package com.eclipsesource.v8;
  */
 public class V8Locker {
 
-    private Thread thread = null;
+    private Thread  thread   = null;
     private boolean released = false;
+    private V8      runtime;
 
-    V8Locker() {
+    V8Locker(final V8 runtime) {
+        this.runtime = runtime;
         acquire();
     }
 
@@ -43,6 +45,7 @@ public class V8Locker {
         if ((thread != null) && (thread != Thread.currentThread())) {
             throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
         }
+        runtime.acquireLock(runtime.getV8RuntimePtr());
         thread = Thread.currentThread();
         released = false;
     }
@@ -58,6 +61,7 @@ public class V8Locker {
         if ((thread != null) && (thread != Thread.currentThread())) {
             return false;
         }
+        runtime.acquireLock(runtime.getV8RuntimePtr());
         thread = Thread.currentThread();
         released = false;
         return true;
@@ -69,11 +73,11 @@ public class V8Locker {
      * thrown. If no thread holds the lock then nothing will happen.
      */
     public synchronized void release() {
-        if(released && thread == null){
+        if ((released && (thread == null)) || runtime.isReleased()) {
             return;
         }
-
         checkThread();
+        runtime.releaseLock(runtime.getV8RuntimePtr());
         thread = null;
         released = true;
     }
@@ -84,7 +88,7 @@ public class V8Locker {
      * is thrown.
      */
     public void checkThread() {
-        if(released && thread == null){
+        if(released && (thread == null)){
             throw new Error("Invalid V8 thread access: the locker has been released!");
         }
         if ((thread != Thread.currentThread())) {

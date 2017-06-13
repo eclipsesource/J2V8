@@ -16,29 +16,49 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class V8LockerTest {
 
     private boolean passed = false;
+    private V8      v8     = null;
+
+    @Before
+    public void setup() {
+        v8 = V8.createV8Runtime();
+    }
+
+    @After
+    public void tearDown() {
+        try {
+            v8.release();
+            if (V8.getActiveRuntimes() != 0) {
+                throw new IllegalStateException("V8Runtimes not properly released");
+            }
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
     @Test
     public void testAcquireOnCreation() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
 
         v8Locker.checkThread();
     }
 
     @Test
     public void testGetThread() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
 
         assertEquals(Thread.currentThread(), v8Locker.getThread());
     }
 
     @Test
     public void testGetThreadNullAfterRelease() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
         v8Locker.release();
 
         assertNull(v8Locker.getThread());
@@ -46,7 +66,7 @@ public class V8LockerTest {
 
     @Test
     public void testAcquireLocker() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
         v8Locker.release();
         v8Locker.acquire();
 
@@ -54,8 +74,26 @@ public class V8LockerTest {
     }
 
     @Test
+    public void testMultipleRelease() {
+        V8Locker v8Locker = new V8Locker(v8);
+
+        v8Locker.release();
+        v8Locker.release();
+        v8Locker.release();
+    }
+
+    @Test
+    public void testReleaseAfterV8Released() {
+        V8Locker v8Locker = new V8Locker(v8);
+        v8.release();
+
+        v8Locker.release();
+        v8 = V8.createV8Runtime(); // Create a new runtime so the teardown doesn't fail
+    }
+
+    @Test
     public void testTryAcquireLocker_True() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
         v8Locker.release();
         boolean result = v8Locker.tryAcquire();
 
@@ -65,14 +103,14 @@ public class V8LockerTest {
 
     @Test
     public void testHasLock() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
 
         assertTrue(v8Locker.hasLock());
     }
 
     @Test
     public void testDoesNotHasLock() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
         v8Locker.release();
 
         assertFalse(v8Locker.hasLock());
@@ -80,7 +118,7 @@ public class V8LockerTest {
 
     @Test
     public void testThreadLocked_tryAcquire() throws InterruptedException {
-        final V8Locker v8Locker = new V8Locker();
+        final V8Locker v8Locker = new V8Locker(v8);
         final boolean result[] = new boolean[1];
         Thread t = new Thread(new Runnable() {
 
@@ -97,7 +135,7 @@ public class V8LockerTest {
 
     @Test
     public void testThreadLocked() throws InterruptedException {
-        final V8Locker v8Locker = new V8Locker();
+        final V8Locker v8Locker = new V8Locker(v8);
         passed = false;
         Thread t = new Thread(new Runnable() {
 
@@ -119,7 +157,7 @@ public class V8LockerTest {
 
     @Test
     public void testCannotUseReleasedLocker() {
-        V8Locker v8Locker = new V8Locker();
+        V8Locker v8Locker = new V8Locker(v8);
         v8Locker.release();
 
         try {
