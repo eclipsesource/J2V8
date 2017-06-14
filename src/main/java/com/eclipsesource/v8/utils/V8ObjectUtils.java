@@ -17,6 +17,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8;
@@ -534,6 +535,23 @@ public class V8ObjectUtils {
         return result;
     }
 
+    private static V8Array toV8Array(final V8 v8, final Set<? extends Object> set, final Map<Object, V8Value> cache) {
+        if (cache.containsKey(new SetWrapper(set))) {
+            return (V8Array) cache.get(new SetWrapper(set));
+        }
+        V8Array result = new V8Array(v8);
+        cache.put(new SetWrapper(set), result);
+        try {
+            for (Object value : set) {
+                pushValue(v8, result, value, cache);
+            }
+        } catch (IllegalStateException e) {
+            result.release();
+            throw e;
+        }
+        return result;
+    }
+
     private static V8ArrayBuffer toV8ArrayBuffer(final V8 v8, final ArrayBuffer arrayBuffer, final Map<Object, V8Value> cache) {
         if (cache.containsKey(arrayBuffer)) {
             return (V8ArrayBuffer) cache.get(arrayBuffer);
@@ -566,6 +584,8 @@ public class V8ObjectUtils {
             return toV8Object(v8, (Map<String, ? extends Object>) value, cache);
         } else if (value instanceof List<?>) {
             return toV8Array(v8, (List<? extends Object>) value, cache);
+        } else if (value instanceof Set<?>) {
+            return toV8Array(v8, (Set<? extends Object>) value, cache);
         } else if (value instanceof TypedArray) {
             return toV8TypedArray(v8, (TypedArray) value, cache);
         } else if (value instanceof ArrayBuffer) {
@@ -604,6 +624,9 @@ public class V8ObjectUtils {
         } else if (value instanceof List) {
             V8Array array = toV8Array(v8, (List) value, cache);
             result.push(array);
+        } else if (value instanceof Set) {
+            V8Array array = toV8Array(v8, (Set) value, cache);
+            result.push(array);
         } else {
             throw new IllegalStateException("Unsupported Object of type: " + value.getClass());
         }
@@ -638,6 +661,9 @@ public class V8ObjectUtils {
             result.add(key, object);
         } else if (value instanceof List) {
             V8Array array = toV8Array(v8, (List) value, cache);
+            result.add(key, array);
+        } else if (value instanceof Set) {
+            V8Array array = toV8Array(v8, (Set) value, cache);
             result.add(key, array);
         } else {
             throw new IllegalStateException("Unsupported Object of type: " + value.getClass());
@@ -730,6 +756,27 @@ public class V8ObjectUtils {
         @Override
         public int hashCode() {
             return System.identityHashCode(list);
+        }
+    }
+
+    static class SetWrapper {
+        private Set<? extends Object> set;
+
+        public SetWrapper(final Set<? extends Object> set) {
+            this.set = set;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof SetWrapper) {
+                return ((SetWrapper) obj).set == set;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(set);
         }
     }
 }
