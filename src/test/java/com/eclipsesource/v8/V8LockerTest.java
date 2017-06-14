@@ -169,4 +169,21 @@ public class V8LockerTest {
         fail("Expected exception");
     }
 
+    @Test
+    public void testBinarySemaphore() throws InterruptedException {
+        v8.getLocker().acquire(); // Lock has been acquired twice
+        v8.getLocker().release(); // Lock should be released, second acquire shouldn't count
+        Thread t = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                v8.getLocker().acquire();
+                v8.getLocker().release();
+            }
+        });
+        t.start();
+        t.join();
+        v8.getLocker().acquire();
+    }
+
 }
