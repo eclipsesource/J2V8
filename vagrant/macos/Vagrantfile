@@ -26,7 +26,7 @@ SCRIPT
 
 $provision_maven = <<SCRIPT
 echo Downloading Maven...
-curl http://mirror.klaus-uwe.me/apache/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz -O
+curl http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz -O
 
 echo Installing Maven...
 sudo tar xzvf apache-maven-3.5.0-bin.tar.gz -C /opt/

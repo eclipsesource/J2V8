@@ -15,7 +15,8 @@ class Object:
 # Win32 test
 # b.execute_build(c.target_win32, c.arch_x64, c.build_all, node_enabled = True, cross_compile = False)
 
-b.execute_build(Object(**{"target": c.target_win32, "arch": c.arch_x64, "buildsteps": c.build_node_js, "node_enabled": True, "cross_compile": False}))
+# b.execute_build(Object(**{"target": c.target_win32, "arch": c.arch_x64, "buildsteps": c.build_node_js, "node_enabled": True, "cross_compile": False}))
+b.execute_build(Object(**{"target": c.target_linux, "arch": c.arch_x64, "buildsteps": c.build_node_js, "node_enabled": True, "cross_compile": True}))
 
 
 

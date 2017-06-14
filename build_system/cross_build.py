@@ -1,16 +1,9 @@
 from abc import ABCMeta, abstractmethod
 import commands
 import os
-import subprocess
 import sys
 from shutil import copy2
 import build_system.build_utils as utils
-
-def execute(cmd, cwd = None):
-    popen = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
-    return_code = popen.wait()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
 
 class PlatformConfig():
     def __init__(self, name, architectures, cross_compiler):
@@ -66,7 +59,7 @@ class BuildSystem:
         if (config.host_cwd is not None):
             dir = self.inject_env(config.host_cwd, config)
 
-        execute(cmd, dir)
+        utils.execute(cmd, dir)
 
     def exec_cmd(self, cmd, config):
         cmd = self.inject_env(cmd, config)
@@ -75,7 +68,7 @@ class BuildSystem:
         if (config.build_cwd is not None):
             dir = self.inject_env(config.build_cwd, config)
 
-        execute(cmd, dir)
+        utils.execute(cmd, dir)
 
     def inject_env(self, cmd, config):
         build_cwd = utils.get_cwd()

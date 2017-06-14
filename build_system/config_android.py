@@ -72,7 +72,7 @@ def build_j2v8_junit(config):
 
     # we are cross-compiling, run both the emulator and gradle test-runner in parallel
     else:
-        b.applyFileTemplate(
+        b.apply_file_template(
             "./docker/android/supervisord.template.conf",
             "./docker/android/supervisord.conf",
             lambda x: x.replace("$TEST_CMDS", " && ".join(test_cmds))
@@ -81,7 +81,7 @@ def build_j2v8_junit(config):
         image_arch = "armeabi-v7a" if config.arch == c.arch_arm else config.arch
         emu_arch = "-arm" if config.arch == c.arch_arm else "64-x86"
 
-        b.applyFileTemplate(
+        b.apply_file_template(
             "./docker/android/start-emulator.template.sh",
             "./docker/android/start-emulator.sh",
             lambda x: x

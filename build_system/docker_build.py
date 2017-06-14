@@ -1,7 +1,11 @@
+
+import re
 import subprocess
 import sys
+
 from cross_build import BuildSystem
 import constants as c
+import build_utils as utils
 
 class DockerBuildSystem(BuildSystem):
     def clean(self, config):
@@ -12,7 +16,30 @@ class DockerBuildSystem(BuildSystem):
 
     def health_check(self, config):
         try:
+            # general docker availability check
             self.exec_host_cmd("docker stats --no-stream", config)
+
+            # NOTE: the additional newlines are important for the regex matching
+            version_str = utils.execute_to_str("docker version") + "\n\n"
+
+            server_match = re.search(r"Server:(.*)\n\n", version_str + "\n\n", re.DOTALL)
+
+            if (server_match is None or server_match.group(1) is None):
+                sys.exit("ERROR: Unable to determine docker server version from version string: \n\n" + version_str)
+
+            version_match = re.search(r"^ OS/Arch:\s+(.*)$", server_match.group(1), re.MULTILINE)
+
+            if (version_match is None):
+                sys.exit("ERROR: Unable to determine docker server platform from version string: \n\n" + version_str)
+
+            docker_version = version_match.group(1)
+
+            docker_req_platform = "windows" if config.platform == c.target_win32 else "linux"
+
+            # check if the docker engine is running the expected container platform (linux or windows)
+            if (docker_req_platform not in docker_version):
+                sys.exit("ERROR: docker server must be using " + docker_req_platform + " containers, instead found server version using: " + docker_version)
+
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Docker build-system health check, make sure Docker is available and running!")
 
@@ -30,7 +57,9 @@ class DockerBuildSystem(BuildSystem):
 
         build_cmd = config.custom_cmd or (cmd_separator + " ").join(config.build(config))
 
-        platform_cmd = "docker run --privileged -P -v $CWD:" + mount_point + \
+        # NOTE: the --memory 3g setting is imporant for windows docker builds,
+        # since the windows docker engine defaults to 1gb which is not enough to run the Node.js build
+        platform_cmd = "docker run --memory 3g --privileged -P -v $CWD:" + mount_point + \
             " --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(platform_cmd, config)

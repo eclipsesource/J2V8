@@ -1,38 +1,12 @@
-FROM microsoft/windowsservercore
-
-#LINK : fatal error LNK1318: Unexpected PDB error; RPC (23) '(0x000006E7)' [C:\j2v8\cmake.out\win32.x64\CMakeFiles\CMakeTmp\cmTC_c65fc.vcxproj]
-
-# SHELL ["powershell"]
-
-# RUN Invoke-WebRequest \
-#     "https://download.microsoft.com/download/9/B/B/9BB1309E-1A8F-4A47-A6C5-ECF76672A3B3/BuildTools_Full.exe" \
-#     -OutFile "$env:TEMP\BuildTools_Full.exe" -UseBasicParsing
-
-# RUN & "$env:TEMP\BuildTools_Full.exe" /Silent /Full
-# # Todo: delete the BuildTools_Full.exe file in this layer
-
-# # Note: Add Msbuild to path
-# RUN setx PATH '%PATH%;C:\\Program Files (x86)\\MSBuild\\12.0\\Bin\\msbuild.exe'
-
-# MSBuild
-# source: https://hub.docker.com/r/nugardt/msbuild/
+FROM microsoft/windowsservercore:latest
 
 # SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# #Set PATH variable
-# RUN $env:PATH = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\;' + $env:PATH; \
-# [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
-
-# # RUN Invoke-WebRequest "https://download.microsoft.com/download/E/F/D/EFD52638-B804-4865-BB57-47F4B9C80269/NDP462-DevPack-KB3151934-ENU.exe" \
-# #     -OutFile "$env:TEMP\NDP462-DevPack-KB3151934-ENU.exe" -UseBasicParsing
-# # RUN & cmd /c start /WAIT "$env:TEMP\NDP462-DevPack-KB3151934-ENU.exe /install /quiet"
-
-# # # Download MSBuild v15.0
-# # RUN Invoke-WebRequest "https://download.microsoft.com/download/3/A/B/3ABDE7FA-A349-4AF0-A3AC-0D7BB0977A32/vs_BuildTools.exe" -OutFile "$env:TEMP\vs_BuildTools.exe" -UseBasicParsing; \
-# # cmd /WAIT /c "$env:TEMP\vs_BuildTools.exe --add Microsoft.VisualStudio.Workload.MSBuildTools --quiet"; \
-# # while (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe')) { Start-Sleep 1 }; \
-# # rm "$env:TEMP\vs_BuildTools.exe"
+# copy all utility scripts
+COPY ./win32/mem.ps1 C:/temp/
+COPY ./win32/unzip.ps1 C:/temp/
+COPY ./win32/wget.ps1 C:/temp/
 
 #  Python
 # source: https://github.com/docker-library/python/blob/master/2.7/windows/windowsservercore/Dockerfile
@@ -43,7 +17,7 @@ RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}.amd64.msi' -f $env
     Write-Host ('Downloading {0} ...' -f $url); \
     (New-Object System.Net.WebClient).DownloadFile($url, 'python.msi'); \
     \
-    Write-Host 'Installing ...'; \
+    Write-Host 'Installing Python ...'; \
 # https://www.python.org/download/releases/2.4/msi/
     Start-Process msiexec -Wait \
         -ArgumentList @( \
@@ -67,106 +41,61 @@ RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}.amd64.msi' -f $env
     \
     Write-Host 'Complete.';
 
-#  CMake
+#  CMake version
 ENV CMAKE_VERSION 3.9.0-rc2
 
+# download CMake archive
 RUN $url = ('https://cmake.org/files/v3.9/cmake-{0}-win64-x64.zip' -f $env:CMAKE_VERSION); \
     Write-Host ('Downloading {0} ...' -f $url); \
     (New-Object System.Net.WebClient).DownloadFile($url, 'cmake.zip'); \
-    \
-    Write-Host 'Installing ...';
+    Write-Host 'Installing CMake ...';
 
-RUN Write-Host '  DIR'; dir;
-
-# COPY ./win32/unzip.py C:/temp/
-
-COPY ./win32/unzip.ps1 C:/temp/
+# extract CMake archive
 RUN C:/temp/unzip.ps1 "cmake.zip" "."
 
-# RUN Add-Type -AssemblyName System.IO.Compression.FileSystem \n\
-#     function Unzip \n\
-#     { \n\
-#         param([string]$zipfile, [string]$outpath) \n\
-#         \n\
-#         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath) \n\
-#     } \n\
-#     Unzip "cmake.zip" "."
+# add CMake to path
+RUN $env:PATH = (Get-Location | select -ExpandProperty Path)+'\cmake-'+$env:CMAKE_VERSION+'-win64-x64\bin;'+$env:PATH; \
+[Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
 
-# RUN python C:/temp/unzip.py cmake.zip
-
-RUN Write-Host '  DIR'; dir C:\;
-
-
-
-
-# # RUN Invoke-WebRequest "https://download.microsoft.com/download/E/F/D/EFD52638-B804-4865-BB57-47F4B9C80269/NDP462-DevPack-KB3151934-ENU.exe" \
-# #     -OutFile "$env:TEMP\NDP462-DevPack-KB3151934-ENU.exe" -UseBasicParsing
-# # RUN & cmd /c start /WAIT "$env:TEMP\NDP462-DevPack-KB3151934-ENU.exe /install /quiet"
-
-#Set PATH variable
-# RUN $env:PATH = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\;' + $env:PATH; \
-# [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
-
-# Download MSBuild v15.0
-# RUN Invoke-WebRequest "https://download.microsoft.com/download/3/A/B/3ABDE7FA-A349-4AF0-A3AC-0D7BB0977A32/vs_BuildTools.exe" -OutFile "$env:TEMP\vs_BuildTools.exe" -UseBasicParsing;
-
-# RUN cmd /WAIT /c "$env:TEMP\vs_BuildTools.exe --quiet --add Microsoft.VisualStudio.Workload.MSBuildTools"; \
-# while (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe')) { Start-Sleep 1; echo "waiting..." };
-
-# RUN "$env:TEMP\\vs_BuildTools.exe" --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended
-
-# RUN rm "$env:TEMP\vs_BuildTools.exe"
-
-
-# installs vs2017 msbuild successfully
-# RUN Invoke-WebRequest "https://aka.ms/vs/15/release/vs_BuildTools.exe" -OutFile vs_BuildTools.exe -UseBasicParsing
-# RUN Start-Process -FilePath 'vs_BuildTools.exe' -ArgumentList '--quiet', '--norestart', '--add Microsoft.VisualStudio.Workload.MSBuildTools', '--add Microsoft.VisualStudio.Workload.VCTools', '--includeRecommended' -Wait
-# RUN Remove-Item .\vs_BuildTools.exe
-# RUN Remove-Item -Force -Recurse 'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
-# RUN setx /M PATH $($Env:PATH + ';' + ${Env:ProgramFiles(x86)} + '\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin')
-
-# TODO
 # source: https://github.com/friism/dockerfiles/blob/master/vs-build-tools/17/Dockerfile
-# RUN Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" \
-#     -OutFile visualcppbuildtools_full.exe -UseBasicParsing ; \
-#     Start-Process -FilePath 'visualcppbuildtools_full.exe' -ArgumentList '/quiet', '/NoRestart' -Wait ; \
-#     Remove-Item .\visualcppbuildtools_full.exe
+# install MSBuild & C++ build tools
+RUN Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" \
+    -OutFile visualcppbuildtools_full.exe -UseBasicParsing ;
 
+RUN Start-Process -FilePath 'visualcppbuildtools_full.exe' -ArgumentList '/quiet', '/NoRestart' -Wait ; \
+    Remove-Item .\visualcppbuildtools_full.exe
 
+# MSbuild path
+# NOTE: can add "\amd64" after "...\Bin" for x64 version of the compiler
+RUN $env:PATH = 'C:\Program Files (x86)\MSBuild\14.0\Bin;'+$env:PATH; \
+[Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
 
+# download JDK
+RUN C:/temp/wget.ps1 \
+    http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-windows-x64.exe \
+    C:\jdk.exe \
+    "oraclelicense=accept-securebackup-cookie"
 
-# RUN setx /M PATH $($Env:PATH + ';' + ${Env:ProgramFiles(x86)} + '\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin')
+RUN Start-Process C:/jdk.exe -Wait \
+        -ArgumentList @('/s', 'ADDLOCAL="ToolsFeature,SourceFeature"');
+ENV JAVA_HOME "C:\Program Files\Java\jdk1.8.0_131"
 
-# RUN python -c 'import zipfile; zip_ref = zipfile.ZipFile(\"cmake.zip\",\"r\"); zip_ref.extractall(\"cmake\"); zip_ref.close();';
+# NOTE: only needed if using the amd64 version of MSBuild
+# ENV VCTargetsPath "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\v140"
 
-# # SHELL ["cmd"]
+RUN C:/temp/wget.ps1 \
+    http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip \
+    C:\maven.zip
 
-# RUN Write-Host (Get-Location | select -ExpandProperty Path)'\cmake-'$env:CMAKE_VERSION'-win64-x64\bin;'$env:PATH;
+RUN C:/temp/unzip.ps1 "maven.zip" "."
 
-# RUN dir "\"C:\Program Files (x86)\Microsoft Visual Studio\""
+RUN $env:PATH = 'C:\apache-maven-3.5.0\bin;'+$env:PATH; \
+[Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
 
-
-# TODO
-# RUN $env:PATH = (Get-Location | select -ExpandProperty Path)+'\cmake-'+$env:CMAKE_VERSION+'-win64-x64\bin;'+$env:PATH; \
-# [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
-
-# RUN Invoke-WebRequest -Uri "http://go.microsoft.com/fwlink/?LinkId=691126" -OutFile "C:\VisualCppBuildTools_Full.exe" -UseBasicParsing; \
-# 	Invoke-Command -ScriptBlock { "C:\VisualCppBuildTools_Full.exe" /full /NoRefresh /norestart /silent /passive } ; \
-# 	Wait-Process -Name visualcppbuildtools_full
-
-
-
-# RUN dir "\"C:\Program Files (x86)\Microsoft Visual Studio\2017\""
-# RUN dir "\"C:\Program Files (x86)\Microsoft Visual Studio\""
-
-
-# RUN dir "\"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\""
-
-# RUN Write-Host '  DIR'; dir C:\;
-
-# # RUN echo "bababababab " && dir cmake && \
-# #         setx PATH '%PATH%;%CD%\\cmake-%CMAKE_VERSION%-win64-x64\\bin'
-
-# RUN Start-Process C:\\cmake-3.9.0-rc2-win64-x64\\bin\\cmake.exe -Wait -ArgumentList @( \
-#             '--version' \
-#         );
+# download the most critical maven dependencies for the build beforehand
+# TODO: for some reason this does not work with the win32 docker server image
+COPY ./shared/pom.xml C:/temp
+WORKDIR /temp
+RUN set MVN_PLATFORM_NAME=temp; \
+    set MVN_ARCH_NAME=temp; \
+    Invoke-Command { mvn verify -DskipTests } -ErrorAction SilentlyContinue

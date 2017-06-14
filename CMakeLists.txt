@@ -1,4 +1,18 @@
-cmake_minimum_required(VERSION 2.6)
+
+# NOTE: this works around the windows docker / msbuild bug, that causes the
+# VC++ linker to fail creating PDB debug files in a shared volume
+# (see: https://social.msdn.microsoft.com/Forums/en-US/bd281c61-8e04-4f56-aec2-5ad565271d7f/windowsservercorelatest-vc-2015-build-tools-throws-linker-error-lnk1318-unexpected-pdb?forum=windowscontainers)
+if(J2V8_CROSS_COMPILE AND J2V8_WIN32_PDB_DOCKER_FIX)
+#{
+    # TODO: remove this if the Win32 Docker PDB bug is fixed
+    # see: https://stackoverflow.com/a/39109288
+    message("CMAKE-WARNING: applied workaround for windows docker PDB bug")
+    message("see: https://social.msdn.microsoft.com/Forums/en-US/bd281c61-8e04-4f56-aec2-5ad565271d7f/windowsservercorelatest-vc-2015-build-tools-throws-linker-error-lnk1318-unexpected-pdb?forum=windowscontainers")
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+#}
+endif()
+
+cmake_minimum_required(VERSION 3.6)
 project(j2v8)
 
 # adding cmake directory for includes
@@ -14,8 +28,6 @@ include(Policies)
 #-----------------------------------------------------------------------
 # BUILD PLATFORM SETUP & VARIABLES
 #-----------------------------------------------------------------------
-
-message ("CMAKE SYSTEM ${CMAKE_SYSTEM_NAME}")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
 #{

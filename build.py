@@ -234,7 +234,8 @@ def execute_build(params):
         check_node_builtins()
 
         print "Caching Node.js artifacts..."
-        utils.store_nodejs_output(params.target, params.arch, build_cwd)
+        curr_node_tag = params.target + "." + params.arch
+        utils.store_nodejs_output(curr_node_tag, build_cwd)
 
     def execute_build_step(compiler, build_step):
         """Executes an immutable copy of the given build-step configuration"""
