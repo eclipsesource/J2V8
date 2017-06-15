@@ -474,10 +474,16 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
-  (JNIEnv *nv, jobject, jlong v8RuntimePtr) {
+  (JNIEnv *env, jobject, jlong v8RuntimePtr) {
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
   delete(runtime->locker);
   runtime->locker = NULL;
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1lowMemoryNotification
+  (JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  runtime->isolate->LowMemoryNotification();
 }
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object

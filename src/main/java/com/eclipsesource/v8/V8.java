@@ -745,6 +745,16 @@ public class V8 extends V8Object {
         return _getBuildID();
     }
 
+    /**
+     * Indicates to V8 that the system is low on memory.
+     * V8 may use this to attempt to recover space by running
+     * the garbage collector.
+     */
+    public void lowMemoryNotification() {
+        checkThread();
+        lowMemoryNotification(getV8RuntimePtr());
+    }
+
     void checkRuntime(final V8Value value) {
         if ((value == null) || value.isUndefined()) {
             return;
@@ -1021,6 +1031,10 @@ public class V8 extends V8Object {
 
     protected void releaseLock(final long v8RuntimePtr) {
         _releaseLock(v8RuntimePtr);
+    }
+
+    protected void lowMemoryNotification(final long v8RuntimePtr) {
+        _lowMemoryNotification(v8RuntimePtr);
     }
 
     protected void createTwin(final long v8RuntimePtr, final long objectHandle, final long twinHandle) {
@@ -1362,6 +1376,8 @@ public class V8 extends V8Object {
     private native void _acquireLock(long v8RuntimePtr);
 
     private native void _releaseLock(long v8RuntimePtr);
+
+    private native void _lowMemoryNotification(long v8RuntimePtr);
 
     private native void _createTwin(long v8RuntimePtr, long objectHandle, long twinHandle);
 
