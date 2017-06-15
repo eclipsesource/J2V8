@@ -162,6 +162,22 @@ abstract public class V8Value implements Releasable {
     }
 
     /**
+     * Returns the 'type' of this V8Value. The available types are defined
+     * as constants in {@link V8Value}. Only types that inherit from
+     * {@link V8Value} can be returned here.
+     *
+     * @return The 'type of this V8Value.
+     */
+    public int getV8Type() {
+        if (isUndefined()) {
+            return UNDEFINED;
+        }
+        v8.checkThread();
+        v8.checkReleased();
+        return v8.getType(v8.getV8RuntimePtr(), objectHandle);
+    }
+
+    /**
      * Creates a new Java object pointing at the same V8 Value
      * as this. If the value is mutated (by adding new members or
      * changing existing ones) then both the original and twin
@@ -183,6 +199,37 @@ abstract public class V8Value implements Releasable {
         V8Value twin = createTwin();
         v8.createTwin(this, twin);
         return twin;
+    }
+
+    /**
+     * Sets the V8Value as weak reference. A weak reference will eventually
+     * be released when no more references exist to this object. Once setWeak
+     * is called, you should check if {@link V8Value#isReleased()} is true
+     * before invoking any methods on this object.
+     *
+     * If any other references exist to this object, the object will not be
+     * reclaimed. Even if no reference exist, V8 does not give any guarantee
+     * the object will be released, so this should only be used if there is no
+     * other way to track object usage.
+     */
+    public V8Value setWeak() {
+        v8.checkThread();
+        v8.checkReleased();
+        v8.v8WeakReferences.put(getHandle(), this);
+        v8.setWeak(v8.getV8RuntimePtr(), getHandle());
+        return this;
+    }
+
+    /**
+     * If {@link V8Value#setWeak()} has been called on this Object, this method
+     * will return true. Otherwise it will return false.
+     *
+     * @return Returns true if this object has been set 'Weak', return false otherwise.
+     */
+    public boolean isWeak() {
+        v8.checkThread();
+        v8.checkReleased();
+        return v8.isWeak(v8.getV8RuntimePtr(), getHandle());
     }
 
     /**

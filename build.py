@@ -180,7 +180,18 @@ def check_node_builtins():
     builtins_ok = collections.Counter(j2v8_builtins) == collections.Counter(node_builtins)
 
     if (not builtins_ok):
-        sys.exit("ERROR: J2V8 linking builtins code does not match Node.js builtin modules, check " + j2v8_jni_cpp_path)
+        j2v8_extra = [item for item in j2v8_builtins if item not in node_builtins]
+        j2v8_missing = [item for item in node_builtins if item not in j2v8_builtins]
+
+        error = "ERROR: J2V8 linking builtins code does not match Node.js builtin modules, check " + j2v8_jni_cpp_path
+
+        if (len(j2v8_extra) > 0):
+            error += "\n\t" + "J2V8 defines unrecognized node-modules: " + str(j2v8_extra)
+
+        if (len(j2v8_missing) > 0):
+            error += "\n\t" + "J2V8 definition is missing node-modules: " + str(j2v8_missing)
+
+        sys.exit(error)
 
 #-----------------------------------------------------------------------
 # Build execution core function

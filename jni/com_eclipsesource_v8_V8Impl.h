@@ -61,6 +61,22 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _acquireLock
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _releaseLock
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _createTwin
  * Signature: (JJJ)V
  */
@@ -526,6 +542,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
 /*
  * Class:     com_eclipsesource_v8_V8
  * Method:    _getType
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJ
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _getType
  * Signature: (JJII)I
  */
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1getType__JJII
@@ -698,6 +722,22 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt8Array
  */
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8UInt8ClampedArray
   (JNIEnv *, jobject, jlong, jlong, jint, jint);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _setWeak
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _isWeak
+ * Signature: (JJ)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isWeak
+  (JNIEnv *, jobject, jlong, jlong);
 
 /*
  * Class:     com_eclipsesource_v8_V8

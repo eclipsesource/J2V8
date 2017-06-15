@@ -533,6 +533,46 @@ public class V8Array extends V8Object {
     }
 
     /**
+     * Pushes a Object to the next available spot in the Array. In
+     * particular, this[length] = value;
+     *
+     * @param value The value to push to the array.
+     *
+     * @return The receiver.
+     */
+    public V8Array push(final Object value) {
+        v8.checkThread();
+        checkReleased();
+        if (value instanceof V8Value) {
+            v8.checkRuntime((V8Value) value);
+        }
+        if (value == null) {
+            v8.addArrayNullItem(v8.getV8RuntimePtr(), getHandle());
+        } else if (value.equals(V8.getUndefined())) {
+            v8.addArrayUndefinedItem(v8.getV8RuntimePtr(), getHandle());
+        } else {
+            if (value instanceof Double) {
+                v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), (Double) value);
+            } else if (value instanceof Integer) {
+                v8.addArrayIntItem(v8.getV8RuntimePtr(), getHandle(), (Integer) value);
+            } else if (value instanceof Float) {
+                v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), ((Float) value).doubleValue());
+            } else if (value instanceof Number) {
+                v8.addArrayDoubleItem(v8.getV8RuntimePtr(), getHandle(), ((Number) value).doubleValue());
+            } else if (value instanceof Boolean) {
+                v8.addArrayBooleanItem(v8.getV8RuntimePtr(), getHandle(), (Boolean) value);
+            } else if (value instanceof String) {
+                v8.addArrayStringItem(v8.getV8RuntimePtr(), getHandle(), (String) value);
+            } else if (value instanceof V8Value) {
+                v8.addArrayObjectItem(v8.getV8RuntimePtr(), getHandle(), ((V8Value) value).getHandle());
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+        return this;
+    }
+
+    /**
      * Pushes null to the next available spot in the Array. In
      * particular, this[length] = null;
      *

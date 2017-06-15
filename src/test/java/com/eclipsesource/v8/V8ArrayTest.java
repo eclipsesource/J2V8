@@ -701,6 +701,98 @@ public class V8ArrayTest {
     }
 
     @Test
+    public void testGenericPushUndefined() {
+        V8Array array = new V8Array(v8).push((Object) V8.getUndefined());
+
+        assertEquals(V8.getUndefined(), array.get(0));
+        array.release();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGenericPush_IllegalArgument() {
+        V8Array array = new V8Array(v8);
+        try {
+            array.push(new Object());
+        } finally {
+            array.release();
+        }
+    }
+
+    @Test
+    public void testGenericPushNull() {
+        V8Array array = new V8Array(v8).push((Object) null);
+
+        assertNull(array.get(0));
+        array.release();
+    }
+
+    @Test
+    public void testGenericPushInteger() {
+        V8Array array = new V8Array(v8).push(new Integer(7));
+
+        assertEquals(7, array.get(0));
+        array.release();
+    }
+
+    @Test
+    public void testGenericPushDouble() {
+        V8Array array = new V8Array(v8).push(new Double(7.7777));
+
+        assertEquals(7.7777, (Double) array.get(0), 0.0001);
+        array.release();
+    }
+
+    @Test
+    public void testGenericPushBoolean() {
+        V8Array array = new V8Array(v8).push(new Boolean(true));
+
+        assertTrue((Boolean) array.get(0));
+        array.release();
+    }
+
+    @Test
+    public void testGenericPushObject() {
+        V8Object object = new V8Object(v8);
+        V8Array array = new V8Array(v8).push(object);
+
+        V8Value result = (V8Value) array.get(0);
+        assertEquals(object, result);
+        array.release();
+        object.release();
+        result.release();
+    }
+
+    @Test(expected = Error.class)
+    public void testGenericPushObject_WrongRuntime() {
+        V8 newV8 = V8.createV8Runtime();
+        V8Object object = new V8Object(newV8);
+        V8Array array = new V8Array(v8);
+        try {
+            array.push(object);
+        } finally {
+            array.release();
+            object.release();
+            newV8.release();
+        }
+    }
+
+    @Test
+    public void testGenericPushFloat() {
+        V8Array array = new V8Array(v8).push(new Float(3.14));
+
+        assertEquals(3.14, (Double) array.get(0), 0.0001);
+        array.release();
+    }
+
+    @Test
+    public void testGenericPushString() {
+        V8Array array = new V8Array(v8).push((Object) "foo");
+
+        assertEquals("foo", array.get(0));
+        array.release();
+    }
+
+    @Test
     public void testAddNullAsObject() {
         V8Array array = new V8Array(v8).push((V8Object) null);
 

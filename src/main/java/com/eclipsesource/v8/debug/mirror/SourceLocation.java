@@ -19,8 +19,7 @@ public class SourceLocation {
     private final int    position;
     private final int    line;
     private final int    column;
-    private final int    start;
-    private final int    end;
+    private String       sourceText;
 
     /**
      * Represents a JS Script Source Location
@@ -28,21 +27,19 @@ public class SourceLocation {
      * @param position The position in the script
      * @param line The line number
      * @param column The column number
-     * @param start The start of this location
-     * @param end The end of this location
+     * @param sourceText The sourceCode at this location
      */
-    public SourceLocation(final String scriptName, final int position, final int line, final int column, final int start, final int end) {
+    public SourceLocation(final String scriptName, final int position, final int line, final int column, final String sourceText) {
         this.scriptName = scriptName;
         this.position = position;
         this.line = line;
         this.column = column;
-        this.start = start;
-        this.end = end;
+        this.sourceText = sourceText;
     }
 
     @Override
     public String toString() {
-        return scriptName + " : " + position + " : " + line + " : " + column + " : " + start + " : " + end;
+        return scriptName + " : " + position + " : " + line + " : " + column + " : " + sourceText;
     }
 
     /**
@@ -78,19 +75,10 @@ public class SourceLocation {
     }
 
     /**
-     * Returns the start of this SourceLocation.
-     * @return The start of this SourceLocation.
+     * Returns the source text for this SourceLocation.
+     * @return The source text for this SourceLocation.
      */
-    public int getStart() {
-        return start;
+    public String getSourceText() {
+        return sourceText;
     }
-
-    /**
-     * Returns the end of this SourceLocation.
-     * @return The end of this SourceLocation.
-     */
-    public int getEnd() {
-        return end;
-    }
-
 }

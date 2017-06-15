@@ -29,6 +29,13 @@ public class ArrayBufferTest {
     }
 
     @Test
+    public void testToString() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        assertEquals("[object ArrayBuffer]", arrayBuffer.toString());
+    }
+
+    @Test
     public void testCreateArrayBuffer_ByteBuffer() {
         ByteBuffer buffer = ByteBuffer.allocateDirect(8);
         ArrayBuffer arrayBuffer = new ArrayBuffer(buffer);

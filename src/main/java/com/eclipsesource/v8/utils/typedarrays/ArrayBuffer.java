@@ -106,4 +106,13 @@ public class ArrayBuffer {
         return byteBuffer.limit();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "[object ArrayBuffer]";
+    }
+
 }

@@ -43,6 +43,7 @@ public class V8 extends V8Object {
     private volatile static int          runtimeCounter          = 0;
     private static String                v8Flags                 = null;
     private static boolean               initialized             = false;
+    protected Map<Long, V8Value>         v8WeakReferences        = new HashMap<Long, V8Value>();
 
     private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
@@ -265,9 +266,9 @@ public class V8 extends V8Object {
     protected V8(final String globalAlias) {
         super(null);
         released = false;
-        locker = new V8Locker();
-        checkThread();
         v8RuntimePtr = _createIsolate(globalAlias);
+        locker = new V8Locker(this);
+        checkThread();
         objectHandle = _getGlobalObject(v8RuntimePtr);
     }
 
@@ -295,7 +296,7 @@ public class V8 extends V8Object {
      * @return The number of Object References on this runtime.
      */
     public long getObjectReferenceCount() {
-        return objectReferences;
+        return objectReferences - v8WeakReferences.size();
     }
 
     protected long getV8RuntimePtr() {
@@ -369,7 +370,7 @@ public class V8 extends V8Object {
             _releaseRuntime(v8RuntimePtr);
             v8RuntimePtr = 0L;
             released = true;
-            if (reportMemoryLeaks && (objectReferences > 0)) {
+            if (reportMemoryLeaks && (getObjectReferenceCount() > 0)) {
                 throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
             }
         }
@@ -817,6 +818,20 @@ public class V8 extends V8Object {
         functionRegistry.remove(methodID);
     }
 
+    protected void weakReferenceReleased(final long objectID) {
+        V8Value v8Value = v8WeakReferences.get(objectID);
+        if (v8Value != null) {
+            v8WeakReferences.remove(objectID);
+            try {
+                v8Value.release();
+            } catch (Exception e) {
+                // Swallow these exceptions. The V8 GC is running, and
+                // if we return to V8 with Java exception on our stack,
+                // we will be in a world of hurt.
+            }
+        }
+    }
+
     protected Object callObjectJavaMethod(final long methodID, final V8Object receiver, final V8Array parameters) throws Throwable {
         MethodDescriptor methodDescriptor = functionRegistry.get(methodID);
         if (methodDescriptor.callback != null) {
@@ -1000,6 +1015,14 @@ public class V8 extends V8Object {
         return _initNewV8Object(v8RuntimePtr);
     }
 
+    protected void acquireLock(final long v8RuntimePtr) {
+        _acquireLock(v8RuntimePtr);
+    }
+
+    protected void releaseLock(final long v8RuntimePtr) {
+        _releaseLock(v8RuntimePtr);
+    }
+
     protected void createTwin(final long v8RuntimePtr, final long objectHandle, final long twinHandle) {
         _createTwin(v8RuntimePtr, objectHandle, twinHandle);
     }
@@ -1026,6 +1049,14 @@ public class V8 extends V8Object {
 
     protected void executeVoidScript(final long v8RuntimePtr, final String script, final String scriptName, final int lineNumber) {
         _executeVoidScript(v8RuntimePtr, script, scriptName, lineNumber);
+    }
+
+    protected void setWeak(final long v8RuntimePtr, final long objectHandle) {
+        _setWeak(v8RuntimePtr, objectHandle);
+    }
+
+    protected boolean isWeak(final long v8RuntimePtr, final long objectHandle) {
+        return _isWeak(v8RuntimePtr, objectHandle);
     }
 
     protected void release(final long v8RuntimePtr, final long objectHandle) {
@@ -1254,6 +1285,10 @@ public class V8 extends V8Object {
         _addArrayNullItem(v8RuntimePtr, arrayHandle);
     }
 
+    protected int getType(final long v8RuntimePtr, final long objectHandle) {
+        return _getType(v8RuntimePtr, objectHandle);
+    }
+
     protected int getType(final long v8RuntimePtr, final long objectHandle, final String key) {
         return _getType(v8RuntimePtr, objectHandle, key);
     }
@@ -1323,6 +1358,10 @@ public class V8 extends V8Object {
     }
 
     private native long _initNewV8Object(long v8RuntimePtr);
+
+    private native void _acquireLock(long v8RuntimePtr);
+
+    private native void _releaseLock(long v8RuntimePtr);
 
     private native void _createTwin(long v8RuntimePtr, long objectHandle, long twinHandle);
 
@@ -1440,6 +1479,8 @@ public class V8 extends V8Object {
 
     private native void _setPrototype(long v8RuntimePtr, long objectHandle, long prototypeHandle);
 
+    private native int _getType(long v8RuntimePtr, long objectHandle);
+
     private native int _getType(long v8RuntimePtr, long objectHandle, final int index, final int length);
 
     private native double[] _arrayGetDoubles(final long v8RuntimePtr, final long objectHandle, final int index, final int length);
@@ -1483,6 +1524,10 @@ public class V8 extends V8Object {
     private native long _initNewV8UInt8Array(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native long _initNewV8UInt8ClampedArray(long runtimePtr, long bufferHandle, int offset, int size);
+
+    private native void _setWeak(long runtimePtr, long objectHandle);
+
+    private native boolean _isWeak(long runtimePtr, long objectHandle);
 
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 
