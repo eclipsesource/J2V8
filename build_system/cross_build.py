@@ -11,6 +11,7 @@ class PlatformConfig():
         self.architectures = architectures
         self.cross_compiler = cross_compiler
         self.steps = {}
+        self.file_abis = {}
 
     def build_step(self, target, build_fn):
         self.steps[target] = BuildStep(
@@ -18,6 +19,13 @@ class PlatformConfig():
             platform=self.name,
             build=build_fn,
         )
+
+    def set_file_abis(self, abis_decl):
+        self.file_abis = abis_decl
+
+    def file_abi(self, arch):
+        file_abi = self.file_abis[arch]
+        return file_abi if not file_abi is None else arch
 
     def cross_config(self, cross_config):
         self.steps['cross'] = cross_config

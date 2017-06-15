@@ -26,6 +26,6 @@ ENV PATH "$PATH:/opt/cmake/bin"
 # download the most critical maven dependencies for the build beforehand
 COPY ./shared/pom.xml /temp
 WORKDIR /temp
-RUN export MVN_PLATFORM_NAME=temp && \
-    export MVN_ARCH_NAME=temp && \
+RUN export J2V8_PLATFORM_NAME=temp && \
+    export J2V8_ARCH_NAME=temp && \
     mvn verify -DskipTests || true

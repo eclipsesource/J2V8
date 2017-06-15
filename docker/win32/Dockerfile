@@ -96,6 +96,6 @@ RUN $env:PATH = 'C:\apache-maven-3.5.0\bin;'+$env:PATH; \
 # TODO: for some reason this does not work with the win32 docker server image
 COPY ./shared/pom.xml C:/temp
 WORKDIR /temp
-RUN set MVN_PLATFORM_NAME=temp; \
-    set MVN_ARCH_NAME=temp; \
+RUN set J2V8_PLATFORM_NAME=temp; \
+    set J2V8_ARCH_NAME=temp; \
     Invoke-Command { mvn verify -DskipTests } -ErrorAction SilentlyContinue

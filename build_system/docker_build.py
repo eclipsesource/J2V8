@@ -57,9 +57,14 @@ class DockerBuildSystem(BuildSystem):
 
         build_cmd = config.custom_cmd or (cmd_separator + " ").join(config.build(config))
 
+        memory_option = ""
+
         # NOTE: the --memory 3g setting is imporant for windows docker builds,
-        # since the windows docker engine defaults to 1gb which is not enough to run the Node.js build
-        platform_cmd = "docker run --memory 3g --privileged -P -v $CWD:" + mount_point + \
+        # since the windows docker engine defaults to a 1gb limit which is not enough to run the Node.js build with MSBuild
+        if (config.platform == c.target_win32):
+            memory_option = "--memory 3g"
+
+        platform_cmd = "docker run " + memory_option + " --privileged -P -v $CWD:" + mount_point + \
             " --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(platform_cmd, config)

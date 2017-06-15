@@ -253,6 +253,8 @@ def execute_build(params):
         # prepare any additional/dynamic parameters for the build and put them into the build-step config
         x_step.arch = params.arch
         x_step.custom_cmd = "python ./build.py --build-agent -t $PLATFORM -a $ARCH " + ("-ne" if params.node_enabled else "") + " " + " ".join(parsed_steps)
+        x_step.compiler = x_compiler
+        x_step.target = build_target
 
         execute_build_step(x_compiler, x_step)
 
@@ -279,6 +281,8 @@ def execute_build(params):
             target_step.build_agent = params.build_agent if (hasattr(params, "build_agent")) else None
             target_step.arch = params.arch
             target_step.build_cwd = build_cwd
+            target_step.compiler = target_compiler
+            target_step.target = build_target
 
             execute_build_step(target_compiler, target_step)
 

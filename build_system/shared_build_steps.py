@@ -1,7 +1,9 @@
-import constants as c
 import glob
 import os
 import sys
+
+import constants as c
+import build_settings as s
 
 build_cmd = "mvn verify -DskipTests -e"
 clean_build_cmd = "mvn clean verify -DskipTests -e"
@@ -16,52 +18,73 @@ def gradle(cmd):
     ]
 
 def setEnvVar(config, name, value):
-    if (config.platform == c.target_win32):
+    if (os.name == 'nt'):
         return ["set \"" + name + "=" + value + "\""]
     else:
         return ["export " + name + "=" + value]
 
-def copyNativeLibs(config, file_arch):
+def clearNativeLibs(config):
     lib_pattern = "src/main/resources/libj2v8_*"
+
+    if (config.platform == c.target_android):
+        lib_pattern = "src/main/jniLibs/*/libj2v8.so"
+
     libs = glob.glob(lib_pattern)
     rm_libs = [shell("rm", lib)[0] for lib in libs]
 
-    platform_cmake_out = "cmake.out/" + config.platform + "." + config.arch + "/"
+    return rm_libs
 
+def copyNativeLibs(config):
+    file_abi = config.target.file_abi(config.arch)
+
+    platform_cmake_out = "cmake.out/" + config.platform + "." + config.arch + "/"
     lib_ext = ".so"
 
-    if (config.platform == "win32"):
+    if (config.platform == c.target_win32):
         platform_cmake_out += "Debug/" if hasattr(config, 'debug') and config.debug else "Release/"
         lib_ext = ".dll"
 
-    platform_lib_path = glob.glob(platform_cmake_out + "*j2v8_*" + file_arch + lib_ext)
+    platform_lib_path = glob.glob(platform_cmake_out + "*j2v8_*" + file_abi + lib_ext)
 
     if (len(platform_lib_path) == 0):
         sys.exit("ERROR: Could not find native library for inclusion in platform target package")
 
     platform_lib_path = platform_lib_path[0]
 
+    copy_cmds = []
+
     lib_target_path = None
-    if (config.platform == "Android"):
-        lib_target_path = "src/main/jniLibs/" + file_arch + "/libj2v8.so"
+    if (config.platform == c.target_android):
+        lib_target_path = "src/main/jniLibs/" + file_abi # directory path
+        copy_cmds += shell("mkdir", lib_target_path)
+        lib_target_path += "/libj2v8.so" # final lib file path
     else:
         lib_target_path = "src/main/resources/"
 
     print "copying native lib from: " + platform_lib_path + " to: " + lib_target_path
 
-    return \
-        rm_libs + \
-        shell("cp", platform_lib_path + " " + lib_target_path)
+    copy_cmds += shell("cp", platform_lib_path + " " + lib_target_path)
 
-def setBuildEnv(config, file_arch):
-    return \
-        setEnvVar(config, "MVN_PLATFORM_NAME", config.platform) + \
-        setEnvVar(config, "MVN_ARCH_NAME", file_arch)
+    return copy_cmds
 
-def copyOutput(config, file_arch):
+def setBuildEnv(config):
+    file_abi = config.target.file_abi(config.arch)
+
+    return \
+        setEnvVar(config, "J2V8_PLATFORM_NAME", config.platform) + \
+        setEnvVar(config, "J2V8_ARCH_NAME", file_abi) + \
+        setEnvVar(config, "J2V8_FULL_VERSION", s.J2V8_FULL_VERSION)
+
+def setVersionEnv(config):
+    return \
+        setEnvVar(config, "J2V8_FULL_VERSION", s.J2V8_FULL_VERSION)
+
+def copyOutput(config):
+    file_abi = config.target.file_abi(config.arch)
+
     return \
         shell("mkdir", "build.out") + \
-        shell("cp", "target/j2v8_" + config.platform + "_" + file_arch + "-4.7.0-SNAPSHOT.jar build.out/")
+        shell("cp", "target/j2v8_" + config.platform + "_" + file_abi + "-" + s.J2V8_FULL_VERSION + ".jar build.out/")
 
 def shell(cmd, args):
     return [
