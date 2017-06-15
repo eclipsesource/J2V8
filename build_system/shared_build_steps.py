@@ -44,7 +44,11 @@ def copyNativeLibs(config):
         platform_cmake_out += "Debug/" if hasattr(config, 'debug') and config.debug else "Release/"
         lib_ext = ".dll"
 
-    platform_lib_path = glob.glob(platform_cmake_out + "*j2v8_*" + file_abi + lib_ext)
+    elif (config.platform == c.target_macos):
+        lib_ext = ".dylib"
+
+    lib_pattern = platform_cmake_out + "*j2v8_*" + file_abi + lib_ext
+    platform_lib_path = glob.glob(lib_pattern)
 
     if (len(platform_lib_path) == 0):
         sys.exit("ERROR: Could not find native library for inclusion in platform target package")

@@ -12,6 +12,11 @@ macos_config.cross_config(BuildStep(
     build_cwd="/Users/vagrant/j2v8",
 ))
 
+macos_config.set_file_abis({
+    c.arch_x64: "x86_64",
+    c.arch_x86: "x86"
+})
+
 #-----------------------------------------------------------------------
 def build_node_js(config):
     return [

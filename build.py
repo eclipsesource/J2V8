@@ -23,6 +23,14 @@ build_step_sequence = [
     c.build_j2v8_junit,
 ]
 
+composite_steps = [
+    c.build_all,
+    c.build_full,
+    c.build_native,
+    c.build_java,
+    c.build_test,
+]
+
 avail_targets = {
     c.target_android: android_config,
     c.target_linux: linux_config,
@@ -30,30 +38,18 @@ avail_targets = {
     c.target_win32: win32_config,
 }
 
-avail_build_steps = [
-    # detail steps
-    c.build_node_js,
-    c.build_j2v8_cmake,
-    c.build_j2v8_jni,
-    c.build_j2v8_java,
-    c.build_j2v8_junit,
-
-    # composite steps
-    c.build_all,
-    c.build_full,
-    c.build_native,
-    c.build_java,
-]
+avail_build_steps = build_step_sequence + composite_steps
 
 #-----------------------------------------------------------------------
 # Command-Line setup
 #-----------------------------------------------------------------------
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument("--target", "-t",
                     help="The build target platform name (must be a valid platform string identifier).",
                     dest="target",
+                    required=True,
                     choices=[
                         c.target_android,
                         c.target_linux,
@@ -64,6 +60,7 @@ parser.add_argument("--target", "-t",
 parser.add_argument("--arch", "-a",
                     help="The build target architecture identifier (the available architectures are also dependent on the selected platform for a build).",
                     dest="arch",
+                    required=True,
                     choices=[
                         c.arch_x86,
                         c.arch_x64,
@@ -91,8 +88,14 @@ parser.add_argument("--build-agent", "-bd",
                     const=True)
 
 parser.add_argument("buildsteps",
-                    help="A list of all the recognized build-steps that should be executed " +
-                        "(the order of the steps given to the CLI does not matter, the correct order will be restored internally).",
+                    help="A single build-step or a list of all the recognized build-steps that should be executed\n" +
+                        "(the order of the steps given to the CLI does not matter, the correct order will be restored internally).\n\n" +
+                        "the fundamental build steps (in order):\n" +
+                        "---------------------------------------\n" +
+                        "\n".join(build_step_sequence) + "\n\n" +
+                        "aliases / combinations of multiple of the above steps:\n" +
+                        "------------------------------------------------------\n" +
+                        "\n".join(composite_steps),
                     metavar="build-steps",
                     nargs="*",
                     default="all",
@@ -102,10 +105,13 @@ parsed_steps = set()
 
 def parse_build_step_option(step):
     return {
+        # composite steps
         c.build_all: add_all,
         c.build_full: add_all,
         c.build_native: add_native,
         c.build_java: add_managed,
+        c.build_test: add_test,
+        # basic steps
         c.build_node_js: lambda: parsed_steps.add(c.build_node_js),
         c.build_j2v8_cmake: lambda: parsed_steps.add(c.build_j2v8_cmake),
         c.build_j2v8_jni: lambda: parsed_steps.add(c.build_j2v8_jni),
@@ -124,6 +130,9 @@ def add_native():
 
 def add_managed():
     parsed_steps.add(c.build_j2v8_java)
+
+def add_test():
+    parsed_steps.add(c.build_j2v8_junit)
 
 def raise_unhandled_option():
     sys.exit("INTERNAL-ERROR: Tried to handle unrecognized build-step")
@@ -199,7 +208,7 @@ def check_node_builtins():
 def execute_build(params):
 
     if (params.target is None):
-        sys.exit("ERROR: No target platform specified, use --target <...>")
+        sys.exit("ERROR: No target platform specified")
 
     if (not params.target in avail_targets):
         sys.exit("ERROR: Unrecognized target platform: " + params.target)
@@ -207,7 +216,7 @@ def execute_build(params):
     build_target = avail_targets.get(params.target)
 
     if (params.arch is None):
-        sys.exit("ERROR: No target architecture specified, use --arch <...>")
+        sys.exit("ERROR: No target architecture specified")
 
     build_architectures = build_target.architectures
 

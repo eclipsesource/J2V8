@@ -24,7 +24,7 @@ class PlatformConfig():
         self.file_abis = abis_decl
 
     def file_abi(self, arch):
-        file_abi = self.file_abis[arch]
+        file_abi = self.file_abis.get(arch)
         return file_abi if not file_abi is None else arch
 
     def cross_config(self, cross_config):
