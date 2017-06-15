@@ -10,58 +10,35 @@ We developed J2V8 as a high performance engine for our multi-platform mobile too
 
 Building J2V8
 =============
-Building J2V8 requires building both the native parts and the Java library (.jar file). To build the native parts we first build node.js as a library and then statically link J2V8 to that. The Java parts are built with maven.
+Building J2V8 requires building both the native parts and the Java library (.jar/.aar file). To build the native parts we first build node.js as a library and then statically link J2V8 to that. The Java parts are built with maven/gradle.
 
-Building on MacOS
------------------
-```
- sh ./build-node.sh
- sh ./buildJ2V8_macos.sh
- mvn clean verify
-```
+J2V8 uses a cross-platform, cross-compiling build-system written in Python.
 
-Building on Linux
------------------
-```
-export CCFLAGS="${CCFLAGS} -fPIC"
-export CXXFLAGS="${CXXFLAGS} -fPIC"
-export CPPFLAGS="${CPPFLAGS} -fPIC"
-#sh ./build-node.sh
-cp -r /data/jenkins/node .
-cd jni
-g++ -I../node -I../node/deps/v8 -I../node/deps/v8/include \
-    -I../node/src -I /data/jenkins/tools/hudson.model.JDK/jdk-7/include/ \
-    -I /data/jenkins/tools/hudson.model.JDK/jdk-7/include/linux  \
-    com_eclipsesource_v8_V8Impl.cpp -std=c++11 -fPIC -shared -o libj2v8_linux_x86_64.so \
-    -Wl,--whole-archive ../node/out/Release/libnode.a  -Wl,--no-whole-archive \
-    -Wl,--start-group \
-                      ../node/out/Release/libv8_libbase.a \
-                      ../node/out/Release/libv8_libplatform.a \
-                      ../node/out/Release/libv8_base.a \
-                      ../node/out/Release/libv8_nosnapshot.a \
-                      ../node/out/Release/libuv.a \
-                      ../node/out/Release/libopenssl.a \
-                      ../node/out/Release/libhttp_parser.a \
-                      ../node/out/Release/libgtest.a \
-                      ../node/out/Release/libzlib.a \
-                      ../node/out/Release/libcares.a \
-    -Wl,--end-group \
-    -lrt -D NODE_COMPATIBLE=1
-mvn clean verify
-```
+Follow these steps to build J2V8 from source:
 
-This will build J2V8 with node.js support. To disable this support, remove the `-D NODE_COMPATIBLE=1` option.
+1) clone the Node.js source code
+    - `python prepare_build.py`
+    - This will download & prepare the latest compatible Node.js version for use in J2V8
+    - The Node.js source code will be cloned into the local `node` sub-directory, which is the expected default location for the J2V8 build
+2) build Node.js and the J2V8 library
+    - `python build.py --target linux --arch x64 --node-enabled --cross-compile`
+    - or shorthand
+    - `python build.py -t linux -a x64 -ne -x`
 
-Building for Android
------------------
-Building J2V8 for Android requires Docker.
+For all available options, supported platforms and architectures you can consult the build-script help:
 
-```
-./docker/build.sh
-./gradlew assembleRelease
-```
+`python build.py --help`
 
-This will build J2V8 as an AAR for API 19 minimum with node.js support.
+Cross-Compiling
+---------------
+
+For cross-compiling J2V8 uses [Docker](https://www.docker.com/) (android, linux, windows) and [Vagrant](https://www.vagrantup.com/) (macos).
+The full source-code (of both J2V8 and Node.js) on the build-host are just shared via mounted volumes with the Docker / Vagrant machines, so you can quickly make changes and perform builds fast.
+
+To invoke a cross-compile build, simply invoke the `build.py` script as usual but add the `--cross-compile`, `-x` flag.
+This will automatically provision and run the necessary virtualization to run the requested build fully independent of your local environment.
+
+<b>Note:</b> using Docker / Vagrant for cross-compiliation requires many gigabytes of harddrive space as well as downloading the required images & tools.
 
 Tutorials
 ==========
