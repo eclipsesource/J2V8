@@ -22,7 +22,7 @@ public abstract class SingleTypeAdapter implements TypeAdapter {
     /**
      * Create a SingleTypeAdapter
      *
-     * @param type The V8 Type this TypeAdapter should be applied to.
+     * @param typeToAdapt The V8 Type this TypeAdapter should be applied to.
      */
     public SingleTypeAdapter(final int typeToAdapt) {
         this.typeToAdapt = typeToAdapt;
