@@ -3,7 +3,7 @@ apply plugin: 'signing'
 
 group = 'com.eclipsesource.j2v8'
 archivesBaseName = 'j2v8'
-version = '4.8.0-SNAPSHOT'
+version = '4.8.0'
 
 configurations {
     archives {
