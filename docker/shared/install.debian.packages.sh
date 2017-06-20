@@ -10,5 +10,6 @@ apt-get -qq update && \
 	file \
 	python \
 	make \
+	cmake \
 	wget \
 	supervisor

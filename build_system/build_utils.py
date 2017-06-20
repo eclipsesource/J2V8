@@ -31,13 +31,13 @@ def get_node_branch_version():
     return branch
 
 def execute(cmd, cwd = None):
-    popen = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
-    return_code = popen.wait()
+    p = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
+    return_code = p.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
 
 def execute_to_str(cmd, cwd = None):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=cwd)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=True, cwd=cwd)
     out, err = p.communicate()
 
     if (not err is None):

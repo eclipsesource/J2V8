@@ -1,4 +1,4 @@
-FROM philcryer/min-jessie:latest
+FROM ubuntu:zesty
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/
@@ -18,10 +18,6 @@ ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
 COPY ./shared/install.maven.sh /temp/docker/shared
 RUN ./install.maven.sh
 ENV PATH "$PATH:/opt/apache-maven-3.5.0/bin"
-
-COPY ./shared/install.cmake.sh /temp/docker/shared
-RUN ./install.cmake.sh
-ENV PATH "$PATH:/opt/cmake/bin"
 
 # download the most critical maven dependencies for the build beforehand
 COPY ./shared/pom.xml /temp
