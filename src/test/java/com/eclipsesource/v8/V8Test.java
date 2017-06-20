@@ -63,6 +63,11 @@ public class V8Test {
     }
 
     @Test
+    public void testLowMemoryNotification() {
+        v8.lowMemoryNotification();
+    }
+
+    @Test
     public void testGetVersion_StartsWith5() {
         String v8version = V8.getV8Version();
 

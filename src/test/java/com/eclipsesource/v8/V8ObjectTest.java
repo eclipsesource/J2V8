@@ -1741,7 +1741,7 @@ public class V8ObjectTest {
     }
 
     @Test
-    public void setWeakMakesObjectWeak() {
+    public void testSetWeakMakesObjectWeak() {
         V8Value object = new V8Object(v8).setWeak();
 
         assertTrue(object.isWeak());

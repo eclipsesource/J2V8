@@ -417,7 +417,7 @@ public class V8ObjectUtils {
      * is returned. If the value is a String, then a String is returned. If
      * the value is a V8Object or V8Array, then a Map or List is returned.
      *
-     * @param object The object on which to lookup the value. The object is not
+     * @param v8Object The object on which to lookup the value. The object is not
      *               released.
      * @param key The key to use to lookup the value.
      * @param adapter The {@link TypeAdapter} to use for the object conversions.

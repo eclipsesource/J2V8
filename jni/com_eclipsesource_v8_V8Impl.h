@@ -77,6 +77,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _lowMemoryNotification
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1lowMemoryNotification
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _createTwin
  * Signature: (JJJ)V
  */

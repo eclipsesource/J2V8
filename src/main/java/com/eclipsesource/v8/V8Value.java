@@ -211,6 +211,8 @@ abstract public class V8Value implements Releasable {
      * reclaimed. Even if no reference exist, V8 does not give any guarantee
      * the object will be released, so this should only be used if there is no
      * other way to track object usage.
+     *
+     * @return The receiver.
      */
     public V8Value setWeak() {
         v8.checkThread();
