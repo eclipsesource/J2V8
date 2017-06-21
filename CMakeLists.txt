@@ -46,6 +46,15 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(J2V8_LIB_PLATFORM_NAME "linux")
     set(J2V8_LIB_PREFIX "")
     set(J2V8_LIB_ARCH_NAME "x86")
+
+    # TODO: This hack could be used to have a different lib filename for alpine, e.g. libj2v8_alpine_x86_64
+    # However, this would require java code changes to account for the different filename
+    # Source: https://github.com/dotnet/coreclr/pull/5731/files
+    #EXEC_PROGRAM(uname ARGS -v OUTPUT_VARIABLE CMAKE_SYSTEM_KERNEL_VERSION)
+    #string(FIND "${CMAKE_SYSTEM_KERNEL_VERSION}" "Alpine" PAL_SYSTEM_ALPINE)
+    #if(PAL_SYSTEM_ALPINE EQUAL -1)
+    #    set(J2V8_LIB_PLATFORM_NAME "alpine")
+    #endif()
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #{

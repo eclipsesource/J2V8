@@ -1,6 +1,7 @@
 # target platforms
 target_android = 'android'
 target_linux = 'linux'
+target_alpine = 'alpine'
 target_macos = 'macos'
 target_win32 = 'win32'
 
