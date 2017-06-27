@@ -47,7 +47,12 @@ public class LibraryLoaderTest {
     public void testGetOSLinux() {
         System.setProperty("os.name", "Linux");
 
-        assertEquals("linux", LibraryLoader.getOS());
+        // Alpine is a linux flavor
+        if(LibraryLoader.isAlpine()){
+            assertEquals("alpine", LibraryLoader.getOS());
+        } else {
+            assertEquals("linux", LibraryLoader.getOS());
+        }
     }
 
     @Test
