@@ -31,7 +31,7 @@ dependencies {
     // testCompile 'org.mockito:mockito-all:1.9.5'
 
     androidTestCompile 'junit:junit:4.12'
-    // androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'org.mockito:mockito-core:2.6.3'
     androidTestCompile 'org.mockito:mockito-android:2.6.3' // https://jeroenmols.com/blog/2017/01/17/mockitoandroid/
     androidTestCompile 'com.android.support:support-annotations:24.0.0'
     androidTestCompile 'com.android.support.test:runner:0.5'
