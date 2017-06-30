@@ -2,6 +2,7 @@ import subprocess
 import sys
 from cross_build import BuildSystem
 import constants as c
+import build_utils as utils
 
 class ShellBuildSystem(BuildSystem):
     def clean(self, config):
@@ -9,7 +10,7 @@ class ShellBuildSystem(BuildSystem):
 
     def health_check(self, config):
         try:
-            shell_check_cmd = "ver" if config.platform == c.target_win32 else "bash --version"
+            shell_check_cmd = "ver" if utils.is_win32(config.platform) else "bash --version"
             self.exec_cmd(shell_check_cmd, config)
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Shell build-system health check!")

@@ -1,4 +1,5 @@
 
+import atexit
 import re
 import subprocess
 import sys
@@ -34,7 +35,7 @@ class DockerBuildSystem(BuildSystem):
 
             docker_version = version_match.group(1)
 
-            docker_req_platform = "windows" if config.platform == c.target_win32 else "linux"
+            docker_req_platform = "windows" if utils.is_win32(config.platform) else "linux"
 
             # check if the docker engine is running the expected container platform (linux or windows)
             if (docker_req_platform not in docker_version):
@@ -51,9 +52,11 @@ class DockerBuildSystem(BuildSystem):
     def exec_build(self, config):
         print ("DOCKER building " + config.platform + "@" + config.arch + " => " + config.name)
 
-        mount_point = "C:/j2v8" if config.platform == c.target_win32 else "/j2v8"
-        shell_invoke = "cmd /C" if config.platform == c.target_win32 else "/bin/bash -c"
-        cmd_separator = "&&" if config.platform == c.target_win32 else ";"
+        is_win32 = utils.is_win32(config.platform)
+
+        mount_point = "C:/j2v8" if is_win32 else "/j2v8"
+        shell_invoke = "cmd /C" if is_win32 else "/bin/bash -c"
+        cmd_separator = "&&" if is_win32 else ";"
 
         build_cmd = config.custom_cmd or (cmd_separator + " ").join(config.build(config))
 
@@ -61,15 +64,23 @@ class DockerBuildSystem(BuildSystem):
 
         # NOTE: the --memory 3g setting is imporant for windows docker builds,
         # since the windows docker engine defaults to a 1gb limit which is not enough to run the Node.js build with MSBuild
-        if (config.platform == c.target_win32):
+        if (utils.is_win32(config.platform)):
             memory_option = "--memory 3g"
 
-        platform_cmd = "docker run " + memory_option + " --privileged -P -v $CWD:" + mount_point + \
+        docker_run_str = "docker run " + memory_option + " --privileged -P -v $CWD:" + mount_point + \
             " --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
-        docker_run_str = self.inject_env(platform_cmd, config)
+        docker_run_str = self.inject_env(docker_run_str, config)
 
         print docker_run_str
+
+        docker_stop_str = self.inject_env("docker stop j2v8.$PLATFORM.$ARCH", config)
+
+        def cli_exit_event():
+            print "Waiting for docker process to exit..."
+            self.exec_host_cmd(docker_stop_str, config)
+
+        atexit.register(cli_exit_event)
 
         self.exec_host_cmd(docker_run_str, config)
 

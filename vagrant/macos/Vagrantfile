@@ -39,6 +39,8 @@ echo "export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Conten
 echo "export PATH=/opt/apache-maven-3.5.0/bin:$PATH" >> /Users/vagrant/.bash_profile
 SCRIPT
 
+fs_type = ENV['VAGRANT_FILE_SHARE_TYPE'] || "nfs"
+
 Vagrant.configure(2) do |config|
 
     config.vm.box = "http://files.dryga.com/boxes/osx-sierra-0.3.1.box"
@@ -51,8 +53,8 @@ Vagrant.configure(2) do |config|
         v.cpus = 4
     end
     
-    config.vm.synced_folder ".", "/vagrant", type: "smb"
-    config.vm.synced_folder "../../", "/Users/vagrant/j2v8", type: "smb", smb_username: ENV['VAGRANT_SMB_USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD']
+    config.vm.synced_folder ".", "/vagrant", type: fs_type
+    config.vm.synced_folder "../../", "/Users/vagrant/j2v8", type: fs_type, smb_username: ENV['VAGRANT_SMB_USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD']
 
     config.vm.provision "shell", inline: $fix_xcode_paths
     config.vm.provision "shell", inline: $provision_java

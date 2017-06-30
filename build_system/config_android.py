@@ -4,14 +4,20 @@ from docker_build import DockerBuildSystem
 import shared_build_steps as u
 import build_utils as b
 
-android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm], DockerBuildSystem)
+android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm])
 
-android_config.cross_config(BuildStep(
-    name="cross-compile-host",
-    platform=c.target_android,
-    host_cwd="$CWD/docker",
-    build_cwd="/j2v8",
-))
+android_config.set_cross_configs({
+    "docker": BuildStep(
+        name="cross-compile-host",
+        platform=c.target_android,
+        host_cwd="$CWD/docker",
+        build_cwd="/j2v8",
+    )
+})
+
+android_config.set_cross_compilers({
+    "docker": DockerBuildSystem
+})
 
 android_config.set_file_abis({
     c.arch_arm: "armeabi-v7a",
@@ -60,7 +66,6 @@ def build_j2v8_jni(config):
 android_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
 #-----------------------------------------------------------------------
 def build_j2v8_java(config):
-    # TODO: pass in file arch ABI
     return \
         u.clearNativeLibs(config) + \
         u.copyNativeLibs(config) + \
@@ -78,7 +83,7 @@ def build_j2v8_junit(config):
         u.gradle("connectedCheck --info")
 
     # we are running a build directly on the host shell
-    if (not config.build_agent):
+    if (not config.cross_agent):
         # just run the tests on the host directly
         return test_cmds
 

@@ -6,12 +6,13 @@ from shutil import copy2
 import build_system.build_utils as utils
 
 class PlatformConfig():
-    def __init__(self, name, architectures, cross_compiler):
+    def __init__(self, name, architectures):
         self.name = name
         self.architectures = architectures
-        self.cross_compiler = cross_compiler
-        self.steps = {}
         self.file_abis = {}
+        self.steps = {}
+        self.cross_compilers = {}
+        self.cross_configs = {}
 
     def build_step(self, target, build_fn):
         self.steps[target] = BuildStep(
@@ -20,6 +21,20 @@ class PlatformConfig():
             build=build_fn,
         )
 
+    def set_cross_compilers(self, compilers_decl):
+        self.cross_compilers = compilers_decl
+
+    def cross_compiler(self, cross_host_name):
+        compiler = self.cross_compilers.get(cross_host_name)
+
+        if (not compiler):
+            sys.exit("ERROR: internal error while looking for cross-compiler: " + cross_host_name)
+
+        return compiler()
+
+    def set_cross_configs(self, cross_configs_decl):
+        self.cross_configs = cross_configs_decl
+
     def set_file_abis(self, abis_decl):
         self.file_abis = abis_decl
 
@@ -27,17 +42,15 @@ class PlatformConfig():
         file_abi = self.file_abis.get(arch)
         return file_abi if not file_abi is None else arch
 
-    def cross_config(self, cross_config):
-        self.steps['cross'] = cross_config
-
 class BuildStep:
-    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
+    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None, pre_build_cmd = None):
         self.name = name
         self.platform = platform
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
         self.custom_cmd = None
+        self.pre_build_cmd = pre_build_cmd
 
 class BuildSystem:
     __metaclass__ = ABCMeta
