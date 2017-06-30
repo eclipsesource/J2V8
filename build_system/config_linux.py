@@ -3,14 +3,20 @@ from cross_build import BuildStep, PlatformConfig
 from docker_build import DockerBuildSystem
 import shared_build_steps as u
 
-linux_config = PlatformConfig(c.target_linux, [c.arch_x86, c.arch_x64], DockerBuildSystem)
+linux_config = PlatformConfig(c.target_linux, [c.arch_x86, c.arch_x64])
 
-linux_config.cross_config(BuildStep(
-    name="cross-compile-host",
-    platform=c.target_linux,
-    host_cwd="$CWD/docker",
-    build_cwd="/j2v8",
-))
+linux_config.set_cross_configs({
+    "docker": BuildStep(
+        name="cross-compile-host",
+        platform=c.target_linux,
+        host_cwd="$CWD/docker",
+        build_cwd="/j2v8",
+    )
+})
+
+linux_config.set_cross_compilers({
+    "docker": DockerBuildSystem
+})
 
 linux_config.set_file_abis({
     c.arch_x64: "x86_64",

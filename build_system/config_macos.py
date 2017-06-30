@@ -1,16 +1,24 @@
+import os
 import constants as c
 from cross_build import BuildStep, PlatformConfig
 from vagrant_build import VagrantBuildSystem
 import shared_build_steps as u
 
-macos_config = PlatformConfig(c.target_macos, [c.arch_x86, c.arch_x64], VagrantBuildSystem)
+macos_config = PlatformConfig(c.target_macos, [c.arch_x86, c.arch_x64])
 
-macos_config.cross_config(BuildStep(
-    name="cross-compile-host",
-    platform=c.target_macos,
-    host_cwd="$CWD/vagrant/$PLATFORM",
-    build_cwd="/Users/vagrant/j2v8",
-))
+macos_config.set_cross_configs({
+    "vagrant": BuildStep(
+        name="cross-compile-host",
+        platform=c.target_macos,
+        host_cwd="$CWD/vagrant/$PLATFORM",
+        build_cwd="/Users/vagrant/j2v8",
+        pre_build_cmd = u.setEnvVar("VAGRANT_FILE_SHARE_TYPE", "smb" if os.name == "nt" else "virtualbox")[0],
+    )
+})
+
+macos_config.set_cross_compilers({
+    "vagrant": VagrantBuildSystem
+})
 
 macos_config.set_file_abis({
     c.arch_x64: "x86_64",

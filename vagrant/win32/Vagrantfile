@@ -1,0 +1,50 @@
+
+require_relative 'ie-box-automation-plugin'
+require_relative 'switch-to-winrm-plugin'
+
+fs_type = ENV['VAGRANT_FILE_SHARE_TYPE'] || "virtualbox"
+
+Vagrant.configure(2) do |config|
+
+    config.vm.box = "Microsoft/EdgeOnWindows10"
+    config.vm.hostname = "j2v8-win32-x64"
+
+    # source: https://github.com/danielmenezesbr/modernie-winrm
+    config.vm.boot_timeout = 5000
+
+    config.vm.guest = :windows
+
+    config.vm.communicator = :winrm       if provisioned?
+    config.winrm.username = "IEUser"      if provisioned?
+    config.winrm.password = "Passw0rd!"   if provisioned?
+    config.winrm.timeout = 50000          if provisioned?
+    config.winrm.retry_delay = 30         if provisioned?
+    config.winrm.retry_limit = 1000       if provisioned?
+
+    config.ssh.username = "IEUser"
+    config.ssh.password = "Passw0rd!"
+    config.ssh.insert_key = false
+
+    config.vm.box_check_update = false
+
+    config.vm.provider "virtualbox" do |v|
+        v.name = "j2v8.win32.x64"
+        v.memory = 8192
+        v.cpus = 4
+    end
+
+    config.vm.synced_folder ".", "/vagrant", disabled: true if not provisioned?
+    config.vm.synced_folder "../../", "C:/j2v8", type: fs_type, smb_username: ENV['VAGRANT_SMB_USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD'] if provisioned?
+
+    config.vm.provision "file", source: "./tools", destination: "c:/users/IEUser"
+    config.vm.provision "winrm", type: "ie_box_automation"
+
+    config.vm.provision :switch_to_winrm
+
+    config.vm.provision "install-python", type:"shell", inline: "C:/J2V8/docker/win32/install.python.ps1"
+    config.vm.provision "install-vsc++", type:"shell", inline: "C:/J2V8/docker/win32/install.vscpp.ps1"
+    config.vm.provision "install-cmake", type:"shell", inline: "C:/J2V8/docker/win32/install.cmake.ps1"
+    config.vm.provision "install-jdk", type:"shell", inline: "C:/J2V8/docker/win32/install.jdk.ps1"
+    config.vm.provision "install-maven", type:"shell", inline: "C:/J2V8/docker/win32/install.maven.ps1"
+
+end

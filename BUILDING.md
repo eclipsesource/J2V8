@@ -63,11 +63,14 @@ __Inputs__:
     - `./src/main/`
 - J2V8 Java test source code
     - `./src/test/`
+- J2V8 build settings
+    - `./build_settings.py`
 
 __Artifacts:__
-- J2V8 platform-specific packages
+- Maven platform-specific packages
     - `./build.out/j2v8_{platform}_{abi}-{j2v8_version}.jar`
     - e.g. `./build.out/j2v8_linux_x86_64-4.8.0-SNAPSHOT.jar`
+- Gradle Android packages
     - `./build/outputs/aar/j2v8-release.aar`
 ---
 ## JUnit
