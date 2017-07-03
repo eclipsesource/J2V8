@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  * A custom map is needed because the existing HashMaps
- * do not self containment, and Hashtables do not
+ * do not allow self containment, and Hashtables do not
  * allow nulls as values.
  *
  * This class is not considered API.

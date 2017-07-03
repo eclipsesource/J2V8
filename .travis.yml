@@ -1,4 +1,4 @@
 sudo: required
 services: docker
 before_install: curl -O http://download.eclipsesource.com/j2v8/v8/node.out-7_4_0.tar.gz
-script: sh ./buildAll.sh
+script: ./buildAll.sh

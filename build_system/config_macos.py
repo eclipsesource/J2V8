@@ -35,8 +35,8 @@ macos_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
 def build_j2v8_cmake(config):
     return \
-        u.shell("mkdir", "cmake.out/$PLATFORM.$ARCH") + \
-        ["cd cmake.out/$PLATFORM.$ARCH"] + \
+        u.shell("mkdir", "./cmake.out/$PLATFORM.$ARCH") + \
+        ["cd ./cmake.out/$PLATFORM.$ARCH"] + \
         u.shell("rm", "CMakeCache.txt CMakeFiles/") + \
         ["cmake ../../"]
 
@@ -44,7 +44,7 @@ macos_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
 def build_j2v8_jni(config):
     return [
-        "cd cmake.out/$PLATFORM.$ARCH",
+        "cd ./cmake.out/$PLATFORM.$ARCH",
         "make -j4",
     ]
 

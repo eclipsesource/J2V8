@@ -1588,7 +1588,7 @@ public class V8Test {
     @Test
     public void testV8ArrayBufferHandlerExceptionDuringCreation() {
         ReferenceHandler referenceHandler = mock(ReferenceHandler.class);
-        doThrow(new RuntimeException()).when(referenceHandler).v8HandleCreated(any(V8Object.class));
+        doThrow(new RuntimeException()).when(referenceHandler).v8HandleCreated(any(V8Value.class));
         v8.addReferenceHandler(referenceHandler);
 
         try {
