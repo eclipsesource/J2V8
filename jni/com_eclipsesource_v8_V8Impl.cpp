@@ -742,7 +742,7 @@ bool runScript(Isolate* isolate, JNIEnv *env, Local<Script> *script, TryCatch* t
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 (JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
     return;
@@ -752,7 +752,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1executeVoidScript
 JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 (JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
@@ -766,7 +766,7 @@ JNIEXPORT jdouble JNICALL Java_com_eclipsesource_v8_V8__1executeDoubleScript
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 (JNIEnv *env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, false);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
@@ -780,7 +780,7 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1executeBooleanScript
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 (JNIEnv *env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
@@ -795,7 +795,7 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
 JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerScript
 (JNIEnv * env, jobject v8, jlong v8RuntimePtr, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch))
@@ -809,7 +809,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1executeIntegerScript
 JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1executeScript
 (JNIEnv *env, jobject v8, jlong v8RuntimePtr, jint expectedType, jstring jjstring, jstring jscriptName = NULL, jint jlineNumber = 0) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   Local<Script> script;
   Local<Value> result;
   if (!compileScript(isolate, jjstring, env, jscriptName, jlineNumber, script, &tryCatch)) { return NULL; }
@@ -831,7 +831,7 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jlong &r
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(functionHandle));
   Handle<Object> receiver = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(receiverHandle));
   Handle<Function> func = Handle<Function>::Cast(object);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   result = func->Call(receiver, size, args);
   if (args != NULL) {
     delete(args);
@@ -858,7 +858,7 @@ bool invokeFunction(JNIEnv *env, Isolate* isolate, jlong &v8RuntimePtr, jlong &o
   }
   Handle<Value> value = parentObject->Get(functionName);
   Handle<Function> func = Handle<Function>::Cast(value);
-  TryCatch tryCatch;
+  TryCatch tryCatch(isolate);
   result = func->Call(parentObject, size, args);
   if (args != NULL) {
     delete(args);
