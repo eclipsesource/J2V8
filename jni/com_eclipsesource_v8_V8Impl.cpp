@@ -456,7 +456,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
     runtime->context_.Reset(runtime->isolate, context);
     runtime->globalObject = new Persistent<Object>;
-    runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
+    runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject(runtime->isolate));
   }
   else {
     Local<String> utfAlias = createV8String(env, runtime->isolate, globalAlias);
@@ -464,7 +464,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     Handle<Context> context = Context::New(runtime->isolate, NULL, globalObject);
     runtime->context_.Reset(runtime->isolate, context);
     runtime->globalObject = new Persistent<Object>;
-    runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject());
+    runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject(runtime->isolate));
   }
   delete(runtime->locker);
   return reinterpret_cast<jlong>(runtime);
@@ -691,7 +691,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
   int size = properties->Length();
   jobjectArray keys = (env)->NewObjectArray(size, stringCls, NULL);
   for (int i = 0; i < size; i++) {
-    String::Value unicodeString(properties->Get(i)->ToString());
+    String::Value unicodeString(properties->Get(i)->ToString(isolate));
     jobject key = (env)->NewString(*unicodeString, unicodeString.length());
     (env)->SetObjectArrayElement(keys, i, key);
     (env)->DeleteLocalRef(key);
@@ -788,7 +788,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringScript
   if (!runScript(isolate, env, &script, &tryCatch, result, v8RuntimePtr))
     return NULL;
   ASSERT_IS_STRING(result);
-  String::Value unicodeString(result->ToString());
+  String::Value unicodeString(result->ToString(isolate));
+
   return env->NewString(*unicodeString, unicodeString.length());
 }
 
@@ -925,7 +926,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1executeStringFunction
   if (!invokeFunction(env, isolate, v8RuntimePtr, objectHandle, jfunctionName, parameterHandle, result))
     return NULL;
   ASSERT_IS_STRING(result);
-  String::Value unicodeString(result->ToString());
+  String::Value unicodeString(result->ToString(isolate));
+
   return env->NewString(*unicodeString, unicodeString.length());
 }
 
@@ -1008,7 +1010,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getString
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Value> v8Value = getValueWithKey(env, isolate, v8RuntimePtr, objectHandle, key);
   ASSERT_IS_STRING(v8Value);
-  String::Value unicode(v8Value->ToString());
+  String::Value unicode(v8Value->ToString(isolate));
+
   return env->NewString(*unicode, unicode.length());
 }
 
@@ -1168,15 +1171,16 @@ int fillBooleanArray(JNIEnv *env, Handle<Object> &array, int start, int length, 
   return length;
 }
 
-int fillStringArray(JNIEnv *env, Handle<Object> &array, int start, int length, jobjectArray &result) {
+int fillStringArray(JNIEnv *env, Isolate* isolate, Handle<Object> &array, int start, int length, jobjectArray &result) {
   for (int i = start; i < start + length; i++) {
     Handle<Value> v8Value = array->Get(i);
     ASSERT_IS_STRING(v8Value);
-    String::Value unicodeString(v8Value->ToString());
+    String::Value unicodeString(v8Value->ToString(isolate));
     jstring string = env->NewString(*unicodeString, unicodeString.length());
     env->SetObjectArrayElement(result, i - start, string);
     (env)->DeleteLocalRef(string);
   }
+
   return length;
 }
 
@@ -1184,6 +1188,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__JJII_3I
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length, jintArray result) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+
   return fillIntArray(env, array, start, length, result);
 }
 
@@ -1193,6 +1198,7 @@ JNIEXPORT jintArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetIntegers__JJI
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   jintArray result = env->NewIntArray(length);
   fillIntArray(env, array, start, length, result);
+
   return result;
 }
 
@@ -1248,7 +1254,8 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII_3Lja
 (JNIEnv * env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jint start, jint length, jobjectArray result) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
-  return fillStringArray(env, array, start, length, result);
+
+  return fillStringArray(env, isolate, array, start, length, result);
 }
 
 JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__JJII
@@ -1256,7 +1263,8 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1arrayGetStrings__J
   Isolate* isolate = SETUP(env, v8RuntimePtr, NULL);
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   jobjectArray result = env->NewObjectArray(length, stringCls, NULL);
-  fillStringArray(env, array, start, length, result);
+  fillStringArray(env, isolate, array, start, length, result);
+
   return result;
 }
 
@@ -1293,7 +1301,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1arrayGetString
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   Handle<Value> v8Value = array->Get(index);
   ASSERT_IS_STRING(v8Value);
-  String::Value unicodeString(v8Value->ToString());
+  String::Value unicodeString(v8Value->ToString(isolate));
+
   return env->NewString(*unicodeString, unicodeString.length());
 }
 
@@ -1773,7 +1782,8 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1toString
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
-  String::Value unicodeString(object->ToString());
+  String::Value unicodeString(object->ToString(isolate));
+
   return env->NewString(*unicodeString, unicodeString.length());
 }
 
@@ -1938,25 +1948,40 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
     return env->NewObject(booleanCls, booleanInitMethodID, result->BooleanValue());
   }
   else if (result->IsString()) {
-    String::Value unicodeString(result->ToString());
+    v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+    String::Value unicodeString(result->ToString(isolate));
+
     return env->NewString(*unicodeString, unicodeString.length());
   }
   else if (result->IsFunction()) {
     jobject objectResult = env->NewObject(v8FunctionCls, v8FunctionInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
-    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
+
+    v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+
     return objectResult;
   }
   else if (result->IsArray()) {
     jobject objectResult = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
-    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
+
+    v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+
     return objectResult;
   }
   else if (result->IsTypedArray()) {
       jobject objectResult = env->NewObject(v8TypedArrayCls, v8TypedArrayInitMethodID, v8);
       jlong resultHandle = getHandle(env, objectResult);
-      reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
+
+      v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+      reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+
       return objectResult;
   }
   else if (result->IsArrayBuffer()) {
@@ -1967,15 +1992,24 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
     jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), arrayBuffer->ByteLength());
     jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);
     jlong resultHandle = getHandle(env, objectResult);
-    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
+
+    v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+
     return objectResult;
   }
   else if (result->IsObject()) {
     jobject objectResult = env->NewObject(v8ObjectCls, v8ObjectInitMethodID, v8);
     jlong resultHandle = getHandle(env, objectResult);
-    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, result->ToObject());
+
+    v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+
+    reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+
     return objectResult;
   }
+
   return NULL;
 }
 
