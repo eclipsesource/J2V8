@@ -47,10 +47,21 @@ class DockerBuildSystem(BuildSystem):
     def pre_build(self, config):
         print ("preparing " + config.platform + "@" + config.arch + " => " + config.name)
 
+        docker_stop_str = self.inject_env("docker stop j2v8.$PLATFORM.$ARCH", config)
+
+        def cli_exit_event():
+            if (config.no_shutdown):
+                return
+
+            print "Waiting for docker process to exit..."
+            self.exec_host_cmd(docker_stop_str, config)
+
+        atexit.register(cli_exit_event)
+
         self.exec_host_cmd("docker build -f $PLATFORM/Dockerfile -t \"j2v8-$PLATFORM\" .", config)
 
     def exec_build(self, config):
-        print ("DOCKER building " + config.platform + "@" + config.arch + " => " + config.name)
+        print ("DOCKER running " + config.platform + "@" + config.arch + " => " + config.name)
 
         is_win32 = utils.is_win32(config.platform)
 
@@ -73,14 +84,6 @@ class DockerBuildSystem(BuildSystem):
         docker_run_str = self.inject_env(docker_run_str, config)
 
         print docker_run_str
-
-        docker_stop_str = self.inject_env("docker stop j2v8.$PLATFORM.$ARCH", config)
-
-        def cli_exit_event():
-            print "Waiting for docker process to exit..."
-            self.exec_host_cmd(docker_stop_str, config)
-
-        atexit.register(cli_exit_event)
 
         self.exec_host_cmd(docker_run_str, config)
 

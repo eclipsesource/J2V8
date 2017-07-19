@@ -56,6 +56,15 @@ def build_j2v8_jni(config):
 
 linux_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
 #-----------------------------------------------------------------------
+def build_j2v8_optimize(config):
+    file_abi = config.target.file_abi(config.arch)
+    return [
+        "execstack -c cmake.out/$PLATFORM.$ARCH/libj2v8_linux_" + file_abi + ".so",
+        "strip --strip-unneeded -R .note -R .comment cmake.out/$PLATFORM.$ARCH/libj2v8_linux_" + file_abi + ".so",
+    ]
+
+linux_config.build_step(c.build_j2v8_optimize, build_j2v8_optimize)
+#-----------------------------------------------------------------------
 def build_j2v8_java(config):
     return \
         u.clearNativeLibs(config) + \

@@ -18,6 +18,7 @@ build_step_sequence = [
     c.build_node_js,
     c.build_j2v8_cmake,
     c.build_j2v8_jni,
+    c.build_j2v8_optimize,
     c.build_j2v8_java,
     c.build_j2v8_junit,
 ]
@@ -40,13 +41,6 @@ avail_targets = {
     c.target_win32: win32_config,
 }
 
-# TODO: shift responsibility to add targets to platform config or no ?
-extra_targets = [
-    c.target_macos_vagrant,
-    c.target_win32_docker,
-    c.target_win32_vagrant,
-]
-
 avail_architectures = [
     c.arch_x86,
     c.arch_x64,
@@ -54,6 +48,20 @@ avail_architectures = [
 ]
 
 avail_build_steps = build_step_sequence + composite_steps
+
+# this goes through all known target platforms, and returns the sub-targets
+# that are available for cross-compilation
+def get_cross_targets():
+    cross_targets = []
+
+    for tgt in avail_targets.values():
+        if (not tgt.cross_compilers):
+            continue
+
+        for xcomp in tgt.cross_compilers:
+            cross_targets.append(tgt.name + ":" + xcomp)
+
+    return cross_targets
 
 #-----------------------------------------------------------------------
 # Command-Line setup
@@ -65,7 +73,7 @@ parser.add_argument("--target", "-t",
                     help="The build target platform name (must be a valid platform string identifier).",
                     dest="target",
                     required=True,
-                    choices=sorted(avail_targets.keys() + extra_targets))
+                    choices=sorted(avail_targets.keys() + get_cross_targets()))
 
 parser.add_argument("--arch", "-a",
                     help="The build target architecture identifier (the available architectures are also dependent on the selected platform for a build).",
@@ -121,6 +129,7 @@ def parse_build_step_option(step):
         c.build_node_js: lambda: parsed_steps.add(c.build_node_js),
         c.build_j2v8_cmake: lambda: parsed_steps.add(c.build_j2v8_cmake),
         c.build_j2v8_jni: lambda: parsed_steps.add(c.build_j2v8_jni),
+        c.build_j2v8_optimize: lambda: parsed_steps.add(c.build_j2v8_optimize),
         c.build_j2v8_java: lambda: parsed_steps.add(c.build_j2v8_java),
         c.build_j2v8_junit: lambda: parsed_steps.add(c.build_j2v8_junit),
     }.get(step, raise_unhandled_option)
@@ -133,6 +142,7 @@ def add_native():
     parsed_steps.add(c.build_node_js)
     parsed_steps.add(c.build_j2v8_cmake)
     parsed_steps.add(c.build_j2v8_jni)
+    parsed_steps.add(c.build_j2v8_optimize)
 
 def add_managed():
     parsed_steps.add(c.build_j2v8_java)
@@ -261,6 +271,10 @@ def execute_build(params):
 
         # execute all requested build steps
         for step in parsed_steps:
+            if (not step in target_steps):
+                sys.exit("Hint: skipping build step \"" + step + "\" (not configured and/or supported for platform \"" + params.target + "\")")
+                continue
+
             target_step = target_steps[step]
 
             # prepare any additional/dynamic parameters for the build and put them into the build-step config
