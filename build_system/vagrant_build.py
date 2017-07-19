@@ -20,10 +20,19 @@ class VagrantBuildSystem(BuildSystem):
         if (config.pre_build_cmd):
             vagrant_start_cmd = config.pre_build_cmd + utils.host_cmd_sep() + vagrant_start_cmd
 
+        def cli_exit_event():
+            if (config.no_shutdown):
+                return
+
+            print "Waiting for vagrant virtual-machine to exit..."
+            self.exec_host_cmd("vagrant halt", config)
+
+        atexit.register(cli_exit_event)
+
         self.exec_host_cmd(vagrant_start_cmd, config)
 
     def exec_build(self, config):
-        print ("VAGRANT building " + config.platform + "@" + config.arch + " => " + config.name)
+        print ("VAGRANT running " + config.platform + "@" + config.arch + " => " + config.name)
 
         # shell = "powershell -c \"cmd /C " if utils.is_win32(config.platform) else "ssh -c "
         # cmd_sep = "&& " if utils.is_win32(config.platform) else "; "
@@ -62,15 +71,6 @@ class VagrantBuildSystem(BuildSystem):
             build_cmd = config.custom_cmd or cmd_sep.join(config.build(config))
             build_cmd = self.inject_env("cd $BUILD_CWD" + cmd_sep + build_cmd, config)
             vagrant_run_cmd = "vagrant ssh -c '" + build_cmd + "'"
-
-        def cli_exit_event():
-            if (config.no_shutdown):
-                return
-
-            print "Waiting for vagrant virtual-machine to exit..."
-            self.exec_host_cmd("vagrant halt", config)
-
-        atexit.register(cli_exit_event)
 
         self.exec_host_cmd(vagrant_run_cmd, config)
 

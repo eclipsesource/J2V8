@@ -2,10 +2,7 @@
 target_android = 'android'
 target_linux = 'linux'
 target_macos = 'macos'
-target_macos_vagrant = 'macos:vagrant'
 target_win32 = 'win32'
-target_win32_docker = 'win32:docker'
-target_win32_vagrant = 'win32:vagrant'
 
 # target architectures
 arch_x86 = 'x86'
@@ -16,6 +13,7 @@ arch_arm = 'arm'
 build_node_js = 'nodejs'
 build_j2v8_cmake = 'j2v8cmake'
 build_j2v8_jni = 'j2v8jni'
+build_j2v8_optimize = 'j2v8optimize'
 build_j2v8_java = 'j2v8java'
 build_j2v8_junit = 'j2v8junit'
 

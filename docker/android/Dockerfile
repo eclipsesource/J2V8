@@ -1,4 +1,4 @@
-FROM ubuntu:zesty
+FROM ubuntu:xenial
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/
@@ -30,6 +30,10 @@ ENV PATH "$PATH:/build/android-gcc-toolchain:$NDK"
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
 ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
+
+COPY ./shared/install.cmake.sh /temp/docker/shared
+RUN ./install.cmake.sh
+ENV PATH "$PATH:/opt/cmake/bin"
 
 COPY ./shared/install.gradle.sh /temp/docker/shared
 RUN ./install.gradle.sh
