@@ -42,7 +42,7 @@ This will automatically provision and run the necessary virtualization to run th
 
 Tutorials
 ==========
- * [Getting Started With J2V8](http://eclipsesource.com/getting-started-with-j2v8/)
+ * [Getting Started With J2V8](https://eclipsesource.com/blogs/tutorials/getting-started-with-j2v8/)
  * [Registering Java Callbacks with J2V8](http://eclipsesource.com/blogs/2015/06/06/registering-java-callbacks-with-j2v8/)
  * [Implementing WebWorkers with J2V8](http://eclipsesource.com/blogs/2015/05/28/implementing-webworkers-with-j2v8/)
  * [Multithreaded JavaScript with J2V8](http://eclipsesource.com/blogs/2015/05/12/multithreaded-javascript-with-j2v8/)
