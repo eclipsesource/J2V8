@@ -1,4 +1,4 @@
-FROM ubuntu:zesty
+FROM debian:jessie
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/
@@ -10,6 +10,10 @@ WORKDIR /temp/docker/shared/
 
 COPY ./shared/install.debian.packages.sh /temp/docker/shared
 RUN ./install.debian.packages.sh
+
+COPY ./shared/install.cmake.sh /temp/docker/shared
+RUN ./install.cmake.sh
+ENV PATH "$PATH:/opt/cmake/bin"
 
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
