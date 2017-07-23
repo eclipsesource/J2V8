@@ -42,7 +42,7 @@ docker rm -f j2v8.android.arm_$DOCKER_CONTAINER_SUFFIX
 docker rm -f j2v8.linux.x64_$DOCKER_CONTAINER_SUFFIX
 set -e
 
-tar xzf node.out-7_4_0.tar.gz
+tar xzf node.out-7_6_0.tar.gz
 
 docker build -t "j2v8-linux-x64" -f docker/Dockerfile.linux $DIR
 docker run -e "env.J2V8_PLATFORM_NAME=linux" -e "env.J2V8_ARCH_NAME=x86_64" -e "env.J2V8_FULL_VERSION=4.8.0" -v $ROOTPATH:/build/. -v $ROOTPATH/node.out:/build/node --name j2v8.linux.x64_$DOCKER_CONTAINER_SUFFIX j2v8-linux-x64 
