@@ -38,6 +38,18 @@ public class V8Function extends V8Object {
         return new V8Function(v8);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Object#toString()
+     */
+    @Override
+    public String toString() {
+        if (released || v8.isReleased()) {
+            return "[Function released]";
+        }
+        return super.toString();
+    }
+
     @Override
     protected void initialize(final long runtimePtr, final Object data) {
         if (data == null) {

@@ -51,6 +51,18 @@ public class V8Array extends V8Object {
         return (V8Array) super.twin();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Object#toString()
+     */
+    @Override
+    public String toString() {
+        if (released || v8.isReleased()) {
+            return "[Array released]";
+        }
+        return super.toString();
+    }
+
     @Override
     protected void initialize(final long runtimePtr, final Object data) {
         long handle = v8.initNewV8Array(runtimePtr);

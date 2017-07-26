@@ -184,13 +184,58 @@ public class V8ObjectTest {
         fail("Illegal State Exception not thrown.");
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testAccessReleasedObjectThrowsException1() {
+    @Test
+    public void testToStringWorksOnReleasedV8Object() {
         V8Object v8Object = new V8Object(v8);
 
         v8Object.release();
 
-        v8Object.toString();
+        assertEquals("[Object released]", v8Object.toString());
+    }
+
+    @Test
+    public void testToStringWorksOnReleasedV8Function() {
+        V8Object v8Object = new V8Function(v8);
+
+        v8Object.release();
+
+        assertEquals("[Function released]", v8Object.toString());
+    }
+
+    @Test
+    public void testToStringWorksOnReleasedV8Array() {
+        V8Object v8Object = new V8Array(v8);
+
+        v8Object.release();
+
+        assertEquals("[Array released]", v8Object.toString());
+    }
+
+    @Test
+    public void testToStringWorksOnReleasedV8Runtime_V8Object() {
+        V8Object v8Object = new V8Object(v8);
+        v8.release(false);
+
+        assertEquals("[Object released]", v8Object.toString());
+        v8 = V8.createV8Runtime();
+    }
+
+    @Test
+    public void testToStringWorksOnReleasedV8Runtime_V8Function() {
+        V8Object v8Object = new V8Function(v8);
+        v8.release(false);
+
+        assertEquals("[Function released]", v8Object.toString());
+        v8 = V8.createV8Runtime();
+    }
+
+    @Test
+    public void testToStringWorksOnReleasedV8Runtime_V8Array() {
+        V8Object v8Object = new V8Array(v8);
+        v8.release(false);
+
+        assertEquals("[Array released]", v8Object.toString());
+        v8 = V8.createV8Runtime();
     }
 
     @Test(expected = IllegalStateException.class)

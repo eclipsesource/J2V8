@@ -647,8 +647,10 @@ public class V8Object extends V8Value {
      */
     @Override
     public String toString() {
+        if (isReleased() || v8.isReleased()) {
+            return "[Object released]";
+        }
         v8.checkThread();
-        checkReleased();
         return v8.toString(v8.getV8RuntimePtr(), getHandle());
     }
 
