@@ -87,6 +87,30 @@ public class V8MultiThreadTest {
         }
     }
 
+    V8 v8TempRuntime = null;
+
+    @Test
+    public void testLosesCurrentIsolate() {
+        final V8 v8 = V8.createV8Runtime();
+        v8.registerJavaMethod(new JavaCallback() {
+
+            @Override
+            public Object invoke(final V8Object receiver, final V8Array parameters) {
+                v8TempRuntime = V8.createV8Runtime();
+                v8TempRuntime.getLocker().release();
+                throw new RuntimeException();
+            }
+        }, "foo");
+        try {
+            v8.executeFunction("foo", null);
+        } catch (RuntimeException e) {
+            // doNothing
+        }
+        v8.release(false);
+        v8TempRuntime.getLocker().acquire();
+        v8TempRuntime.release();
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testMultiV8Threads() throws InterruptedException {

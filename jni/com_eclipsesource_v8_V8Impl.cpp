@@ -49,7 +49,6 @@ public:
 class V8Runtime {
 public:
   Isolate* isolate;
-  Isolate::Scope* isolate_scope;
   Persistent<Context> context_;
   Persistent<Object>* globalObject;
   Locker* locker;
@@ -447,7 +446,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
   create_params.array_buffer_allocator = &array_buffer_allocator;
   runtime->isolate = v8::Isolate::New(create_params);
   runtime->locker = new Locker(runtime->isolate);
-  runtime->isolate_scope = new Isolate::Scope(runtime->isolate);
+  v8::Isolate::Scope isolate_scope(runtime->isolate);
   runtime->v8 = env->NewGlobalRef(v8);
   runtime->pendingException = NULL;
   HandleScope handle_scope(runtime->isolate);
@@ -666,9 +665,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseRuntime
     return;
   }
   Isolate* isolate = getIsolate(env, v8RuntimePtr);
-  //HandleScope handle_scope(isolate);
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->context_.Reset();
-  delete(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate_scope);
   reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate->Dispose();
   env->DeleteGlobalRef(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->v8);
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
