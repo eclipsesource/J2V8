@@ -1526,6 +1526,8 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
   void *methodDescriptorPtr = data->Value();
   MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
   jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
+  Isolate* isolate = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->isolate;
+  Isolate::Scope isolateScope(isolate);  
   JNIEnv * env;
   getJNIEnv(env);
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
@@ -1596,6 +1598,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
   jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
   Isolate* isolate = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->isolate;
+  Isolate::Scope isolateScope(isolate);
   JNIEnv * env;
   getJNIEnv(env);
   jobject parameters = createParameterArray(env, md->v8RuntimePtr, v8, size, args);
