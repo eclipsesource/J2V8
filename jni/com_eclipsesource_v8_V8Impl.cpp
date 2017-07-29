@@ -472,12 +472,26 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
   (JNIEnv *env, jobject, jlong v8RuntimePtr) {
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+  if(runtime->isolate->InContext()) {
+    jstring exceptionString = env->NewStringUTF("Cannot acquire lock while in a V8 Context");
+    jthrowable exception = (jthrowable)env->NewObject(v8RuntimeExceptionCls, v8RuntimeExceptionInitMethodID, exceptionString);
+    (env)->Throw(exception);
+    env->DeleteLocalRef(exceptionString);
+    return;
+  }
   runtime->locker = new Locker(runtime->isolate);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
   (JNIEnv *env, jobject, jlong v8RuntimePtr) {
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
+    if(runtime->isolate->InContext()) {
+    jstring exceptionString = env->NewStringUTF("Cannot release lock while in a V8 Context");
+    jthrowable exception = (jthrowable)env->NewObject(v8RuntimeExceptionCls, v8RuntimeExceptionInitMethodID, exceptionString);
+    (env)->Throw(exception);
+    env->DeleteLocalRef(exceptionString);
+    return;
+  }
   delete(runtime->locker);
   runtime->locker = NULL;
 }

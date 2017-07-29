@@ -111,6 +111,25 @@ public class V8MultiThreadTest {
         v8TempRuntime.release();
     }
 
+    @Test(expected = Exception.class)
+    public void testReleaseLockInCallback() {
+        final V8 v8 = V8.createV8Runtime();
+        try {
+            v8.registerJavaMethod(new JavaCallback() {
+
+                @Override
+                public Object invoke(final V8Object receiver, final V8Array parameters) {
+                    v8.getLocker().release();
+                    v8.getLocker().acquire();
+                    return null;
+                }
+            }, "foo");
+            v8.executeFunction("foo", null);
+        } finally {
+            v8.release();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testMultiV8Threads() throws InterruptedException {
