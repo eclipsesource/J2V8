@@ -75,6 +75,7 @@ Here are some projects that use J2V8:
 * [tern.java](https://github.com/angelozerr/tern.java)
 * [PlantUML](http://plantuml.com/)
 * [jooby](http://jooby.org/doc/assets)
+* [Alicorn](http://alicorn.io)
 
 License
 =====
