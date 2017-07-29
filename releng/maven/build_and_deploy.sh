@@ -9,11 +9,11 @@ COMMIT_ID=`git rev-parse HEAD`
 sed s/Unknown\ revision\ ID/$COMMIT_ID/ ./src/main/java/com/eclipsesource/v8/V8.java > ./src/main/java/com/eclipsesource/v8/V8.java.updated
 mv ./src/main/java/com/eclipsesource/v8/V8.java.updated ./src/main/java/com/eclipsesource/v8/V8.java
 
-TARGET_PLATFORM=$PWD/../../../node.out-7_4_0.tar.gz
+TARGET_PLATFORM=$PWD/../../../node.out-7_6_0.tar.gz
 if [ -f $TARGET_PLATFORM ]; then
   cp $TARGET_PLATFORM .
 else 
-  curl -O http://download.eclipsesource.com/j2v8/v8/node.out-7_4_0.tar.gz
+  curl -o node.out-7_6_0.tar.gz https://nodejs.org/dist/v7.6.0/node-v7.6.0-linux-x64.tar.gz
 fi
 ./buildAll.sh
 ./gradlew clean build uploadArchives -x test

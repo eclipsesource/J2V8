@@ -4,7 +4,7 @@ node {
   }
 
   stage('Fetching target platform') {
-    sh 'curl -O http://download.eclipsesource.com/j2v8/v8/node.out-7_4_0.tar.gz'
+    sh 'curl -o node.out-7_6_0.tar.gz https://nodejs.org/dist/v7.6.0/node-v7.6.0-linux-x64.tar.gz'
   }
 
   stage('Building') {
