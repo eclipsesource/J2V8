@@ -8,8 +8,8 @@ apt-get -qq update && \
 	g++ g++-multilib \
 	curl \
 	file \
+	execstack \
 	python \
 	make \
-	cmake \
 	wget \
 	supervisor
