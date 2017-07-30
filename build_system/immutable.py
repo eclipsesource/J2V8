@@ -1,6 +1,6 @@
 # for original source see: http://code.activestate.com/recipes/576527-freeze-make-any-object-immutable/
 
-immutable_types = set((int, str))
+immutable_types = set((int, str, bool))
 
 class Frozen(object):
     def __init__(self, value):

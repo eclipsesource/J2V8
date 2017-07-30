@@ -4,14 +4,19 @@ import re
 import subprocess
 import sys
 
-from cross_build import BuildSystem
+from build_structures import BuildSystem, BuildStep
 import constants as c
 import build_utils as utils
+
+class DockerBuildStep(BuildStep):
+    def __init__(self, platform, build_cwd = None, host_cwd = None):
+        super(DockerBuildStep, self).__init__("docker-build-host", platform, None, build_cwd, host_cwd)
 
 class DockerBuildSystem(BuildSystem):
     def clean(self, config):
         try:
-            self.exec_host_cmd("docker rm -f -v j2v8.$PLATFORM.$ARCH", config)
+            container_name = self.get_container_name(config)
+            self.exec_host_cmd("docker rm -f -v " + container_name, config)
         except subprocess.CalledProcessError:
             return
 
@@ -44,10 +49,17 @@ class DockerBuildSystem(BuildSystem):
         except subprocess.CalledProcessError:
             sys.exit("ERROR: Failed Docker build-system health check, make sure Docker is available and running!")
 
+    def get_image_name(self, config):
+        return "j2v8-$VENDOR-$PLATFORM"
+
+    def get_container_name(self, config):
+        return "j2v8.$VENDOR.$PLATFORM.$ARCH"
+
     def pre_build(self, config):
         print ("preparing " + config.platform + "@" + config.arch + " => " + config.name)
 
-        docker_stop_str = self.inject_env("docker stop j2v8.$PLATFORM.$ARCH", config)
+        container_name = self.get_container_name(config)
+        docker_stop_str = self.inject_env("docker stop " + container_name, config)
 
         def cli_exit_event():
             if (config.no_shutdown):
@@ -58,7 +70,18 @@ class DockerBuildSystem(BuildSystem):
 
         atexit.register(cli_exit_event)
 
-        self.exec_host_cmd("docker build -f $PLATFORM/Dockerfile -t \"j2v8-$PLATFORM\" .", config)
+        args_str = ""
+
+        if (config.sys_image):
+            args_str += " --build-arg sys_image=" + config.sys_image
+
+        if (config.vendor):
+            args_str += " --build-arg vendor=" + config.vendor
+
+        image_name = self.get_image_name(config)
+
+        print ("Building docker image: " + config.inject_env(image_name))
+        self.exec_host_cmd("docker build " + args_str + " -f $PLATFORM/Dockerfile -t \"" + image_name + "\" .", config)
 
     def exec_build(self, config):
         print ("DOCKER running " + config.platform + "@" + config.arch + " => " + config.name)
@@ -71,15 +94,20 @@ class DockerBuildSystem(BuildSystem):
 
         build_cmd = config.custom_cmd or (cmd_separator + " ").join(config.build(config))
 
-        memory_option = ""
+        extra_options = ""
 
         # NOTE: the --memory 3g setting is imporant for windows docker builds,
         # since the windows docker engine defaults to a 1gb limit which is not enough to run the Node.js build with MSBuild
         if (utils.is_win32(config.platform)):
-            memory_option = "--memory 3g"
+            extra_options = "--memory 3g"
+        else:
+            extra_options = "--privileged"
 
-        docker_run_str = "docker run " + memory_option + " --privileged -P -v $CWD:" + mount_point + \
-            " --name j2v8.$PLATFORM.$ARCH j2v8-$PLATFORM " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
+        image_name = self.get_image_name(config)
+        container_name = self.get_container_name(config)
+
+        docker_run_str = "docker run " + extra_options + " -P -v $CWD:" + mount_point + \
+            " --name " + container_name + " " + image_name + " " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(docker_run_str, config)
 

@@ -249,12 +249,14 @@ public class V8 extends V8Object {
 
     private static void checkNativeLibraryLoaded() {
         if (!nativeLibraryLoaded) {
+            String message = "J2V8 native library not loaded (" + LibraryLoader.computeLibraryShortName(true) + ")";
+
             if (nativeLoadError != null) {
-                throw new IllegalStateException("J2V8 native library not loaded", nativeLoadError);
+                throw new IllegalStateException(message, nativeLoadError);
             } else if (nativeLoadException != null) {
-                throw new IllegalStateException("J2V8 native library not loaded", nativeLoadException);
+                throw new IllegalStateException(message, nativeLoadException);
             } else {
-                throw new IllegalStateException("J2V8 native library not loaded");
+                throw new IllegalStateException(message);
             }
         }
     }

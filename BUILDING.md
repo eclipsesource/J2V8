@@ -47,8 +47,8 @@ __Inputs__:
 
 __Artifacts:__
 - J2V8 native shared libraries
-    - `./cmake.out/{platform}.{architecture}/libj2v8_{platform}_{abi}.{ext}`
-    - e.g. `./cmake.out/linux.x64/libj2v8_linux_x86_64.so`
+    - `./cmake.out/{platform}.{architecture}/libj2v8-[vendor-]{platform}-{abi}.{ext}`
+    - e.g. `./cmake.out/linux.x64/libj2v8-alpine-linux-x86_64.so`
 - The built shared libraries will also be automatically copied to the required Java / Android project directories to be included in the .jar/.aar packages that will be built later.
     - `./src/main/resources/` (Java)
     - `./src/main/jniLibs/{abi}/libj2v8.so` (Android)
@@ -83,8 +83,8 @@ __Inputs__:
     - `./src/test/`
 
 __Artifacts:__
-- Maven Surefire test reports
+- Maven Surefire test reports (Desktop platforms)
     - `./target/surefire-reports/`
-- Gradle connected-test reports
-    - `./build/outputs/androidTest-results/connected/`
+- Gradle Spoon test reports (Android only)
+    - `./build/spoon/debug/`
 ---

@@ -1,4 +1,10 @@
 
+if java_loc="$(type -p javac)" || [ -z "$java_loc" ]; then
+    echo "JDK already installed, skipping installation..."
+    echo "Existing JDK location: "$java_loc
+    exit 0
+fi
+
 # sources:
 # - https://www.mkyong.com/java/how-to-install-oracle-jdk-8-on-debian/
 

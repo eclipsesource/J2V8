@@ -18,12 +18,17 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 public class V8LockerTest {
 
     private boolean passed = false;
     private V8      v8     = null;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @Before
     public void setup() {
@@ -169,6 +174,7 @@ public class V8LockerTest {
         fail("Expected exception");
     }
 
+    // TODO: frozen/deadlock on android
     @Test
     public void testBinarySemaphore() throws InterruptedException {
         v8.getLocker().acquire(); // Lock has been acquired twice

@@ -43,8 +43,7 @@ fs_type = ENV['VAGRANT_FILE_SHARE_TYPE'] || "nfs"
 
 Vagrant.configure(2) do |config|
 
-    config.vm.box = "http://files.dryga.com/boxes/osx-sierra-0.3.1.box"
-    # config.vm.box = "AndrewDryga/vagrant-box-osx"
+    config.vm.box = ENV['VAGRANT_SYS_IMAGE'] || "http://files.dryga.com/boxes/osx-sierra-0.3.1.box"
     config.vm.hostname = "j2v8.macos.x64"
     
     config.vm.provider "virtualbox" do |v|

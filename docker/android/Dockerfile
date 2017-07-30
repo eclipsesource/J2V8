@@ -1,4 +1,7 @@
-FROM ubuntu:xenial
+# sys_image can be overridden from the CLI
+ARG sys_image=debian:jessie
+
+FROM $sys_image
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/

@@ -21,11 +21,17 @@ hs_err*.log
 *.iws
 .idea
 
-# python binaries
+# Python binaries
 *.pyc
 
-# Build input/output.
+# build input/output
 node
 build.out
 cmake.out
 node.out
+
+# test input/output
+test-mockup-os-release
+
+# generated dependency packages
+j2v8-dependencies-*

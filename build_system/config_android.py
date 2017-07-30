@@ -1,17 +1,17 @@
 import constants as c
-from cross_build import BuildStep, PlatformConfig
-from docker_build import DockerBuildSystem
+from build_structures import PlatformConfig
+from docker_build import DockerBuildSystem, DockerBuildStep
 import shared_build_steps as u
 import build_utils as b
+import cmake_utils as cmu
 
 android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm])
 
 android_config.set_cross_configs({
-    "docker": BuildStep(
-        name="cross-compile-host",
+    "docker": DockerBuildStep(
         platform=c.target_android,
         host_cwd="$CWD/docker",
-        build_cwd="/j2v8",
+        build_cwd="/j2v8"
     )
 })
 
@@ -44,22 +44,27 @@ def build_node_js(config):
 android_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
 def build_j2v8_cmake(config):
+    cmake_vars = cmu.setAllVars(config)
+    cmake_toolchain = cmu.setToolchain("$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake")
+
     return [
-        "mkdir -p cmake.out/$PLATFORM.$ARCH",
-        "cd cmake.out/$PLATFORM.$ARCH",
+        "mkdir -p " + u.cmake_out_dir,
+        "cd " + u.cmake_out_dir,
         "rm -rf CMakeCache.txt CMakeFiles/",
         """cmake \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake \
+            %(cmake_vars)s \
+            %(cmake_toolchain)s \
             ../../ \
-        """,
+        """
+        % locals()
     ]
 
 android_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
 def build_j2v8_jni(config):
     return [
-        "cd cmake.out/$PLATFORM.$ARCH",
+        "cd " + u.cmake_out_dir,
         "make -j4",
     ]
 
@@ -80,7 +85,9 @@ def build_j2v8_junit(config):
 
     test_cmds = \
         u.setVersionEnv(config) + \
-        u.gradle("connectedCheck --info")
+        u.gradle("spoon")
+        # u.gradle("spoon -PtestClass=com.eclipsesource.v8.LibraryLoaderTest,com.eclipsesource.v8.PlatformDetectorTest")
+        # u.gradle("connectedCheck --info")
 
     # we are running a build directly on the host shell
     if (not config.cross_agent):
@@ -95,14 +102,13 @@ def build_j2v8_junit(config):
             lambda x: x.replace("$TEST_CMDS", " && ".join(test_cmds))
         )
 
-        image_arch = config.target.file_abi(config.arch)
         emu_arch = "-arm" if config.arch == c.arch_arm else "64-x86"
 
         b.apply_file_template(
             "./docker/android/start-emulator.template.sh",
             "./docker/android/start-emulator.sh",
             lambda x: x
-                .replace("$IMG_ARCH", image_arch)
+                .replace("$IMG_ARCH", config.file_abi)
                 .replace("$EMU_ARCH", emu_arch)
         )
 

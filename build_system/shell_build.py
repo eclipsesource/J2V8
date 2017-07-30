@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from cross_build import BuildSystem
+from build_structures import BuildSystem
 import constants as c
 import build_utils as utils
 

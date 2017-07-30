@@ -3,7 +3,8 @@ import commands
 import os
 import sys
 from shutil import copy2
-import build_system.build_utils as utils
+import build_settings as s
+import build_utils as utils
 
 class PlatformConfig():
     def __init__(self, name, architectures):
@@ -42,15 +43,14 @@ class PlatformConfig():
         file_abi = self.file_abis.get(arch)
         return file_abi if not file_abi is None else arch
 
-class BuildStep:
-    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None, pre_build_cmd = None):
+class BuildStep(object):
+    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
         self.name = name
         self.platform = platform
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
         self.custom_cmd = None
-        self.pre_build_cmd = pre_build_cmd
 
 class BuildSystem:
     __metaclass__ = ABCMeta
@@ -93,13 +93,30 @@ class BuildSystem:
 
     def inject_env(self, cmd, config):
         build_cwd = utils.get_cwd()
+        vendor = config.vendor
 
         return (cmd
+            # global config variables
+            .replace("$NODE_VERSION", s.NODE_VERSION)
+            .replace("$J2V8_VERSION", s.J2V8_VERSION)
+            .replace("$J2V8_FULL_VERSION", s.J2V8_FULL_VERSION)
+
+            # build specific variables
             .replace("$BUILD_CWD", config.build_cwd or build_cwd)
             .replace("$HOST_CWD", config.host_cwd or "")
             .replace("$CWD", build_cwd)
             .replace("$PLATFORM", config.platform)
             .replace("$ARCH", config.arch)
+            .replace("$FILE_ABI", config.file_abi)
+            .replace("$LIB_EXT", utils.platform_libext(config))
+
+            # Vendor can be an optional part,
+            # therefore some additional tricks in the string replacement are needed here
+            .replace(".$VENDOR", "." + vendor if vendor else "")
+            .replace("-$VENDOR", "-" + vendor if vendor else "")
+            .replace("$VENDOR.", vendor + "." if vendor else "")
+            .replace("$VENDOR-", vendor + "-" if vendor else "")
+            .replace("$VENDOR", config.vendor or "")
         )
 
     @abstractmethod
