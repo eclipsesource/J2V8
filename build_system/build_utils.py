@@ -1,4 +1,5 @@
 import collections
+import glob
 import os
 import re
 import shutil
@@ -28,25 +29,16 @@ def is_macos(platform):
 def is_win32(platform):
     return c.target_win32 in platform
 
-def get_node_branch_version():
-    out = execute_to_str("git branch", "node")
+def platform_libext(config):
+    lib_ext = "so"
 
-    git_branch_lines = out.splitlines()
+    if (is_win32(config.platform)):
+        lib_ext = "dll"
 
-    branch_str = next(ifilter(lambda x: x.startswith("*"), git_branch_lines), None)
+    elif (is_macos(config.platform)):
+        lib_ext = "dylib"
 
-    print "Git active branch: " + branch_str
-
-    branch_match = re.search(r"\* \(HEAD detached at v(.*)\)", branch_str)
-
-    if (branch_match is None):
-        branch_match = re.search(r"\* \((.*)\)", branch_str)
-
-    if (branch_match is None):
-        sys.exit("ERROR: Unrecognized branch name format while running 'git branch': " + branch_str)
-
-    branch = branch_match.group(1)
-    return branch
+    return lib_ext
 
 def execute(cmd, cwd = None):
     # flush any buffered console output, because popen could block the terminal
@@ -152,6 +144,16 @@ def apply_file_template(src, dest, inject_vars_fn):
 # Sanity check for the builtin node-module links in J2V8 C++ JNI code
 #-----------------------------------------------------------------------
 def check_node_builtins():
+    node_src = "node/src/"
+
+    # node.js directory is not available
+    if (not os.path.exists(node_src)):
+        return
+
+    # building from a pre-built dependency package (does not include c++ source files)
+    if (len(glob.glob(node_src + ".cc")) == 0):
+        return
+
     j2v8_jni_cpp_path = "jni/com_eclipsesource_v8_V8Impl.cpp"
     j2v8_builtins = []
 
@@ -180,7 +182,6 @@ def check_node_builtins():
 
     j2v8_builtins = [x.group("name") for x in j2v8_builtins if not any(c in x.group(0) for c in comment_tokens)]
 
-    node_src = "node/src/"
     node_builtins = []
     for cc_file in os.listdir(node_src):
         if (not cc_file.endswith(".cc")):

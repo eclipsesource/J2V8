@@ -6,7 +6,7 @@ fs_type = ENV['VAGRANT_FILE_SHARE_TYPE'] || "virtualbox"
 
 Vagrant.configure(2) do |config|
 
-    config.vm.box = "Microsoft/EdgeOnWindows10"
+    config.vm.box = ENV['VAGRANT_SYS_IMAGE'] || "Microsoft/EdgeOnWindows10"
     config.vm.hostname = "j2v8-win32-x64"
 
     # source: https://github.com/danielmenezesbr/modernie-winrm
@@ -41,10 +41,10 @@ Vagrant.configure(2) do |config|
 
     config.vm.provision :switch_to_winrm
 
-    config.vm.provision "install-python", type:"shell", inline: "C:/J2V8/docker/win32/install.python.ps1"
-    config.vm.provision "install-vsc++", type:"shell", inline: "C:/J2V8/docker/win32/install.vscpp.ps1"
-    config.vm.provision "install-cmake", type:"shell", inline: "C:/J2V8/docker/win32/install.cmake.ps1"
-    config.vm.provision "install-jdk", type:"shell", inline: "C:/J2V8/docker/win32/install.jdk.ps1"
-    config.vm.provision "install-maven", type:"shell", inline: "C:/J2V8/docker/win32/install.maven.ps1"
+    config.vm.provision "install-python", type:"shell", inline: "C:/j2v8/docker/win32/install.python.ps1"
+    config.vm.provision "install-vsc++", type:"shell", inline: "C:/j2v8/docker/win32/install.vscpp.ps1"
+    config.vm.provision "install-cmake", type:"shell", inline: "C:/j2v8/docker/win32/install.cmake.ps1"
+    config.vm.provision "install-jdk", type:"shell", inline: "C:/j2v8/docker/win32/install.jdk.ps1"
+    config.vm.provision "install-maven", type:"shell", inline: "C:/j2v8/docker/win32/install.maven.ps1"
 
 end

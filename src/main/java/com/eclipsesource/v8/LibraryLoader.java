@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    EclipseSource - initial API and implementation
+ *    Wolfgang Steiner - code separation PlatformDetector/LibraryLoader
  ******************************************************************************/
 package com.eclipsesource.v8;
 
@@ -27,53 +28,86 @@ class LibraryLoader {
         SEPARATOR = System.getProperty("file.separator"); //$NON-NLS-1$
     }
 
-    private static String computeLibraryShortName() {
-        String base = "j2v8";
-        String osSuffix = getOS();
-        String archSuffix = getArchSuffix();
-        return base + "_" + osSuffix + "_" + archSuffix;
+    /**
+     * Returns the base-name for the native J2V8 library file.
+     * @param withLinuxVendor include/exclude the {vendor} part from the returned filename
+     * <p>NOTE: Vendors are only included for linux systems</p>
+     * @return The filename string has the following structure:
+     * <pre><code>{arch}-[vendor]-{operating_system}</pre></code>
+     */
+    public static String computeLibraryShortName(boolean withLinuxVendor) {
+        String prefix = "j2v8";
+        String vendor = withLinuxVendor && PlatformDetector.OS.isLinux() ? PlatformDetector.Vendor.getName() : null;
+        String os = PlatformDetector.OS.getName();
+        String arch = PlatformDetector.Arch.getName();
+
+        final String separator = "-";
+
+        return
+            prefix +
+            (vendor != null ? separator + vendor : "") +
+            separator + os +
+            separator + arch;
     }
 
-    private static String computeLibraryFullName() {
-        return "lib" + computeLibraryShortName() + "." + getOSFileExtension();
+    public static String computeLibraryFullName(boolean withLinuxVendor) {
+        return "lib" + computeLibraryShortName(withLinuxVendor) + "." + PlatformDetector.OS.getLibFileExtension();
     }
 
-    static void loadLibrary(final String tempDirectory) {
-        if ( isAndroid() ) {
-            System.loadLibrary("j2v8");
-            return;
-        }
-        StringBuffer message = new StringBuffer();
-        String libShortName = computeLibraryShortName();
-        String libFullName = computeLibraryFullName();
-        String ideLocation = System.getProperty("user.dir") + SEPARATOR + "jni" + SEPARATOR + computeLibraryFullName();
-
-        String path = null;
+    static boolean tryLoad(boolean withLinuxVendor, StringBuffer message) {
+        String libShortName = computeLibraryShortName(withLinuxVendor);
+        String libFullName = computeLibraryFullName(withLinuxVendor);
+        String ideLocation = System.getProperty("user.dir") + SEPARATOR + "jni" + SEPARATOR + libFullName;
 
         /* Try loading library from java library path */
         if (load(libFullName, message)) {
-            return;
+            return true;
         }
         if (load(libShortName, message)) {
-            return;
+            return true;
         }
 
         /* Try loading library from the IDE location */
         if (new File(ideLocation).exists()) {
             if (load(ideLocation, message)) {
-                return;
+                return true;
             }
         }
 
+        return false;
+    }
+
+    static void loadLibrary(final String tempDirectory) {
+        if (PlatformDetector.OS.isAndroid()) {
+            System.loadLibrary("j2v8");
+            return;
+        }
+
+        StringBuffer message = new StringBuffer();
+
+        // try loading a vendor-specific library first
+        if (tryLoad(true, message))
+            return;
+
+        // if there is no vendor-specific library, just try to load the default OS library
+        if (tryLoad(false, message))
+            return;
+
+        String path = null;
+            
         if (tempDirectory != null) {
             path = tempDirectory;
         } else {
             path = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
         }
 
-        if (extract(path + SEPARATOR + libFullName, libFullName, message)) {
+        // try extracting a vendor-specific library first
+        if (extract(path, true, message))
             return;
-        }
+
+        // if there is no vendor-specific library, just try to extract the default OS library
+        if (extract(path, false, message))
+            return;
 
         /* Failed to find the library */
         throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message.toString()); //$NON-NLS-1$
@@ -96,6 +130,11 @@ class LibraryLoader {
             message.append(DELIMITER);
         }
         return false;
+    }
+
+    static boolean extract(String libPath, boolean withLinuxVendor, StringBuffer message) {
+        String libFullName = computeLibraryFullName(withLinuxVendor);
+        return extract(libPath + SEPARATOR + libFullName, libFullName, message);
     }
 
     static boolean extract(final String fileName, final String mappedName, final StringBuffer message) {
@@ -144,7 +183,7 @@ class LibraryLoader {
     }
 
     static void chmod(final String permision, final String path) {
-        if (isWindows()) {
+        if (PlatformDetector.OS.isWindows()) {
             return;
         }
         try {
@@ -152,69 +191,4 @@ class LibraryLoader {
         } catch (Throwable e) {
         }
     }
-
-    static String getOsName() {
-        return System.getProperty("os.name") + System.getProperty("java.specification.vendor");
-    }
-
-    static boolean isWindows() {
-        return getOsName().startsWith("Windows");
-    }
-
-    static boolean isMac() {
-        return getOsName().startsWith("Mac");
-    }
-
-    static boolean isLinux() {
-        return getOsName().startsWith("Linux");
-    }
-
-    static boolean isNativeClient() {
-        return getOsName().startsWith("nacl");
-    }
-
-    static boolean isAndroid() {
-        return getOsName().contains("Android");
-    }
-
-    static String getArchSuffix() {
-        String arch = System.getProperty("os.arch");
-        if (arch.equals("i686")) {
-            return "x86";
-        } else if (arch.equals("amd64")) {
-            return "x86_64";
-        } else if (arch.equals("nacl")) {
-            return "armv7l";
-        } else if (arch.equals("aarch64")) {
-            return "armv7l";
-        }
-        return arch;
-    }
-
-    static String getOSFileExtension() {
-        if (isWindows()) {
-            return "dll";
-        } else if (isMac()) {
-            return "dylib";
-        } else if (isLinux()) {
-            return "so";
-        } else if (isNativeClient()) {
-            return "so";
-        }
-        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
-    }
-
-    static String getOS() {
-        if (isWindows()) {
-            return "win32";
-        } else if (isMac()) {
-            return "macosx";
-        } else if (isLinux() && !isAndroid()) {
-            return "linux";
-        } else if (isAndroid()) {
-            return "android";
-        }
-        throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
-    }
-
 }

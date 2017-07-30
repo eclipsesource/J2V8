@@ -17,10 +17,12 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.stanfy.spoon:spoon-gradle-plugin:1.2.2'
     }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'spoon'
 
 repositories {
     jcenter()
@@ -62,6 +64,21 @@ android {
     }
 }
 
+// see: https://github.com/square/spoon
+spoon {
+    // for debug output
+    debug = true
+
+    // To run only specified test classes
+    if (project.hasProperty('testClass')) {
+        className = project.testClass
+    }
+
+    // To run a single method in TestCase
+    if (project.hasProperty('testMethod')) {
+        methodName = project.testMethod
+    }
+}
 
 signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }

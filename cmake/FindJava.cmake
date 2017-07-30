@@ -93,4 +93,8 @@ else()
   set(Java_ROOT "$ENV{JAVA_HOME}")
 endif()
 
-message ("Java-Root: ${Java_ROOT}")
+if ("${Java_ROOT}" STREQUAL "")
+  message(FATAL_ERROR "Unable to locate Java JDK")
+endif()
+
+message ("Using Java-Root: ${Java_ROOT}")

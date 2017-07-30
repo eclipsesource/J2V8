@@ -1,3 +1,4 @@
+# source: https://github.com/docker-library/python/blob/master/2.7/windows/windowsservercore/Dockerfile
 
 $env:PYTHON_VERSION = '2.7.13';
 $env:PYTHON_RELEASE = '2.7.13';

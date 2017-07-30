@@ -26,48 +26,6 @@ include(NodeJsUtils)
 include(Policies)
 
 #-----------------------------------------------------------------------
-# BUILD PLATFORM SETUP & VARIABLES
-#-----------------------------------------------------------------------
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-#{
-    set(JAVA_PLATFORM_NAME "android")
-
-    # output library filename
-    set(J2V8_LIB_PLATFORM_NAME "android")
-    set(J2V8_LIB_PREFIX "")
-    set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
-#}
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-#{
-    set(JAVA_PLATFORM_NAME "linux")
-
-    # output library filename
-    set(J2V8_LIB_PLATFORM_NAME "linux")
-    set(J2V8_LIB_PREFIX "")
-    set(J2V8_LIB_ARCH_NAME "x86")
-#}
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-#{
-    set(JAVA_PLATFORM_NAME "darwin")
-
-    # output library filename
-    set(J2V8_LIB_PLATFORM_NAME "macosx")
-    set(J2V8_LIB_PREFIX "")
-    set(J2V8_LIB_ARCH_NAME "x86")
-#}
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-#{
-    set(JAVA_PLATFORM_NAME "win32")
-
-    # output library filename
-    set(J2V8_LIB_PLATFORM_NAME "win32")
-    set(J2V8_LIB_PREFIX "lib")
-    set(J2V8_LIB_ARCH_NAME "x86")
-#}
-endif()
-
-#-----------------------------------------------------------------------
 # DEPENDENCY SETTINGS / CMAKE OPTIONS
 #-----------------------------------------------------------------------
 
@@ -83,14 +41,104 @@ get_njs_libs(${J2V8_NODEJS_DIR} "Debug")
 get_njs_libs(${J2V8_NODEJS_DIR} "Release")
 
 # j2v8 build options
-option(J2V8_NODE_COMPATIBLE "Build the J2V8 native bridge with Node.js support enabled" ON)
+set(J2V8_TARGET_ARCH "" CACHE STRING "The target architecture for the build.")
+option(J2V8_NODE_ENABLED "Build the J2V8 native bridge with Node.js support enabled" ON)
 option(J2V8_BUILD_ONLY_DEBUG_RELEASE "Generate only Debug and Release configurations (exclude RelWithDebInfo and MinSizeRel)" ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND MSVC)
-#{
     option(J2V8_LINK_WITH_STATIC_MSVCRT "Link against the static version of the Microsoft Visual C++ Common Runtime (will link against the dynamic DLL version if this option is disabled)" ON)
+endif()
+
+#-----------------------------------------------------------------------
+# BUILD PLATFORM SETUP & VARIABLES
+#-----------------------------------------------------------------------
+
+# HINT: CMake Multiarchitecture Compilation
+# see: https://stackoverflow.com/a/5359572/425532
+
+if("${J2V8_TARGET_ARCH}" STREQUAL "")
+    message (FATAL_ERROR "J2V8_TARGET_ARCH not specified")
+endif()
+
+if(J2V8_TARGET_ARCH STREQUAL "x86_64")
+    set(J2V8_BUILD_X64 TRUE)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+#{
+    set(JAVA_PLATFORM_NAME "android")
+
+    # output library filename parts
+    set(J2V8_LIB_PREFIX "")
+    set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
+    set(J2V8_LIB_VENDOR_NAME "")
+    set(J2V8_LIB_PLATFORM_NAME "android")
+#}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#{
+    set(JAVA_PLATFORM_NAME "linux")
+
+    # output library filename parts
+    set(J2V8_LIB_PREFIX "")
+    set(J2V8_LIB_ARCH_NAME ${J2V8_TARGET_ARCH})
+    set(J2V8_LIB_VENDOR_NAME "")
+    set(J2V8_LIB_PLATFORM_NAME "linux")
+
+    if(J2V8_VENDOR)
+        set(J2V8_LIB_VENDOR_NAME "-${J2V8_VENDOR}")
+    endif()
+
+    # configure library architecture
+    if(J2V8_BUILD_X64)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64 ")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 ")
+    else()
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 ")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 ")
+    endif()
+#}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+#{
+    set(JAVA_PLATFORM_NAME "darwin")
+
+    # output library filename parts
+    set(J2V8_LIB_PREFIX "")
+    set(J2V8_LIB_ARCH_NAME ${J2V8_TARGET_ARCH})
+    set(J2V8_LIB_VENDOR_NAME "")
+    set(J2V8_LIB_PLATFORM_NAME "macosx")
+
+    # configure library architecture
+    if(J2V8_BUILD_X64)
+        set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    else()
+        set(CMAKE_OSX_ARCHITECTURES "i386")
+
+        # fix for 32-bit linking error "ld: illegal text reloc"
+        # see: https://stackoverflow.com/a/9322458/425532
+        set(CMAKE_SHARED_LINKER_FLAGS "-read_only_relocs suppress")
+    endif()
+#}
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+#{
+    set(JAVA_PLATFORM_NAME "win32")
+
+    # output library filename parts
+    set(J2V8_LIB_PREFIX "lib")
+    set(J2V8_LIB_ARCH_NAME ${J2V8_TARGET_ARCH})
+    set(J2V8_LIB_VENDOR_NAME "")
+    set(J2V8_LIB_PLATFORM_NAME "windows")
 #}
 endif()
+
+message("--------------------------------------------------")
+message("J2V8_LIB_ARCH_NAME     = ${J2V8_LIB_ARCH_NAME}")
+message("J2V8_LIB_VENDOR_NAME   = ${J2V8_LIB_VENDOR_NAME}")
+message("J2V8_LIB_PLATFORM_NAME = ${J2V8_LIB_PLATFORM_NAME}")
+message("J2V8_TARGET_ARCH       = ${J2V8_TARGET_ARCH}")
+message("J2V8_BUILD_X64         = ${J2V8_BUILD_X64}")
+message("--------------------------------------------------")
+message("J2V8_NODE_ENABLED      = ${J2V8_NODE_ENABLED}")
+message("--------------------------------------------------")
 
 #-----------------------------------------------------------------------
 # INCLUDE DIRECTORIES & SOURCE FILES
@@ -138,9 +186,7 @@ endif()
 
 # remove the MinSizeRel and RelWithDebInfo configurations
 if(J2V8_BUILD_ONLY_DEBUG_RELEASE)
-#{
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "limited configs" FORCE)
-#}
 endif()
 
 # link against the static MS C++ runtime libraries
@@ -152,10 +198,12 @@ endif()
 add_library(j2v8 SHARED ${src_files})
 
 # enable Node.js if requested by the build options above
-if(J2V8_NODE_COMPATIBLE)
-#{
+if(J2V8_NODE_ENABLED)
     set_property(TARGET j2v8 PROPERTY COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS} NODE_COMPATIBLE=1)
-#}
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND MSVC)
+    set_property(TARGET j2v8 APPEND_STRING PROPERTY LINK_FLAGS_RELEASE "/LTCG")
 endif()
 
 # build output directory
@@ -174,10 +222,5 @@ target_link_libraries(j2v8
 # OUTPUT SETTINGS & POST-BUILD
 #-----------------------------------------------------------------------
 
-# apply lib suffix if building a 64 bit target
-if(CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(J2V8_LIB_ARCH_NAME "${J2V8_LIB_ARCH_NAME}_64")
-endif()
-
 # set library output filename
-set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${J2V8_LIB_PREFIX}${PROJECT_NAME}_${J2V8_LIB_PLATFORM_NAME}_${J2V8_LIB_ARCH_NAME}")
+set_target_properties(j2v8 PROPERTIES OUTPUT_NAME "${J2V8_LIB_PREFIX}${PROJECT_NAME}${J2V8_LIB_VENDOR_NAME}-${J2V8_LIB_PLATFORM_NAME}-${J2V8_LIB_ARCH_NAME}")

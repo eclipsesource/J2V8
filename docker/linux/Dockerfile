@@ -1,4 +1,10 @@
-FROM ubuntu:xenial
+# sys_image can be overridden from the CLI
+ARG sys_image=debian:jessie
+
+FROM $sys_image
+
+# vendor can be overridden from the CLI
+ARG vendor=debian
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/
@@ -8,12 +14,12 @@ WORKDIR /temp/docker/shared/
 # since it will not requrie rebuilding all docker image layers
 # but just the ones that were affected
 
-COPY ./shared/install.debian.packages.sh /temp/docker/shared
-RUN ./install.debian.packages.sh
+COPY ./shared/install.${vendor}.packages.sh /temp/docker/shared
+RUN ./install.${vendor}.packages.sh
 
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
-ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
+# ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
 
 COPY ./shared/install.maven.sh /temp/docker/shared
 RUN ./install.maven.sh
@@ -28,4 +34,4 @@ COPY ./shared/pom.xml /temp
 WORKDIR /temp
 RUN export J2V8_PLATFORM_NAME=temp && \
     export J2V8_ARCH_NAME=temp && \
-    mvn verify -DskipTests || true
+    mvn clean verify -DskipTests || true

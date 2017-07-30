@@ -11,6 +11,8 @@
 package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 import java.lang.reflect.Field;
 import java.net.URLClassLoader;
@@ -32,6 +34,16 @@ public class V8RuntimeNotLoadedTest {
     private static final String JAVA_LIBRARY_PATH = "java.library.path";
     private String              existingLibraryPath;
 
+    /**
+     * NOTE: we need to skip these tests, because on Android the SystemClassLoader
+     * can not be cast to an URLClassLoader and some other issues (see TestClassLoader below)
+     */
+    private static boolean skipTest() {
+        return PlatformDetector.OS.isAndroid();
+    }
+
+    private final static String skipMessage = "Skipped test (not implemented for Android)";
+
     @Before
     public void before() throws Exception {
         existingLibraryPath = System.getProperty(JAVA_LIBRARY_PATH);
@@ -45,21 +57,34 @@ public class V8RuntimeNotLoadedTest {
 
     @Test
     public void testJ2V8NotEnabled() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
+
         assertFalse(V8.isLoaded());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = UnsatisfiedLinkError.class)
     public void testJ2V8CannotCreateRuntime() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
+
         String oldValue = System.getProperty("os.arch");
         System.setProperty("os.arch", "unknown");
         try {
             V8.createV8Runtime();
-        } finally {
+        }
+        catch (UnsatisfiedLinkError ex) {
+            assertEquals("Unsupported arch: unknown", ex.getMessage());
+            throw ex;
+        }
+        finally {
             System.setProperty("os.arch", oldValue);
         }
     }
 
     private static void setLibraryPath(final String path) throws Exception {
+        // we need to skip here too, because "sys_paths" also does not exist on Android
+        if (skipTest())
+            return;
+
         System.setProperty(JAVA_LIBRARY_PATH, path);
 
         // set sys_paths to null so that java.library.path will be reevalueted next time it is needed
@@ -76,6 +101,9 @@ public class V8RuntimeNotLoadedTest {
 
         private static Class<?> getFromTestClassloader(final Class<?> clazz) throws InitializationError {
             try {
+                if (skipTest())
+                    return clazz;
+
                 ClassLoader testClassLoader = new TestClassLoader();
                 return Class.forName(clazz.getName(), true, testClassLoader);
             } catch (ClassNotFoundException e) {
@@ -85,6 +113,7 @@ public class V8RuntimeNotLoadedTest {
 
         public static class TestClassLoader extends URLClassLoader {
             public TestClassLoader() {
+                // TODO: this crashes on Android (see: https://stackoverflow.com/q/31920245)
                 super(((URLClassLoader) getSystemClassLoader()).getURLs());
             }
 
