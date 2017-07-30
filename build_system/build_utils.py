@@ -9,8 +9,6 @@ from itertools import ifilter
 
 import constants as c
 
-import constants
-
 def get_cwd():
     return os.getcwd().replace("\\", "/")
 
@@ -78,7 +76,7 @@ def store_nodejs_output(next_node_tag, build_cwd):
 
     if (os.path.isdir(out_dir)):
         if (os.path.exists(curr_tag_file)):
-            with open(curr_tag_file, 'r') as f:
+            with open(curr_tag_file, "r") as f:
                 curr_node_tag = f.read()
 
     if (curr_node_tag != next_node_tag):
@@ -124,7 +122,7 @@ def store_nodejs_output(next_node_tag, build_cwd):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
             # ... and immediately also create a tag-file so we know what we built later on
-            with open(curr_tag_file, 'w') as f:
+            with open(curr_tag_file, "w") as f:
                 f.write(next_node_tag)
 
     elif (not next_node_tag is None):

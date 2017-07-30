@@ -45,9 +45,9 @@ def build_j2v8_cmake(config):
 
     # NOTE: uses Python string interpolation (see: https://stackoverflow.com/a/4450610)
     return \
-        u.shell("mkdir", u.cmake_out_dir) + \
+        u.mkdir(u.cmake_out_dir) + \
         ["cd " + u.cmake_out_dir] + \
-        u.shell("rm", "CMakeCache.txt CMakeFiles/") + \
+        u.rm("CMakeCache.txt CMakeFiles/") + \
         ["""cmake \
             -DCMAKE_BUILD_TYPE=Release \
             %(cmake_vars)s \
@@ -66,10 +66,11 @@ def build_j2v8_jni(config):
 macos_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
 #-----------------------------------------------------------------------
 def build_j2v8_java(config):
+    u.apply_maven_config_settings(config)
+
     return \
         u.clearNativeLibs(config) + \
         u.copyNativeLibs(config) + \
-        u.setBuildEnv(config) + \
         [u.build_cmd] + \
         u.copyOutput(config)
 
@@ -77,7 +78,6 @@ macos_config.build_step(c.build_j2v8_java, build_j2v8_java)
 #-----------------------------------------------------------------------
 def build_j2v8_junit(config):
     return \
-        u.setBuildEnv(config) + \
         [u.run_tests_cmd]
 
 macos_config.build_step(c.build_j2v8_junit, build_j2v8_junit)

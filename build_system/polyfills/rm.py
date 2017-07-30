@@ -1,8 +1,9 @@
+"""
+This is a basic cross-platform polyfill for the "rm" shell command
+"""
 import os
 import sys
 import shutil
-
-# this is a cross-platform polyfill for "rm"
 
 items = sys.argv[1:]
 

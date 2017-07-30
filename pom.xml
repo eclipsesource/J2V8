@@ -1,19 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<os>${env.J2V8_PLATFORM_NAME}</os>
+	<os>alpine-linux</os>
   <ws>gtk</ws>
-	<arch>${env.J2V8_ARCH_NAME}</arch>
+	<arch>x86_64</arch>
   </properties>
 
   <groupId>com.eclipsesource.j2v8</groupId>
-  <artifactId>j2v8_${os}_${arch}</artifactId>
-  <version>${env.J2V8_FULL_VERSION}</version>
+  <artifactId>j2v8_alpine-linux_x86_64</artifactId>
+  <version>4.8.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
-  <name>j2v8_${os}_${arch}</name>
+  <name>j2v8_alpine-linux_x86_64</name>
   <description>J2V8 is a set of Java bindings for V8</description>
   <url>https://github.com/eclipsesource/j2v8</url>
   <licenses>

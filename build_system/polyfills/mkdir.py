@@ -1,7 +1,8 @@
+"""
+This is a basic cross-platform polyfill for the "mkdir -p" shell command
+"""
 import os
 import sys
-
-# this is a cross-platform polyfill for "mkdir -p"
 
 directory = sys.argv[1]
 
