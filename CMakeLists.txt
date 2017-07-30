@@ -15,11 +15,8 @@ endif()
 cmake_minimum_required(VERSION 3.6)
 project(j2v8)
 
-# adding cmake directory for includes
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 # set up the module path
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(BuildUtils)
 include(NodeJsUtils)

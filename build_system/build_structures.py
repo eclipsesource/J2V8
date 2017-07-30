@@ -5,6 +5,7 @@ import sys
 from shutil import copy2
 import build_settings as s
 import build_utils as utils
+import shared_build_steps as sbs
 
 class PlatformConfig():
     def __init__(self, name, architectures):
@@ -62,11 +63,13 @@ class BuildSystem:
         # clean previous build outputs
         self.clean(config)
 
-        # copy the maven  & gradle config file to the docker shared directory
-        # this allows to pre-fetch most of the maven dependencies before the actual build (e.g. into docker images)
-        copy2("pom.xml", "./docker/shared")
+        # copy the maven / gradle config files to the docker shared directory
+        # this allows Dockerfiles to pre-fetch most of the maven / gradle dependencies before the actual build
+        # and store downloaded maven / gradle dependencies inside the generated docker images (results in faster builds)
         copy2("build.gradle", "./docker/shared")
         copy2("src/main/AndroidManifest.xml", "./docker/android/AndroidManifest.xml")
+        # use the original pom.xml, but with dummy constant values, this avoids unnecessary rebuilding of docker images
+        sbs.apply_maven_null_settings(target_pom_path="./docker/shared/pom.xml")
 
         # execute all the build stages
         self.pre_build(config)
@@ -116,7 +119,7 @@ class BuildSystem:
             .replace("-$VENDOR", "-" + vendor if vendor else "")
             .replace("$VENDOR.", vendor + "." if vendor else "")
             .replace("$VENDOR-", vendor + "-" if vendor else "")
-            .replace("$VENDOR", config.vendor or "")
+            .replace("$VENDOR", vendor or "")
         )
 
     @abstractmethod
