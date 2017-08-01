@@ -1,14 +1,43 @@
+"""
+Utility script to manage the Node.js dependency
+"""
 import argparse
 import collections
+import fnmatch
 import glob
+import io
 import os
 import sys
 import tarfile
 import zipfile
 
 import build_system.constants as c
+import build_system.build_constants as bc
 import build_system.build_utils as utils
 import build_system.build_settings as settings
+
+# helper classes to show zipping progress
+# original idea: https://stackoverflow.com/a/3668977/425532
+class ReadProgressFileObject(io.FileIO):
+    current_read = 0
+    def __init__(self, path, *args, **kwargs):
+        io.FileIO.__init__(self, path, *args, **kwargs)
+
+    def read(self, size):
+        b = io.FileIO.read(self, size)
+        ReadProgressFileObject.current_read += len(b)
+        return b
+
+class WriteProgressFileObject(io.FileIO):
+    def __init__(self, path, size, *args, **kwargs):
+        self._total_size = size
+        io.FileIO.__init__(self, path, *args, **kwargs)
+
+    def write(self, b):
+        progress = min(100.0, ReadProgressFileObject.current_read / (self._total_size * 0.01))
+        sys.stdout.write("\r[%3.2f%%] " %(progress))
+        sys.stdout.flush()
+        return io.FileIO.write(self, b)
 
 Command = collections.namedtuple("Command", "aliases function")
 DepsDirectory = collections.namedtuple("DepsDirectory", "path include")
@@ -61,51 +90,59 @@ def package():
     platforms = sys.argv[2:]
     full = len(platforms) == 0
 
-    print platforms
-    return
-
     # make sure all node.js binaries are stored in the cache before packaging
     flush_cache(True)
 
     # C++ header files
-    included_paths = [
-        DepsDirectory(path="./node/deps/", include=[".h"]),
-        DepsDirectory(path="./node/src/", include=[".h"]),
-    ]
+    # NOTE: see https://stackoverflow.com/a/4851555/425532 why this weird syntax is necessary here
+    dependencies = {
+        "list": [
+            DepsDirectory(path="./node/deps/", include=[".h"]),
+            DepsDirectory(path="./node/src/", include=[".h"]),
+        ],
+        "size": 0,
+    }
 
-    # Android
-    if (full or c.target_android in platforms):
-        included_paths += [
-            DepsDirectory(path="./node.out/android.arm/", include=["j2v8.node.out", ".o", ".a"]),
-            DepsDirectory(path="./node.out/android.x86/", include=["j2v8.node.out", ".o", ".a"]),
-        ]
+    def __add_platform_deps(platform, include, vendor = None):
+        target = bc.platform_targets.get(platform)
+        vendor_str = (vendor + "-" if vendor else "")
+        selected = (vendor_str + platform) in platforms
 
-    # Linux
-    if (full or c.target_linux in platforms):
-        included_paths += [
-            DepsDirectory(path="./node.out/linux.x64/", include=["j2v8.node.out", ".o", ".a"]),
-            DepsDirectory(path="./node.out/linux.x86/", include=["j2v8.node.out", ".o", ".a"]),
-        ]
+        if (full or selected):
+            dependencies["list"] += [
+                DepsDirectory(
+                    path="./node.out/" + vendor_str + platform + "." + arch + "/",
+                    include=["j2v8.node.out"] + include
+                ) for arch in target.architectures
+            ]
 
-    # MacOSX
-    if (full or c.target_macos in platforms):
-        included_paths += [
-            DepsDirectory(path="./node.out/macos.x64/", include=["j2v8.node.out", ".a"]),
-            DepsDirectory(path="./node.out/macos.x86/", include=["j2v8.node.out", ".a"]),
-        ]
+    # speciffy the platforms & file patterns that should be included
+    __add_platform_deps(c.target_android, [".o", ".a"])
+    __add_platform_deps(c.target_linux, [".o", ".a"])
+    __add_platform_deps(c.target_linux, [".o", ".a"], vendor = c.vendor_alpine)
+    __add_platform_deps(c.target_macos, [".a"])
+    __add_platform_deps(c.target_win32, [".lib"])
 
-    # Windows
-    if (full or c.target_win32 in platforms):
-        included_paths += [
-            DepsDirectory(path="./node.out/win32.x64/", include=["j2v8.node.out", ".lib"]),
-            DepsDirectory(path="./node.out/win32.x86/", include=["j2v8.node.out", ".lib"]),
-        ]
+    # could be a package for an individual platform, or a complete package
+    package_platform = platforms[0] + "-" if len(platforms) == 1 else ""
+    package_filename = "j2v8-nodejs-deps-" + package_platform + settings.J2V8_VERSION + ".tar.bz2"
 
-    with tarfile.open("j2v8-nodejs-deps-" + settings.J2V8_VERSION + ".tar.bz2", "w:bz2") as zipf:
+    # determine the uncompressed total size of all included files
+    for dep in dependencies["list"]:
+        print "scan " + dep.path
+        for root, dirs, filenames in os.walk(dep.path):
+            for pattern in dep.include:
+                for file_name in fnmatch.filter(filenames, '*' + pattern):
+                    file_path = os.path.join(root, file_name)
+                    dependencies["size"] += os.path.getsize(file_path)
+
+    # start zipping the package
+    with tarfile.open(fileobj=WriteProgressFileObject(package_filename, dependencies["size"], "w"), mode="w:bz2") as zipf:
+    # with tarfile.open(package_filename, "w:bz2") as zipf:
     # with zipfile.ZipFile("j2v8-nodejs-deps-" + settings.J2V8_VERSION + ".zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-        for curr_p in included_paths:
-            print "zipping " + curr_p.path
-            dir_path = os.path.normpath(curr_p.path)
+        for dep in dependencies["list"]:
+            print "compress " + dep.path
+            dir_path = os.path.normpath(dep.path)
 
             for root, dirs, files in os.walk(dir_path):
                 for f in files:
@@ -113,19 +150,23 @@ def package():
 
                     copy_file = False
 
-                    for pattern in curr_p.include:
+                    for pattern in dep.include:
                         if (file_path.endswith(pattern)):
                             copy_file = True
                             break
 
                     if (copy_file):
-                        if (os.stat(file_path).st_size > 1024 * 1024):
+                        # only show files > 1 MB
+                        if (os.path.getsize(file_path) > 1024 * 1024):
                             print file_path
 
                         # zipf.write(file_path)
-                        zipf.add(file_path)
+                        # zipf.add(file_path)
+                        info = zipf.gettarinfo(file_path)
+                        zipf.addfile(info, ReadProgressFileObject(file_path))
 
     print "Done"
+    print "generated: " + package_filename
 
 cmd_package = Command(
     aliases=["package", "pkg"],
@@ -180,6 +221,10 @@ parser.add_argument("cmd",
                     nargs=1,
                     type=str,
                     choices=[cmd for commands in all_cmds for cmd in commands.aliases])
+
+parser.add_argument("rest",
+                    nargs="*",
+                    help=argparse.SUPPRESS)
 
 args = parser.parse_args()
 
