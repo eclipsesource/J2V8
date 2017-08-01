@@ -1,7 +1,6 @@
 """
 This script should be invoked directly via the CLI to start a J2V8 build
 """
-
 import sys
 
 import build_system.cli as cli
