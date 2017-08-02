@@ -93,6 +93,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 ")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 ")
     endif()
+
+    # -lrt ... see: https://github.com/eclipsesource/J2V8/issues/292
+    set (j2v8_Debug_libs "-lrt")
+    set (j2v8_Release_libs"-lrt")
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #{
@@ -211,8 +215,8 @@ include_directories(${include_dirs})
 
 # link the necessary libraries
 target_link_libraries(j2v8
-    debug "${njs_Debug_libs}"
-    optimized "${njs_Release_libs}"
+    debug "${njs_Debug_libs}" "${j2v8_Debug_libs}"
+    optimized "${njs_Release_libs}" "${j2v8_Release_libs}"
 )
 
 #-----------------------------------------------------------------------
