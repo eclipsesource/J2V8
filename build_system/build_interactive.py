@@ -1,3 +1,4 @@
+"""Provides a simple interactive CLI to start a selected build from a given set of build-configurations"""
 import sys
 
 import build_configs as bcfg

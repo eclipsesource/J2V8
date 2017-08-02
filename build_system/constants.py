@@ -1,3 +1,5 @@
+"""Commonly used string constants (platforms, architectures, vendors, build-steps)"""
+
 # target platforms
 target_android = 'android'
 target_linux = 'linux'

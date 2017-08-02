@@ -1,3 +1,7 @@
+"""
+A collection of commands, variables and functions that are very likely to be
+reused between target-platform configurations or build-steps on the same platform.
+"""
 import glob
 import os
 import sys
@@ -75,6 +79,10 @@ def rm(args):
     return shell("rm", args)
 
 def clearNativeLibs(config):
+    """
+    Delete previously built native J2V8 libraries from any platforms
+    (can be disabled by the "keep_native_libs" config property)
+    """
     # the CLI can override this step
     if (config.keep_native_libs):
         print("Native libraries not cleared...")
@@ -91,6 +99,10 @@ def clearNativeLibs(config):
     return rm_libs
 
 def copyNativeLibs(config):
+    """
+    Copy the compiled native J2V8 library (.dll/.dylib/.so) into the Java resources tree
+    for inclusion into the later built Java JAR.
+    """
     platform_cmake_out = config.inject_env(cmake_out_dir)
 
     if (utils.is_win32(config.platform)):
@@ -121,6 +133,7 @@ def copyNativeLibs(config):
     return copy_cmds
 
 def apply_maven_null_settings(src_pom_path = "./pom.xml", target_pom_path = None):
+    """Copy the Maven pom.xml from src to target, while replacing the necessary XML element values with fixed dummy parameter values"""
     maven_settings = {
         "properties": {
             "os": "undefined",
@@ -134,6 +147,7 @@ def apply_maven_null_settings(src_pom_path = "./pom.xml", target_pom_path = None
     apply_maven_settings(maven_settings, src_pom_path, target_pom_path)
 
 def apply_maven_config_settings(config, src_pom_path = "./pom.xml", target_pom_path = None):
+    """Copy the Maven pom.xml from src to target, while replacing the necessary XML element values based on the given build-step config"""
     os = config.inject_env("$VENDOR-$PLATFORM")
     arch = config.file_abi
     version = s.J2V8_FULL_VERSION
@@ -152,6 +166,10 @@ def apply_maven_config_settings(config, src_pom_path = "./pom.xml", target_pom_p
     apply_maven_settings(maven_settings, src_pom_path, target_pom_path)
 
 def apply_maven_settings(settings, src_pom_path = "./pom.xml", target_pom_path = None):
+    """
+    Copy the Maven pom.xml from src to target, while replacing the XML element values
+    based on the values from the hierarchical settings dictionary structure
+    """
     #-----------------------------------------------------------------------
     pom_ns = "http://maven.apache.org/POM/4.0.0"
     ns = {"pom": pom_ns}

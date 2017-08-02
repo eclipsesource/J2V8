@@ -6,53 +6,70 @@ import build_constants as bc
 import constants as c
 import build_utils as utils
 from shell_build import ShellBuildSystem
-
 import immutable
 
+# collection of all parsed build-steps that will then be passed on to the core build function
+# (this list must only contain atomic steps after all step evaluations are finished)
 parsed_steps = set()
 
-step_handlers = {}
+# a registry/dictionary of evaluation-functions that translate from their corresponding step/alias
+# into the list of atomic build-steps (see parsed_steps above)
+step_evaluators = {}
+
+#-----------------------------------------------------------------------
+# Advanced build-step parsing (anti-steps, multi-steps)
+#-----------------------------------------------------------------------
 
 def atomic_step(step, alias = None):
+    """
+    Atomic build-steps are just directly forwarded to the build-executor.
+    This function will also automatically add an additional anti-step with a "~" prefix.
+    """
     if (alias is None):
         alias = step
 
-    # handle anti-step
-    step_handlers[alias] = lambda: parsed_steps.add(step)
+    # add step handler (step => step)
+    step_evaluators[alias] = lambda: parsed_steps.add(step)
 
-    # handle anti-step
-    step_handlers["~" + alias] = lambda: parsed_steps.discard(step)
+    # add anti-step handler (step => ~step)
+    step_evaluators["~" + alias] = lambda: parsed_steps.discard(step)
 
-    # register anti-step in CLI
+    # register additional anti-step in CLI
     bc.avail_build_steps.append("~" + alias)
 
 def multi_step(alias, include, exclude = []):
-    # handle step
-    step_handlers[alias] = lambda: \
-        [step_handlers.get(s)() for s in include] + \
-        [step_handlers.get("~" + s)() for s in exclude]
+    """
+    Forwards a collection/sequence of build-steps to the build-executor when
+    the defined step alias name was detected. Also the inverted anti-steps sequence
+    will be evaluated if the "~" prefixed alias is recognized.
+    """
+    # add aliased step-sequence (alias => step1, step2, ... , stepN)
+    step_evaluators[alias] = lambda: \
+        [step_evaluators.get(s)() for s in include] + \
+        [step_evaluators.get("~" + s)() for s in exclude]
 
-    # handle anti-step
-    step_handlers["~" + alias] = lambda: \
-        [step_handlers.get("~" + s)() for s in include] + \
-        [step_handlers.get(s)() for s in exclude]
+    # add aliased anti-step-sequence (~alias => ~step1, ~step2, ... , ~stepN)
+    step_evaluators["~" + alias] = lambda: \
+        [step_evaluators.get("~" + s)() for s in include] + \
+        [step_evaluators.get(s)() for s in exclude]
 
-    # register anti-step in CLI
+    # register additional anti-step in CLI
     bc.avail_build_steps.append("~" + alias)
 
 def init_buildsteps():
-    # special alias to include all build steps into one
-    multi_step(c.build_all, bc.build_step_sequence)
+    """Setup of all available build-step atomics & combinations"""
+    # special alias to group all build steps into a single one
+    multi_step(c.build_all, bc.atomic_build_step_sequence)
 
     # atomic steps
-    for step in list(bc.build_step_sequence):
+    for step in list(bc.atomic_build_step_sequence):
         atomic_step(step)
 
     # atomic aliases
     atomic_step(c.build_j2v8_java, c.build_java)
     atomic_step(c.build_j2v8_junit, c.build_test)
 
-    # composite alias: build only the native parts (including nodejs)
+    # multi-step alias: build only the native parts (includes nodejs)
     multi_step(c.build_native, [
         c.build_node_js,
         c.build_j2v8_cmake,
@@ -60,24 +77,41 @@ def init_buildsteps():
         c.build_j2v8_optimize,
     ])
 
-    # composite alias: build everything except nodejs
-    multi_step(c.build_j2v8, [c.build_all], [c.build_node_js])
+    # multi-step alias: build everything that belongs to J2V8 (excludes Node.js)
+    # this is useful when building J2V8 with a pre-compiled Node.js dependency package
+    multi_step(c.build_j2v8, [c.build_all], [c.build_node_js, c.build_j2v8_junit])
 
-def handle_build_step_option(step):
-    return step_handlers.get(step, raise_unhandled_option(step))
+def evaluate_build_step_option(step):
+    """Find the registered evaluator function for the given step and execute it"""
+    step_eval_func = step_evaluators.get(step, raise_unhandled_option(step))
+    step_eval_func()
 
 def raise_unhandled_option(step):
     return lambda: sys.exit("INTERNAL-ERROR: Tried to handle unrecognized build-step \"" + step + "\"")
 
-# initialize the advanced parsing mechanisms for the build CLI
+# initialize the advanced parsing evaluation handlers for the build.py CLI
 init_buildsteps()
 
 #-----------------------------------------------------------------------
 # Build execution core function
 #-----------------------------------------------------------------------
 def execute_build(params):
+    """
+    Receives an params-object with all the necessary build-settings to start
+    building the J2V8 artifacts. There are two paths internally that this function will take:
 
-    # if (type(params) is dict):
+    A) Run the build in the same OS shell environment that the build.py command was started from.
+    This means you have to make sure all the necessary build utensils are installed on your system.
+    To find out what is needed to build on a particular platform you can have a look in the "docker"
+    and "vagrant" directories, they contain shell scripts that show how to install all the things
+    you need if you would want to set up a build environment manually on your machine.
+
+    B) Use virtualization technologies to run a sandboxed build-environment that does not rely
+    on your machine having installed any of the required build-tools natively. This also allows
+    to cross-compile mostly all supported platforms independently of the host operating system that
+    you are running on your machine (only Docker and/or Vagrant are required to run this).
+    """
+    # convert from a dictionary form to the normalized params-object form
     if (isinstance(params, dict)):
         params = cli.BuildParams(params)
 
@@ -87,23 +121,20 @@ def execute_build(params):
     if (params.docker and params.vagrant):
         sys.exit("ERROR: Choose either Docker or Vagrant for the build, can not use both")
 
-    # this defines the target platform / operating system the build should be run for
-    build_target = bc.platform_targets.get(params.target)
-
     target = params.target
-    cross_id = "docker" if params.docker else "vagrant" if params.vagrant else None
 
-    if (not target in bc.platform_targets):
+    if (not target in bc.platform_configs):
         sys.exit("ERROR: Unrecognized target platform: " + target)
 
-    build_target = bc.platform_targets.get(target)
+    # this defines the PlatformConfig / operating system the build should be run for
+    target_platform = bc.platform_configs.get(target)
 
     if (params.arch is None):
         sys.exit("ERROR: No target architecture specified")
 
-    build_architectures = build_target.architectures
+    avail_architectures = target_platform.architectures
 
-    if (not params.arch in build_architectures):
+    if (not params.arch in avail_architectures):
         sys.exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + target)
 
     if (params.buildsteps is None):
@@ -115,27 +146,31 @@ def execute_build(params):
     global parsed_steps
     parsed_steps.clear()
 
+    # go through the raw list of build-steps (given by the CLI or an API call)
+    # and generate a list of only the atomic build-steps that were derived in the evaluation
     for step in params.buildsteps:
-        handle_build_step_option(step)()
+        evaluate_build_step_option(step)
 
-    # force build-steps into defined order (see: http://stackoverflow.com/a/23529016)
-    parsed_steps = [step for step in bc.build_step_sequence if step in parsed_steps]
+    # force build-steps into their pre-defined order (see: http://stackoverflow.com/a/23529016)
+    parsed_steps = [step for step in bc.atomic_build_step_sequence if step in parsed_steps]
 
     if (len(parsed_steps) == 0):
         sys.exit("WARNING: No build-steps to be done ... exiting")
 
-    platform_steps = build_target.steps
-    cross_configs = build_target.cross_configs
-
     build_cwd = utils.get_cwd()
 
     cross_cfg = None
+    cross_configs = target_platform.cross_configs
 
-    if (cross_id):
-        if (cross_configs.get(cross_id) is None):
-            sys.exit("ERROR: target '" + target + "' does not have a recognized cross-compile host: '" + cross_id + "'")
+    cross_sys = "docker" if params.docker else "vagrant" if params.vagrant else None
+
+    # if a recognized cross-compile option was specified by the params
+    # try to find the configuration parameters to run the cross-compiler
+    if (cross_sys):
+        if (cross_configs.get(cross_sys) is None):
+            sys.exit("ERROR: target '" + target + "' does not have a recognized cross-compile host: '" + cross_sys + "'")
         else:
-            cross_cfg = cross_configs.get(cross_id)
+            cross_cfg = cross_configs.get(cross_sys)
 
     # if we are the build-instigator (not a cross-compile build-agent) we directly run some initial checks & setups for the build
     if (not params.cross_agent):
@@ -146,48 +181,49 @@ def execute_build(params):
         curr_node_tag = (params.vendor + "-" if params.vendor else "") + target + "." + params.arch
         utils.store_nodejs_output(curr_node_tag, build_cwd)
 
-    def execute_build_step(compiler_inst, build_step):
-        """Executes an immutable copy of the given build-step configuration"""
+    def execute_build_step(build_system, build_step):
+        """Creates an immutable copy of a single BuildStep configuration and executes it in the build-system"""
         # from this point on, make the build-input immutable to ensure consistency across the whole build process
         # any actions during the build-step should only be made based on the initial set of variables & conditions
-        # NOTE: this restriction makes it much more easy to reason about the build-process as a whole
+        # NOTE: this restriction makes it much more easy to reason about the build-process as a whole (see "unidirectional data flow")
         build_step = immutable.freeze(build_step)
-        compiler_inst.build(build_step)
+        build_system.build(build_step)
 
-    # a cross-compile was requested, we just launch the build-environment and then delegate the requested build-process to the cross-compile environment
+    # a cross-compile was requested, we just launch the virtualization-environment and then delegate
+    # the originally requested build parameters to the cross-compile environment then running the build.py CLI
     if (cross_cfg):
-        cross_compiler = build_target.cross_compiler(cross_id)
+        cross_compiler = target_platform.cross_compiler(cross_sys)
 
-        # prepare additional parameters/utils for the build and put them into the build-step config
-
+        # invoke the build.py CLI within the virtualized / self-contained build-system provider
         cross_cfg.custom_cmd = "python ./build.py " + \
-            "--cross-agent " + cross_id + \
+            "--cross-agent " + cross_sys + \
             " -t $PLATFORM -a $ARCH " + \
             (" -ne" if params.node_enabled else "") + \
             (" -v " + params.vendor if params.vendor else "") + \
             (" -knl " if params.keep_native_libs else "") + \
             " " + " ".join(parsed_steps)
 
-        # meta-vars & util functions
+        # apply meta-vars & util functions
         cross_cfg.compiler = cross_compiler
         cross_cfg.inject_env = lambda s: cross_compiler.inject_env(s, cross_cfg)
-        cross_cfg.target = build_target
+        cross_cfg.target = target_platform
 
-        # build params
+        # apply essential build params
         cross_cfg.arch = params.arch
-        cross_cfg.file_abi = build_target.file_abi(params.arch)
+        cross_cfg.file_abi = target_platform.file_abi(params.arch)
         cross_cfg.no_shutdown = params.no_shutdown
         cross_cfg.sys_image = params.sys_image
         cross_cfg.vendor = params.vendor
         cross_cfg.docker = params.docker
         cross_cfg.vagrant = params.vagrant
 
+        # start the cross-compile
         execute_build_step(cross_compiler, cross_cfg)
 
-    # run the requested build-steps with the given parameters to produce the build-artifacts
+    # run the requested build-steps & parameters in the current shell environment
     else:
         target_compiler = ShellBuildSystem()
-        target_steps = dict(platform_steps)
+        build_steps = dict(target_platform.steps)
 
         # this is a build-agent for a cross-compile
         if (params.cross_agent):
@@ -199,25 +235,23 @@ def execute_build(params):
 
             build_cwd = cross_cfg.build_cwd
 
-        # execute all requested build steps
+        # execute all steps from a list that parsed / evaluated before (see the "build-step parsing" section above)
         for step in parsed_steps:
-            if (not step in target_steps):
+            if (not step in build_steps):
                 print("INFO: skipping build step \"" + step + "\" (not configured and/or supported for platform \"" + params.target + "\")")
                 continue
 
-            target_step = target_steps[step]
+            target_step = build_steps[step]
 
-            # prepare additional parameters/utils for the build and put them into the build-step config
-
-            # meta-vars & util functions
+            # apply meta-vars & util functions
             target_step.cross_agent = params.cross_agent
             target_step.compiler = target_compiler
-            target_step.inject_env = lambda s: target_compiler.inject_env(s, target_steps[step])
-            target_step.target = build_target
+            target_step.inject_env = lambda s: target_compiler.inject_env(s, build_steps[step])
+            target_step.target = target_platform
 
-            # build params
+            # apply essential build params
             target_step.arch = params.arch
-            target_step.file_abi = build_target.file_abi(params.arch)
+            target_step.file_abi = target_platform.file_abi(params.arch)
             target_step.node_enabled = params.node_enabled
             target_step.build_cwd = build_cwd
             target_step.vendor = params.vendor
@@ -225,4 +259,5 @@ def execute_build(params):
             target_step.vagrant = params.vagrant
             target_step.keep_native_libs = params.keep_native_libs
 
+            # run the current BuildStep
             execute_build_step(target_compiler, target_step)
