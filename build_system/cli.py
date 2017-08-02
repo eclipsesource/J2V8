@@ -4,6 +4,7 @@ import constants as c
 import build_constants as bc
 
 class BuildParams(object):
+    """Value container for all build-parameters"""
     def __init__(self, d):
         self.target = d.get("target")
         self.arch = d.get("arch")
@@ -19,6 +20,8 @@ class BuildParams(object):
         self.cross_agent = None
 
 def init_args(parser):
+    """Initialize all supported build.py parameters and commands on the CLI parser"""
+
     # Essential build settings
     parser.add_argument("--target", "-t",
                         help="The build target platform name (must be a valid platform string identifier).",
@@ -38,7 +41,7 @@ def init_args(parser):
                         dest="vendor")
 
     parser.add_argument("--keep-native-libs", "-knl",
-                        help="Do not delete the native libraries from the Java directories between builds.",
+                        help="Do not delete the native J2V8 libraries from the Java directories between builds.",
                         dest="keep_native_libs",
                         default=False,
                         action="store_const",
@@ -54,14 +57,14 @@ def init_args(parser):
 
     # Docker / Vagrant cross-compile settings
     parser.add_argument("--docker", "-dkr",
-                        help="Run a cross-compile build in a Docker container (all required build-tools are then fully contained & virtualized).",
+                        help="Run a cross-compile environment in a Docker container (all required build-tools are then fully contained & virtualized).",
                         dest="docker",
                         default=False,
                         action="store_const",
                         const=True)
 
     parser.add_argument("--vagrant", "-vgr",
-                        help="Run a cross-compile build in a Vagrant virtual machine (all required build-tools are then fully contained & virtualized).",
+                        help="Run a cross-compile environment in a Vagrant virtual machine (all required build-tools are then fully contained & virtualized).",
                         dest="vagrant",
                         default=False,
                         action="store_const",
@@ -72,7 +75,7 @@ def init_args(parser):
                         dest="sys_image")
 
     parser.add_argument("--no-shutdown", "-nos",
-                        help="When using a cross-compile environment, do not shutdown any of the components when the build is finished or canceled.",
+                        help="When using a cross-compile environment, do not shutdown the virtualized environment when the build is finished or canceled.",
                         dest="no_shutdown",
                         action="store_const",
                         const=True)
@@ -97,16 +100,17 @@ def init_args(parser):
                             "(the order of the steps given to the CLI does not matter, the correct order will be restored internally).\n\n" +
                             "the fundamental build steps (in order):\n" +
                             "---------------------------------------\n" +
-                            "\n".join(bc.build_step_sequence) + "\n\n" +
+                            "\n".join([s.id + s.help for s in bc.atomic_build_steps]) + "\n\n" +
                             "aliases / combinations of multiple of the above steps:\n" +
                             "------------------------------------------------------\n" +
-                            "\n".join(bc.composite_steps),
+                            "\n".join([s.id + s.help for s in bc.advanced_steps]),
                         metavar="build-steps",
                         nargs="*",
                         default="all",
                         choices=bc.avail_build_steps)
 
 def get_parser():
+    """Get a CLI parser instance that accepts all supported build.py parameters and commands"""
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     init_args(parser)
     return parser

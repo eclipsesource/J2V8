@@ -39,6 +39,10 @@ def platform_libext(config):
     return lib_ext
 
 def execute(cmd, cwd = None):
+    """
+    Low-Level CLI utility function to execute a shell command in a sub-process of the current python process
+    (redirects all output to stdout)
+    """
     # flush any buffered console output, because popen could block the terminal
     sys.stdout.flush()
 
@@ -48,6 +52,10 @@ def execute(cmd, cwd = None):
         raise subprocess.CalledProcessError(return_code, cmd)
 
 def execute_to_str(cmd, cwd = None):
+    """
+    Low-Level CLI utility function to execute a shell command in a sub-process of the current python process
+    (returns all output as a string)
+    """
     # flush any buffered console output, because popen could block the terminal
     sys.stdout.flush()
 
@@ -60,6 +68,7 @@ def execute_to_str(cmd, cwd = None):
     return out
 
 def store_nodejs_output(next_node_tag, build_cwd):
+    """Cache built Node.js artifacts into a common directory structure, identified by vendor, platform and architecture."""
     curr_node_tag = None
 
     curr_dir = lambda subdir: build_cwd + "/node/" + subdir
@@ -88,11 +97,11 @@ def store_nodejs_output(next_node_tag, build_cwd):
                 node = curr_dir(subdir)
 
                 # we want to store into the cache, delete any existing directories that might
-                # already occupy the cache (there should not be one)
+                # already occupy the cache subdir (there should be none)
                 if (os.path.isdir(curr_cache)):
                     shutil.rmtree(curr_cache)
 
-                # move the previous build artifacts into the cache
+                # move the previously built artifacts into the cache
                 if (os.path.isdir(node)):
                     print "node --- " + subdir + " ---> cache[" + curr_node_tag + "]"
                     shutil.move(node, curr_cache)
@@ -103,11 +112,12 @@ def store_nodejs_output(next_node_tag, build_cwd):
         next_dir = cached_dir(next_node_tag, "out")
 
         if (os.path.isdir(next_dir)):
-            print ">>> Reused Node.js build files from previous build: " + next_node_tag
+            print ">>> Reused Node.js build files from build-cache: " + next_node_tag
             print "node <--- out --- cache[" + next_node_tag + "]"
+            # move main node.js "out" directory from the cache back into the node directory
             shutil.move(next_dir, out_dir)
 
-            # move extra dirs from cache into node
+            # also move any extra dirs from the cache back into node
             for subdir in extra_dirs:
                 node = curr_dir(subdir)
                 next_cache = cached_dir(next_node_tag, subdir)
@@ -116,19 +126,22 @@ def store_nodejs_output(next_node_tag, build_cwd):
                     print "node <--- " + subdir + " --- cache[" + next_node_tag + "]"
                     shutil.move(next_cache, node)
         else:
-            print ">>> Prepared Node.js output for caching: " + next_node_tag
+            print ">>> Prepared Node.js build-cache: " + next_node_tag
 
-            # create fresh out-dir to receive build artifacts ...
+            # create fresh out-dir in the cache to receive build artifacts ...
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
+
             # ... and immediately also create a tag-file so we know what we built later on
             with open(curr_tag_file, "w") as f:
                 f.write(next_node_tag)
 
     elif (not next_node_tag is None):
-        print ">>> Used existing Node.js build files: " + next_node_tag
+        # this build is for the same vendor/platform/architecture as last time
+        print ">>> Node.js build-cache used: " + next_node_tag
 
 def apply_file_template(src, dest, inject_vars_fn):
+    """Read a text file from src, run the read text through a transformer function and write the modified text into dest"""
     template_text = None
     with open(src, "r") as f:
         template_text = f.read()
@@ -142,6 +155,11 @@ def apply_file_template(src, dest, inject_vars_fn):
 # Sanity check for the builtin node-module links in J2V8 C++ JNI code
 #-----------------------------------------------------------------------
 def check_node_builtins():
+    """
+    The function compares the list of builtin Node.js modules with the setup
+    code in jni/com_eclipsesource_v8_V8Impl.cpp to make sure that every module
+    is correctly initialized and linked into the native J2V8 library.
+    """
     node_src = "node/src/"
 
     # node.js directory is not available

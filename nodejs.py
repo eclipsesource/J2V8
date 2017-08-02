@@ -1,5 +1,5 @@
 """
-Utility script to manage the Node.js dependency
+Utility-belt script to manage the Node.js dependency
 """
 import argparse
 import collections
@@ -104,7 +104,7 @@ def package():
     }
 
     def __add_platform_deps(platform, include, vendor = None):
-        target = bc.platform_targets.get(platform)
+        target = bc.platform_configs.get(platform)
         vendor_str = (vendor + "-" if vendor else "")
         selected = (vendor_str + platform) in platforms
 

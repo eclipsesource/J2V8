@@ -1,7 +1,7 @@
 """
 The values specified here will be used as the single source of truth for
-version strings and other global build variables that should be used in
-the build scrips (build.py) or the Node.js utility scripts (nodejs.py)
+version strings and other globally shared build variables that should be
+used in the build-process (build.py) or the Node.js utility scripts (nodejs.py)
 """
 #-----------------------------------------------------------------------
 # Node.js settings

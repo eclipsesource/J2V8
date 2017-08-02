@@ -1,3 +1,42 @@
+# Build-System CLI
+
+## Non-interactive
+```
+python build.py -h, --help
+
+usage: build.py [-h] --target {android,linux,macos,win32} --arch {x86,x64,arm}
+                [--vendor VENDOR] [--keep-native-libs] [--node-enabled]
+                [--docker] [--vagrant] [--sys-image SYS_IMAGE] [--no-shutdown]
+                [--interactive]
+                [build-steps [build-steps ...]]
+```
+```
+python build.py -v alpine -t linux -a x64 -dkr -img openjdk:8u131-alpine -ne j2v8
+```
+
+## Interactive
+```
+python build.py --i, --interactive
+
+entering interactive mode...
+
+[0] Docker >> android-x86 >> NODE_ENABLED
+[1] Docker >> android-arm >> NODE_ENABLED
+[2] Docker >> alpine-linux-x64 >> NODE_ENABLED
+[3] Docker >> linux-x64 >> NODE_ENABLED
+[4] Docker >> linux-x86 >> NODE_ENABLED
+[5] Vagrant >> macosx-x64 >> NODE_ENABLED
+[6] Vagrant >> macosx-x86 >> NODE_ENABLED
+[7] Native >> windows-x64 >> NODE_ENABLED
+[8] Docker >> windows-x64 >> NODE_ENABLED
+[9] Vagrant >> windows-x64 >> NODE_ENABLED
+
+Select a predefined build-configuration to run: 2
+Building: Docker >> alpine-linux-x64 >> NODE_ENABLED
+
+Override build-steps ? (leave empty to run pre-configured steps): j2v8
+```
+
 # Build-Steps
 
 The J2V8 build-system performs several build steps in a fixed order to produce the final J2V8 packages for usage on the designated target platforms. What follows is a short summary for what each of the executed build-steps does and what output artifacts are produced by each step.
@@ -5,7 +44,8 @@ The J2V8 build-system performs several build steps in a fixed order to produce t
 ---
 ## Node.js
 
-Builds the [Node.js](https://nodejs.org/en/) & [V8](https://developers.google.com/v8/) dependency artifacts that are later linked against by the J2V8 native bridge code.
+Builds the [Node.js](https://nodejs.org/en/) & [V8](https://developers.google.com/v8/) dependency artifacts that are later linked into the J2V8 native bridge code.
+(only works if the Node.js source was checked out into the J2V8 `./node` directory)
 
 __Inputs:__
 - Node.js source code
@@ -22,7 +62,7 @@ __Artifacts:__
 ---
 ## CMake
 
-Uses [CMake](https://cmake.org/) to generate the native Makefiles / IDE project files to later build the J2V8 C++ native bridge shared libraries (.so/.dylib/.dll)
+Uses [CMake](https://cmake.org/) to generate the native Makefiles / IDE project files to later build the J2V8 C++ native bridge shared libraries.
 
 __Inputs__:
 - Node.js / V8 static link libraries
@@ -37,7 +77,7 @@ __Artifacts:__
 ---
 ## JNI
 
-The previously generated Makefiles / IDE project files are used to compile and link the J2V8 C++ source code, which provides the JNI bridge to interop between the Java code and the C++ code of Node.js / V8.
+Compile and link the J2V8 C++ shared libraries (.so/.dylib/.dll), which provide the JNI bridge to interop with the C++ code of Node.js / V8.
 
 __Inputs__:
 - CMake generated Makefiles / IDE Project-files
@@ -49,16 +89,34 @@ __Artifacts:__
 - J2V8 native shared libraries
     - `./cmake.out/{platform}.{architecture}/libj2v8-[vendor-]{platform}-{abi}.{ext}`
     - e.g. `./cmake.out/linux.x64/libj2v8-alpine-linux-x86_64.so`
-- The built shared libraries will also be automatically copied to the required Java / Android project directories to be included in the .jar/.aar packages that will be built later.
-    - `./src/main/resources/` (Java)
-    - `./src/main/jniLibs/{abi}/libj2v8.so` (Android)
+---
+## Optimize
+
+The native J2V8 libraries are optimized for performance and/or filesize by using the available tools of the target-platform / compiler-toolchain.
+
+__Inputs__:
+- <u>unoptimized</u> J2V8 native shared libraries
+    - `./cmake.out/{platform}.{architecture}/libj2v8-[vendor-]{platform}-{abi}.{ext}`
+    - e.g. `./cmake.out/linux.x64/libj2v8-alpine-linux-x86_64.so`
+- platform-specific optimization tools:
+    - Android: -
+    - Linux: `execstack`, `strip`
+    - MacOSX: -
+    - Windows: -
+
+__Artifacts:__
+- <u>optimized</u> J2V8 native shared libraries
+    - `./cmake.out/{platform}.{architecture}/libj2v8-[vendor-]{platform}-{abi}.{ext}`
+    - e.g. `./cmake.out/linux.x64/libj2v8-alpine-linux-x86_64.so`
 ---
 ## Java / Android
 
 Compiles the Java source code and packages it, including the previously built native libraries, into the final package artifacts. For the execution of this build-step [Maven](https://maven.apache.org/) (Java) or [Gradle](https://gradle.org/) (Android) are used for the respective target platforms.
 
 __Inputs__:
-- J2V8 native shared libraries
+- J2V8 native shared libraries (will be automatically copied to the required Java / Android project directories to be included in the .jar/.aar packages)
+    - `./src/main/resources/` (Java)
+    - `./src/main/jniLibs/{abi}/libj2v8.so` (Android)
 - J2V8 Java source code
     - `./src/main/`
 - J2V8 Java test source code

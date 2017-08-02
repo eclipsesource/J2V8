@@ -1,3 +1,5 @@
+"""Contains the fundamental data-structures that are used for the build-process"""
+
 from abc import ABCMeta, abstractmethod
 import commands
 import os
@@ -8,6 +10,7 @@ import build_utils as utils
 import shared_build_steps as sbs
 
 class PlatformConfig():
+    """Configuration container for all values that are defined for a single target-platform"""
     def __init__(self, name, architectures):
         self.name = name
         self.architectures = architectures
@@ -45,6 +48,7 @@ class PlatformConfig():
         return file_abi if not file_abi is None else arch
 
 class BuildStep(object):
+    """Configuration capsule for all values that are defined for a well-defined step in the build pipeline"""
     def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
         self.name = name
         self.platform = platform
@@ -54,10 +58,11 @@ class BuildStep(object):
         self.custom_cmd = None
 
 class BuildSystem:
+    """The functional compositor and abstract base-class for any concrete build-system implementation"""
     __metaclass__ = ABCMeta
 
     def build(self, config):
-        # perform the health check for the build system first
+        # perform the health check for this build-system first
         self.health_check(config)
 
         # clean previous build outputs
@@ -65,10 +70,12 @@ class BuildSystem:
 
         # copy the maven / gradle config files to the docker shared directory
         # this allows Dockerfiles to pre-fetch most of the maven / gradle dependencies before the actual build
-        # and store downloaded maven / gradle dependencies inside the generated docker images (results in faster builds)
+        # and store downloaded maven / gradle dependencies inside the generated docker images
+        # (results in faster builds/less network traffic)
         copy2("build.gradle", "./docker/shared")
         copy2("src/main/AndroidManifest.xml", "./docker/android/AndroidManifest.xml")
-        # use the original pom.xml, but with dummy constant values, this avoids unnecessary rebuilding of docker images
+        # use the original pom.xml, but with some never changing dummy parameter values.
+        # this avoids unnecessary rebuilding of docker images (some pom.xml changes are mandatory during the J2V8 build)
         sbs.apply_maven_null_settings(target_pom_path="./docker/shared/pom.xml")
 
         # execute all the build stages
@@ -77,24 +84,31 @@ class BuildSystem:
         self.post_build(config)
 
     def exec_host_cmd(self, cmd, config):
-        cmd = self.inject_env(cmd, config)
-        dir = None
-
-        if (config.host_cwd is not None):
-            dir = self.inject_env(config.host_cwd, config)
-
-        utils.execute(cmd, dir)
+        """Execute a shell-command on the host system (injects $CWD as the location of the J2V8 source directory"""
+        self.__exec_cmd_core(cmd, config, config.host_cwd)
 
     def exec_cmd(self, cmd, config):
+        """
+        Execute a shell-command in the current shell environment (could be native or inside a virtualized system)
+        On the native host-system, $CWD will be set to the location of the J2V8 source directory.
+        Running inside a virtualized system, $CWD will be set to the path configured in the cross-compiler settings.
+        """
+        self.__exec_cmd_core(cmd, config, config.build_cwd)
+
+    def __exec_cmd_core(self, cmd, config, cwd):
         cmd = self.inject_env(cmd, config)
-        dir = None
 
-        if (config.build_cwd is not None):
-            dir = self.inject_env(config.build_cwd, config)
+        if (cwd is not None):
+            # inject env-vars in the given working-directory path
+            cwd = self.inject_env(cwd, config)
 
-        utils.execute(cmd, dir)
+        utils.execute(cmd, cwd)
 
     def inject_env(self, cmd, config):
+        """
+        Grab values for often used properties from the config object
+        and perform variable substitution on the given cmd string.
+        """
         build_cwd = utils.get_cwd()
         vendor = config.vendor
 

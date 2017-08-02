@@ -1,3 +1,4 @@
+"""Commonly used CMake CLI commands and argument-formatters"""
 
 # see: https://cmake.org/cmake/help/v2.8.8/cmake.html#opt:-Dvar:typevalue
 def setVar(var, value, type = "STRING"):
