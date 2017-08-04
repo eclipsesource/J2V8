@@ -46,6 +46,11 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(J2V8_LIB_PLATFORM_NAME "linux")
     set(J2V8_LIB_PREFIX "")
     set(J2V8_LIB_ARCH_NAME "x86")
+
+    # Set a different lib filename for alpine, to differentiate from glibc linux
+    if(EXISTS /etc/alpine-release)
+        set(J2V8_LIB_PLATFORM_NAME "alpine")
+    endif()
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #{

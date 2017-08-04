@@ -10,6 +10,7 @@ from build_system.shell_build import ShellBuildSystem
 
 from build_system.config_android import android_config
 from build_system.config_linux import linux_config
+from build_system.config_alpine import alpine_config
 from build_system.config_macos import macos_config
 from build_system.config_win32 import win32_config
 
@@ -34,6 +35,7 @@ composite_steps = [
 avail_targets = {
     c.target_android: android_config,
     c.target_linux: linux_config,
+    c.target_alpine: alpine_config,
     c.target_macos: macos_config,
     c.target_win32: win32_config,
 }
@@ -53,6 +55,7 @@ parser.add_argument("--target", "-t",
                     choices=[
                         c.target_android,
                         c.target_linux,
+                        c.target_alpine,
                         c.target_macos,
                         c.target_win32,
                     ])

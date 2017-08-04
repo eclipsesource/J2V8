@@ -169,6 +169,20 @@ class LibraryLoader {
         return getOsName().startsWith("Linux");
     }
 
+    /**
+     * Source: Adjusted from https://stackoverflow.com/a/20624914
+     */
+    static boolean isAlpine() {
+        try {
+            java.util.Scanner s = new java.util.Scanner(
+                Runtime.getRuntime().exec("cat /etc/alpine-release").getInputStream()
+            ).useDelimiter("\\A");
+            return s.hasNext();
+        } catch (IOException exception){
+            return false;
+        }
+    }
+
     static boolean isNativeClient() {
         return getOsName().startsWith("nacl");
     }
@@ -209,6 +223,9 @@ class LibraryLoader {
             return "win32";
         } else if (isMac()) {
             return "macosx";
+        } else if (isAlpine() && !isAndroid()) {
+            // Alpine has to be checked before, because isLinux is true for Alpine, too
+            return "alpine";
         } else if (isLinux() && !isAndroid()) {
             return "linux";
         } else if (isAndroid()) {
