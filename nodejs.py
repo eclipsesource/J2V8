@@ -1,11 +1,12 @@
 """
-Utility-belt script to manage the Node.js dependency
+Utility-belt script to manage the Node.js/V8 dependency
 """
 import argparse
 import collections
 import fnmatch
 import glob
 import io
+from itertools import ifilter
 import os
 import sys
 import tarfile
@@ -15,6 +16,8 @@ import build_system.constants as c
 import build_system.build_constants as bc
 import build_system.build_utils as utils
 import build_system.build_settings as settings
+
+CMD_LINEBREAK = "\n\n"
 
 # helper classes to show zipping progress
 # original idea: https://stackoverflow.com/a/3668977/425532
@@ -39,14 +42,11 @@ class WriteProgressFileObject(io.FileIO):
         sys.stdout.flush()
         return io.FileIO.write(self, b)
 
-Command = collections.namedtuple("Command", "aliases function")
+Command = collections.namedtuple("Command", "name function help")
 DepsDirectory = collections.namedtuple("DepsDirectory", "path include")
 
-# Command-Line setup
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-
 #-----------------------------------------------------------------------
-def flush_cache(silent = False):
+def flush_cache(args = None, silent = False):
     if not silent:
         print "[flush-cache]"
 
@@ -56,42 +56,66 @@ def flush_cache(silent = False):
         print "Done" 
 
 cmd_flush_cache = Command(
-    aliases=["flush-cache", "fc"],
+    name="flush-cache",
     function=flush_cache,
+    help="Move any Node.js/V8 native build-artifacts (.o/.a/.lib) from the './node' directory into the 'node.out' cache subdirectory\n" + \
+    "         of the respective vendor/platform/architecture."
 )
 #-----------------------------------------------------------------------
-def git_init():
-    print "[git-init]"
+def git_clone(args):
+    print "[git-clone]"
 
     # TODO: add CLI overide options
     # - Node version
     # - J2V8 version
 
-    utils.store_nodejs_output(None, ".")
+    flush_cache(silent=True)
 
     if (not os.path.exists("node")):
         print "Cloning Node.js version: " + settings.NODE_VERSION
         # NOTE: autocrlf=false is very important for linux based cross-compiles of Node.js to work on a windows docker host
         utils.execute("git clone https://github.com/nodejs/node --config core.autocrlf=false --depth 1 --branch v" + settings.NODE_VERSION)
     else:
-        print "Node.js is already cloned & checked out"
-        apply_diff(True)
+        print "Skipped git-clone: Node.js source-code is already cloned & checked out at the './node' directory."
 
     print "Done"
 
-cmd_git_init = Command(
-    aliases=["git-init", "gi"],
-    function=git_init
+cmd_git_clone = Command(
+    name="git-clone",
+    function=git_clone,
+    help="   Clone the C++ source-code from the official Node.js GitHub repository." + \
+    "\n            (the Node.js version branch from build_settings.py will be checked out automatically)"
 )
 #-----------------------------------------------------------------------
-def package():
+def git_checkout(args):
+    print "[git-checkout]"
+
+    flush_cache(silent=True)
+
+    if (os.path.exists("node")):
+        print "Checkout Node.js version: " + settings.NODE_VERSION
+
+        # TODO: is there a way to fetch/checkout only a single remote tag
+        utils.execute("git fetch -v --progress --tags --depth 1 origin", "node")
+        utils.execute("git checkout --progress tags/v" + settings.NODE_VERSION + " -b v" + settings.NODE_VERSION, "node")
+    else:
+        print "ERROR: Node.js source-code was not yet cloned into the './node' directory, run 'python nodejs.py git-clone' first."
+
+    print "Done"
+
+cmd_git_checkout = Command(
+    name="git-checkout",
+    function=git_checkout,
+    help="Checkout the correct git branch for the Node.js version specified in build_settings.py"
+)
+#-----------------------------------------------------------------------
+def package(platforms = None):
     print "[package]"
 
-    platforms = sys.argv[2:]
-    full = len(platforms) == 0
+    full = platforms == None or len(platforms) == 0
 
     # make sure all node.js binaries are stored in the cache before packaging
-    flush_cache(True)
+    flush_cache(silent=True)
 
     # C++ header files
     # NOTE: see https://stackoverflow.com/a/4851555/425532 why this weird syntax is necessary here
@@ -116,7 +140,7 @@ def package():
                 ) for arch in target.architectures
             ]
 
-    # speciffy the platforms & file patterns that should be included
+    # specify the platforms & file patterns that should be included
     __add_platform_deps(c.target_android, [".o", ".a"])
     __add_platform_deps(c.target_linux, [".o", ".a"])
     __add_platform_deps(c.target_linux, [".o", ".a"], vendor = c.vendor_alpine)
@@ -169,11 +193,58 @@ def package():
     print "generated: " + package_filename
 
 cmd_package = Command(
-    aliases=["package", "pkg"],
-    function=package
+    name="package",
+    function=package,
+    help="Create a .tar.bz2 dependency package with all the currently built Node.js/V8 binaries from the './node.out' cache directories."
 )
 #-----------------------------------------------------------------------
-def store_diff():
+def touch(platforms = None):
+    full = platforms == None or len(platforms) == 0
+
+    # make sure all node.js binaries are stored in the cache before resetting file-times
+    flush_cache(silent=True)
+
+    dependencies = {
+        "list": [],
+    }
+
+    # TODO: extract shared code between this and "package" command
+    def __add_platform_deps(platform, include, vendor = None):
+        target = bc.platform_configs.get(platform)
+        vendor_str = (vendor + "-" if vendor else "")
+        selected = (vendor_str + platform) in platforms
+
+        if (full or selected):
+            dependencies["list"] += [
+                DepsDirectory(
+                    path="./node.out/" + vendor_str + platform + "." + arch + "/",
+                    include=["j2v8.node.out"] + include
+                ) for arch in target.architectures
+            ]
+
+    # specify the platforms & file patterns that should be included
+    __add_platform_deps(c.target_android, [".o", ".a"])
+    __add_platform_deps(c.target_linux, [".o", ".a"])
+    __add_platform_deps(c.target_linux, [".o", ".a"], vendor = c.vendor_alpine)
+    __add_platform_deps(c.target_macos, [".a"])
+    __add_platform_deps(c.target_win32, [".lib"])
+
+    # set modification-time of all found binary files
+    for dep in dependencies["list"]:
+        print "set current file-time " + dep.path
+        for root, dirs, filenames in os.walk(dep.path):
+            for pattern in dep.include:
+                for file_name in fnmatch.filter(filenames, '*' + pattern):
+                    file_path = os.path.join(root, file_name)
+                    utils.touch(file_path)
+
+cmd_touch = Command(
+    name="touch",
+    function=touch,
+    help="Set modification-time of all currently built Node.js/V8 binaries in the './node.out' cache directories."
+)
+#-----------------------------------------------------------------------
+def store_diff(args):
     print "[store-diff]"
 
     patch_file = os.path.join("..", "node.patches", settings.NODE_VERSION + ".diff")
@@ -183,11 +254,14 @@ def store_diff():
     print "Done"
 
 cmd_store_diff = Command(
-    aliases=["store-diff", "sd"],
-    function=store_diff
+    name="store-diff",
+    function=store_diff,
+    help="Create a patch-file in the './node.patches' directory with the current local modifications\n" +
+    "          to the Node.js/V8 source-code.\n" +
+    "          (the Node.js version from build_settings.py will be included in the patch filename)."
 )
 #-----------------------------------------------------------------------
-def apply_diff(silent = False):
+def apply_diff(args, silent = False):
     if not silent:
         print "[apply-diff]"
 
@@ -203,32 +277,56 @@ def apply_diff(silent = False):
         print "Done"
 
 cmd_apply_diff = Command(
-    aliases=["apply-diff", "ad"],
-    function=apply_diff
+    name="apply-diff",
+    function=apply_diff,
+    help=" Apply a previously created patch-file to the currently checked out Node.js/V8 source-code."
 )
 #-----------------------------------------------------------------------
 
-all_cmds = [
-    cmd_flush_cache,
-    cmd_git_init,
-    cmd_package,
-    cmd_store_diff,
-    cmd_apply_diff,
-]
+#-----------------------------------------------------------------------
+# Command-Line setup
+#-----------------------------------------------------------------------
+commands = {
+    "git": {
+        "__help": " Download and manage the Node.js/V8 source code for building J2V8 from source.",
+        "clone": cmd_git_clone,
+        "checkout": cmd_git_checkout,
+    },
+    "bin": {
+        "__help": " Manage the binary build-artifacts that are produced by Node.js/V8 builds.",
+        "flush": cmd_flush_cache,
+        "package": cmd_package,
+        "touch": cmd_touch,
+    },
+    "diff": {
+        "__help": "Create and apply Git patch-files for Node.js that are required for interoperability with J2V8.",
+        "create": cmd_store_diff,
+        "apply": cmd_apply_diff,
+    },
+}
+#-----------------------------------------------------------------------
+def parse_sub_command(args, choices, help_formatter, extra_args = None):
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    help_str = [c + "    " + help_formatter(c) for c in choices]
+    parser.add_argument("command", help="\n\n".join(help_str) + "\n\n", choices=choices)
 
-parser.add_argument("cmd",
-                    metavar="command",
-                    nargs=1,
-                    type=str,
-                    choices=[cmd for commands in all_cmds for cmd in commands.aliases])
+    if (extra_args):
+        extra_args(parser)
 
-parser.add_argument("rest",
-                    nargs="*",
-                    help=argparse.SUPPRESS)
+    args = parser.parse_args(args)
+    return args
+#-----------------------------------------------------------------------
 
-args = parser.parse_args()
+# parse first level command
+args = parse_sub_command(sys.argv[1:2], commands, lambda c: commands[c].get("__help"))
+lvl1_cmd = commands.get(args.command)
 
-for cmd_tuple in all_cmds:
-    if (args.cmd[0] in cmd_tuple.aliases):
-        cmd_tuple.function()
-        break
+# parse second level command
+sub_choices = filter(lambda x: x != "__help", lvl1_cmd)
+args = parse_sub_command(sys.argv[2:], sub_choices, lambda c: lvl1_cmd[c].help, \
+    lambda parser: parser.add_argument("args", nargs="*"))
+lvl2_cmd = args.command
+
+# get the final command handler and delegate all further parameters to it
+cmd_handler = lvl1_cmd.get(lvl2_cmd)
+cmd_handler.function(sys.argv[3:])

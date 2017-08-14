@@ -15,6 +15,10 @@ def get_cwd():
 def host_cmd_sep():
     return "&& " if os.name == "nt" else "; "
 
+def touch(filename, times=None):
+    with open(filename, 'a'):
+        os.utime(filename, times)
+
 def is_android(platform):
     return c.target_android in platform
 
@@ -38,18 +42,109 @@ def platform_libext(config):
 
     return lib_ext
 
+def cli_exit(message):
+    """
+    sys.exit() messages are not picked up correctly when unit-testing.
+    Use this function instead!
+    """
+    sys.stderr.write(message + "\n")
+    sys.stderr.flush()
+    sys.exit(1)
+
+# based on code from: https://stackoverflow.com/a/16260159/425532
+def readlines(f, newlines):
+    buf = ""
+    while True:
+    #{
+        def get_pos():
+        #{
+            pos = None
+            nl = None
+            for n in newlines:
+                if pos:
+                    break
+                try:
+                    pos = buf.index(n)
+                except Exception:
+                    pass
+
+                if pos:
+                    nl = n
+
+            return (pos, nl)
+        #}
+
+        pos, nl = get_pos()
+
+        while pos:
+            yield buf[:pos] + nl
+            buf = buf[pos + len(nl):]
+            pos, nl = get_pos()
+
+        chunk = f.read(1)
+
+        if chunk == ":":
+            # read another char to make sure we catch ": " delimiter
+            buf += chunk
+            chunk = f.read(1)
+
+        if not chunk:
+            yield buf
+            break
+        buf += chunk
+    #}
+
+redirect_stdout_enabled = False
+
 def execute(cmd, cwd = None):
     """
     Low-Level CLI utility function to execute a shell command in a sub-process of the current python process
-    (redirects all output to stdout)
+    (redirects all output to the host-process stdout if redirect_stdout_enabled is True)
     """
-    # flush any buffered console output, because popen could block the terminal
-    sys.stdout.flush()
+    if not redirect_stdout_enabled:
+        # flush any buffered console output, because popen could block the terminal
+        sys.stdout.flush()
 
-    p = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
-    return_code = p.wait()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
+        p = subprocess.Popen(cmd, universal_newlines=True, shell=True, cwd=cwd)
+        return_code = p.wait()
+
+        if return_code:
+            raise subprocess.CalledProcessError(return_code, cmd)
+    else:
+        # see: https://stackoverflow.com/a/22049757/425532
+        # this way of running the process and handling the process output is important because
+        # when running unit-tests in python or running e.g. a docker process, if the
+        # output does not directly go through the stdout of the python process,
+        # then it will not be picked up by some of the available unit-test runners
+
+        # flush any buffered console output, because popen could block the terminal
+        sys.stdout.flush()
+
+        p = subprocess.Popen(cmd,
+            shell=True,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT#,
+            #stdin=sys.stdin
+        )
+        # while True:
+        #     line = p.stdout.readline()
+        #     if line == '':
+        #         break
+        #     print(line.strip("\r\n"))  # remove extra ws between lines
+        #     sys.stdout.flush()
+
+        # also look for ": " as a output separator, because Vagrant emits this
+        # right before some relevant user input is requested
+        # (this makes sure that we get all output for the input is required)
+        for line in readlines(p.stdout, [": ", ":", "\n"]):
+            sys.stdout.write(line)
+            sys.stdout.flush()
+
+        return_code = p.wait()
+
+        if return_code:
+            raise subprocess.CalledProcessError(return_code, cmd)
 
 def execute_to_str(cmd, cwd = None):
     """
@@ -226,4 +321,4 @@ def check_node_builtins():
         if (len(j2v8_missing) > 0):
             error += "\n\t" + "J2V8 definition is missing node-modules: " + str(j2v8_missing)
 
-        sys.exit(error)
+        cli_exit(error)

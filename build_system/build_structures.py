@@ -33,7 +33,7 @@ class PlatformConfig():
         compiler = self.cross_compilers.get(cross_host_name)
 
         if (not compiler):
-            sys.exit("ERROR: internal error while looking for cross-compiler: " + cross_host_name)
+            utils.cli_exit("ERROR: internal error while looking for cross-compiler: " + cross_host_name)
 
         return compiler()
 

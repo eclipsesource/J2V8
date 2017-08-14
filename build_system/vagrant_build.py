@@ -1,4 +1,4 @@
-import atexit
+import signal
 import subprocess
 import sys
 import build_utils as utils
@@ -15,10 +15,11 @@ class VagrantBuildSystem(BuildSystem):
         return
 
     def health_check(self, config):
+        print "Verifying Vagrant build-system status..."
         try:
-            self.exec_host_cmd("vagrant global-status", config)
+            self.exec_host_cmd("vagrant --version", config)
         except subprocess.CalledProcessError:
-            sys.exit("ERROR: Failed Vagrant build-system health check, make sure Vagrant is available and running!")
+            utils.cli_exit("ERROR: Failed Vagrant build-system health check, make sure Vagrant is available and running!")
 
     def pre_build(self, config):
         vagrant_start_cmd = "vagrant up"
@@ -29,14 +30,15 @@ class VagrantBuildSystem(BuildSystem):
         if (config.pre_build_cmd):
             vagrant_start_cmd = config.pre_build_cmd + utils.host_cmd_sep() + vagrant_start_cmd
 
-        def cli_exit_event():
+        def cli_exit_event(signal, frame):
             if (config.no_shutdown):
+                print "INFO: Vagrant J2V8 machine will continue running..."
                 return
 
             print "Waiting for vagrant virtual-machine to exit..."
             self.exec_host_cmd("vagrant halt", config)
 
-        atexit.register(cli_exit_event)
+        signal.signal(signal.SIGINT, cli_exit_event)
 
         self.exec_host_cmd(vagrant_start_cmd, config)
 
@@ -60,6 +62,7 @@ class VagrantBuildSystem(BuildSystem):
 
     def post_build(self, config):
         if (config.no_shutdown):
+            print "INFO: Vagrant J2V8 machine will continue running..."
             return
 
         self.exec_host_cmd("vagrant halt", config)

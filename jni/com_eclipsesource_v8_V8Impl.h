@@ -819,6 +819,14 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1pumpMessageLoop
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isRunning
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _isNodeCompatible
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isNodeCompatible
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

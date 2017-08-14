@@ -1,18 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<os>alpine-linux</os>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <!--
+  The following XML values will be replaced by the build-system before the
+  JAR package is compiled and bundled in the "j2v8java" build-step.
+  (any changes that you made to these XML values will then be overwritten!)
+  - <os>
+  - <arch>
+  - <artifactId>
+  - <version>
+  - <name>
+
+  If you want to specify a different version string for the JAR bundle,
+  please change the values in build_settings.py instead.
+  -->
+  <os>linux</os>
   <ws>gtk</ws>
-	<arch>x86_64</arch>
+  <arch>x86_64</arch>
   </properties>
 
   <groupId>com.eclipsesource.j2v8</groupId>
-  <artifactId>j2v8_alpine-linux_x86_64</artifactId>
+  <artifactId>j2v8_linux_x86_64</artifactId>
   <version>4.8.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
-  <name>j2v8_alpine-linux_x86_64</name>
+  <name>j2v8_linux_x86_64</name>
   <description>J2V8 is a set of Java bindings for V8</description>
   <url>https://github.com/eclipsesource/j2v8</url>
   <licenses>

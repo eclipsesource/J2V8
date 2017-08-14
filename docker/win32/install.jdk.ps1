@@ -12,6 +12,10 @@ Start-Process C:/jdk.exe -Wait `
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_131';
 [Environment]::SetEnvironmentVariable('JAVA_HOME', $env:JAVA_HOME, [EnvironmentVariableTarget]::Machine);
 
+# add Java tools to path
+$env:PATH = $env:JAVA_HOME+'\bin;'+$env:PATH;
+[Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
+
 Write-Host 'Removing ...';
 Remove-Item C:\jdk.exe -Force;
 

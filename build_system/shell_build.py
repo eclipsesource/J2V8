@@ -13,7 +13,7 @@ class ShellBuildSystem(BuildSystem):
             shell_check_cmd = "ver" if utils.is_win32(config.platform) else "bash --version"
             self.exec_cmd(shell_check_cmd, config)
         except subprocess.CalledProcessError:
-            sys.exit("ERROR: Failed Shell build-system health check!")
+            utils.cli_exit("ERROR: Failed Shell build-system health check!")
 
     def pre_build(self, config):
         return

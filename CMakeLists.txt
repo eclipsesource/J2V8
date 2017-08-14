@@ -34,8 +34,8 @@ set(J2V8_JDK_DIR ${Java_ROOT} CACHE STRING "Path to the Java JDK dependency")
 set(J2V8_NODEJS_DIR "${CMAKE_SOURCE_DIR}/node" CACHE STRING "Path to the Node.js dependency")
 
 # get the required Node.js link libraries
-get_njs_libs(${J2V8_NODEJS_DIR} "Debug")
-get_njs_libs(${J2V8_NODEJS_DIR} "Release")
+get_njs_libs(${J2V8_NODEJS_DIR} "Debug" FALSE)
+get_njs_libs(${J2V8_NODEJS_DIR} "Release" TRUE)
 
 # j2v8 build options
 set(J2V8_TARGET_ARCH "" CACHE STRING "The target architecture for the build.")

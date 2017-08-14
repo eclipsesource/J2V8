@@ -3,6 +3,7 @@ import sys
 
 import build_configs as bcfg
 import build_executor as bex
+import build_utils as utils
 
 def run_interactive_cli():
       idx = 0
@@ -20,7 +21,7 @@ def run_interactive_cli():
             else input("Select a predefined build-configuration to run: ")
 
       if not isinstance(sel_index, int) or sel_index < 0 or sel_index > len(bcfg.configs):
-            sys.exit("ERROR: Must enter a valid test index in the range [0 ... " + str(len(bcfg.configs)) + "]")
+            utils.cli_exit("ERROR: Must enter a valid test index in the range [0 ... " + str(len(bcfg.configs)) + "]")
 
       sel_cfg = bcfg.configs[sel_index]
 

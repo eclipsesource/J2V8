@@ -41,6 +41,9 @@ Override build-steps ? (leave empty to run pre-configured steps): j2v8
 
 The J2V8 build-system performs several build steps in a fixed order to produce the final J2V8 packages for usage on the designated target platforms. What follows is a short summary for what each of the executed build-steps does and what output artifacts are produced by each step.
 
+```
+Node.js --> CMake --> JNI --> C++ --> Optimize --> Java/Android --> JUnit
+```
 ---
 ## Node.js
 
@@ -56,9 +59,10 @@ __Inputs:__
 __Artifacts:__
 - Node.js & V8 static link libraries
     - `./node/out/`
-    - `./node/build/`
-    - `./node/Debug/`
-    - `./node/Release/`
+    - *win32 specific*
+        - `./node/build/`
+        - `./node/Debug/`
+        - `./node/Release/`
 ---
 ## CMake
 
@@ -75,12 +79,25 @@ __Artifacts:__
 - CMake generated Makefiles / IDE Project-files
     - `./cmake.out/{platform}.{architecture}/`
 ---
-## JNI
+## JNI Header Generation
 
-Compile and link the J2V8 C++ shared libraries (.so/.dylib/.dll), which provide the JNI bridge to interop with the C++ code of Node.js / V8.
+Generate the JNI glue header file from the native method definitions of the Java `V8` class.
+
+__Inputs__:
+- Java V8.class file
+    - `./target/classes/com/eclipsesource/v8/V8.class`
+
+__Artifacts:__
+- J2V8 C++ JNI header file
+    - `./jni/com_eclipsesource_v8_V8Impl.h`
+---
+## C++
+
+Compile and link the J2V8 native shared libraries (.so/.dylib/.dll), which contain the C++ JNI bridge code to interop with the embedded Node.js / V8 parts.
 
 __Inputs__:
 - CMake generated Makefiles / IDE Project-files
+- Node.js / V8 static link libraries & C++ header files
 - J2V8 C++ JNI source code
     - `./jni/com_eclipsesource_v8_V8Impl.h`
     - `./jni/com_eclipsesource_v8_V8Impl.cpp`

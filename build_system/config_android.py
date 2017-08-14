@@ -62,13 +62,15 @@ def build_j2v8_cmake(config):
 
 android_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
-def build_j2v8_jni(config):
+android_config.build_step(c.build_j2v8_jni, u.build_j2v8_jni)
+#-----------------------------------------------------------------------
+def build_j2v8_cpp(config):
     return [
         "cd " + u.cmake_out_dir,
         "make -j4",
     ]
 
-android_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
+android_config.build_step(c.build_j2v8_cpp, build_j2v8_cpp)
 #-----------------------------------------------------------------------
 def build_j2v8_java(config):
     return \

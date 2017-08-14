@@ -1,0 +1,67 @@
+diff --git a/common.gypi b/common.gypi
+index 147cc70f..40e44baf 100644
+--- a/common.gypi
++++ b/common.gypi
+@@ -190,7 +190,7 @@
+     'msvs_settings': {
+       'VCCLCompilerTool': {
+         'StringPooling': 'true', # pool string literals
+-        'DebugInformationFormat': 3, # Generate a PDB
++        'DebugInformationFormat': 0, # Generate a PDB
+         'WarningLevel': 3,
+         'BufferSecurityCheck': 'true',
+         'ExceptionHandling': 0, # /EHsc
+diff --git a/deps/cares/common.gypi b/deps/cares/common.gypi
+index 609ad62a..d714cdd7 100644
+--- a/deps/cares/common.gypi
++++ b/deps/cares/common.gypi
+@@ -80,7 +80,7 @@
+     'msvs_settings': {
+       'VCCLCompilerTool': {
+         'StringPooling': 'true', # pool string literals
+-        'DebugInformationFormat': 3, # Generate a PDB
++        'DebugInformationFormat': 0, # Generate a PDB
+         'WarningLevel': 3,
+         'BufferSecurityCheck': 'true',
+         'ExceptionHandling': 1, # /EHsc
+diff --git a/deps/uv/common.gypi b/deps/uv/common.gypi
+index 470b7338..8dc3b3f9 100644
+--- a/deps/uv/common.gypi
++++ b/deps/uv/common.gypi
+@@ -87,7 +87,7 @@
+     'msvs_settings': {
+       'VCCLCompilerTool': {
+         'StringPooling': 'true', # pool string literals
+-        'DebugInformationFormat': 3, # Generate a PDB
++        'DebugInformationFormat': 0, # Generate a PDB
+         'WarningLevel': 3,
+         'BufferSecurityCheck': 'true',
+         'ExceptionHandling': 1, # /EHsc
+diff --git a/src/node.h b/src/node.h
+index 1255a4af..66911873 100644
+--- a/src/node.h
++++ b/src/node.h
+@@ -417,7 +417,7 @@ extern "C" NODE_EXTERN void node_module_register(void* mod);
+ #ifdef NODE_SHARED_MODE
+ # define NODE_CTOR_PREFIX
+ #else
+-# define NODE_CTOR_PREFIX static
++# define NODE_CTOR_PREFIX
+ #endif
+ 
+ #if defined(_MSC_VER)
+diff --git a/vcbuild.bat b/vcbuild.bat
+index 01750a4a..f8392e4d 100644
+--- a/vcbuild.bat
++++ b/vcbuild.bat
+@@ -176,8 +176,8 @@ goto run
+ if defined noprojgen goto msbuild
+ 
+ @rem Generate the VS project.
+-echo configure %configure_flags% --dest-cpu=%target_arch% --tag=%TAG%
+-python configure %configure_flags% --dest-cpu=%target_arch% --tag=%TAG%
++echo configure %configure_flags% --dest-cpu=%target_arch% --tag=%TAG% --enable-static
++python configure %configure_flags% --dest-cpu=%target_arch% --tag=%TAG% --enable-static
+ if errorlevel 1 goto create-msvs-files-failed
+ if not exist node.sln goto create-msvs-files-failed
+ echo Project files generated.
