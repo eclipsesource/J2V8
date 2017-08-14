@@ -439,6 +439,15 @@ JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isRunning
  #endif
 }
 
+JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1isNodeCompatible
+  (JNIEnv *, jclass) {
+ #ifdef NODE_COMPATIBLE
+   return true;
+ #else
+   return false;
+ #endif
+}
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
  (JNIEnv *env, jobject v8, jstring globalAlias) {
   V8Runtime* runtime = new V8Runtime();

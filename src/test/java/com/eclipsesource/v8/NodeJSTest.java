@@ -13,6 +13,7 @@ package com.eclipsesource.v8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,11 +21,19 @@ import java.io.PrintWriter;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class NodeJSTest {
 
     private NodeJS nodeJS;
+
+    @BeforeClass
+    public static void beforeClass() {
+        // only run this test if the underlying native J2V8 library was compiled
+        // with the Node.js features included, otherwise just skip all the tests
+        assumeTrue(V8.isNodeCompatible());
+    }
 
     @Before
     public void setup() {

@@ -1,5 +1,5 @@
 """
-A collection of commands, variables and functions that are very likely to be
+A collection of commands, constants and functions that are very likely to be
 reused between target-platform configurations or build-steps on the same platform.
 """
 import glob
@@ -7,24 +7,41 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
+# see: https://stackoverflow.com/a/27333347/425532
+class XmlCommentParser(ET.XMLTreeBuilder):
+
+   def __init__(self):
+       ET.XMLTreeBuilder.__init__(self)
+       # assumes ElementTree 1.2.X
+       self._parser.CommentHandler = self.handle_comment
+
+   def handle_comment(self, data):
+       self._target.start(ET.Comment, {})
+       self._target.data(data)
+       self._target.end(ET.Comment)
+
 import constants as c
 import build_settings as s
 import build_utils as utils
 
 # TODO: add CLI option to override / pass-in custom maven/gradle args
-build_cmd = "mvn clean verify -DskipTests -e"
-run_tests_cmd = "mvn test -e"# -Dtest=V8RuntimeNotLoadedTest"
+# NOTE: --batch-mode is needed to avoid unicode symbols messing up stdout while unit-testing the build-system
+java_build_cmd = "mvn clean verify --batch-mode -DskipTests -e"
+java_tests_cmd = "mvn test -e --batch-mode"
 
 # the ./ should work fine on all platforms
 # IMPORTANT: on MacOSX the ./ prefix is a strict requirement by some CLI commands !!!
 cmake_out_dir = "./cmake.out/$VENDOR-$PLATFORM.$ARCH/"
 
+#-----------------------------------------------------------------------
+# Common shell commands & utils
+#-----------------------------------------------------------------------
 def gradleCmd():
     return "gradlew" if os.name == "nt" else "gradle"
 
 def gradle(cmd):
     return [
-        gradleCmd() + " --daemon " + cmd,
+        gradleCmd() + " " + cmd,
     ]
 
 def outputLibName(config):
@@ -43,22 +60,22 @@ def setEnvVar(name, value):
         return ["export " + name + "=" + value]
 
 def setJavaHome(config):
-    # NOTE: when running docker alpine-linux builds, we don't want to overwrite JAVA_HOME
-    if (config.vendor == c.vendor_alpine and config.cross_agent == "docker"):
-        return []
+    # NOTE: Docker Linux builds need some special handling, because not all images have
+    # a pre-defined JAVA_HOME environment variable
+    if (config.platform == c.target_linux and config.cross_agent == "docker"):
+        # currently only the Alpine image brings its own java-installation & JAVA_HOME
+        # for other Linux images we install the JDK and setup JAVA_HOME manually
+        if (config.vendor != c.vendor_alpine):
+            print "Setting JAVA_HOME env-var for Docker Linux build"
+            return setEnvVar("JAVA_HOME", "/opt/jdk/jdk1.8.0_131")
 
-    return setEnvVar("JAVA_HOME", "/opt/jdk/jdk1.8.0_131")
+    # for any other builds, we can just assume that JAVA_HOME is already set system-wide
+    print "Using system-var JAVA_HOME"
+    return []
 
 def setVersionEnv(config):
     return \
         setEnvVar("J2V8_FULL_VERSION", s.J2V8_FULL_VERSION)
-
-def copyOutput(config):
-    jar_name = outputJarName(config)
-
-    return \
-        mkdir("build.out") + \
-        cp("target/" + jar_name + " build.out/")
 
 def shell(cmd, args):
     """
@@ -77,6 +94,36 @@ def mkdir(args):
 def rm(args):
     """Invokes the cross-platform polyfill for the 'rm' shell command"""
     return shell("rm", args)
+#-----------------------------------------------------------------------
+# Uniform build-steps (cross-platform)
+#-----------------------------------------------------------------------
+def build_j2v8_jni(config):
+    java_class_id = "com.eclipsesource.v8.V8"
+    java_class_parts = java_class_id.split(".")
+    java_class_filepath = "./target/classes/" + "/".join(java_class_parts) + ".class"
+
+    if (not os.path.exists(java_class_filepath)):
+        return [
+            "echo WARNING: Could not find " + java_class_parts[-1] + ".class file at path: " + java_class_filepath,
+            "echo JNI Header generation will be skipped...",
+        ]
+
+    return [
+        "echo Generating JNI header files...",
+        "cd ./target/classes",
+        "javah " + java_class_id,
+        ] + cp("com_eclipsesource_v8_V8.h ../../jni/com_eclipsesource_v8_V8Impl.h") + [
+        "echo Done",
+    ]
+#-----------------------------------------------------------------------
+# File generators, operations & utils
+#-----------------------------------------------------------------------
+def copyOutput(config):
+    jar_name = outputJarName(config)
+
+    return \
+        mkdir("build.out") + \
+        cp("target/" + jar_name + " build.out/")
 
 def clearNativeLibs(config):
     """
@@ -112,7 +159,7 @@ def copyNativeLibs(config):
     platform_lib_path = glob.glob(lib_pattern)
 
     if (len(platform_lib_path) == 0):
-        sys.exit("ERROR: Could not find native library for inclusion in platform target package")
+        utils.cli_exit("ERROR: Could not find native library for inclusion in platform target package")
 
     platform_lib_path = platform_lib_path[0]
 
@@ -126,7 +173,7 @@ def copyNativeLibs(config):
     else:
         lib_target_path = "src/main/resources/"
 
-    print "copying native lib from: " + platform_lib_path + " to: " + lib_target_path
+    print "Copying native lib from: " + platform_lib_path + " to: " + lib_target_path
 
     copy_cmds += cp(platform_lib_path + " " + lib_target_path)
 
@@ -201,7 +248,7 @@ def apply_maven_settings(settings, src_pom_path = "./pom.xml", target_pom_path =
 
     print "Updating Maven configuration (" + target_pom_path + ")..."
 
-    tree = ET.parse(src_pom_path)
+    tree = ET.parse(src_pom_path, XmlCommentParser())
     root = tree.getroot()
 
     __recurse_maven_settings(settings, __handle_setting)

@@ -249,7 +249,9 @@ public class V8 extends V8Object {
 
     private static void checkNativeLibraryLoaded() {
         if (!nativeLibraryLoaded) {
-            String message = "J2V8 native library not loaded (" + LibraryLoader.computeLibraryShortName(true) + ")";
+            String vendorName = LibraryLoader.computeLibraryShortName(true);
+            String baseName = LibraryLoader.computeLibraryShortName(true);
+            String message = "J2V8 native library not loaded (" + baseName + "/" + vendorName + ")";
 
             if (nativeLoadError != null) {
                 throw new IllegalStateException(message, nativeLoadError);
@@ -1564,6 +1566,19 @@ public class V8 extends V8Object {
     private native static boolean _pumpMessageLoop(final long v8RuntimePtr);
 
     private native static boolean _isRunning(final long v8RuntimePtr);
+
+    private native static boolean _isNodeCompatible();
+
+    public static boolean isNodeCompatible() {
+        if (!nativeLibraryLoaded) {
+            synchronized (lock) {
+                if (!nativeLibraryLoaded) {
+                    load(null);
+                }
+            }
+        }
+        return _isNodeCompatible();
+    }
 
     void addObjRef(final V8Value reference) {
         objectReferences++;

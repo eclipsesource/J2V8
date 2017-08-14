@@ -8,13 +8,14 @@ import build_utils as utils
 from shell_build import ShellBuildSystem
 import immutable
 
-# collection of all parsed build-steps that will then be passed on to the core build function
-# (this list must only contain atomic steps after all step evaluations are finished)
-parsed_steps = set()
+class BuildState:
+    # collection of all parsed build-steps that will then be passed on to the core build function
+    # (this list must only contain atomic steps after all step evaluations are finished)
+    parsed_steps = set()
 
-# a registry/dictionary of evaluation-functions that translate from their corresponding step/alias
-# into the list of atomic build-steps (see parsed_steps above)
-step_evaluators = {}
+    # a registry/dictionary of evaluation-functions that translate from their corresponding step/alias
+    # into the list of atomic build-steps (see parsed_steps above)
+    step_evaluators = {}
 
 #-----------------------------------------------------------------------
 # Advanced build-step parsing (anti-steps, multi-steps)
@@ -28,11 +29,14 @@ def atomic_step(step, alias = None):
     if (alias is None):
         alias = step
 
+    step_eval = BuildState.step_evaluators
+    parsed_steps = BuildState.parsed_steps
+
     # add step handler (step => step)
-    step_evaluators[alias] = lambda: parsed_steps.add(step)
+    step_eval[alias] = lambda: parsed_steps.add(step)
 
     # add anti-step handler (step => ~step)
-    step_evaluators["~" + alias] = lambda: parsed_steps.discard(step)
+    step_eval["~" + alias] = lambda: parsed_steps.discard(step)
 
     # register additional anti-step in CLI
     bc.avail_build_steps.append("~" + alias)
@@ -43,15 +47,18 @@ def multi_step(alias, include, exclude = []):
     the defined step alias name was detected. Also the inverted anti-steps sequence
     will be evaluated if the "~" prefixed alias is recognized.
     """
+
+    step_eval = BuildState.step_evaluators
+
     # add aliased step-sequence (alias => step1, step2, ... , stepN)
-    step_evaluators[alias] = lambda: \
-        [step_evaluators.get(s)() for s in include] + \
-        [step_evaluators.get("~" + s)() for s in exclude]
+    step_eval[alias] = lambda: \
+        [step_eval.get(s)() for s in include] + \
+        [step_eval.get("~" + s)() for s in exclude]
 
     # add aliased anti-step-sequence (~alias => ~step1, ~step2, ... , ~stepN)
-    step_evaluators["~" + alias] = lambda: \
-        [step_evaluators.get("~" + s)() for s in include] + \
-        [step_evaluators.get(s)() for s in exclude]
+    step_eval["~" + alias] = lambda: \
+        [step_eval.get("~" + s)() for s in include] + \
+        [step_eval.get(s)() for s in exclude]
 
     # register additional anti-step in CLI
     bc.avail_build_steps.append("~" + alias)
@@ -74,6 +81,7 @@ def init_buildsteps():
         c.build_node_js,
         c.build_j2v8_cmake,
         c.build_j2v8_jni,
+        c.build_j2v8_cpp,
         c.build_j2v8_optimize,
     ])
 
@@ -83,11 +91,11 @@ def init_buildsteps():
 
 def evaluate_build_step_option(step):
     """Find the registered evaluator function for the given step and execute it"""
-    step_eval_func = step_evaluators.get(step, raise_unhandled_option(step))
+    step_eval_func = BuildState.step_evaluators.get(step, raise_unhandled_option(step))
     step_eval_func()
 
 def raise_unhandled_option(step):
-    return lambda: sys.exit("INTERNAL-ERROR: Tried to handle unrecognized build-step \"" + step + "\"")
+    return lambda: utils.cli_exit("INTERNAL-ERROR: Tried to handle unrecognized build-step \"" + step + "\"")
 
 # initialize the advanced parsing evaluation handlers for the build.py CLI
 init_buildsteps()
@@ -115,35 +123,38 @@ def execute_build(params):
     if (isinstance(params, dict)):
         params = cli.BuildParams(params)
 
+    # can be used to force output of all started sub-processes through the host-process stdout
+    utils.redirect_stdout_enabled = hasattr(params, "redirect_stdout") and params.redirect_stdout
+
     if (params.target is None):
-        sys.exit("ERROR: No target platform specified")
+        utils.cli_exit("ERROR: No target platform specified")
 
     if (params.docker and params.vagrant):
-        sys.exit("ERROR: Choose either Docker or Vagrant for the build, can not use both")
+        utils.cli_exit("ERROR: Choose either Docker or Vagrant for the build, can not use both")
 
     target = params.target
 
     if (not target in bc.platform_configs):
-        sys.exit("ERROR: Unrecognized target platform: " + target)
+        utils.cli_exit("ERROR: Unrecognized target platform: " + target)
 
     # this defines the PlatformConfig / operating system the build should be run for
     target_platform = bc.platform_configs.get(target)
 
     if (params.arch is None):
-        sys.exit("ERROR: No target architecture specified")
+        utils.cli_exit("ERROR: No target architecture specified")
 
     avail_architectures = target_platform.architectures
 
     if (not params.arch in avail_architectures):
-        sys.exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + target)
+        utils.cli_exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + target)
 
     if (params.buildsteps is None):
-        sys.exit("ERROR: No build-step specified, valid values are: " + ", ".join(bc.avail_build_steps))
+        utils.cli_exit("ERROR: No build-step specified, valid values are: " + ", ".join(bc.avail_build_steps))
 
     if (not params.buildsteps is None and not isinstance(params.buildsteps, list)):
         params.buildsteps = [params.buildsteps]
 
-    global parsed_steps
+    parsed_steps = BuildState.parsed_steps
     parsed_steps.clear()
 
     # go through the raw list of build-steps (given by the CLI or an API call)
@@ -155,7 +166,7 @@ def execute_build(params):
     parsed_steps = [step for step in bc.atomic_build_step_sequence if step in parsed_steps]
 
     if (len(parsed_steps) == 0):
-        sys.exit("WARNING: No build-steps to be done ... exiting")
+        utils.cli_exit("WARNING: No build-steps to be done ... exiting")
 
     build_cwd = utils.get_cwd()
 
@@ -168,7 +179,7 @@ def execute_build(params):
     # try to find the configuration parameters to run the cross-compiler
     if (cross_sys):
         if (cross_configs.get(cross_sys) is None):
-            sys.exit("ERROR: target '" + target + "' does not have a recognized cross-compile host: '" + cross_sys + "'")
+            utils.cli_exit("ERROR: target '" + target + "' does not have a recognized cross-compile host: '" + cross_sys + "'")
         else:
             cross_cfg = cross_configs.get(cross_sys)
 
@@ -231,14 +242,14 @@ def execute_build(params):
             cross_cfg = cross_configs.get(params.cross_agent)
 
             if (cross_cfg is None):
-                sys.exit("ERROR: internal error while looking for cross-compiler config: " + params.cross_agent)
+                utils.cli_exit("ERROR: internal error while looking for cross-compiler config: " + params.cross_agent)
 
             build_cwd = cross_cfg.build_cwd
 
         # execute all steps from a list that parsed / evaluated before (see the "build-step parsing" section above)
         for step in parsed_steps:
             if (not step in build_steps):
-                print("INFO: skipping build step \"" + step + "\" (not configured and/or supported for platform \"" + params.target + "\")")
+                print("WARNING: skipping build step \"" + step + "\" (not configured and/or supported for platform \"" + params.target + "\")")
                 continue
 
             target_step = build_steps[step]

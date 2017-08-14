@@ -2,6 +2,7 @@ import os
 import constants as c
 from build_structures import PlatformConfig
 from vagrant_build import VagrantBuildSystem, VagrantBuildStep
+import java_build_steps as j
 import shared_build_steps as u
 import cmake_utils as cmu
 
@@ -57,28 +58,17 @@ def build_j2v8_cmake(config):
 
 macos_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)
 #-----------------------------------------------------------------------
-def build_j2v8_jni(config):
+macos_config.build_step(c.build_j2v8_jni, u.build_j2v8_jni)
+#-----------------------------------------------------------------------
+def build_j2v8_cpp(config):
     return [
         "cd " + u.cmake_out_dir,
         "make -j4",
     ]
 
-macos_config.build_step(c.build_j2v8_jni, build_j2v8_jni)
+macos_config.build_step(c.build_j2v8_cpp, build_j2v8_cpp)
 #-----------------------------------------------------------------------
-def build_j2v8_java(config):
-    u.apply_maven_config_settings(config)
-
-    return \
-        u.clearNativeLibs(config) + \
-        u.copyNativeLibs(config) + \
-        [u.build_cmd] + \
-        u.copyOutput(config)
-
-macos_config.build_step(c.build_j2v8_java, build_j2v8_java)
+j.add_java_step(macos_config, c.build_j2v8_java, [u.java_build_cmd])
 #-----------------------------------------------------------------------
-def build_j2v8_junit(config):
-    return \
-        [u.run_tests_cmd]
-
-macos_config.build_step(c.build_j2v8_junit, build_j2v8_junit)
+j.add_java_step(macos_config, c.build_j2v8_junit, [u.java_tests_cmd])
 #-----------------------------------------------------------------------

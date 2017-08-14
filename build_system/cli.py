@@ -5,24 +5,48 @@ import build_constants as bc
 
 class BuildParams(object):
     """Value container for all build-parameters"""
-    def __init__(self, d):
-        self.target = d.get("target")
-        self.arch = d.get("arch")
-        self.vendor = d.get("vendor")
-        self.keep_native_libs = d.get("keep_native_libs")
-        self.node_enabled = d.get("node_enabled")
-        self.docker = d.get("docker")
-        self.vagrant = d.get("vagrant")
-        self.sys_image = d.get("sys_image")
-        self.no_shutdown = d.get("no_shutdown")
-        self.buildsteps = d.get("buildsteps") or c.build_all
+    def __init__(self, param_dict):
 
+        known_params = {
+            "target": None,
+            "arch": None,
+            "vendor": None,
+            "keep_native_libs": None,
+            "node_enabled": None,
+            "docker": None,
+            "vagrant": None,
+            "sys_image": None,
+            "no_shutdown": None,
+            "redirect_stdout": None,
+            "buildsteps": c.build_all,
+        }
+
+        unhandled = set(param_dict.keys()).difference(set(known_params.keys()))
+
+        if any(unhandled):
+            raise Exception("Unhandled BuildParams: " + str(unhandled))
+
+        for param in known_params:
+            # try to read value from input
+            value = param_dict.get(param)
+
+            if value != None:
+                # use input value
+                setattr(self, param, value)
+            else:
+                # use default value
+                default = known_params.get(param)
+                setattr(self, param, default)
+
+        # this should never be passed in by the user, it is used just internally
         self.cross_agent = None
 
 def init_args(parser):
     """Initialize all supported build.py parameters and commands on the CLI parser"""
 
+    #-----------------------------------------------------------------------
     # Essential build settings
+    #-----------------------------------------------------------------------
     parser.add_argument("--target", "-t",
                         help="The build target platform name (must be a valid platform string identifier).",
                         dest="target",
@@ -35,7 +59,9 @@ def init_args(parser):
                         required=True,
                         choices=bc.avail_architectures)
 
+    #-----------------------------------------------------------------------
     # Optional build settings
+    #-----------------------------------------------------------------------
     parser.add_argument("--vendor", "-v",
                         help="The operating system vendor (most relevant when building for a specific Linux distribution).",
                         dest="vendor")
@@ -47,7 +73,9 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+    #-----------------------------------------------------------------------
     # J2V8 Feature switches
+    #-----------------------------------------------------------------------
     parser.add_argument("--node-enabled", "-ne",
                         help="Include the Node.js runtime and builtin node-modules for use in J2V8.",
                         dest="node_enabled",
@@ -55,7 +83,9 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+    #-----------------------------------------------------------------------
     # Docker / Vagrant cross-compile settings
+    #-----------------------------------------------------------------------
     parser.add_argument("--docker", "-dkr",
                         help="Run a cross-compile environment in a Docker container (all required build-tools are then fully contained & virtualized).",
                         dest="docker",
@@ -80,13 +110,25 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+    #-----------------------------------------------------------------------
     # Meta-Args
+    #-----------------------------------------------------------------------
     # NOTE: this option is only used internally to distinguish the running of the build script within
     # the build-instigator and the actual build-executor (this is relevant when cross-compiling)
     parser.add_argument("--cross-agent",
                         help=argparse.SUPPRESS,
                         dest="cross_agent",
                         type=str)
+
+    parser.add_argument("--redirect-stdout", "-rso",
+                        help="Make sure that the stdout/stderr of sub-proccesses running shell commands is also going through the " +
+                        "output interface of the python host process that is running the build.\n" +
+                        "(this is required when running tests for the build-system, without this option the output of the subprocesses will "+
+                        "not show up in the test logs)",
+                        dest="redirect_stdout",
+                        default=False,
+                        action="store_const",
+                        const=True)
 
     parser.add_argument("--interactive", "-i",
                     help="Run the interactive version of the J2V8 build CLI.",
@@ -95,6 +137,9 @@ def init_args(parser):
                     action="store_const",
                     const=True)
 
+    #-----------------------------------------------------------------------
+    # Build-Steps
+    #-----------------------------------------------------------------------
     parser.add_argument("buildsteps",
                         help="Pass a single build-step or a list of all the recognized build-steps that should be executed\n" +
                             "(the order of the steps given to the CLI does not matter, the correct order will be restored internally).\n\n" +
@@ -111,6 +156,6 @@ def init_args(parser):
 
 def get_parser():
     """Get a CLI parser instance that accepts all supported build.py parameters and commands"""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(prog="build", formatter_class=argparse.RawTextHelpFormatter)
     init_args(parser)
     return parser
