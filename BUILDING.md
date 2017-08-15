@@ -30,7 +30,7 @@ entering interactive mode...
 Select a predefined build-configuration to run: 2
 Building: Docker >> alpine-linux-x64 >> NODE_ENABLED
 
-Override build-steps ? (leave empty to run pre-configured steps): j2v8
+Override build-steps ? (leave empty to run pre-configured steps): nodejs j2v8 test
 ```
 
 ## Non-interactive
@@ -72,7 +72,7 @@ For ease of use, there are also some advanced build-step aliases that when speci
 - `test` ... alias for the single `j2v8test` step
 
 #### Anti-Steps
-provide a way to remove a particular step, or a step-alias from the set of build-steps that should be run. To use such an anti-step, just prefix any of the available build-steps with the "~" symbol.
+Anti-steps provide a way to exclude a particular step, or a step-alias from the set of build-steps that should be run. To use such an anti-step, just prefix any of the available build-steps with the "~" symbol.
 
 Build everything but do not optimize and do not run J2V8 unit tests:<br/>
 `build <...other-args> all ~j2v8optimize ~test`
@@ -223,3 +223,13 @@ __Artifacts:__
 - Gradle Spoon test reports (Android only)
     - `./build/spoon/debug/`
 ---
+
+# Cross-Compiling
+
+For cross-compiling J2V8 uses [Docker](https://www.docker.com/) (android, linux, windows) and [Vagrant](https://www.vagrantup.com/) (macos, windows).
+The full source-code (of both J2V8 and Node.js) on the build-host are just shared via mounted volumes with the Docker / Vagrant machines, so you can quickly make changes and perform builds fast.
+
+To invoke a cross-compile build, simply invoke the `build.py` script as usual but add the `--docker`, `-dkr` or `--vagrant`, `-vgr` flags.
+This will automatically provision and run the necessary virtualization to run the requested build fully independent of your local environment.
+
+<b>Note:</b> using Docker / Vagrant for cross-compilation requires many gigabytes of hard-drive space as well as downloading the required images & tools.

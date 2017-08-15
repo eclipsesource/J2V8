@@ -10,35 +10,11 @@ We developed J2V8 as a high performance engine for our multi-platform mobile too
 
 Building J2V8
 =============
-Building J2V8 requires building both the native parts and the Java library (.jar/.aar file). To build the native parts we first build node.js as a library and then statically link J2V8 to that. The Java parts are built with maven/gradle.
+Building J2V8 requires building both the native parts and the Java library (.jar/.aar file). To build the native parts we first build Node.js as a library and then statically link J2V8 to that. The Java parts are built with maven/gradle.
 
 J2V8 uses a cross-platform, cross-compiling build-system written in Python.
 
-Follow these steps to build J2V8 from source:
-
-1) clone the Node.js source code
-    - `python prepare_build.py`
-    - This will download & prepare the latest compatible Node.js version for use in J2V8
-    - The Node.js source code will be cloned into the local `node` sub-directory, which is the expected default location for the J2V8 build
-2) build Node.js and the J2V8 library
-    - `python build.py --target linux --arch x64 --node-enabled --cross-compile`
-    - or shorthand
-    - `python build.py -t linux -a x64 -ne -x`
-
-For all available options, supported platforms and architectures you can consult the build-script help:
-
-`python build.py --help`
-
-Cross-Compiling
----------------
-
-For cross-compiling J2V8 uses [Docker](https://www.docker.com/) (android, linux, windows) and [Vagrant](https://www.vagrantup.com/) (macos).
-The full source-code (of both J2V8 and Node.js) on the build-host are just shared via mounted volumes with the Docker / Vagrant machines, so you can quickly make changes and perform builds fast.
-
-To invoke a cross-compile build, simply invoke the `build.py` script as usual but add the `--cross-compile`, `-x` flag.
-This will automatically provision and run the necessary virtualization to run the requested build fully independent of your local environment.
-
-<b>Note:</b> using Docker / Vagrant for cross-compiliation requires many gigabytes of harddrive space as well as downloading the required images & tools.
+For any further build instructions & details please read [BUILDING.md](BUILDING.md)
 
 Tutorials
 ==========
