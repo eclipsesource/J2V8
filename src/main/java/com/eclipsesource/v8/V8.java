@@ -250,7 +250,7 @@ public class V8 extends V8Object {
     private static void checkNativeLibraryLoaded() {
         if (!nativeLibraryLoaded) {
             String vendorName = LibraryLoader.computeLibraryShortName(true);
-            String baseName = LibraryLoader.computeLibraryShortName(true);
+            String baseName = LibraryLoader.computeLibraryShortName(false);
             String message = "J2V8 native library not loaded (" + baseName + "/" + vendorName + ")";
 
             if (nativeLoadError != null) {
