@@ -21,7 +21,7 @@ build_j2v8_jni = 'j2v8jni'
 build_j2v8_cpp = 'j2v8cpp'
 build_j2v8_optimize = 'j2v8optimize'
 build_j2v8_java = 'j2v8java'
-build_j2v8_junit = 'j2v8junit'
+build_j2v8_test = 'j2v8test'
 
 # aliases
 build_java = 'java'

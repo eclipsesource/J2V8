@@ -26,7 +26,7 @@ import build_utils as utils
 
 # TODO: add CLI option to override / pass-in custom maven/gradle args
 # NOTE: --batch-mode is needed to avoid unicode symbols messing up stdout while unit-testing the build-system
-java_build_cmd = "mvn clean verify --batch-mode -DskipTests -e"
+java_build_cmd = "mvn clean verify -e --batch-mode -DskipTests"
 java_tests_cmd = "mvn test -e --batch-mode"
 
 # the ./ should work fine on all platforms

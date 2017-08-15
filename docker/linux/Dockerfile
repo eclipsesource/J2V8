@@ -32,4 +32,4 @@ ENV PATH "$PATH:/opt/cmake/bin"
 # download the most critical maven dependencies for the build beforehand
 COPY ./shared/pom.xml /temp
 WORKDIR /temp
-RUN mvn clean verify -DskipTests || true
+RUN mvn clean verify || true

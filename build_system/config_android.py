@@ -47,10 +47,10 @@ def build_j2v8_cmake(config):
     cmake_vars = cmu.setAllVars(config)
     cmake_toolchain = cmu.setToolchain("$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake")
 
-    return [
-        "mkdir -p " + u.cmake_out_dir,
-        "cd " + u.cmake_out_dir,
-        "rm -rf CMakeCache.txt CMakeFiles/",
+    return \
+        u.mkdir(u.cmake_out_dir) + \
+        ["cd " + u.cmake_out_dir] + \
+        u.rm("CMakeCache.txt CMakeFiles/") + [
         """cmake \
             -DCMAKE_BUILD_TYPE=Release \
             %(cmake_vars)s \
@@ -81,15 +81,17 @@ def build_j2v8_java(config):
 
 android_config.build_step(c.build_j2v8_java, build_j2v8_java)
 #-----------------------------------------------------------------------
-def build_j2v8_junit(config):
+def build_j2v8_test(config):
     # if you are running this step without cross-compiling, it is assumed that a proper target Android device
     # or emulator is running that can execute the tests (platform + architecture must be compatible to the the build settings)
 
+    # add the extra step arguments to the command if we got some
+    step_args = getattr(config, "args", None)
+    step_args = " " + step_args if step_args else ""
+
     test_cmds = \
         u.setVersionEnv(config) + \
-        u.gradle("spoon")
-        # u.gradle("spoon -PtestClass=com.eclipsesource.v8.LibraryLoaderTest,com.eclipsesource.v8.PlatformDetectorTest")
-        # u.gradle("connectedCheck --info")
+        u.gradle("spoon" + step_args)
 
     # we are running a build directly on the host shell
     if (not config.cross_agent):
@@ -116,5 +118,5 @@ def build_j2v8_junit(config):
 
         return ["/usr/bin/supervisord -c /j2v8/docker/android/supervisord.conf"]
 
-android_config.build_step(c.build_j2v8_junit, build_j2v8_junit)
+android_config.build_step(c.build_j2v8_test, build_j2v8_test)
 #-----------------------------------------------------------------------

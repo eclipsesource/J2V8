@@ -9,8 +9,7 @@ from test_result import TestResult, TestOutcome
 import test_utils as utils
 
 class SurePhyreTestRunner(object):
-    """
-    """
+    """ Run the given TestSuite and collect statistics & timing information about the tests being run. """
     def __init__(self):
         self.runner_start_time = None
         self.runner_stop_time = None

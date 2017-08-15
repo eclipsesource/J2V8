@@ -5,11 +5,12 @@ from runner.test_asserts import *
 import constants as c
 import build_executor as bex
 
-class TestWin32Docker(unittest.TestCase):
+class TestAlpineLinuxDocker(unittest.TestCase):
 
     def with_x64_defaults(self, params):
         x64_defaults = {
-            "target": c.target_win32,
+            "vendor": c.vendor_alpine,
+            "target": c.target_linux,
             "arch": c.arch_x64,
             "docker": True,
             "redirect_stdout": True, # important for test-logging

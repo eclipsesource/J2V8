@@ -5,21 +5,34 @@ import build_constants as bc
 
 class BuildParams(object):
     """Value container for all build-parameters"""
-    def __init__(self, param_dict):
 
-        known_params = {
-            "target": None,
-            "arch": None,
-            "vendor": None,
-            "keep_native_libs": None,
-            "node_enabled": None,
-            "docker": None,
-            "vagrant": None,
-            "sys_image": None,
-            "no_shutdown": None,
-            "redirect_stdout": None,
-            "buildsteps": c.build_all,
-        }
+    # essential build CLI parameters
+    user_params = {
+        "target": None,
+        "arch": None,
+        "vendor": None,
+        "keep_native_libs": None,
+        "node_enabled": None,
+        "docker": None,
+        "vagrant": None,
+        "sys_image": None,
+        "no_shutdown": None,
+        "redirect_stdout": None,
+        "buildsteps": c.build_all,
+    }
+
+    # additional --buildstep parameters (e.g. --j2v8test)
+    step_arg_params = dict((step, None) for step in bc.atomic_build_step_sequence)
+
+    # collection of all known parameters
+    known_params = {}
+    known_params.update(user_params)
+    known_params.update(step_arg_params)
+
+    def __init__(self, param_dict):
+        # only the known & accepted parameters will be copied
+        # from the input dictionary, to an object-property of the BuildParams object
+        known_params = BuildParams.known_params
 
         unhandled = set(param_dict.keys()).difference(set(known_params.keys()))
 
@@ -151,8 +164,17 @@ def init_args(parser):
                             "\n".join([s.id + s.help for s in bc.advanced_steps]),
                         metavar="build-steps",
                         nargs="*",
-                        default="all",
-                        choices=bc.avail_build_steps)
+                        default=None,
+                        # NOTE: an empty list is what is passed to "buildsteps" when the user does not specify any steps explicitly
+                        choices=bc.avail_build_steps + [[]])
+
+    #-----------------------------------------------------------------------
+    # Build-Steps with Arguments
+    #-----------------------------------------------------------------------
+    for step_name in bc.atomic_build_step_sequence:
+        parser.add_argument("--" + step_name,
+                            help=argparse.SUPPRESS,
+                            dest=step_name)
 
 def get_parser():
     """Get a CLI parser instance that accepts all supported build.py parameters and commands"""
