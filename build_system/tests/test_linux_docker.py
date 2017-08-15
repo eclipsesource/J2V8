@@ -17,12 +17,13 @@ class TestLinuxDocker(unittest.TestCase):
         params.update(x64_defaults)
         return params
 
-    @expectOutput(r"\[WARNING\] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: \d+.\d+ s - in com\.eclipsesource\.v8\.NodeJSTest")
+    @expectOutput(r"\[WARNING\] Tests run: 9, Failures: 0, Errors: 0, Skipped: 9, Time elapsed: \d+.\d+ s - in com\.eclipsesource\.v8\.NodeJSTest")
     def test_x64_node_disabled(self):
 
         params = self.with_x64_defaults(
         {
             "buildsteps": ["j2v8", "test"],
+            "j2v8test": "-Dtest=NodeJSTest",
         })
 
         bex.execute_build(params)
@@ -36,6 +37,7 @@ class TestLinuxDocker(unittest.TestCase):
         {
             "node_enabled": True,
             "buildsteps": ["j2v8", "test"],
+            "j2v8test": "-Dtest=NodeJSTest",
         })
 
         bex.execute_build(params)

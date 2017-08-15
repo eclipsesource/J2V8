@@ -14,10 +14,31 @@ TestResultBase = unittest.TestResult
 class TestOutcome:
     Success, Failure, Error, Skip = range(4)
 
-TestRunData = collections.namedtuple("TestRunData", "outcome test errStr errObj output elapsed")
-TestRunData.__new__.__defaults__ = (None,) * len(TestRunData._fields)
+__TestRunData = collections.namedtuple("TestRunData", "outcome test errStr errObj output elapsed")
+__TestRunData.__new__.__defaults__ = (None,) * len(__TestRunData._fields)
+
+class TestRunData(__TestRunData):
+    """
+    Immutable tuple data-structure that contains the results of a single test-method that has been run.
+
+    outcome -> one of the enumeration values of the "TestOutcome" class (Success, Failure, Error, Skip)
+    test -> information about which test-method this data is about
+    errStr -> an error string that was emitted if this test was not successful
+    errObj -> details about the output, exception and stackframe that were involved in a failing test
+    output -> a plain-text string of all the output (stdout/stdout) that was generated during this test
+    elapsed -> the duration that it took for the test-method to run
+    """
+    pass
 
 class TestResult(TestResultBase):
+    """
+    Collects and processes the results from an invoked set of tests.
+    
+    The main purpose is to:
+    1) Track times that individual tests needed to complete
+    2) Collect the stdout/stderr that each of the tests produces
+    3) Collect statistics and reporting-details for successful and failed test-runs
+    """
     def __init__(self, streams, test_cases):
         TestResultBase.__init__(self)
         self.__sys_stdout = None
@@ -67,6 +88,11 @@ class TestResult(TestResultBase):
         utils.write_log("INFO", "Running %(test_class)s.%(test_method)s" % locals())
 
     def finish_test(self, test):
+        """
+        This is run after each single test-method is finished, but the below logic
+        will only be executed once the very last test-method from the original
+        set of given unit-tests is completed.
+        """
         if (self.testsRun != len(self.test_cases)):
             return
 
@@ -119,12 +145,14 @@ class TestResult(TestResultBase):
         Disconnect output redirection and return buffer.
         Safe to call multiple times.
         """
-        output = self.outputBuffer.getvalue()
-
         if (test_info):
             self.test_stop_time = datetime.datetime.now()
+
+            test_output = self.outputBuffer.getvalue()
+            test_duration = self.test_stop_time - self.test_start_time
+
             # merge data produced during test with additional meta-data
-            test_result = TestRunData(*(test_info[:-2] + (output, self.test_stop_time - self.test_start_time)))
+            test_result = TestRunData(*(test_info[:-2] + (test_output, test_duration)))
 
             self.all_results.append(test_result)
 
@@ -165,11 +193,18 @@ class TestResult(TestResultBase):
             regex = test_method.__dict__.get(test_regex_field)
             output = self.outputBuffer.getvalue()
 
-            match_ok = re.search(regex, output)
+            regex_mismatches = []
 
-            if (not match_ok):
+            for rx in regex:
+                match_ok = re.search(rx, output)
+
+                if (not match_ok):
+                    regex_mismatches.append(rx)
+
+            if (any(regex_mismatches)):
+                mismatches_str = "\n\t\t".join(regex_mismatches)
                 try:
-                    raise Exception("Unable to find expected pattern in test-output:\n\t\t" + regex)
+                    raise Exception("Unable to find expected patterns in test-output:\n\t\t" + mismatches_str)
                 except Exception:
                     ex_nfo = sys.exc_info()
                     self.addFailure(test, ex_nfo)

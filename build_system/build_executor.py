@@ -74,7 +74,7 @@ def init_buildsteps():
 
     # atomic aliases
     atomic_step(c.build_j2v8_java, c.build_java)
-    atomic_step(c.build_j2v8_junit, c.build_test)
+    atomic_step(c.build_j2v8_test, c.build_test)
 
     # multi-step alias: build only the native parts (includes nodejs)
     multi_step(c.build_native, [
@@ -87,7 +87,7 @@ def init_buildsteps():
 
     # multi-step alias: build everything that belongs to J2V8 (excludes Node.js)
     # this is useful when building J2V8 with a pre-compiled Node.js dependency package
-    multi_step(c.build_j2v8, [c.build_all], [c.build_node_js, c.build_j2v8_junit])
+    multi_step(c.build_j2v8, [c.build_all], [c.build_node_js, c.build_j2v8_test])
 
 def evaluate_build_step_option(step):
     """Find the registered evaluator function for the given step and execute it"""
@@ -157,7 +157,20 @@ def execute_build(params):
     parsed_steps = BuildState.parsed_steps
     parsed_steps.clear()
 
-    # go through the raw list of build-steps (given by the CLI or an API call)
+    # first look for the advanced form of build-step where it might be specified with some arguments to be passed
+    # to the underlying build-tool (e.g. --j2v8test="-Dtest=NodeJSTest")
+    for step in bc.atomic_build_step_sequence:
+        step_args = getattr(params, step, None)
+
+        if step_args:
+            parsed_steps.add(step)
+
+    # if there were no special build-step args or atomic build-step args passed
+    # then fall back to the default behavior and run all known steps
+    if not any(parsed_steps) and not any(params.buildsteps):
+        params.buildsteps = ["all"]
+
+    # then go through the raw list of basic build-steps (given by the CLI or an API call)
     # and generate a list of only the atomic build-steps that were derived in the evaluation
     for step in params.buildsteps:
         evaluate_build_step_option(step)
@@ -205,6 +218,16 @@ def execute_build(params):
     if (cross_cfg):
         cross_compiler = target_platform.cross_compiler(cross_sys)
 
+        parsed_step_args = ""
+
+        # look for build-step arguments that were passed in by the user
+        # e.g. --j2v8test="-Dtest=..." and pass them down to the cross-agent also
+        for step in bc.atomic_build_step_sequence:
+            step_args = getattr(params, step, None)
+
+            if step_args:
+                parsed_step_args += " --" + step + "='" + step_args + "'"
+
         # invoke the build.py CLI within the virtualized / self-contained build-system provider
         cross_cfg.custom_cmd = "python ./build.py " + \
             "--cross-agent " + cross_sys + \
@@ -212,7 +235,7 @@ def execute_build(params):
             (" -ne" if params.node_enabled else "") + \
             (" -v " + params.vendor if params.vendor else "") + \
             (" -knl " if params.keep_native_libs else "") + \
-            " " + " ".join(parsed_steps)
+            " " + " ".join(parsed_steps) + parsed_step_args
 
         # apply meta-vars & util functions
         cross_cfg.compiler = cross_compiler
@@ -269,6 +292,7 @@ def execute_build(params):
             target_step.docker = params.docker
             target_step.vagrant = params.vagrant
             target_step.keep_native_libs = params.keep_native_libs
+            target_step.args = getattr(params, step, None)
 
             # run the current BuildStep
             execute_build_step(target_compiler, target_step)

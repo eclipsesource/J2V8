@@ -24,7 +24,7 @@ atomic_build_steps = [
     CLIStep(c.build_j2v8_optimize, "    The native J2V8 libraries are optimized for performance and/or filesize by using the available tools of the target-platform / compiler-toolchain."),
     CLIStep(c.build_j2v8_java, "        Compiles the Java source code and packages it, including the previously built native libraries, into the final package artifacts.\n" +
                        "                For the execution of this build-step Maven (Java) or Gradle (Android) are used for the respective target platforms."),
-    CLIStep(c.build_j2v8_junit, "       Runs the Java (JUnit) unit tests."),
+    CLIStep(c.build_j2v8_test, "       Runs the Java (JUnit/Gradle) unit tests."),
 ]
 
 # build_steps_help = dict(atomic_build_steps)
@@ -34,7 +34,7 @@ atomic_build_step_sequence = [s.id for s in atomic_build_steps]
 advanced_steps = [
     # atomic aliases
     CLIStep(c.build_java, "            Alias for " + c.build_j2v8_java),
-    CLIStep(c.build_test, "            Alias for " + c.build_j2v8_junit),
+    CLIStep(c.build_test, "            Alias for " + c.build_j2v8_test),
 
     # multi-step aliases
     CLIStep(c.build_all, "             Run all build steps."),
@@ -43,10 +43,7 @@ advanced_steps = [
                       "                This is useful when building with a pre-compiled Node.js dependency package."),
 ]
 
-# advanced_steps_help = dict(advanced_steps)
-
 advanced_steps_list = [s.id for s in advanced_steps]
-
 
 avail_build_steps = atomic_build_step_sequence + advanced_steps_list
 

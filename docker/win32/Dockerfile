@@ -42,4 +42,4 @@ RUN Remove-Item -Recurse -Force C:/j2v8
 RUN mkdir C:/temp
 COPY ./shared/pom.xml C:/temp
 WORKDIR /temp
-RUN Invoke-Command { mvn clean verify -DskipTests } -ErrorAction SilentlyContinue
+RUN Invoke-Command { mvn clean verify } -ErrorAction SilentlyContinue

@@ -68,7 +68,7 @@ def build_j2v8_cpp(config):
 
 macos_config.build_step(c.build_j2v8_cpp, build_j2v8_cpp)
 #-----------------------------------------------------------------------
-j.add_java_step(macos_config, c.build_j2v8_java, [u.java_build_cmd])
+j.add_java_build_step(macos_config)
 #-----------------------------------------------------------------------
-j.add_java_step(macos_config, c.build_j2v8_junit, [u.java_tests_cmd])
+j.add_java_test_step(macos_config)
 #-----------------------------------------------------------------------
