@@ -16,19 +16,21 @@ python build.py --i, --interactive
 
 entering interactive mode...
 
-[0] Docker >> android-x86 >> NODE_ENABLED
-[1] Docker >> android-arm >> NODE_ENABLED
-[2] Docker >> alpine-linux-x64 >> NODE_ENABLED
-[3] Docker >> linux-x64 >> NODE_ENABLED
-[4] Docker >> linux-x86 >> NODE_ENABLED
-[5] Vagrant >> macosx-x64 >> NODE_ENABLED
-[6] Vagrant >> macosx-x86 >> NODE_ENABLED
-[7] Native >> windows-x64 >> NODE_ENABLED
-[8] Docker >> windows-x64 >> NODE_ENABLED
-[9] Vagrant >> windows-x64 >> NODE_ENABLED
+[0] android-x86 @ Docker
+[1] android-arm @ Docker
+[2] alpine-linux-x64 @ Docker
+[3] linux-x64
+[4] linux-x64 @ Docker
+[5] linux-x86 @ Docker
+[6] macosx-x64
+[7] macosx-x64 @ Vagrant
+[8] macosx-x86 @ Vagrant
+[9] windows-x64
+[10] windows-x64 @ Docker
+[11] windows-x64 @ Vagrant
 
-Select a predefined build-configuration to run: 2
-Building: Docker >> alpine-linux-x64 >> NODE_ENABLED
+Select a predefined build-configuration to run: 3
+Building: linux-x64
 
 Override build-steps ? (leave empty to run pre-configured steps): nodejs j2v8 test
 ```

@@ -1,6 +1,6 @@
 
+import atexit
 import re
-import signal
 import subprocess
 import sys
 
@@ -64,7 +64,7 @@ class DockerBuildSystem(BuildSystem):
         container_name = self.get_container_name(config)
         docker_stop_str = self.inject_env("docker stop " + container_name, config)
 
-        def cli_exit_event(signal, frame):
+        def cli_exit_event():
             if config.no_shutdown:
                 print "INFO: Docker J2V8 container will continue running..."
                 return
@@ -72,7 +72,7 @@ class DockerBuildSystem(BuildSystem):
             print "Waiting for docker process to exit..."
             self.exec_host_cmd(docker_stop_str, config)
 
-        signal.signal(signal.SIGINT, cli_exit_event)
+        atexit.register(cli_exit_event)
 
         args_str = ""
 
