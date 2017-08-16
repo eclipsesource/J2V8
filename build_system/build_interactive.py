@@ -1,9 +1,12 @@
 """Provides a simple interactive CLI to start a selected build from a given set of build-configurations"""
+import argparse
 import sys
+import shlex
 
 import build_configs as bcfg
 import build_executor as bex
 import build_utils as utils
+import cli as cli
 
 def run_interactive_cli():
       idx = 0
@@ -23,19 +26,29 @@ def run_interactive_cli():
       if not isinstance(sel_index, int) or sel_index < 0 or sel_index > len(bcfg.configs):
             utils.cli_exit("ERROR: Must enter a valid test index in the range [0 ... " + str(len(bcfg.configs)) + "]")
 
-      sel_cfg = bcfg.configs[sel_index]
+      selected_build_cfg = bcfg.configs[sel_index]
 
-      print ("Building: " + sel_cfg.get("name"))
+      print ("Building: " + selected_build_cfg.get("name"))
       print # newline
 
-      build_params = sel_cfg.get("params")
+      build_params = selected_build_cfg.get("params")
 
-      build_steps = \
+      # use build-steps from sys.argv or alternatively ask the user
+      build_steps_argv = \
             sys.argv[base_arg_count + 1:] \
             if len(sys.argv) > base_arg_count + 1 \
-            else raw_input("Override build-steps ? (leave empty to run pre-configured steps): ").split()
+            else shlex.split(raw_input("Override build-steps ? (leave empty to run pre-configured steps): "))
 
-      if (len(build_steps) > 0):
-            build_params["buildsteps"] = build_steps
+      # create a parser that only expects the build-step args
+      parser = cli.get_blank_parser()
+      cli.init_build_steps(parser)
 
+      # parse the build-step syntax
+      build_step_params = parser.parse_args(build_steps_argv)
+
+      # merge the potentially customized build-steps with the
+      # original pre-defined build-config para,s
+      build_params.update(vars(build_step_params))
+
+      # start the build
       bex.execute_build(build_params)

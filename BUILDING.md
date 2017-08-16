@@ -48,6 +48,12 @@ usage: build [-h] --target {android,linux,macos,win32} --arch {x86,x64,arm}
 
 ### Basic Examples
 
+Build for Debian/Ubuntu Linux x64 on the host-system:<br/>
+`build -t linux -a x64`
+
+Build for Debian/Ubuntu Linux x64 using Docker:<br/>
+`build -t linux -a x64 -dkr`
+
 Build for Alpine-Linux x64 using Docker and Node.js features included:<br/>
 `build -v alpine -t linux -a x64 -dkr -ne`
 

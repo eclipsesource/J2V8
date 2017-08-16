@@ -56,7 +56,14 @@ class BuildParams(object):
 
 def init_args(parser):
     """Initialize all supported build.py parameters and commands on the CLI parser"""
+    init_required_args(parser)
+    init_optional_args(parser)
+    init_feature_args(parser)
+    init_cross_compile_args(parser)
+    init_meta_args(parser)
+    init_build_steps(parser)
 
+def init_required_args(parser):
     #-----------------------------------------------------------------------
     # Essential build settings
     #-----------------------------------------------------------------------
@@ -72,6 +79,7 @@ def init_args(parser):
                         required=True,
                         choices=bc.avail_architectures)
 
+def init_optional_args(parser):
     #-----------------------------------------------------------------------
     # Optional build settings
     #-----------------------------------------------------------------------
@@ -86,6 +94,7 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+def init_feature_args(parser):
     #-----------------------------------------------------------------------
     # J2V8 Feature switches
     #-----------------------------------------------------------------------
@@ -96,6 +105,7 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+def init_cross_compile_args(parser):
     #-----------------------------------------------------------------------
     # Docker / Vagrant cross-compile settings
     #-----------------------------------------------------------------------
@@ -123,6 +133,7 @@ def init_args(parser):
                         action="store_const",
                         const=True)
 
+def init_meta_args(parser):
     #-----------------------------------------------------------------------
     # Meta-Args
     #-----------------------------------------------------------------------
@@ -150,6 +161,7 @@ def init_args(parser):
                     action="store_const",
                     const=True)
 
+def init_build_steps(parser):
     #-----------------------------------------------------------------------
     # Build-Steps
     #-----------------------------------------------------------------------
@@ -178,6 +190,10 @@ def init_args(parser):
 
 def get_parser():
     """Get a CLI parser instance that accepts all supported build.py parameters and commands"""
-    parser = argparse.ArgumentParser(prog="build", formatter_class=argparse.RawTextHelpFormatter)
+    parser = get_blank_parser()
     init_args(parser)
+    return parser
+
+def get_blank_parser():
+    parser = argparse.ArgumentParser(prog="build", formatter_class=argparse.RawTextHelpFormatter)
     return parser
