@@ -10,7 +10,7 @@ import constants as c
 configs = [
       # ANDROID builds
       {
-            "name": "Docker >> android-x86 >> NODE_ENABLED",
+            "name": "android-x86 @ Docker",
             "params": {
                   "target": c.target_android,
                   "arch": c.arch_x86,
@@ -19,7 +19,7 @@ configs = [
             },
       },
       {
-            "name": "Docker >> android-arm >> NODE_ENABLED",
+            "name": "android-arm @ Docker",
             "params": {
                   "target": c.target_android,
                   "arch": c.arch_arm,
@@ -27,9 +27,9 @@ configs = [
                   "node_enabled": True,
             },
       },
-      # LINUX builds
+      # ALPINE LINUX builds
       {
-            "name": "Docker >> alpine-linux-x64 >> NODE_ENABLED",
+            "name": "alpine-linux-x64 @ Docker",
             "params": {
                   "target": c.target_linux,
                   "vendor": "alpine",
@@ -42,7 +42,7 @@ configs = [
       # TODO: build not supported, because default gcc/g++ on alpine does not support x32 compilation
       # (see: https://stackoverflow.com/a/40574830/425532)
       # {
-      #       "name": "Docker >> alpine-linux-x86 >> NODE_ENABLED",
+      #       "name": "alpine-linux-x86 @ Docker",
       #       "params": {
       #             "target": c.target_linux,
       #             "vendor": "alpine",
@@ -52,8 +52,17 @@ configs = [
       #             "node_enabled": True,
       #       },
       # },
+      # DEBIAN / UBUNTU LINUX builds
       {
-            "name": "Docker >> linux-x64 >> NODE_ENABLED",
+            "name": "linux-x64",
+            "params": {
+                  "target": c.target_linux,
+                  "arch": c.arch_x64,
+                  "node_enabled": True,
+            },
+      },
+      {
+            "name": "linux-x64 @ Docker",
             "params": {
                   "target": c.target_linux,
                   "arch": c.arch_x64,
@@ -62,7 +71,7 @@ configs = [
             },
       },
       {
-            "name": "Docker >> linux-x86 >> NODE_ENABLED",
+            "name": "linux-x86 @ Docker",
             "params": {
                   "target": c.target_linux,
                   "arch": c.arch_x86,
@@ -72,7 +81,15 @@ configs = [
       },
       # MACOSX builds
       {
-            "name": "Vagrant >> macosx-x64 >> NODE_ENABLED",
+            "name": "macosx-x64",
+            "params": {
+                  "target": c.target_macos,
+                  "arch": c.arch_x64,
+                  "node_enabled": True,
+            },
+      },
+      {
+            "name": "macosx-x64 @ Vagrant",
             "params": {
                   "target": c.target_macos,
                   "arch": c.arch_x64,
@@ -81,7 +98,7 @@ configs = [
             },
       },
       {
-            "name": "Vagrant >> macosx-x86 >> NODE_ENABLED",
+            "name": "macosx-x86 @ Vagrant",
             "params": {
                   "target": c.target_macos,
                   "arch": c.arch_x86,
@@ -91,7 +108,7 @@ configs = [
       },
       # WINDOWS builds
       {
-            "name": "Native >> windows-x64 >> NODE_ENABLED",
+            "name": "windows-x64",
             "params": {
                   "target": c.target_win32,
                   "arch": c.arch_x64,
@@ -101,7 +118,7 @@ configs = [
       # TODO: this build is currently broken due to a Node.js build-system issue
       # {
       #       # see: https://github.com/nodejs/node/issues/13569
-      #       "name": "Native >> windows-x86 >> NODE_ENABLED",
+      #       "name": "windows-x86",
       #       "params": {
       #             "target": c.target_win32,
       #             "arch": c.arch_x86,
@@ -109,7 +126,7 @@ configs = [
       #       },
       # },
       {
-            "name": "Docker >> windows-x64 >> NODE_ENABLED",
+            "name": "windows-x64 @ Docker",
             "params": {
                   "target": c.target_win32,
                   "arch": c.arch_x64,
@@ -118,7 +135,7 @@ configs = [
             },
       },
       {
-            "name": "Vagrant >> windows-x64 >> NODE_ENABLED",
+            "name": "windows-x64 @ Vagrant",
             "params": {
                   "target": c.target_win32,
                   "arch": c.arch_x64,

@@ -1,4 +1,4 @@
-import signal
+import atexit
 import subprocess
 import sys
 import build_utils as utils
@@ -30,7 +30,7 @@ class VagrantBuildSystem(BuildSystem):
         if (config.pre_build_cmd):
             vagrant_start_cmd = config.pre_build_cmd + utils.host_cmd_sep() + vagrant_start_cmd
 
-        def cli_exit_event(signal, frame):
+        def cli_exit_event():
             if (config.no_shutdown):
                 print "INFO: Vagrant J2V8 machine will continue running..."
                 return
@@ -38,7 +38,7 @@ class VagrantBuildSystem(BuildSystem):
             print "Waiting for vagrant virtual-machine to exit..."
             self.exec_host_cmd("vagrant halt", config)
 
-        signal.signal(signal.SIGINT, cli_exit_event)
+        atexit.register(cli_exit_event)
 
         self.exec_host_cmd(vagrant_start_cmd, config)
 
