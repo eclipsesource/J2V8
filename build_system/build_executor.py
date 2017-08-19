@@ -201,6 +201,14 @@ def execute_build(params):
         print "Checking Node.js builtins integration consistency..."
         utils.check_node_builtins()
 
+        major,minor,build,patch,is_candidate = utils.get_v8_version()
+        major,minor,patch,is_release = utils.get_nodejs_version()
+
+        print "--------------------------------------------------"
+        print "V8:      %(major)s.%(minor)s.%(build)s.%(patch)s (candidate: %(is_candidate)s)" % locals()
+        print "Node.js: %(major)s.%(minor)s.%(patch)s (release: %(is_release)s)" % locals()
+        print "--------------------------------------------------"
+
         print "Caching Node.js artifacts..."
         curr_node_tag = (params.vendor + "-" if params.vendor else "") + target + "." + params.arch
         utils.store_nodejs_output(curr_node_tag, build_cwd)

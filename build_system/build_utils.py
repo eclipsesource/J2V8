@@ -9,6 +9,9 @@ from itertools import ifilter
 
 import constants as c
 
+V8Version = collections.namedtuple("V8Version", "major minor build patch is_candidate")
+NodeJSVersion = collections.namedtuple("NodeJSVersion", "major minor patch is_release")
+
 def get_cwd():
     return os.getcwd().replace("\\", "/")
 
@@ -50,6 +53,48 @@ def cli_exit(message):
     sys.stderr.write(message + "\n")
     sys.stderr.flush()
     sys.exit(1)
+
+def get_v8_version():
+    v8_version_text = None
+
+    with file("./node/deps/v8/include/v8-version.h", "r") as v8_version_file:
+        v8_version_text = v8_version_file.read()
+
+        major = re.search(r"#define V8_MAJOR_VERSION (\d+)", v8_version_text)
+        minor = re.search(r"#define V8_MINOR_VERSION (\d+)", v8_version_text)
+        build = re.search(r"#define V8_BUILD_NUMBER (\d+)", v8_version_text)
+        patch = re.search(r"#define V8_PATCH_LEVEL (\d+)", v8_version_text)
+
+        is_candidate = re.search(r"#define V8_IS_CANDIDATE_VERSION (\d+)", v8_version_text)
+
+        major = major.group(1) if major else None
+        minor = minor.group(1) if minor else None
+        build = build.group(1) if build else None
+        patch = patch.group(1) if patch else None
+
+        is_candidate = is_candidate.group(1) == "1" if is_candidate else None
+
+        return V8Version(major, minor, build, patch, is_candidate)
+
+def get_nodejs_version():
+    njs_version_text = None
+
+    with file("./node/src/node_version.h", "r") as njs_version_file:
+        njs_version_text = njs_version_file.read()
+
+        major = re.search(r"#define NODE_MAJOR_VERSION (\d+)", njs_version_text)
+        minor = re.search(r"#define NODE_MINOR_VERSION (\d+)", njs_version_text)
+        patch = re.search(r"#define NODE_PATCH_VERSION (\d+)", njs_version_text)
+
+        is_release = re.search(r"#define NODE_VERSION_IS_RELEASE (\d+)", njs_version_text)
+
+        major = major.group(1) if major else None
+        minor = minor.group(1) if minor else None
+        patch = patch.group(1) if patch else None
+
+        is_release = is_release.group(1) == "1" if is_release else None
+
+        return NodeJSVersion(major, minor, patch, is_release)
 
 # based on code from: https://stackoverflow.com/a/16260159/425532
 def readlines(f, newlines):

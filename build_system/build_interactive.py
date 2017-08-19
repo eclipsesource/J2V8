@@ -44,11 +44,15 @@ def run_interactive_cli():
       cli.init_build_steps(parser)
 
       # parse the build-step syntax
-      build_step_params = parser.parse_args(build_steps_argv)
+      user_params = parser.parse_args(build_steps_argv)
 
-      # merge the potentially customized build-steps with the
-      # original pre-defined build-config para,s
-      build_params.update(vars(build_step_params))
+      # convert into dictionary form
+      user_params = vars(user_params)
+
+      # merge the potentially customized build-steps into the
+      # original pre-defined build-config params
+      # see: https://stackoverflow.com/a/15277395/425532
+      build_params.update((k,v) for k,v in user_params.iteritems() if v is not None)
 
       # start the build
       bex.execute_build(build_params)
