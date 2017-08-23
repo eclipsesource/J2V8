@@ -33,6 +33,7 @@ Articles
  * [J2V8 2.2 New and Noteworthy](http://eclipsesource.com/blogs/2015/04/23/j2v8-2-2-new-and-noteworthy/)
  * [Announcing J2V8 2.0](http://eclipsesource.com/blogs/2015/02/25/announcing-j2v8-2-0/)
  * [Highly Efficient Java & JavaScript Integration](http://eclipsesource.com/blogs/2014/11/17/highly-efficient-java-javascript-integration/)
+ * [React.js SSR with J2V8](https://ebaytech.berlin/react-js-server-side-rendering-with-j2v8-b9ced07888fb)
 
 Presentations
 =============
