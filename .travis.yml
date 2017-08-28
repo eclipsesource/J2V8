@@ -1,4 +1,11 @@
 sudo: required
 services: docker
-before_install: curl -O http://download.eclipsesource.com/j2v8/v8/node.out-7_4_0.tar.gz
-script: ./buildAll.sh
+before_install: 
+ - sudo apt-get -qq update
+ - sudo apt-get install -y execstack
+ - python nodejs.py git clone
+ - python nodejs.py diff apply
+ - alias citests="python build_system/run_tests.py"
+install:
+  curl https://cmake.org/files/v3.6/cmake-3.6.1-Linux-x86_64.tar.gz | sudo tar -x -z --strip-components 1 -C /usr
+script: python build.py -t linux -a x64
