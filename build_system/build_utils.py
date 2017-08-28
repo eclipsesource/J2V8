@@ -300,14 +300,14 @@ def check_node_builtins():
     code in jni/com_eclipsesource_v8_V8Impl.cpp to make sure that every module
     is correctly initialized and linked into the native J2V8 library.
     """
-    node_src = "node/src/"
+    node_src = "./node/src/"
 
     # node.js directory is not available
     if (not os.path.exists(node_src)):
         return
 
     # building from a pre-built dependency package (does not include c++ source files)
-    if (len(glob.glob(node_src + ".cc")) == 0):
+    if (len(glob.glob(node_src + "*.cc")) == 0):
         return
 
     j2v8_jni_cpp_path = "jni/com_eclipsesource_v8_V8Impl.cpp"

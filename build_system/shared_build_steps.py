@@ -57,7 +57,7 @@ def setEnvVar(name, value):
     if (os.name == "nt"):
         return ["set \"" + name + "=" + value + "\""]
     else:
-        return ["export " + name + "=" + value]
+        return ["export " + name + "=\"" + value + "\""]
 
 def setJavaHome(config):
     # NOTE: Docker Linux builds need some special handling, because not all images have
