@@ -1,7 +1,0 @@
-set(CMAKE_SYSTEM_NAME Android)
-set(CMAKE_SYSTEM_VERSION 17) # API level
-
-set(CMAKE_ANDROID_ARCH x86)
-set(CMAKE_ANDROID_ARCH_ABI x86)
-set(CMAKE_ANDROID_NDK /build/android-ndk-r13b/)
-set(CMAKE_ANDROID_STL_TYPE gnustl_static)
