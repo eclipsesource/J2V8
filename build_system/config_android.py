@@ -5,7 +5,7 @@ import shared_build_steps as u
 import build_utils as b
 import cmake_utils as cmu
 
-android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm])
+android_config = PlatformConfig(c.target_android, c.osgi_android, [c.arch_x86, c.arch_arm])
 
 android_config.set_cross_configs({
     "docker": DockerBuildStep(

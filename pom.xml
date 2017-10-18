@@ -16,7 +16,7 @@
   please change the values in build_settings.py instead.
   -->
   <os>linux</os>
-  <ws>gtk</ws>
+  <osgi_os>linux</osgi_os>
   <arch>x86_64</arch>
   </properties>
 
@@ -104,7 +104,7 @@
         <configuration>
           <instructions>
             <Export-Package>com.eclipsesource.v8.*</Export-Package>
-            <Eclipse-PlatformFilter>(&amp; (osgi.ws=${ws})(osgi.os=${os})(osgi.arch=${arch}))</Eclipse-PlatformFilter>
+            <Eclipse-PlatformFilter>(&amp; (osgi.os=${osgi_os})(osgi.arch=${arch}))</Eclipse-PlatformFilter>
           </instructions>
         </configuration>
       </plugin>

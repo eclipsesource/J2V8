@@ -6,7 +6,7 @@ import java_build_steps as j
 import shared_build_steps as u
 import cmake_utils as cmu
 
-macos_config = PlatformConfig(c.target_macos, [c.arch_x86, c.arch_x64])
+macos_config = PlatformConfig(c.target_macos, c.osgi_macos, [c.arch_x86, c.arch_x64])
 
 macos_config.set_cross_configs({
     "vagrant": VagrantBuildStep(
