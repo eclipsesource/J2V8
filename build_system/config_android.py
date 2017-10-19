@@ -10,6 +10,7 @@ android_config = PlatformConfig(c.target_android, c.osgi_android, [c.arch_x86, c
 android_config.set_cross_configs({
     "docker": DockerBuildStep(
         platform=c.target_android,
+        osgi_platform=c.osgi_android,
         host_cwd="$CWD/docker",
         build_cwd="/j2v8"
     )

@@ -6,8 +6,8 @@ from build_structures import BuildSystem, BuildStep
 import shared_build_steps as u
 
 class VagrantBuildStep(BuildStep):
-    def __init__(self, platform, build_cwd = None, host_cwd = None, pre_build_cmd = None):
-        super(VagrantBuildStep, self).__init__("vagrant-build-host", platform, None, build_cwd, host_cwd)
+    def __init__(self, platform, osgi_platform, build_cwd = None, host_cwd = None, pre_build_cmd = None):
+        super(VagrantBuildStep, self).__init__("vagrant-build-host", platform, osgi_platform, None, build_cwd, host_cwd)
         self.pre_build_cmd = pre_build_cmd
 
 class VagrantBuildSystem(BuildSystem):
