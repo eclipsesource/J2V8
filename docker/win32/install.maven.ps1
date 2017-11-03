@@ -1,7 +1,7 @@
 
 Write-Host 'Downloading ...';
 C:/j2v8/docker/win32/wget.ps1 `
-    http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip `
+    http://archive.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip `
     C:\maven.zip
 
 Write-Host 'Installing Maven ...';
