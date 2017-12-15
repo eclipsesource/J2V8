@@ -13,7 +13,6 @@ package com.eclipsesource.v8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.io.PrintWriter;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class NodeJSTest {
@@ -30,35 +28,21 @@ public class NodeJSTest {
 
     @Before
     public void setup() {
-        if (skipTest())
-            return;
-
         nodeJS = NodeJS.createNodeJS();
     }
 
     @After
     public void tearDown() {
-        if (skipTest())
-            return;
-
         nodeJS.release();
     }
 
-    private static boolean skipTest() {
-        return !V8.isNodeCompatible();
-    }
-
-    private final static String skipMessage = "Skipped test (Node.js features not included in native library)";
-
     @Test
     public void testCreateNodeJS() {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         assertNotNull(nodeJS);
     }
 
     @Test
     public void testSingleThreadAccess_Require() throws InterruptedException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
             @Override
@@ -80,7 +64,6 @@ public class NodeJSTest {
 
     @Test
     public void testGetVersion() {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         String result = nodeJS.getNodeVersion();
 
         assertEquals("7.4.0", result);
@@ -88,7 +71,6 @@ public class NodeJSTest {
 
     @Test
     public void testSingleThreadAccess_HandleMessage() throws InterruptedException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
             @Override
@@ -108,7 +90,6 @@ public class NodeJSTest {
 
     @Test
     public void testSingleThreadAccess_IsRunning() throws InterruptedException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         final boolean[] result = new boolean[] { false };
         Thread t = new Thread(new Runnable() {
             @Override
@@ -128,7 +109,6 @@ public class NodeJSTest {
 
     @Test
     public void testExecuteNodeScript_Startup() throws IOException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         nodeJS.release();
         File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
 
@@ -141,7 +121,6 @@ public class NodeJSTest {
 
     @Test
     public void testExecNodeScript() throws IOException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         nodeJS.release();
         File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
 
@@ -155,7 +134,6 @@ public class NodeJSTest {
 
     @Test
     public void testExecuteNodeScript_viaRequire() throws IOException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         nodeJS.release();
         File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
 
@@ -169,7 +147,6 @@ public class NodeJSTest {
 
     @Test
     public void testExports() throws IOException {
-        assumeFalse(skipMessage, skipTest()); // conditional skip
         nodeJS.release();
         File testScript = createTemporaryScriptFile("exports.foo=7", "testScript");
 
