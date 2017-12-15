@@ -1,0 +1,47 @@
+FROM philcryer/min-jessie:latest
+
+WORKDIR /build/
+
+ENV MAVEN_OPTS -Xmx2048m -XX:MaxPermSize=256m
+ENV _JAVA_OPTIONS -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
+
+RUN echo "[0/3] installing packages..." && \
+	apt-get -qq update && \
+	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
+        openjdk-7-jdk \
+	git \
+	unzip \
+	gcc gcc-multilib \
+	g++ g++-multilib \
+	curl \
+	file \
+        execstack \
+        maven
+
+CMD cd jni && \
+  echo "building...." && \
+  g++ -I../node/node.linux.x64/deps -I../node/node.linux.x64/deps/v8 -I../node/node.linux.x64 -I../node/node.linux.x64/deps/v8/include \
+    -I../node/node.linux.x64/src -I /usr/lib/jvm/java-7-openjdk-amd64/include/ \
+    -I /usr/lib/jvm/java-7-openjdk-amd64/include/linux  \
+    com_eclipsesource_v8_V8Impl.cpp -std=c++11 -fPIC -shared -o libj2v8_linux_x86_64.so \
+    -Wl,--whole-archive ../node/node.linux.x64/out/Release/obj.target/libnode.a  -Wl,--no-whole-archive \
+    -Wl,--start-group \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/v8/src/libv8_libbase.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/v8/src/libv8_libplatform.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/v8/src/libv8_base.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/v8/src/libv8_nosnapshot.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/v8/src/libv8_libsampler.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/uv/libuv.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/openssl/libopenssl.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/http_parser/libhttp_parser.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/gtest/libgtest.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/zlib/libzlib.a \
+                      ../node/node.linux.x64/out/Release/obj.target/deps/cares/libcares.a \
+    -Wl,--end-group \
+    -lrt -D NODE_COMPATIBLE=1 && \
+    execstack -c libj2v8_linux_x86_64.so && \
+    echo "striping symbols...." && \
+    strip --strip-unneeded -R .note -R .comment libj2v8_linux_x86_64.so && \
+    cd .. && \
+    mvn clean verify -e
+    
