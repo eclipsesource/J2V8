@@ -7,16 +7,17 @@ ENV _JAVA_OPTIONS -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 
 RUN echo "[0/3] installing packages..." && \
 	apt-get -qq update && \
-	DEBIAN_FRONTEND=noninteractive apt-get -qq install -y \
-        openjdk-7-jdk \
+	DEBIAN_FRONTEND=noninteractive apt-get -qq install --no-install-recommends -y \
+  openjdk-7-jdk \
 	git \
 	unzip \
 	gcc gcc-multilib \
 	g++ g++-multilib \
 	curl \
 	file \
-        execstack \
-        maven
+  execstack \
+  maven && \
+  apt-get clean && rm -r /var/lib/apt/lists/*
 
 CMD cd jni && \
   echo "building...." && \
@@ -44,4 +45,3 @@ CMD cd jni && \
     strip --strip-unneeded -R .note -R .comment libj2v8_linux_x86_64.so && \
     cd .. && \
     mvn clean verify -e
-    
