@@ -6,6 +6,12 @@ target_linux = 'linux'
 target_macos = 'macos'
 target_win32 = 'win32'
 
+# OSGi platforms
+osgi_android = 'android'
+osgi_linux = 'linux'
+osgi_macos = 'macosx'
+osgi_win32 = 'win32'
+
 vendor_alpine = 'alpine'
 vendor_debian = 'debian'
 

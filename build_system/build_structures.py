@@ -11,8 +11,9 @@ import shared_build_steps as sbs
 
 class PlatformConfig():
     """Configuration container for all values that are defined for a single target-platform"""
-    def __init__(self, name, architectures):
+    def __init__(self, name, osgi_name, architectures):
         self.name = name
+        self.osgi_name = osgi_name
         self.architectures = architectures
         self.file_abis = {}
         self.steps = {}
@@ -23,6 +24,7 @@ class PlatformConfig():
         self.steps[target] = BuildStep(
             name=target,
             platform=self.name,
+            osgi_platform = self.osgi_name,
             build=build_fn,
         )
 
@@ -49,9 +51,10 @@ class PlatformConfig():
 
 class BuildStep(object):
     """Configuration capsule for all values that are defined for a well-defined step in the build pipeline"""
-    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
+    def __init__(self, name, platform, osgi_platform, build = [], build_cwd = None, host_cwd = None):
         self.name = name
         self.platform = platform
+        self.osgi_platform = osgi_platform
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
@@ -123,6 +126,7 @@ class BuildSystem:
             .replace("$HOST_CWD", config.host_cwd or "")
             .replace("$CWD", build_cwd)
             .replace("$PLATFORM", config.platform)
+            .replace("$OSGI_PLATFORM", config.osgi_platform)
             .replace("$ARCH", config.arch)
             .replace("$FILE_ABI", config.file_abi)
             .replace("$LIB_EXT", utils.platform_libext(config))

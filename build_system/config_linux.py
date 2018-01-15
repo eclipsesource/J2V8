@@ -5,11 +5,12 @@ import java_build_steps as j
 import shared_build_steps as u
 import cmake_utils as cmu
 
-linux_config = PlatformConfig(c.target_linux, [c.arch_x86, c.arch_x64])
+linux_config = PlatformConfig(c.target_linux, c.osgi_linux, [c.arch_x86, c.arch_x64])
 
 linux_config.set_cross_configs({
     "docker": DockerBuildStep(
         platform=c.target_linux,
+        osgi_platform=c.osgi_linux,
         host_cwd="$CWD/docker",
         build_cwd="/j2v8"
     )

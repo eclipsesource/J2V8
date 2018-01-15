@@ -184,6 +184,7 @@ def apply_maven_null_settings(src_pom_path = "./pom.xml", target_pom_path = None
     maven_settings = {
         "properties": {
             "os": "undefined",
+            "osgi_os": "undefined",
             "arch": "undefined",
         },
         "artifactId": "undefined",
@@ -196,6 +197,7 @@ def apply_maven_null_settings(src_pom_path = "./pom.xml", target_pom_path = None
 def apply_maven_config_settings(config, src_pom_path = "./pom.xml", target_pom_path = None):
     """Copy the Maven pom.xml from src to target, while replacing the necessary XML element values based on the given build-step config"""
     os = config.inject_env("$VENDOR-$PLATFORM")
+    osgi_os = config.inject_env("$OSGI_PLATFORM")
     arch = config.file_abi
     version = s.J2V8_FULL_VERSION
     name = config.inject_env("j2v8_$VENDOR-$PLATFORM_$FILE_ABI")
@@ -203,6 +205,7 @@ def apply_maven_config_settings(config, src_pom_path = "./pom.xml", target_pom_p
     maven_settings = {
         "properties": {
             "os": os,
+            "osgi_os": osgi_os,
             "arch": arch,
         },
         "artifactId": name,

@@ -7,16 +7,18 @@ import java_build_steps as j
 import shared_build_steps as u
 import cmake_utils as cmu
 
-win32_config = PlatformConfig(c.target_win32, [c.arch_x86, c.arch_x64])
+win32_config = PlatformConfig(c.target_win32, c.osgi_win32, [c.arch_x86, c.arch_x64])
 
 win32_config.set_cross_configs({
     "docker": DockerBuildStep(
         platform=c.target_win32,
+        osgi_platform=c.osgi_win32,
         host_cwd="$CWD/docker",
         build_cwd="C:/j2v8"
     ),
     "vagrant": VagrantBuildStep(
         platform=c.target_win32,
+        osgi_platform=c.osgi_win32,
         host_cwd="$CWD/vagrant/$PLATFORM",
         build_cwd="C:/j2v8"
     )

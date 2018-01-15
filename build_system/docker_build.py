@@ -10,8 +10,8 @@ import build_utils as utils
 import docker_configs as dkr_cfg
 
 class DockerBuildStep(BuildStep):
-    def __init__(self, platform, build_cwd = None, host_cwd = None):
-        super(DockerBuildStep, self).__init__("docker-build-host", platform, None, build_cwd, host_cwd)
+    def __init__(self, platform, osgi_platform, build_cwd = None, host_cwd = None):
+        super(DockerBuildStep, self).__init__("docker-build-host", platform, osgi_platform, None, build_cwd, host_cwd)
 
 class DockerBuildSystem(BuildSystem):
     def clean(self, config):

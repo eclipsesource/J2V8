@@ -251,6 +251,7 @@ def execute_build(params):
         cross_cfg.target = target_platform
 
         # apply essential build params
+        cross_cfg.osgi_platform = target_platform.osgi_name
         cross_cfg.arch = params.arch
         cross_cfg.file_abi = target_platform.file_abi(params.arch)
         cross_cfg.no_shutdown = params.no_shutdown
