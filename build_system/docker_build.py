@@ -36,7 +36,7 @@ class DockerBuildSystem(BuildSystem):
             if (server_match is None or server_match.group(1) is None):
                 utils.cli_exit("ERROR: Unable to determine docker server version from version string: \n\n" + version_str)
 
-            version_match = re.search(r"^ OS/Arch:\s+(.*)$", server_match.group(1), re.MULTILINE)
+            version_match = re.search(r"^  OS/Arch:\s+(.*)$", server_match.group(1), re.MULTILINE)
 
             if (version_match is None):
                 utils.cli_exit("ERROR: Unable to determine docker server platform from version string: \n\n" + version_str)
