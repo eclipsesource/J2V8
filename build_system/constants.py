@@ -13,6 +13,7 @@ vendor_debian = 'debian'
 arch_x86 = 'x86'
 arch_x64 = 'x64'
 arch_arm = 'arm'
+arch_arm64 = 'arm64'
 
 # atomic build-steps
 build_node_js = 'nodejs'
