@@ -49,7 +49,7 @@ RUN mkdir /usr/local/android-sdk/tools/keymaps && \
     touch /usr/local/android-sdk/tools/keymaps/en-us
 
 # install the required license for sdk-build-tools
-RUN mkdir -p $ANDROID_HOME/licenses && echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\n" > $ANDROID_HOME/licenses/android-sdk-license
+RUN mkdir -p $ANDROID_HOME/licenses && echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n" > $ANDROID_HOME/licenses/android-sdk-license
 
 # java must be installed at this point, because the following android CLI commands depend on it
 COPY ./shared/install.jdk.sh /temp/docker/shared
