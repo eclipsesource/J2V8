@@ -28,7 +28,7 @@ android_config.set_file_abis({
 #-----------------------------------------------------------------------
 def build_node_js(config):
     return [
-        """android-gcc-toolchain $ARCH --api 17 --host gcc-lpthread -C \
+        """android-gcc-toolchain $ARCH --api 21 --host gcc-lpthread -C \
             sh -c \"                \\
             cd ./node;              \\
             ./configure             \\
