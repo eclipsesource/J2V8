@@ -31,7 +31,7 @@ class LibraryLoader {
         String base = "j2v8";
         String osSuffix = getOS();
         String archSuffix = getArchSuffix();
-        return base + "_" + osSuffix + "_" + archSuffix;
+        return base + "-" + osSuffix + "-" + archSuffix;
     }
 
     private static String computeLibraryFullName() {
