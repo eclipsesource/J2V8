@@ -263,7 +263,7 @@ public class V8ObjectUtilsTest {
         Map<String, ? super Object> map = V8ObjectUtils.toMap(object);
 
         assertEquals(1, map.size());
-        assertNull(map.get(0));
+        assertNull(map.get("a"));
         object.release();
     }
 
@@ -1631,6 +1631,16 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testGetArrayBufferNotReleased() {
+        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+
+        V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
+
+        assertFalse(v8ArrayBuffer.isReleased());
+        v8ArrayBuffer.release();
+    }
+
+    @Test
     public void testTypedArrayInList() {
         Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
         int8Array.put(0, (byte) 7);
@@ -2246,7 +2256,7 @@ public class V8ObjectUtilsTest {
         Map<String, ? super Object> map = (Map<String, ? super Object>) V8ObjectUtils.getValue(object);
 
         assertEquals(1, map.size());
-        assertNull(map.get(0));
+        assertNull(map.get("a"));
         object.release();
     }
 

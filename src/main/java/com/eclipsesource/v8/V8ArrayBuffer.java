@@ -95,8 +95,8 @@ public class V8ArrayBuffer extends V8Value {
      * @return The backing store used for this ArrayBuffer.
      */
     public ByteBuffer getBackingStore() {
-        v8.checkReleased();
         v8.checkThread();
+        checkReleased();
         return byteBuffer;
     }
 

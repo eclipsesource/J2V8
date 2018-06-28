@@ -304,8 +304,8 @@ public class V8ObjectUtils {
         Map<Object, V8Value> cache = new Hashtable<Object, V8Value>();
         try {
             Object result = getV8Result(v8, value, cache);
-            if (result instanceof V8Object) {
-                return ((V8Object) result).twin();
+            if (result instanceof V8Value) {
+                return ((V8Value) result).twin();
             }
             return result;
         } finally {
