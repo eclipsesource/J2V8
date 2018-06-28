@@ -839,7 +839,6 @@ public class V8TypedArraysTest {
     public void testInt32TypedArray_BufferReleased() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
-        buffer.release();
         v8.add("v8Int32Array", v8Int32Array);
 
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
@@ -848,6 +847,7 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int32Array.get(0));
         assertEquals(8, v8Int32Array.get(1));
+        buffer.release();
         v8Int32Array.release();
     }
 
@@ -855,7 +855,6 @@ public class V8TypedArraysTest {
     public void testInt32TypedArray_Length() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
-        buffer.release();
         v8.add("v8Int32Array", v8Int32Array);
 
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
@@ -863,6 +862,7 @@ public class V8TypedArraysTest {
         intBuffer.put(8);
 
         assertEquals(2, v8Int32Array.length());
+        buffer.release();
         v8Int32Array.release();
     }
 
@@ -870,7 +870,6 @@ public class V8TypedArraysTest {
     public void testInt32TypedArray_CustomLength() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 1);
-        buffer.release();
         v8.add("v8Int32Array", v8Int32Array);
 
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
@@ -878,6 +877,7 @@ public class V8TypedArraysTest {
         intBuffer.put(8);
 
         assertEquals(1, v8Int32Array.length());
+        buffer.release();
         v8Int32Array.release();
     }
 
@@ -885,7 +885,6 @@ public class V8TypedArraysTest {
     public void testInt32TypedArray_CustomOffset() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 1);
-        buffer.release();
         v8.add("v8Int32Array", v8Int32Array);
 
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
@@ -894,6 +893,7 @@ public class V8TypedArraysTest {
 
         assertEquals(1, v8Int32Array.length());
         assertEquals(8, v8Int32Array.get(0));
+        buffer.release();
         v8Int32Array.release();
     }
 
@@ -1251,7 +1251,6 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_BufferReleased() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
-        buffer.release();
         v8.add("v8Int8Array", v8Int8Array);
 
         ByteBuffer byteBuffer = buffer.getBackingStore();
@@ -1260,6 +1259,7 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int8Array.get(0));
         assertEquals(8, v8Int8Array.get(1));
+        buffer.release();
         v8Int8Array.release();
     }
 
@@ -1267,7 +1267,6 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_Length() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
-        buffer.release();
         v8.add("v8Int8Array", v8Int8Array);
 
         ByteBuffer byteBuffer = buffer.getBackingStore();
@@ -1275,6 +1274,7 @@ public class V8TypedArraysTest {
         byteBuffer.put((byte) 8);
 
         assertEquals(2, v8Int8Array.length());
+        buffer.release();
         v8Int8Array.release();
     }
 
@@ -1282,12 +1282,12 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_CustomLength() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 1);
-        buffer.release();
         v8.add("v8Int8Array", v8Int8Array);
 
         buffer.getBackingStore();
 
         assertEquals(1, v8Int8Array.length());
+        buffer.release();
         v8Int8Array.release();
     }
 
@@ -1295,7 +1295,6 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_CustomOffset() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 1, 1);
-        buffer.release();
         v8.add("v8Int8Array", v8Int8Array);
 
         ByteBuffer byteBuffer = buffer.getBackingStore();
@@ -1304,6 +1303,7 @@ public class V8TypedArraysTest {
 
         assertEquals(1, v8Int8Array.length());
         assertEquals(8, v8Int8Array.get(0));
+        buffer.release();
         v8Int8Array.release();
     }
 
