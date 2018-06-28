@@ -7,10 +7,21 @@
  *
  * Contributors:
  *    EclipseSource - initial API and implementation
+ *    Wolfgang Steiner - code separation PlatformDetector/LibraryLoader
  ******************************************************************************/
 package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.PrintWriter;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,104 +33,136 @@ public class LibraryLoaderTest {
     private String vendor;
     private String arch;
 
+    private Field releaseFilesField;
+    private String[] releaseFiles;
+
+    static void makeFinalStaticAccessible(Field field) {
+        field.setAccessible(true);
+
+        try {
+            // on certain JVMs this is not present and will throw the exceptions below (e.g. the Android Dalvik VM)
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        }
+        catch (NoSuchFieldException e) {}
+        catch (IllegalAccessException e) {}
+    }
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         osName = System.getProperty("os.name");
         vendor = System.getProperty("java.specification.vendor");
         arch = System.getProperty("os.arch");
+
+        Class<?> vendorClass = PlatformDetector.Vendor.class;
+        releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
+        makeFinalStaticAccessible(releaseFilesField);
+
+        releaseFiles = (String[])releaseFilesField.get(null);
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         System.setProperty("os.name", osName);
         System.setProperty("java.specification.vendor", vendor);
         System.setProperty("os.arch", arch);
+
+        releaseFilesField.set(null, releaseFiles);
     }
 
     @Test
-    public void testGetOSMac() {
-        System.setProperty("os.name", "Mac OS X");
+    public void testAndroidLibNameStructure() throws Exception {
+        System.setProperty("os.name", "Android");
+        System.setProperty("java.specification.vendor", "...");
+        System.setProperty("os.arch", "x64");
 
-        assertEquals("macosx", LibraryLoader.getOS());
+        performTests(Platform.ANDROID, null, ".so");
+
+        System.setProperty("os.name", "...");
+        System.setProperty("java.specification.vendor", "Android");
+        System.setProperty("os.arch", "x64");
+
+        performTests(Platform.ANDROID, null, ".so");
     }
 
     @Test
-    public void testGetOSLinux() {
+    public void testLinuxLibNameStructure() throws Exception {
+
+        // skip this test on android
+        if (PlatformDetector.OS.isAndroid())
+            return;
+
         System.setProperty("os.name", "Linux");
+        System.setProperty("java.specification.vendor", "OSS");
+        System.setProperty("os.arch", "x64");
 
-        assertEquals("linux", LibraryLoader.getOS());
+        final String os_release_test_path = "./test-mockup-os-release";
+        final String test_vendor = "linux_vendor";
+
+        // mock /etc/os-release file
+        releaseFilesField.set(null, new String[] { os_release_test_path });
+
+        PrintWriter out = new PrintWriter(os_release_test_path);
+        out.println(
+            "NAME=The-Linux-Vendor\n" +
+            "VERSION=\"towel_42\"\n" +
+            "ID=" + test_vendor + "\n" +
+            "VERSION_ID=42\n"
+        );
+        out.close();
+
+        performTests(Platform.LINUX, test_vendor, ".so");
     }
 
     @Test
-    public void testGetOSWindows() {
+    public void testMacOSXLibNameStructure() throws Exception {
+        System.setProperty("os.name", "MacOSX");
+        System.setProperty("java.specification.vendor", "Apple");
+        System.setProperty("os.arch", "x64");
+
+        performTests(Platform.MACOSX, null, ".dylib");
+    }
+
+    @Test
+    public void testWindowsLibNameStructure() throws Exception {
         System.setProperty("os.name", "Windows");
+        System.setProperty("java.specification.vendor", "Microsoft");
+        System.setProperty("os.arch", "x64");
 
-        assertEquals("win32", LibraryLoader.getOS());
+        performTests(Platform.WINDOWS, null, ".dll");
     }
 
-    @Test
-    public void testGetOSAndroid() {
-        System.setProperty("os.name", "Linux");
-        System.setProperty("java.specification.vendor", "The Android Project");
+    private void performTests(String expectedOsName, String expectedVendor, String expectedLibExtension) {
+        // API calls
+        String libName = LibraryLoader.computeLibraryShortName(true);
+        String[] parts = libName.split("-");
 
-        assertEquals("android", LibraryLoader.getOS());
+        // test assertions
+        int i = 0;
+        int expectedParts = expectedVendor != null ? 4 : 3;
+        assertEquals(expectedParts, parts.length);
+        assertEquals("j2v8", parts[i++]);
+        if (expectedVendor != null)
+            assertEquals(expectedVendor, parts[i++]);
+        assertEquals(expectedOsName, parts[i++]);
+        assertEquals("x86_64", parts[i++]);
+
+        // API calls
+        libName = LibraryLoader.computeLibraryShortName(false);
+        parts = libName.split("-");
+
+        // test assertions
+        assertEquals(3, parts.length);
+        assertEquals("j2v8", parts[0]);
+        assertEquals(expectedOsName, parts[1]);
+        assertEquals("x86_64", parts[2]);
+
+        // API calls
+        libName = LibraryLoader.computeLibraryFullName(false);
+
+        // test assertions
+        assertTrue(libName.startsWith("libj2v8"));
+        assertTrue(libName.endsWith(expectedLibExtension));
     }
-
-    @Test
-    public void testGetOSFileExtensionNativeClient() {
-        System.setProperty("os.name", "naclthe android project");
-        System.setProperty("java.specification.vendor", "The Android Project");
-
-        assertEquals("so", LibraryLoader.getOSFileExtension());
-    }
-
-    @Test
-    public void testGetArchxNaCl() {
-        System.setProperty("os.arch", "nacl");
-
-        assertEquals("armv7l", LibraryLoader.getArchSuffix());
-    }
-    
-    @Test
-    public void testGetArchaarch64() {
-        System.setProperty("os.arch", "aarch64");
-
-        assertEquals("armv7l", LibraryLoader.getArchSuffix());
-    }
-
-    @Test
-    public void testGetArchx86() {
-        System.setProperty("os.arch", "x86");
-
-        assertEquals("x86", LibraryLoader.getArchSuffix());
-    }
-
-    @Test
-    public void testGetArchx86_64() {
-        System.setProperty("os.arch", "x86_64");
-
-        assertEquals("x86_64", LibraryLoader.getArchSuffix());
-    }
-
-    @Test
-    public void testGetArchx64FromAmd64() {
-        System.setProperty("os.arch", "amd64");
-
-        assertEquals("x86_64", LibraryLoader.getArchSuffix());
-    }
-
-    @Test
-    public void testGetArcharmv7l() {
-        System.setProperty("os.arch", "armv7l");
-
-        assertEquals("armv7l", LibraryLoader.getArchSuffix());
-    }
-
-    @Test
-    public void test686isX86() {
-        System.setProperty("os.arch", "i686");
-
-        assertEquals("x86", LibraryLoader.getArchSuffix());
-    }
-
 }
