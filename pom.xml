@@ -97,17 +97,6 @@
           <runOrder>alphabetical</runOrder>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Export-Package>com.eclipsesource.v8.*</Export-Package>
-            <Eclipse-PlatformFilter>(&amp; (osgi.ws=${ws})(osgi.os=${os})(osgi.arch=${arch}))</Eclipse-PlatformFilter>
-          </instructions>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
