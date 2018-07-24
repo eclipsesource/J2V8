@@ -173,6 +173,10 @@ class LibraryLoader {
         return getOsName().startsWith("nacl");
     }
 
+    static boolean isBB10Client() {
+        return getOsName().startsWith("qnx");
+    }
+
     static boolean isAndroid() {
         return getOsName().contains("Android");
     }
@@ -187,6 +191,8 @@ class LibraryLoader {
             return "armv7l";
         } else if (arch.equals("aarch64")) {
             return "armv7l";
+        } else if (isBB10Client()) {
+            return "armv7l";
         }
         return arch;
     }
@@ -200,6 +206,8 @@ class LibraryLoader {
             return "so";
         } else if (isNativeClient()) {
             return "so";
+        } else if (isBB10Client()) {
+            return "so";
         }
         throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
     }
@@ -209,9 +217,9 @@ class LibraryLoader {
             return "win32";
         } else if (isMac()) {
             return "macosx";
-        } else if (isLinux() && !isAndroid()) {
+        } else if (isLinux() && !(isAndroid() || isBB10Client())) {
             return "linux";
-        } else if (isAndroid()) {
+        } else if (isAndroid() || isBB10Client()) {
             return "android";
         }
         throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
