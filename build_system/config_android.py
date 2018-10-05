@@ -4,6 +4,7 @@ from docker_build import DockerBuildSystem, DockerBuildStep
 import shared_build_steps as u
 import build_utils as b
 import cmake_utils as cmu
+import os
 
 android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm])
 
@@ -115,6 +116,8 @@ def build_j2v8_test(config):
                 .replace("$IMG_ARCH", config.file_abi)
                 .replace("$EMU_ARCH", emu_arch)
         )
+
+	os.chmod("./docker/android/start-emulator.sh", 0755)
 
         return ["/usr/bin/supervisord -c /j2v8/docker/android/supervisord.conf"]
 
