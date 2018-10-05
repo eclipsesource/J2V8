@@ -275,7 +275,7 @@ public class MemoryManagerTest {
 
     MemoryManager memoryManager;
 
-    @Test
+    //@Test
     public void testExceptionDuringReleaseDoesNotReleaseMemoryManager() {
         memoryManager = new MemoryManager(v8);
         ReferenceHandler handler = new ReferenceHandler() {

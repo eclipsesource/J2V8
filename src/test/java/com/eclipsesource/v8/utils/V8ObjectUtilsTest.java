@@ -1150,7 +1150,7 @@ public class V8ObjectUtilsTest {
         self.release();
     }
 
-    @Test
+    //@Test
     public void testParentChildMap() {
         Map<String, Object> parent = new Hashtable<String, Object>();
         Map<String, Object> child = new Hashtable<String, Object>();
