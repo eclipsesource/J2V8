@@ -1615,6 +1615,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
   jobject jreceiver = getResult(env, v8, md->v8RuntimePtr, receiver, com_eclipsesource_v8_V8_UNKNOWN);
   jobject resultObject = env->CallObjectMethod(v8, v8CallObjectJavaMethodMethodID, md->methodID, jreceiver, parameters);
   if (env->ExceptionCheck()) {
+    resultObject = NULL;
     Isolate* isolate = getIsolate(env, md->v8RuntimePtr);
     reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->pendingException = env->ExceptionOccurred();
     env->ExceptionClear();
