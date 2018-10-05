@@ -29,12 +29,9 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStreamReader;
 import java.util.Locale;
-
-import com.eclipsesource.v8.Platform;
 
 public class PlatformDetector {
     public static class Arch {
@@ -42,9 +39,10 @@ public class PlatformDetector {
             final String archProperty = System.getProperty("os.arch");
             final String archName = normalizeArch(archProperty);
 
-            if (archName.equals(Platform.UNKNOWN))
+            if (archName.equals(Platform.UNKNOWN)) {
                 throw new UnsatisfiedLinkError("Unsupported arch: " + archProperty);
-            
+            }
+
             return archName;
         }
     }
@@ -62,8 +60,9 @@ public class PlatformDetector {
                 return Platform.ANDROID;
             }
 
-            if (osName.equals(Platform.UNKNOWN))
+            if (osName.equals(Platform.UNKNOWN)) {
                 throw new UnsatisfiedLinkError("Unsupported platform/vendor: " + osProperty + " / " + vendorProperty);
+            }
 
             return osName;
         }
@@ -89,16 +88,19 @@ public class PlatformDetector {
         }
 
         public static String getLibFileExtension() {
-            if (isWindows())
+            if (isWindows()) {
                 return "dll";
+            }
 
-            if (isMac())
+            if (isMac()) {
                 return "dylib";
+            }
 
             if (isLinux()
                 || isAndroid()
-                || isNativeClient())
+                || isNativeClient()) {
                 return "so";
+            }
 
             throw new UnsatisfiedLinkError("Unsupported platform library-extension for: " + getName());
         }
@@ -110,14 +112,18 @@ public class PlatformDetector {
         private static final String LINUX_ID_PREFIX = "ID=";
 
         public static String getName() {
-            if (OS.isWindows())
+            if (OS.isWindows()) {
                 return "microsoft";
-            if (OS.isMac())
+            }
+            if (OS.isMac()) {
                 return "apple";
-            if (OS.isLinux())
+            }
+            if (OS.isLinux()) {
                 return getLinuxOsReleaseId();
-            if (OS.isAndroid())
+            }
+            if (OS.isAndroid()) {
                 return "google";
+            }
 
             throw new UnsatisfiedLinkError("Unsupported vendor: " + getName());
         }
@@ -141,7 +147,7 @@ public class PlatformDetector {
             throw new UnsatisfiedLinkError("Unsupported linux vendor: " + getName());
         }
 
-        private static String parseLinuxOsReleaseFile(File file) {
+        private static String parseLinuxOsReleaseFile(final File file) {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"));
@@ -166,7 +172,7 @@ public class PlatformDetector {
             return null;
         }
 
-        private static String parseLinuxRedhatReleaseFile(File file) {
+        private static String parseLinuxRedhatReleaseFile(final File file) {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"));
@@ -198,7 +204,7 @@ public class PlatformDetector {
             return null;
         }
 
-        private static void closeQuietly(Closeable obj) {
+        private static void closeQuietly(final Closeable obj) {
             try {
                 if (obj != null) {
                     obj.close();
@@ -209,7 +215,7 @@ public class PlatformDetector {
         }
     }
 
-    private static String normalizeOsReleaseValue(String value) {
+    private static String normalizeOsReleaseValue(final String value) {
         // Remove any quotes from the string.
         return value.trim().replace("\"", "");
     }
@@ -224,7 +230,7 @@ public class PlatformDetector {
         }
         if (value.startsWith("os400")) {
             // Avoid the names such as os4000
-            if (value.length() <= 5 || !Character.isDigit(value.charAt(5))) {
+            if ((value.length() <= 5) || !Character.isDigit(value.charAt(5))) {
                 return "os400";
             }
         }
@@ -301,7 +307,7 @@ public class PlatformDetector {
         return Platform.UNKNOWN;
     }
 
-    private static String normalize(String value) {
+    private static String normalize(final String value) {
         if (value == null) {
             return "";
         }

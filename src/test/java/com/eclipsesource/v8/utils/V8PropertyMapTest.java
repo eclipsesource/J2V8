@@ -314,10 +314,6 @@ public class V8PropertyMapTest {
         Set<Entry<String, Object>> entrySet = map.entrySet();
 
         assertEquals(4, entrySet.size());
-        entrySet.contains(null);
-        entrySet.contains(1);
-        entrySet.contains(2);
-        entrySet.contains(3);
     }
 
     @Test
@@ -332,11 +328,6 @@ public class V8PropertyMapTest {
         Set<Entry<String, Object>> entrySet = map.entrySet();
 
         assertEquals(5, entrySet.size());
-        entrySet.contains(null);
-        entrySet.contains(1);
-        entrySet.contains(2);
-        entrySet.contains(3);
-        entrySet.contains(map);
     }
 
     @Test

@@ -13,15 +13,10 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.PrintWriter;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
-import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +31,7 @@ public class LibraryLoaderTest {
     private Field releaseFilesField;
     private String[] releaseFiles;
 
-    static void makeFinalStaticAccessible(Field field) {
+    static void makeFinalStaticAccessible(final Field field) {
         field.setAccessible(true);
 
         try {
@@ -90,8 +85,9 @@ public class LibraryLoaderTest {
     public void testLinuxLibNameStructure() throws Exception {
 
         // skip this test on android
-        if (PlatformDetector.OS.isAndroid())
+        if (PlatformDetector.OS.isAndroid()) {
             return;
+        }
 
         System.setProperty("os.name", "Linux");
         System.setProperty("java.specification.vendor", "OSS");
@@ -133,7 +129,7 @@ public class LibraryLoaderTest {
         performTests(Platform.WINDOWS, null, ".dll");
     }
 
-    private void performTests(String expectedOsName, String expectedVendor, String expectedLibExtension) {
+    private void performTests(final String expectedOsName, final String expectedVendor, final String expectedLibExtension) {
         // API calls
         String libName = LibraryLoader.computeLibraryShortName(true);
         String[] parts = libName.split("-");
@@ -143,8 +139,9 @@ public class LibraryLoaderTest {
         int expectedParts = expectedVendor != null ? 4 : 3;
         assertEquals(expectedParts, parts.length);
         assertEquals("j2v8", parts[i++]);
-        if (expectedVendor != null)
+        if (expectedVendor != null) {
             assertEquals(expectedVendor, parts[i++]);
+        }
         assertEquals(expectedOsName, parts[i++]);
         assertEquals("x86_64", parts[i++]);
 

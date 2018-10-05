@@ -242,7 +242,7 @@ public class V8CallbackTest {
 
         v8.executeVoidScript("var bar = function() {}; foo(bar);");
 
-        verify(callback).voidMethodWithObjectParameter(isNotNull(V8Function.class));
+        verify(callback).voidMethodWithObjectParameter((V8Object) isNotNull());
     }
 
     @Test
@@ -252,7 +252,7 @@ public class V8CallbackTest {
 
         v8.executeVoidScript("var bar = function() {}; foo(bar);");
 
-        verify(callback).voidMethodWithFunctionParameter(isNotNull(V8Function.class));
+        verify(callback).voidMethodWithFunctionParameter((V8Function) isNotNull());
     }
 
     @Test
@@ -303,7 +303,7 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo({});");
 
         verify(callback).voidMethodV8ObjectVarArgs(any(V8Object.class));
-        verify(callback).voidMethodV8ObjectVarArgs(notNull(V8Object.class));
+        verify(callback).voidMethodV8ObjectVarArgs((V8Object[]) notNull());
     }
 
     @Test
@@ -314,7 +314,7 @@ public class V8CallbackTest {
         v8.executeVoidScript("foo([]);");
 
         verify(callback).voidMethodV8ObjectVarArgs(any(V8Array.class));
-        verify(callback).voidMethodV8ObjectVarArgs(notNull(V8Array.class));
+        verify(callback).voidMethodV8ObjectVarArgs((V8Object[]) notNull());
     }
 
     @Test

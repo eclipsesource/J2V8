@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class NodeJSTest {
@@ -30,16 +29,18 @@ public class NodeJSTest {
 
     @Before
     public void setup() {
-        if (skipTest())
+        if (skipTest()) {
             return;
+        }
 
         nodeJS = NodeJS.createNodeJS();
     }
 
     @After
     public void tearDown() {
-        if (skipTest())
+        if (skipTest()) {
             return;
+        }
 
         nodeJS.release();
     }
