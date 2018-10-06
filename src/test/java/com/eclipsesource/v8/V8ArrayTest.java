@@ -42,7 +42,7 @@ public class V8ArrayTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -51,16 +51,18 @@ public class V8ArrayTest {
         }
     }
 
+    @SuppressWarnings("resource")
     @Test(expected = IllegalStateException.class)
     public void testDoNotReleaseArrayReference() {
         V8 _v8 = V8.createV8Runtime();
         new V8Array(_v8);
-        _v8.release();
+        _v8.close();
     }
 
     @Test
     public void testGetArrayElementFromProperties() {
-        V8Array v8Array = new V8Array(v8).push("1").push(2).push(3.3);
+        V8Array v8Array = new V8Array(v8);
+        v8Array.push("1").push(2).push(3.3);
 
         String result1 = v8Array.getString("0");
         int result2 = v8Array.getInteger("1");
@@ -69,7 +71,7 @@ public class V8ArrayTest {
         assertEquals("1", result1);
         assertEquals(2, result2);
         assertEquals(3.3, result3, 0.000001);
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -86,14 +88,14 @@ public class V8ArrayTest {
         assertEquals(2, v8Array.getInteger(10));
         assertEquals(3, v8Array.getInteger(19));
         assertEquals(4, v8Array.getInteger("bob"));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
     public void testCreateAndReleaseArray() {
         for (int i = 0; i < 10000; i++) {
             V8Array v8Array = new V8Array(v8);
-            v8Array.release();
+            v8Array.close();
         }
     }
 
@@ -102,7 +104,7 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("[1,2,3];");
 
         assertEquals(3, array.length());
-        array.release();
+        array.close();
     }
 
     @Test
@@ -110,7 +112,7 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("[];");
 
         assertEquals(0, array.length());
-        array.release();
+        array.close();
     }
 
     /*** Undefined ***/
@@ -126,6 +128,7 @@ public class V8ArrayTest {
         assertEquals(new V8Object.Undefined(), new V8Array.Undefined());
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testObjectUndefinedHashCodeEqualsArrayUndefinedHashCode() {
         assertEquals(new V8Object.Undefined().hashCode(), new V8Array.Undefined().hashCode());
@@ -165,7 +168,7 @@ public class V8ArrayTest {
     public void testUndefinedRelease() {
         V8Array undefined = v8.getArray("object");
 
-        undefined.release();
+        undefined.close();
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -225,7 +228,7 @@ public class V8ArrayTest {
         try {
             undefined.add("foo", object);
         } finally {
-            object.release();
+            object.close();
         }
     }
 
@@ -237,7 +240,7 @@ public class V8ArrayTest {
         try {
             undefined.add("foo", array);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -375,7 +378,7 @@ public class V8ArrayTest {
         try {
             undefined.setPrototype(prototype);
         } finally {
-            prototype.release();
+            prototype.close();
         }
     }
 
@@ -478,7 +481,7 @@ public class V8ArrayTest {
         try {
             undefined.push(object);
         } finally {
-            object.release();
+            object.close();
         }
     }
 
@@ -490,7 +493,7 @@ public class V8ArrayTest {
         try {
             undefined.push(array);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -586,7 +589,7 @@ public class V8ArrayTest {
 
         assertTrue(result instanceof Integer);
         assertEquals(7, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -597,7 +600,7 @@ public class V8ArrayTest {
 
         assertTrue(result instanceof Double);
         assertEquals(7.7, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -608,7 +611,7 @@ public class V8ArrayTest {
 
         assertTrue(result instanceof String);
         assertEquals("bar", result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -619,7 +622,7 @@ public class V8ArrayTest {
 
         assertTrue(result instanceof Boolean);
         assertEquals(true, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -629,7 +632,7 @@ public class V8ArrayTest {
         Object result = array.get(0);
 
         assertTrue(result instanceof V8Object);
-        array.release();
+        array.close();
         ((Releasable) result).release();
     }
 
@@ -640,7 +643,7 @@ public class V8ArrayTest {
         Object result = array.get(0);
 
         assertTrue(result instanceof V8Array);
-        array.release();
+        array.close();
         ((Releasable) result).release();
     }
 
@@ -651,7 +654,7 @@ public class V8ArrayTest {
         Object result = array.get(0);
 
         assertNull(result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -661,7 +664,7 @@ public class V8ArrayTest {
         Object result = array.get(0);
 
         assertEquals(V8.getUndefined(), result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -671,7 +674,7 @@ public class V8ArrayTest {
         Object result = array.get(0);
 
         assertTrue(result instanceof V8Function);
-        array.release();
+        array.close();
         ((Releasable) result).release();
     }
 
@@ -681,7 +684,7 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("x = [null]; x;");
 
         assertNull(array.getString(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -689,7 +692,7 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("x = [null]; x;");
 
         assertEquals(NULL, array.getType(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -697,15 +700,16 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("x = [null]; x;");
 
         assertNull(array.getObject(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushUndefined() {
-        V8Array array = new V8Array(v8).push((Object) V8.getUndefined());
+        V8Array array = new V8Array(v8);
+        array.push((Object) V8.getUndefined());
 
         assertEquals(V8.getUndefined(), array.get(0));
-        array.release();
+        array.close();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -714,52 +718,57 @@ public class V8ArrayTest {
         try {
             array.push(new Object());
         } finally {
-            array.release();
+            array.close();
         }
     }
 
     @Test
     public void testGenericPushNull() {
-        V8Array array = new V8Array(v8).push((Object) null);
+        V8Array array = new V8Array(v8);
+        array.push((Object) null);
 
         assertNull(array.get(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushInteger() {
-        V8Array array = new V8Array(v8).push(new Integer(7));
+        V8Array array = new V8Array(v8);
+        array.push(new Integer(7));
 
         assertEquals(7, array.get(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushDouble() {
-        V8Array array = new V8Array(v8).push(new Double(7.7777));
+        V8Array array = new V8Array(v8);
+        array.push(new Double(7.7777));
 
         assertEquals(7.7777, (Double) array.get(0), 0.0001);
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushBoolean() {
-        V8Array array = new V8Array(v8).push(new Boolean(true));
+        V8Array array = new V8Array(v8);
+        array.push(new Boolean(true));
 
         assertTrue((Boolean) array.get(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushObject() {
         V8Object object = new V8Object(v8);
-        V8Array array = new V8Array(v8).push(object);
+        V8Array array = new V8Array(v8);
+        array.push(object);
 
         V8Value result = (V8Value) array.get(0);
         assertEquals(object, result);
-        array.release();
-        object.release();
-        result.release();
+        array.close();
+        object.close();
+        result.close();
     }
 
     @Test(expected = Error.class)
@@ -770,50 +779,55 @@ public class V8ArrayTest {
         try {
             array.push(object);
         } finally {
-            array.release();
-            object.release();
-            newV8.release();
+            array.close();
+            object.close();
+            newV8.close();
         }
     }
 
     @Test
     public void testGenericPushFloat() {
-        V8Array array = new V8Array(v8).push(new Float(3.14));
+        V8Array array = new V8Array(v8);
+        array.push(new Float(3.14));
 
         assertEquals(3.14, (Double) array.get(0), 0.0001);
-        array.release();
+        array.close();
     }
 
     @Test
     public void testGenericPushString() {
-        V8Array array = new V8Array(v8).push((Object) "foo");
+        V8Array array = new V8Array(v8);
+        array.push((Object) "foo");
 
         assertEquals("foo", array.get(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testAddNullAsObject() {
-        V8Array array = new V8Array(v8).push((V8Object) null);
+        V8Array array = new V8Array(v8);
+        array.push((V8Object) null);
 
         assertNull(array.getObject(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testAddNullAsString() {
-        V8Array array = new V8Array(v8).push((String) null);
+        V8Array array = new V8Array(v8);
+        array.push((String) null);
 
         assertNull(array.getObject(0));
-        array.release();
+        array.close();
     }
 
     @Test
     public void testAddNullAsArray() {
-        V8Array array = new V8Array(v8).push((V8Array) null);
+        V8Array array = new V8Array(v8);
+        array.push((V8Array) null);
 
         assertNull(array.getArray(0));
-        array.release();
+        array.close();
     }
 
     /*** Get Byte ***/
@@ -824,7 +838,7 @@ public class V8ArrayTest {
         byte result = array.getByte(0);
 
         assertEquals(3, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -834,7 +848,7 @@ public class V8ArrayTest {
         byte result = array.getByte(0);
 
         assertEquals(0, result);
-        array.release();
+        array.close();
     }
 
     /*** Get Int ***/
@@ -845,7 +859,7 @@ public class V8ArrayTest {
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
         assertEquals(8, array.getInteger(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -854,7 +868,7 @@ public class V8ArrayTest {
 
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
-        array.release();
+        array.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -864,7 +878,7 @@ public class V8ArrayTest {
         try {
             array.getInteger(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -874,7 +888,7 @@ public class V8ArrayTest {
         try {
             array.getInteger(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -884,7 +898,7 @@ public class V8ArrayTest {
 
         v8.executeVoidScript("foo[0] = 1");
         assertEquals(1, array.getInteger(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -895,7 +909,7 @@ public class V8ArrayTest {
         for (int i = 0; i < 10000; i++) {
             assertEquals(i, array.getInteger(i));
         }
-        array.release();
+        array.close();
     }
 
     /*** Get Boolean ***/
@@ -906,7 +920,7 @@ public class V8ArrayTest {
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
         assertFalse(array.getBoolean(2));
-        array.release();
+        array.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -916,7 +930,7 @@ public class V8ArrayTest {
         try {
             array.getBoolean(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -926,7 +940,7 @@ public class V8ArrayTest {
         try {
             array.getBoolean(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -936,7 +950,7 @@ public class V8ArrayTest {
 
         v8.executeVoidScript("foo[0] = true");
         assertTrue(array.getBoolean(0));
-        array.release();
+        array.close();
     }
 
     /*** Get Double ***/
@@ -947,7 +961,7 @@ public class V8ArrayTest {
         assertEquals(3.1, array.getDouble(0), 0.00001);
         assertEquals(4.2, array.getDouble(1), 0.00001);
         assertEquals(5.3, array.getDouble(2), 0.00001);
-        array.release();
+        array.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -957,7 +971,7 @@ public class V8ArrayTest {
         try {
             array.getDouble(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -967,7 +981,7 @@ public class V8ArrayTest {
         try {
             array.getDouble(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -977,7 +991,7 @@ public class V8ArrayTest {
 
         v8.executeVoidScript("foo[0] = 3.14159");
         assertEquals(3.14159, array.getDouble(0), 0.000001);
-        array.release();
+        array.close();
     }
 
     /*** Get String ***/
@@ -988,7 +1002,7 @@ public class V8ArrayTest {
         assertEquals("first", array.getString(0));
         assertEquals("second", array.getString(1));
         assertEquals("third", array.getString(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -998,7 +1012,7 @@ public class V8ArrayTest {
         assertEquals("🎉", array.getString(0));
         assertEquals("🌞", array.getString(1));
         assertEquals("💐", array.getString(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1009,7 +1023,7 @@ public class V8ArrayTest {
         assertEquals("🎉", result[0]);
         assertEquals("🌞", result[1]);
         assertEquals("💐", result[2]);
-        array.release();
+        array.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1019,7 +1033,7 @@ public class V8ArrayTest {
         try {
             array.getString(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -1029,7 +1043,7 @@ public class V8ArrayTest {
         try {
             array.getString(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -1039,7 +1053,7 @@ public class V8ArrayTest {
 
         v8.executeVoidScript("foo[0] = 'test'");
         assertEquals("test", array.getString(0));
-        array.release();
+        array.close();
     }
 
     /**** Get Object ****/
@@ -1050,8 +1064,8 @@ public class V8ArrayTest {
         V8Object object = array.getObject(0);
         assertEquals("joe", object.getString("name"));
         assertEquals(38, object.getInteger("age"));
-        array.release();
-        object.release();
+        array.close();
+        object.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1061,7 +1075,7 @@ public class V8ArrayTest {
         try {
             array.getObject(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -1072,7 +1086,7 @@ public class V8ArrayTest {
 
         assertTrue(result.isUndefined());
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1082,8 +1096,8 @@ public class V8ArrayTest {
         v8.executeVoidScript("foo[0] = {foo:'bar'}");
         V8Object obj = array.getObject(0);
         assertEquals("bar", obj.getString("foo"));
-        array.release();
-        obj.release();
+        array.close();
+        obj.close();
     }
 
     /*** Get Array ***/
@@ -1098,10 +1112,10 @@ public class V8ArrayTest {
         assertEquals(2, array2.length());
         assertEquals(1, array3.length());
 
-        array.release();
-        array1.release();
-        array2.release();
-        array3.release();
+        array.close();
+        array1.close();
+        array2.close();
+        array3.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1111,7 +1125,7 @@ public class V8ArrayTest {
         try {
             array.getArray(0);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -1122,7 +1136,7 @@ public class V8ArrayTest {
         V8Array result = array.getArray(0);
 
         assertTrue(result.isUndefined());
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1132,8 +1146,8 @@ public class V8ArrayTest {
         v8.executeVoidScript("foo[0] = [1,2,3]");
         V8Array array1 = array.getArray(0);
         assertEquals(3, array1.length());
-        array.release();
-        array1.release();
+        array.close();
+        array1.close();
     }
 
     /**** Mixed Array ****/
@@ -1146,7 +1160,7 @@ public class V8ArrayTest {
         assertEquals(3, array.getInteger(1));
         assertEquals(3.1, array.getDouble(2), 0.00001);
         assertTrue(array.getBoolean(3));
-        array.release();
+        array.close();
     }
 
     /*** Add Primitives ***/
@@ -1162,7 +1176,7 @@ public class V8ArrayTest {
         assertEquals(7, array.getInteger(0));
         assertEquals(8, array.getInteger(1));
         assertEquals(9, array.getInteger(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1179,7 +1193,7 @@ public class V8ArrayTest {
         assertEquals("second", array.getString(1));
         assertEquals("third", array.getString(2));
         assertEquals("forth", array.getString(3));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1196,7 +1210,7 @@ public class V8ArrayTest {
         assertEquals(2.2, array.getDouble(1), 0.000001);
         assertEquals(3.3, array.getDouble(2), 0.000001);
         assertEquals(4.9, array.getDouble(3), 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1209,7 +1223,7 @@ public class V8ArrayTest {
         assertEquals(2, array.length());
         assertTrue(array.getBoolean(0));
         assertFalse(array.getBoolean(1));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1231,7 +1245,7 @@ public class V8ArrayTest {
         assertFalse(array.getBoolean(4));
         assertEquals(UNDEFINED, array.getType(5));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1242,7 +1256,7 @@ public class V8ArrayTest {
 
         assertEquals(6, array.length());
         assertFalse(array.getBoolean(5));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1250,26 +1264,28 @@ public class V8ArrayTest {
         V8Array array = v8.executeArrayScript("x = []; x[0] = 'foo'; x[100] = 'bar'; x['boo'] = 'baz'; x");
 
         assertEquals(101, array.length());
-        array.release();
+        array.close();
     }
 
     @Test
     public void testAddUndefined() {
-        V8Array v8Array = new V8Array(v8).pushUndefined();
+        V8Array v8Array = new V8Array(v8);
+        v8Array.pushUndefined();
 
         assertEquals(1, v8Array.length());
         assertEquals(UNDEFINED, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
     public void testAddNull() {
-        V8Array v8Array = new V8Array(v8).pushNull();
+        V8Array v8Array = new V8Array(v8);
+        v8Array.pushNull();
 
         assertEquals(1, v8Array.length());
         assertEquals(NULL, v8Array.getType(0));
         assertNull(v8Array.getObject(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1277,7 +1293,7 @@ public class V8ArrayTest {
         V8Array v8Array = v8.executeArrayScript("[null];");
 
         assertEquals(NULL, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1306,11 +1322,11 @@ public class V8ArrayTest {
         int result = v8.getInteger("total");
 
         assertEquals(45, result);
-        a1.release();
-        a2.release();
-        a3.release();
-        array.release();
-        parameters.release();
+        a1.close();
+        a2.close();
+        a3.close();
+        array.close();
+        parameters.close();
     }
 
     @Test
@@ -1336,11 +1352,11 @@ public class V8ArrayTest {
         assertEquals("Tim", result2.getString("first"));
         assertEquals("Jones", result2.getString("last"));
         assertEquals(8, result2.getInteger("age"));
-        obj1.release();
-        obj2.release();
-        array.release();
-        result1.release();
-        result2.release();
+        obj1.close();
+        obj2.close();
+        array.close();
+        result1.close();
+        result2.close();
     }
 
     /*** Test Types ***/
@@ -1351,7 +1367,7 @@ public class V8ArrayTest {
         v8Array.push(1);
 
         assertEquals(INTEGER, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1361,7 +1377,7 @@ public class V8ArrayTest {
         v8Array.push(1.1);
 
         assertEquals(DOUBLE, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1371,7 +1387,7 @@ public class V8ArrayTest {
         v8Array.push("String");
 
         assertEquals(STRING, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1381,7 +1397,7 @@ public class V8ArrayTest {
         v8Array.push(false);
 
         assertEquals(BOOLEAN, v8Array.getType(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1392,8 +1408,8 @@ public class V8ArrayTest {
         v8Array.push(value);
 
         assertEquals(V8_ARRAY, v8Array.getType(0));
-        v8Array.release();
-        value.release();
+        v8Array.close();
+        value.close();
     }
 
     @Test
@@ -1401,11 +1417,12 @@ public class V8ArrayTest {
         v8.executeVoidScript("var foo = function() {};");
         V8Object function = v8.getObject("foo");
 
-        V8Array v8Array = new V8Array(v8).push(function);
+        V8Array v8Array = new V8Array(v8);
+        v8Array.push(function);
 
         assertEquals(V8_FUNCTION, v8Array.getType(0));
-        v8Array.release();
-        function.release();
+        v8Array.close();
+        function.close();
     }
 
     @Test
@@ -1416,8 +1433,8 @@ public class V8ArrayTest {
         v8Array.push(value);
 
         assertEquals(V8_OBJECT, v8Array.getType(0));
-        v8Array.release();
-        value.release();
+        v8Array.close();
+        value.close();
     }
 
     @Test
@@ -1427,7 +1444,7 @@ public class V8ArrayTest {
         int result = v8Array.getType(0);
 
         assertEquals(UNDEFINED, result);
-        v8Array.release();
+        v8Array.close();
     }
 
     /*** Equals ***/
@@ -1439,8 +1456,8 @@ public class V8ArrayTest {
 
         assertEquals(o1, o2);
 
-        o1.release();
-        o2.release();
+        o1.close();
+        o2.close();
     }
 
     @Test
@@ -1451,8 +1468,8 @@ public class V8ArrayTest {
 
         assertEquals(o1, o2);
 
-        o1.release();
-        o2.release();
+        o1.close();
+        o2.close();
     }
 
     @Test
@@ -1462,8 +1479,8 @@ public class V8ArrayTest {
 
         assertNotEquals(a, b);
 
-        a.release();
-        b.release();
+        a.close();
+        b.close();
     }
 
     @Test
@@ -1473,8 +1490,8 @@ public class V8ArrayTest {
 
         assertEquals(a.hashCode(), b.hashCode());
 
-        a.release();
-        b.release();
+        a.close();
+        b.close();
     }
 
     @Test
@@ -1484,7 +1501,7 @@ public class V8ArrayTest {
         assertNotEquals(a, null);
         assertNotEquals(null, a);
 
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1495,7 +1512,7 @@ public class V8ArrayTest {
 
         assertEquals(hash1, hash2);
 
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1505,7 +1522,7 @@ public class V8ArrayTest {
         int result = a.getType(0, 5);
 
         assertEquals(INTEGER, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1515,7 +1532,7 @@ public class V8ArrayTest {
         int result = a.getType(1, 3);
 
         assertEquals(DOUBLE, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1525,7 +1542,7 @@ public class V8ArrayTest {
         int result = a.getType(0, 3);
 
         assertEquals(STRING, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1535,7 +1552,7 @@ public class V8ArrayTest {
         int result = a.getType(1, 3);
 
         assertEquals(BOOLEAN, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1545,7 +1562,7 @@ public class V8ArrayTest {
         int result = a.getType(1, 3);
 
         assertEquals(UNDEFINED, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1555,7 +1572,7 @@ public class V8ArrayTest {
         int result = a.getType(1, 3);
 
         assertEquals(V8_ARRAY, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1565,7 +1582,7 @@ public class V8ArrayTest {
         int result = a.getType(1, 3);
 
         assertEquals(V8_OBJECT, result);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1575,7 +1592,7 @@ public class V8ArrayTest {
         int result = a.getType(4, 1);
 
         assertEquals(INTEGER, result);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1585,7 +1602,7 @@ public class V8ArrayTest {
         try {
             a.getType(0, 5);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1596,7 +1613,7 @@ public class V8ArrayTest {
         try {
             a.getType(0, 0);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1607,7 +1624,7 @@ public class V8ArrayTest {
         try {
             a.getType(5, 0);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1623,7 +1640,7 @@ public class V8ArrayTest {
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
         assertEquals(5, result[4]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1634,7 +1651,7 @@ public class V8ArrayTest {
 
         assertEquals(1, result.length);
         assertEquals(5, result[0]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1646,7 +1663,7 @@ public class V8ArrayTest {
         assertEquals(2, result.length);
         assertEquals(4, result[0]);
         assertEquals(5, result[1]);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1656,7 +1673,7 @@ public class V8ArrayTest {
         try {
             a.getIntegers(0, 5);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1672,7 +1689,7 @@ public class V8ArrayTest {
         assertEquals(3, ints[2]);
         assertEquals(4, ints[3]);
         assertEquals(5, ints[4]);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1682,7 +1699,7 @@ public class V8ArrayTest {
         try {
             a.getIntegers(3, 3);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1698,7 +1715,7 @@ public class V8ArrayTest {
         assertEquals(3.1, result[2], 000001);
         assertEquals(4.1, result[3], 000001);
         assertEquals(5.1, result[4], 000001);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1709,7 +1726,7 @@ public class V8ArrayTest {
 
         assertEquals(1, result.length);
         assertEquals(5.1, result[0], 0.000001);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1721,7 +1738,7 @@ public class V8ArrayTest {
         assertEquals(2, result.length);
         assertEquals(4.1, result[0], 0.000001);
         assertEquals(5.1, result[1], 0.000001);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1731,7 +1748,7 @@ public class V8ArrayTest {
         try {
             a.getIntegers(0, 5);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1742,7 +1759,7 @@ public class V8ArrayTest {
         try {
             a.getIntegers(3, 3);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1758,7 +1775,7 @@ public class V8ArrayTest {
         assertTrue(result[2]);
         assertTrue(result[3]);
         assertFalse(result[4]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1773,7 +1790,7 @@ public class V8ArrayTest {
         assertEquals(2, result[2]);
         assertEquals(3, result[3]);
         assertEquals(0, result[4]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1784,7 +1801,7 @@ public class V8ArrayTest {
 
         assertEquals(1, result.length);
         assertFalse(result[0]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1796,7 +1813,7 @@ public class V8ArrayTest {
         assertEquals(2, result.length);
         assertTrue(result[0]);
         assertFalse(result[1]);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1806,7 +1823,7 @@ public class V8ArrayTest {
         try {
             a.getBooleans(0, 5);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1817,7 +1834,7 @@ public class V8ArrayTest {
         try {
             a.getBooleans(3, 3);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1833,7 +1850,7 @@ public class V8ArrayTest {
         assertEquals("c", result[2]);
         assertEquals("d", result[3]);
         assertEquals("e", result[4]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1844,7 +1861,7 @@ public class V8ArrayTest {
 
         assertEquals(1, result.length);
         assertEquals("e", result[0]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1856,7 +1873,7 @@ public class V8ArrayTest {
         assertEquals(2, result.length);
         assertEquals("d", result[0]);
         assertEquals("e", result[1]);
-        a.release();
+        a.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -1866,7 +1883,7 @@ public class V8ArrayTest {
         try {
             a.getStrings(0, 5);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1877,7 +1894,7 @@ public class V8ArrayTest {
         try {
             a.getStrings(3, 3);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -1888,7 +1905,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.INTEGER, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1898,7 +1915,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.DOUBLE, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1908,7 +1925,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.DOUBLE, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1918,7 +1935,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.DOUBLE, type);
-        a.release();
+        a.close();
     }
 
     public void testGetArrayTypeDoubleWithInts1() {
@@ -1927,7 +1944,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.DOUBLE, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1937,7 +1954,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.DOUBLE, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1947,7 +1964,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.STRING, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1957,7 +1974,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.BOOLEAN, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1967,7 +1984,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.V8_OBJECT, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1977,7 +1994,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.V8_ARRAY, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1987,7 +2004,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.V8_OBJECT, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -1997,7 +2014,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.V8_OBJECT, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2007,7 +2024,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.UNDEFINED, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2017,7 +2034,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.UNDEFINED, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2027,7 +2044,7 @@ public class V8ArrayTest {
         int type = a.getType();
 
         assertEquals(V8Value.UNDEFINED, type);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2038,7 +2055,7 @@ public class V8ArrayTest {
         int size = a.getIntegers(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2049,7 +2066,7 @@ public class V8ArrayTest {
         int size = a.getIntegers(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -2060,7 +2077,7 @@ public class V8ArrayTest {
         try {
             a.getIntegers(0, 4, result);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -2075,7 +2092,7 @@ public class V8ArrayTest {
         assertEquals(2, result[1]);
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2086,7 +2103,7 @@ public class V8ArrayTest {
         int size = a.getDoubles(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2097,7 +2114,7 @@ public class V8ArrayTest {
         int size = a.getDoubles(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -2108,7 +2125,7 @@ public class V8ArrayTest {
         try {
             a.getDoubles(0, 4, result);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -2123,7 +2140,7 @@ public class V8ArrayTest {
         assertEquals(2.2, result[1], 0.000001);
         assertEquals(3.3, result[2], 0.000001);
         assertEquals(4, result[3], 0.000001);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2134,7 +2151,7 @@ public class V8ArrayTest {
         int size = a.getBooleans(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2145,7 +2162,7 @@ public class V8ArrayTest {
         int size = a.getBytes(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2156,7 +2173,7 @@ public class V8ArrayTest {
         int size = a.getBooleans(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2167,7 +2184,7 @@ public class V8ArrayTest {
         int size = a.getBytes(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -2178,7 +2195,7 @@ public class V8ArrayTest {
         try {
             a.getBooleans(0, 4, result);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -2190,7 +2207,7 @@ public class V8ArrayTest {
         try {
             a.getBytes(0, 4, result);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -2205,7 +2222,7 @@ public class V8ArrayTest {
         assertFalse(result[1]);
         assertFalse(result[2]);
         assertTrue(result[3]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2219,7 +2236,7 @@ public class V8ArrayTest {
         assertEquals(1, result[1]);
         assertEquals(2, result[2]);
         assertEquals(0, result[3]);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2230,7 +2247,7 @@ public class V8ArrayTest {
         int size = a.getStrings(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test
@@ -2241,7 +2258,7 @@ public class V8ArrayTest {
         int size = a.getStrings(0, 4, result);
 
         assertEquals(4, size);
-        a.release();
+        a.close();
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -2252,7 +2269,7 @@ public class V8ArrayTest {
         try {
             a.getStrings(0, 4, result);
         } finally {
-            a.release();
+            a.close();
         }
     }
 
@@ -2267,13 +2284,13 @@ public class V8ArrayTest {
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);
         assertEquals("d", result[3]);
-        a.release();
+        a.close();
     }
 
     @Test
     public void testUndefinedNotReleased() {
         com.eclipsesource.v8.V8Array.Undefined undefined = new V8Array.Undefined();
-        undefined.release();
+        undefined.close();
 
         assertFalse(undefined.isReleased());
     }

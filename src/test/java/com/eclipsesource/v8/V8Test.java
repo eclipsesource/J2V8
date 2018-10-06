@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -46,7 +46,7 @@ public class V8Test {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -93,13 +93,13 @@ public class V8Test {
         long objectReferenceCount = v8.getObjectReferenceCount();
 
         assertEquals(1, objectReferenceCount);
-        object.release();
+        object.close();
     }
 
     @Test
     public void testObjectReferenceCountReleased() {
         V8Object object = new V8Object(v8);
-        object.release();
+        object.close();
 
         long objectReferenceCount = v8.getObjectReferenceCount();
 
@@ -108,25 +108,25 @@ public class V8Test {
 
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateVoid() {
-        v8.release();
+        v8.close();
         v8.executeVoidScript("");
     }
 
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateInt() {
-        v8.release();
+        v8.close();
         v8.executeIntegerScript("7");
     }
 
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateString() {
-        v8.release();
+        v8.close();
         v8.executeStringScript("'foo'");
     }
 
     @Test(expected = Error.class)
     public void testCannotAccessDisposedIsolateBoolean() {
-        v8.release();
+        v8.close();
         v8.executeBooleanScript("true");
     }
 
@@ -169,14 +169,16 @@ public class V8Test {
         assertEquals("baz", v8.getString("foo"));
     }
 
+    @SuppressWarnings("resource")
     @Test
-    public void testIAENotThrownOnShutdown() {
+    public void testISENotThrownOnShutdown() {
         V8 v8_ = V8.createV8Runtime();
 
         new V8Object(v8_);
         v8_.release(false);
     }
 
+    @SuppressWarnings("resource")
     @Test(expected = IllegalStateException.class)
     public void testISEThrownOnShutdown() {
         V8 v8_ = V8.createV8Runtime();
@@ -210,7 +212,7 @@ public class V8Test {
         V8Map<String> v8Map = new V8Map<String>();
         V8Object v8Object = new V8Object(runtime);
         v8Map.put(v8Object, "foo");
-        v8Object.release();
+        v8Object.close();
         runtime.registerResource(v8Map);
 
         runtime.release(true);
@@ -460,7 +462,7 @@ public class V8Test {
         V8Object result = (V8Object) v8.executeScript("foo = {hello:'world'}; foo;");
 
         assertEquals("world", result.getString("hello"));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -471,7 +473,7 @@ public class V8Test {
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
         assertEquals(3, result.get(2));
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ScriptCompilationException.class)
@@ -484,7 +486,7 @@ public class V8Test {
         V8Object result = (V8Object) v8.executeScript("foo = {hello:'world'}; foo;", "name", 6);
 
         assertEquals("world", result.getString("hello"));
-        result.release();
+        result.close();
     }
 
     /*** Object Script ***/
@@ -493,7 +495,7 @@ public class V8Test {
         V8Object result = v8.executeObjectScript("foo = {hello:'world'}; foo;");
 
         assertEquals("world", result.getString("hello"));
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ScriptCompilationException.class)
@@ -520,8 +522,8 @@ public class V8Test {
         V8Object name = result.getObject("name");
         assertEquals("john", name.getString("first"));
         assertEquals("smith", name.getString("last"));
-        result.release();
-        name.release();
+        result.close();
+        name.close();
     }
 
     @Test
@@ -529,7 +531,7 @@ public class V8Test {
         V8Object result = v8.executeObjectScript("foo = {hello:'world'}; foo;", "name", 6);
 
         assertEquals("world", result.getString("hello"));
-        result.release();
+        result.close();
     }
 
     /*** Array Script ***/
@@ -538,7 +540,7 @@ public class V8Test {
         V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ScriptCompilationException.class)
@@ -561,7 +563,7 @@ public class V8Test {
         V8Array result = v8.executeArrayScript("foo = [1,2,3]; foo;", "name", 7);
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     /*** Int Function ***/
@@ -681,7 +683,7 @@ public class V8Test {
         V8Object result = v8.executeObjectFunction("foo", null);
 
         assertTrue(result.getBoolean("foo"));
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -708,7 +710,7 @@ public class V8Test {
         V8Array result = v8.executeArrayFunction("foo", null);
 
         assertEquals(3, result.length());
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -836,8 +838,8 @@ public class V8Test {
         V8Object result = v8.executeObjectScript("foo");
 
         assertNotNull(result);
-        result.release();
-        v8Object.release();
+        result.close();
+        v8Object.close();
     }
 
     @Test
@@ -853,8 +855,8 @@ public class V8Test {
         boolean result = v8.executeBooleanScript("foo.test");
 
         assertFalse(result);
-        v8ObjectFoo1.release();
-        v8ObjectFoo2.release();
+        v8ObjectFoo1.close();
+        v8ObjectFoo2.close();
     }
 
     /*** Add Array ***/
@@ -866,8 +868,8 @@ public class V8Test {
         V8Array result = v8.executeArrayScript("foo");
 
         assertNotNull(result);
-        array.release();
-        result.release();
+        array.close();
+        result.close();
     }
 
     /*** Get Int ***/
@@ -1035,7 +1037,7 @@ public class V8Test {
         assertEquals(1, array.getInteger(0));
         assertEquals(2, array.getInteger(1));
         assertEquals(3, array.getInteger(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1048,8 +1050,8 @@ public class V8Test {
         assertEquals(3, fooArray.length());
         assertEquals(2, barArray.length());
 
-        fooArray.release();
-        barArray.release();
+        fooArray.close();
+        barArray.close();
     }
 
     @Test
@@ -1063,8 +1065,8 @@ public class V8Test {
             assertEquals(1, fooArray.length());
             assertEquals(2, nested.length());
 
-            fooArray.release();
-            nested.release();
+            fooArray.close();
+            nested.close();
         }
     }
 
@@ -1172,12 +1174,12 @@ public class V8Test {
 
     /*** Global Object Prototype Manipulation ***/
     private void setupWindowAlias() {
-        v8.release();
+        v8.close();
         v8 = V8.createV8Runtime("window");
         v8.executeVoidScript("function Window(){};");
         V8Object prototype = v8.executeObjectScript("Window.prototype");
         v8.setPrototype(prototype);
-        prototype.release();
+        prototype.close();
     }
 
     @Test
@@ -1225,7 +1227,7 @@ public class V8Test {
 
         assertTrue(v8.strictEquals(global));
         assertTrue(global.strictEquals(v8));
-        global.release();
+        global.close();
     }
 
     @Test
@@ -1237,7 +1239,7 @@ public class V8Test {
 
         assertTrue(v8.equals(global));
         assertTrue(global.equals(v8));
-        global.release();
+        global.close();
     }
 
     @Test
@@ -1248,7 +1250,7 @@ public class V8Test {
         V8Object global = v8.executeObjectScript("global");
 
         assertEquals(v8.hashCode(), global.hashCode());
-        global.release();
+        global.close();
     }
 
     @Test
@@ -1260,7 +1262,7 @@ public class V8Test {
 
         assertEquals(v8, _this);
         assertEquals(_this, v8);
-        _this.release();
+        _this.close();
     }
 
     @Test
@@ -1273,7 +1275,7 @@ public class V8Test {
 
     @Test
     public void testAlternateGlobalAlias() {
-        v8.release();
+        v8.close();
         v8 = V8.createV8Runtime("document");
         v8.executeVoidScript("var global = Function('return this')();");
 
@@ -1305,7 +1307,7 @@ public class V8Test {
 
         assertEquals("bar", v8.getString("foo"));
         assertEquals("bar", v8.executeStringScript("window.foo;"));
-        prototype.release();
+        prototype.close();
     }
 
     @Test
@@ -1375,7 +1377,7 @@ public class V8Test {
         V8Object object = new V8Object(v8);
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1386,7 +1388,7 @@ public class V8Test {
         V8Object object = v8.executeObjectScript("foo = {}; foo;");
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1397,7 +1399,7 @@ public class V8Test {
         V8Array object = (V8Array) v8.executeScript("[1,2,3];");
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1409,7 +1411,7 @@ public class V8Test {
         V8Object object = new V8Object(v8);
 
         verify(referenceHandler, never()).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1422,7 +1424,7 @@ public class V8Test {
         V8Object object = new V8Object(v8);
 
         verify(referenceHandler1, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1436,7 +1438,7 @@ public class V8Test {
 
         verify(referenceHandler1, times(1)).v8HandleCreated(object);
         verify(referenceHandler2, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1446,7 +1448,7 @@ public class V8Test {
         testV8.addReleaseHandler(releaseHandler);
         testV8.removeReleaseHandler(releaseHandler);
 
-        testV8.release();
+        testV8.close();
 
         verify(releaseHandler, never()).run(testV8);
     }
@@ -1459,7 +1461,7 @@ public class V8Test {
         testV8.addReleaseHandler(releaseHandler1);
         testV8.removeReleaseHandler(releaseHandler2);
 
-        testV8.release();
+        testV8.close();
 
         verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
     }
@@ -1472,7 +1474,7 @@ public class V8Test {
         testV8.addReleaseHandler(releaseHandler1);
         testV8.addReleaseHandler(releaseHandler2);
 
-        testV8.release();
+        testV8.close();
 
         verify(releaseHandler1, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
         verify(releaseHandler2, times(1)).run(any(V8.class)); // cannot check against the real v8 because it's released.
@@ -1486,7 +1488,7 @@ public class V8Test {
         testV8.addReleaseHandler(releaseHandler);
 
         try {
-            testV8.release();
+            testV8.close();
         } catch (Exception e) {
             assertTrue(testV8.isReleased());
             return;
@@ -1503,7 +1505,7 @@ public class V8Test {
         V8Array object = new V8Array(v8);
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1514,7 +1516,7 @@ public class V8Test {
         V8Function object = new V8Function(v8);
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1525,7 +1527,7 @@ public class V8Test {
         V8ArrayBuffer object = new V8ArrayBuffer(v8, 100);
 
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1538,8 +1540,8 @@ public class V8Test {
 
         verify(referenceHandler, times(1)).v8HandleCreated(buffer);
         verify(referenceHandler, times(1)).v8HandleCreated(object);
-        buffer.release();
-        object.release();
+        buffer.close();
+        object.close();
     }
 
     @Test
@@ -1548,11 +1550,12 @@ public class V8Test {
         v8.addReferenceHandler(referenceHandler);
 
         V8Object object = new V8Object(v8);
-        object.release();
+        object.close();
 
         verify(referenceHandler, times(1)).v8HandleDisposed(any(V8Object.class)); // Can't test the actual one because it's disposed
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testV8ObjectHandlerExceptionDuringCreation() {
         ReferenceHandler referenceHandler = mock(ReferenceHandler.class);
@@ -1569,6 +1572,7 @@ public class V8Test {
         fail("Exception should have been caught.");
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testV8ArrayHandlerExceptionDuringCreation() {
         ReferenceHandler referenceHandler = mock(ReferenceHandler.class);
@@ -1585,6 +1589,7 @@ public class V8Test {
         fail("Exception should have been caught.");
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testV8ArrayBufferHandlerExceptionDuringCreation() {
         ReferenceHandler referenceHandler = mock(ReferenceHandler.class);

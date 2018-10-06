@@ -105,7 +105,7 @@ public class DebugHandler implements Releasable {
         try {
             return debugObject.executeIntegerFunction(SET_BREAK_POINT, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -124,7 +124,7 @@ public class DebugHandler implements Releasable {
         try {
             return debugObject.executeIntegerFunction(SET_SCRIPT_BREAK_POINT_BY_NAME, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -139,7 +139,7 @@ public class DebugHandler implements Releasable {
         try {
             debugObject.executeVoidFunction(ENABLE_SCRIPT_BREAK_POINT, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -154,7 +154,7 @@ public class DebugHandler implements Releasable {
         try {
             debugObject.executeVoidFunction(DISABLE_SCRIPT_BREAK_POINT, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -169,7 +169,7 @@ public class DebugHandler implements Releasable {
         try {
             debugObject.executeVoidFunction(CLEAR_BREAK_POINT, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -190,7 +190,7 @@ public class DebugHandler implements Releasable {
         try {
             return breakPoints.length();
         } finally {
-            breakPoints.release();
+            breakPoints.close();
         }
     }
 
@@ -208,12 +208,12 @@ public class DebugHandler implements Releasable {
                 try {
                     result[i] = breakPoint.executeIntegerFunction(NUMBER, null);
                 } finally {
-                    breakPoint.release();
+                    breakPoint.close();
                 }
             }
             return result;
         } finally {
-            breakPoints.release();
+            breakPoints.close();
         }
     }
 
@@ -232,9 +232,9 @@ public class DebugHandler implements Releasable {
             scriptBreakPoint = debugObject.executeObjectFunction(FIND_SCRIPT_BREAK_POINT, parameters);
             return new ScriptBreakPoint(scriptBreakPoint);
         } finally {
-            parameters.release();
+            parameters.close();
             if (scriptBreakPoint != null) {
-                scriptBreakPoint.release();
+                scriptBreakPoint.close();
             }
         }
     }
@@ -252,13 +252,23 @@ public class DebugHandler implements Releasable {
         try {
             debugObject.executeVoidFunction(CHANGE_BREAK_POINT_CONDITION, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.io.Closeable#close()
+     */
     @Override
+    public void close() {
+        debugObject.close();
+    }
+
+    @Override
+    @Deprecated
     public void release() {
-        debugObject.release();
+        close();
     }
 
     private void setupDebugObject(final V8 runtime) {
@@ -266,7 +276,7 @@ public class DebugHandler implements Releasable {
         try {
             debugObject = outerDebug.getObject(V8_DEBUG_OBJECT);
         } finally {
-            outerDebug.release();
+            outerDebug.close();
         }
     }
 
@@ -277,14 +287,15 @@ public class DebugHandler implements Releasable {
         V8Array parameters = null;
         try {
             debugHandler = (V8Function) debugObject.getObject(DEBUG_BREAK_HANDLER);
-            parameters = new V8Array(runtime).push(debugHandler);
+            parameters = new V8Array(runtime);
+            parameters.push(debugHandler);
             debugObject.executeFunction(SET_LISTENER, parameters);
         } finally {
             if ((debugHandler != null) && !debugHandler.isReleased()) {
-                debugHandler.release();
+                debugHandler.close();
             }
             if ((parameters != null) && !parameters.isReleased()) {
-                parameters.release();
+                parameters.close();
             }
         }
     }

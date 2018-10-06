@@ -12,8 +12,8 @@ package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -60,8 +60,8 @@ public class ExecutionStateTest {
     @After
     public void tearDown() {
         try {
-            debugHandler.release();
-            v8.release();
+            debugHandler.close();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -152,8 +152,8 @@ public class ExecutionStateTest {
                 Frame frame0 = state.getFrame(0);
                 Frame frame1 = state.getFrame(1);
                 result = (frame0 != null) && (frame1 != null);
-                frame0.release();
-                frame1.release();
+                frame0.close();
+                frame1.close();
                 return null;
             }
 

@@ -40,7 +40,7 @@ public class BreakEventTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -64,7 +64,7 @@ public class BreakEventTest {
         v8.executeScript(script, "script", 0);
 
         assertTrue((Boolean) result);
-        handler.release();
+        handler.close();
     }
 
     @Test
@@ -83,7 +83,7 @@ public class BreakEventTest {
         v8.executeScript(script, "script", 0);
 
         assertTrue((Boolean) result);
-        handler.release();
+        handler.close();
     }
 
     @Test
@@ -101,6 +101,6 @@ public class BreakEventTest {
         v8.executeScript(script, "script", 0);
 
         assertTrue((Boolean) result);
-        handler.release();
+        handler.close();
     }
 }

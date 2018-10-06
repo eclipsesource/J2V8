@@ -57,7 +57,7 @@ public class V8ObjectUtilsTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -77,7 +77,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, map.get("a"));
         assertEquals(2, map.get("b"));
         assertEquals(3, map.get("c"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -88,7 +88,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, map.size());
         assertEquals("foo", map.get("b"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -99,7 +99,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, list.size());
         assertEquals("foo", list.get(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -113,7 +113,7 @@ public class V8ObjectUtilsTest {
         assertEquals(2.2, (Double) map.get("b"), 0.000001);
         assertEquals(3.3, (Double) map.get("c"), 0.000001);
         assertEquals(4.4, (Double) map.get("d"), 0.000001);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -127,7 +127,7 @@ public class V8ObjectUtilsTest {
         assertEquals("bar", map.get("b"));
         assertEquals("baz", map.get("c"));
         assertEquals("boo", map.get("d"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -141,7 +141,7 @@ public class V8ObjectUtilsTest {
         assertTrue((Boolean) map.get("b"));
         assertFalse((Boolean) map.get("c"));
         assertFalse((Boolean) map.get("d"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -155,7 +155,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, (int) (Integer) map.get("integer"));
         assertEquals(3.14159, (Double) map.get("double"), 0.0000001);
         assertEquals("hello", map.get("string"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("rawtypes")
@@ -169,7 +169,7 @@ public class V8ObjectUtilsTest {
         assertEquals(7, map.get("age"));
         assertEquals("john", ((Map) map.get("name")).get("first"));
         assertEquals("smith", ((Map) map.get("name")).get("last"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -182,7 +182,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.get(0));
         assertEquals(2, list.get(1));
         assertEquals(3, list.get(2));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -202,7 +202,7 @@ public class V8ObjectUtilsTest {
         assertTrue(((V8Value) list.get(7)).isUndefined());
         assertTrue(((V8Value) list.get(8)).isUndefined());
         assertEquals(10, list.get(9));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -213,7 +213,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, list.size());
         assertNull(list.get(0));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("rawtypes")
@@ -236,7 +236,7 @@ public class V8ObjectUtilsTest {
         assertEquals("this", ((List) list.get(2)).get(0));
         assertEquals("that", ((List) list.get(2)).get(1));
         assertEquals("other", ((List) list.get(2)).get(2));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("rawtypes")
@@ -253,7 +253,7 @@ public class V8ObjectUtilsTest {
         assertEquals(4, ((List) map.get("b")).get(0));
         assertEquals(5, ((List) map.get("b")).get(1));
         assertEquals(6, ((List) map.get("b")).get(2));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -264,7 +264,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, map.size());
         assertNull(map.get("a"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -406,7 +406,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3.14159, object.getDouble("double"), 0.000001);
         assertEquals("hello", object.getString("String"));
         assertEquals(V8Value.UNDEFINED, object.getType("undefined"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -665,7 +665,7 @@ public class V8ObjectUtilsTest {
         V8Array array = v8.executeArrayScript("[1,2,3,4,5]");
 
         assertEquals(1, V8ObjectUtils.getValue(array, 0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -673,7 +673,7 @@ public class V8ObjectUtilsTest {
         V8Array array = v8.executeArrayScript("[1.2,2.2,3.3,4.4,5.5]");
 
         assertEquals(4.4, V8ObjectUtils.getValue(array, 3));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -681,7 +681,7 @@ public class V8ObjectUtilsTest {
         V8Array array = v8.executeArrayScript("['string']");
 
         assertEquals("string", V8ObjectUtils.getValue(array, 0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -689,7 +689,7 @@ public class V8ObjectUtilsTest {
         V8Array array = v8.executeArrayScript("[true, false]");
 
         assertEquals(Boolean.TRUE, V8ObjectUtils.getValue(array, 0));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -699,7 +699,7 @@ public class V8ObjectUtilsTest {
 
         assertTrue(V8ObjectUtils.getValue(array, 0) instanceof Map<?, ?>);
         assertEquals("b", ((Map<String, Object>) V8ObjectUtils.getValue(array, 0)).get("a"));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -709,7 +709,7 @@ public class V8ObjectUtilsTest {
 
         assertTrue(V8ObjectUtils.getValue(array, 0) instanceof List<?>);
         assertEquals(1, ((List<Object>) V8ObjectUtils.getValue(array, 0)).get(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -769,7 +769,7 @@ public class V8ObjectUtilsTest {
 
         assertTrue(result instanceof V8Object);
         assertEquals("bar", ((V8Object) result).getString("foo"));
-        ((V8Object) result).release();
+        ((V8Object) result).close();
     }
 
     @Test
@@ -783,7 +783,7 @@ public class V8ObjectUtilsTest {
         assertEquals(2, ((V8Array) result).length());
         assertEquals(1, ((V8Array) result).getInteger(0));
         assertEquals("two", ((V8Array) result).getString(1));
-        ((V8Object) result).release();
+        ((V8Object) result).close();
     }
 
     @Test
@@ -793,7 +793,7 @@ public class V8ObjectUtilsTest {
         V8ObjectUtils.pushValue(v8, array, 7);
 
         assertEquals(7, array.getInteger(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -803,7 +803,7 @@ public class V8ObjectUtilsTest {
         V8ObjectUtils.pushValue(v8, array, 7.8);
 
         assertEquals(7.8, array.getDouble(0), 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -813,7 +813,7 @@ public class V8ObjectUtilsTest {
         V8ObjectUtils.pushValue(v8, array, true);
 
         assertTrue(array.getBoolean(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -823,7 +823,7 @@ public class V8ObjectUtilsTest {
         V8ObjectUtils.pushValue(v8, array, "string");
 
         assertEquals("string", array.getString(0));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -836,8 +836,8 @@ public class V8ObjectUtilsTest {
 
         V8Object result = array.getObject(0);
         assertEquals("bar", result.getString("foo"));
-        result.release();
-        array.release();
+        result.close();
+        array.close();
     }
 
     @Test
@@ -850,8 +850,8 @@ public class V8ObjectUtilsTest {
 
         V8Array result = array.getArray(0);
         assertEquals("one", result.getString(0));
-        result.release();
-        array.release();
+        result.close();
+        array.close();
     }
 
     @Test
@@ -865,7 +865,7 @@ public class V8ObjectUtilsTest {
         assertEquals(2, result[1]);
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -879,7 +879,7 @@ public class V8ObjectUtilsTest {
         assertEquals(2.0, result[1], 0.000001);
         assertEquals(3.0, result[2], 0.000001);
         assertEquals(4.4, result[3], 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -893,7 +893,7 @@ public class V8ObjectUtilsTest {
         assertFalse(result[1]);
         assertFalse(result[2]);
         assertTrue(result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -907,7 +907,7 @@ public class V8ObjectUtilsTest {
         assertEquals("two", result[1]);
         assertEquals("three", result[2]);
         assertEquals("four", result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -923,7 +923,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
         assertEquals(5, result[4]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -938,7 +938,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
         assertEquals(5, result[4]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -954,7 +954,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2]);
         assertEquals(4, result[3]);
         assertEquals(5, result[4]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -970,7 +970,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2], 0.000001);
         assertEquals(4, result[3], 0.000001);
         assertEquals(5, result[4], 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -985,7 +985,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2], 0.000001);
         assertEquals(4, result[3], 0.000001);
         assertEquals(5, result[4], 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1001,7 +1001,7 @@ public class V8ObjectUtilsTest {
         assertEquals(3, result[2], 0.000001);
         assertEquals(4, result[3], 0.000001);
         assertEquals(5.5, result[4], 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1016,7 +1016,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, result[1]);
         assertEquals(2, result[2]);
         assertEquals(0, result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1031,7 +1031,7 @@ public class V8ObjectUtilsTest {
         assertTrue(result[1]);
         assertFalse(result[2]);
         assertFalse(result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1045,7 +1045,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, result[1]);
         assertEquals(2, result[2]);
         assertEquals(0, result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1059,7 +1059,7 @@ public class V8ObjectUtilsTest {
         assertTrue(result[1]);
         assertFalse(result[2]);
         assertFalse(result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1074,7 +1074,7 @@ public class V8ObjectUtilsTest {
         assertTrue(result[1]);
         assertFalse(result[2]);
         assertFalse(result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1089,7 +1089,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);
         assertEquals("z", result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1103,7 +1103,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);
         assertEquals("z", result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1118,7 +1118,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);
         assertEquals("z", result[3]);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1130,8 +1130,8 @@ public class V8ObjectUtilsTest {
         V8Object self = v8Array.getObject(0);
 
         assertEquals(v8Array, self);
-        self.release();
-        v8Array.release();
+        self.close();
+        v8Array.close();
     }
 
     @Test
@@ -1146,8 +1146,8 @@ public class V8ObjectUtilsTest {
 
         assertEquals(v8Object, self);
         assertEquals(3, v8Object.getKeys().length);
-        v8Object.release();
-        self.release();
+        v8Object.close();
+        self.close();
     }
 
     //@Test
@@ -1162,9 +1162,9 @@ public class V8ObjectUtilsTest {
         V8Object v8_parent = v8_child.getObject("parent");
 
         assertEquals(v8Object, v8_parent);
-        v8Object.release();
-        v8_child.release();
-        v8_parent.release();
+        v8Object.close();
+        v8_child.close();
+        v8_parent.close();
     }
 
     @Test
@@ -1175,7 +1175,7 @@ public class V8ObjectUtilsTest {
         List<Object> list = V8ObjectUtils.toList(v8Array);
 
         assertEquals(list, list.get(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1187,7 +1187,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(map, map.get("self"));
         assertEquals(map.hashCode(), map.get("self").hashCode());
-        v8Object.release();
+        v8Object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -1201,7 +1201,7 @@ public class V8ObjectUtilsTest {
         Map<String, Object> map = V8ObjectUtils.toMap(parent);
 
         assertEquals(map, ((Map<String, Object>) map.get("child")).get("parent"));
-        parent.release();
+        parent.close();
     }
 
     @Test
@@ -1212,8 +1212,8 @@ public class V8ObjectUtilsTest {
 
         v8.add("l2", v8Object);
         v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
-        list.release();
-        v8Object.release();
+        list.close();
+        v8Object.close();
     }
 
     @Test
@@ -1224,8 +1224,8 @@ public class V8ObjectUtilsTest {
 
         v8.add("l2", v8Object);
         v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
-        list.release();
-        v8Object.release();
+        list.close();
+        v8Object.close();
     }
 
     @Test
@@ -1239,8 +1239,8 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, v8Object.getKeys().length);
         assertEquals("child", v8Object.getKeys()[0]);
-        parent.release();
-        v8Object.release();
+        parent.close();
+        v8Object.close();
     }
 
     @Test
@@ -1254,7 +1254,7 @@ public class V8ObjectUtilsTest {
         Map<String, Object> map = V8ObjectUtils.toMap(parent);
 
         assertEquals((map.get("child2")), (map.get("child1")));
-        parent.release();
+        parent.close();
     }
 
     @Test
@@ -1266,7 +1266,7 @@ public class V8ObjectUtilsTest {
         ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(root, 0);
 
         assertEquals(100, result.limit());
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1281,7 +1281,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1294,7 +1294,7 @@ public class V8ObjectUtilsTest {
         Int8Array result = (Int8Array) V8ObjectUtils.getValue(root, 0);
 
         assertEquals(24, result.length());
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1309,7 +1309,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1324,7 +1324,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1339,7 +1339,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1354,7 +1354,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1369,7 +1369,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1384,7 +1384,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1399,7 +1399,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16.2, result.get(0), 0.00001);
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1414,7 +1414,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(10, result.length());
         assertEquals(16.2, result.get(0), 0.0001);
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1426,7 +1426,7 @@ public class V8ObjectUtilsTest {
         ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(root, "items");
 
         assertEquals(100, result.limit());
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1441,7 +1441,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1456,7 +1456,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1471,7 +1471,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1486,7 +1486,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1501,7 +1501,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1516,7 +1516,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1531,7 +1531,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1546,7 +1546,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16.2, result.get(0), 0.00001);
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1561,7 +1561,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(10, result.length());
         assertEquals(16.2, result.get(0), 0.0001);
-        root.release();
+        root.close();
     }
 
     @Test
@@ -1576,8 +1576,8 @@ public class V8ObjectUtilsTest {
         V8TypedArray v8Array = (V8TypedArray) object.get("array");
         assertEquals(7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
-        v8Array.release();
-        object.release();
+        v8Array.close();
+        object.close();
     }
 
     @Test
@@ -1589,7 +1589,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -1602,8 +1602,8 @@ public class V8ObjectUtilsTest {
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) object.get("buffer");
         assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
-        v8ArrayBuffer.release();
-        object.release();
+        v8ArrayBuffer.close();
+        object.close();
     }
 
     @Test
@@ -1616,8 +1616,8 @@ public class V8ObjectUtilsTest {
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) array.get(0);
         assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
-        v8ArrayBuffer.release();
-        array.release();
+        v8ArrayBuffer.close();
+        array.close();
     }
 
     @Test
@@ -1627,7 +1627,7 @@ public class V8ObjectUtilsTest {
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
 
         assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
-        v8ArrayBuffer.release();
+        v8ArrayBuffer.close();
     }
 
     @Test
@@ -1637,7 +1637,7 @@ public class V8ObjectUtilsTest {
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
 
         assertFalse(v8ArrayBuffer.isReleased());
-        v8ArrayBuffer.release();
+        v8ArrayBuffer.close();
     }
 
     @Test
@@ -1652,8 +1652,8 @@ public class V8ObjectUtilsTest {
         V8Array v8Array = (V8Array) array.get(0);
         assertEquals(7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
-        v8Array.release();
-        array.release();
+        v8Array.close();
+        array.close();
     }
 
     @Test
@@ -1666,9 +1666,9 @@ public class V8ObjectUtilsTest {
         V8Object result = (V8Object) array.get(0);
 
         assertEquals(child, result);
-        array.release();
-        result.release();
-        child.release();
+        array.close();
+        result.close();
+        child.close();
     }
 
     @Test
@@ -1681,9 +1681,9 @@ public class V8ObjectUtilsTest {
         V8Object result = (V8Object) array.get(0);
 
         assertEquals(child, result);
-        array.release();
-        result.release();
-        child.release();
+        array.close();
+        result.close();
+        child.close();
     }
 
     @Test
@@ -1697,10 +1697,10 @@ public class V8ObjectUtilsTest {
         V8Object result = (V8Object) array.get(0);
 
         assertEquals(child, result);
-        array.release();
-        result.release();
-        child.release();
-        buffer.release();
+        array.close();
+        result.close();
+        child.close();
+        buffer.close();
     }
 
     @Test
@@ -1721,7 +1721,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1742,7 +1742,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1763,7 +1763,7 @@ public class V8ObjectUtilsTest {
         assertEquals(true, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1784,7 +1784,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("foo", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1802,7 +1802,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, map.size());
         assertEquals("object", map.get("b"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1820,7 +1820,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, map.size());
         assertNull(map.get("b"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1838,7 +1838,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, map.size());
         assertEquals(V8.getUndefined(), map.get("b"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -1859,7 +1859,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1880,7 +1880,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1901,7 +1901,7 @@ public class V8ObjectUtilsTest {
         assertEquals(true, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1922,7 +1922,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("foo", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1940,7 +1940,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertEquals("object", list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1958,7 +1958,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertNull(list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1976,7 +1976,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertEquals(V8.getUndefined(), list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @Test
@@ -1997,7 +1997,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", ((V8Function) map.get("b")).call(null, null));
 
         memoryManager.release();
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2018,7 +2018,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", ((V8Function) list.get(1)).call(null, null));
 
         memoryManager.release();
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2060,7 +2060,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, map.get("a"));
         assertEquals(2, map.get("b"));
         assertEquals(3, map.get("c"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2072,7 +2072,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, map.size());
         assertEquals("foo", map.get("b"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2084,7 +2084,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, list.size());
         assertEquals("foo", list.get(0));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2099,7 +2099,7 @@ public class V8ObjectUtilsTest {
         assertEquals(2.2, (Double) map.get("b"), 0.000001);
         assertEquals(3.3, (Double) map.get("c"), 0.000001);
         assertEquals(4.4, (Double) map.get("d"), 0.000001);
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2114,7 +2114,7 @@ public class V8ObjectUtilsTest {
         assertEquals("bar", map.get("b"));
         assertEquals("baz", map.get("c"));
         assertEquals("boo", map.get("d"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2129,7 +2129,7 @@ public class V8ObjectUtilsTest {
         assertTrue((Boolean) map.get("b"));
         assertFalse((Boolean) map.get("c"));
         assertFalse((Boolean) map.get("d"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2144,7 +2144,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, (int) (Integer) map.get("integer"));
         assertEquals(3.14159, (Double) map.get("double"), 0.0000001);
         assertEquals("hello", map.get("string"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -2158,7 +2158,7 @@ public class V8ObjectUtilsTest {
         assertEquals(7, map.get("age"));
         assertEquals("john", ((Map) map.get("name")).get("first"));
         assertEquals("smith", ((Map) map.get("name")).get("last"));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2172,7 +2172,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.get(0));
         assertEquals(2, list.get(1));
         assertEquals(3, list.get(2));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2193,7 +2193,7 @@ public class V8ObjectUtilsTest {
         assertTrue(((V8Value) list.get(7)).isUndefined());
         assertTrue(((V8Value) list.get(8)).isUndefined());
         assertEquals(10, list.get(9));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2205,7 +2205,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, list.size());
         assertNull(list.get(0));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -2228,7 +2228,7 @@ public class V8ObjectUtilsTest {
         assertEquals("this", ((List) list.get(2)).get(0));
         assertEquals("that", ((List) list.get(2)).get(1));
         assertEquals("other", ((List) list.get(2)).get(2));
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -2245,7 +2245,7 @@ public class V8ObjectUtilsTest {
         assertEquals(4, ((List) map.get("b")).get(0));
         assertEquals(5, ((List) map.get("b")).get(1));
         assertEquals(6, ((List) map.get("b")).get(2));
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2257,7 +2257,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, map.size());
         assertNull(map.get("a"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2276,7 +2276,7 @@ public class V8ObjectUtilsTest {
         List<Object> list = (List<Object>) V8ObjectUtils.getValue(v8Array);
 
         assertEquals(list, list.get(0));
-        v8Array.release();
+        v8Array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2289,7 +2289,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(map, map.get("self"));
         assertEquals(map.hashCode(), map.get("self").hashCode());
-        v8Object.release();
+        v8Object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2303,7 +2303,7 @@ public class V8ObjectUtilsTest {
         Map<String, Object> map = (Map<String, Object>) V8ObjectUtils.getValue(parent);
 
         assertEquals(map, ((Map<String, Object>) map.get("child")).get("parent"));
-        parent.release();
+        parent.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2315,8 +2315,8 @@ public class V8ObjectUtilsTest {
 
         v8.add("l2", v8Object);
         v8.executeBooleanScript("JSON.stringify(l) === JSON.stringify(l2);");
-        list.release();
-        v8Object.release();
+        list.close();
+        v8Object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2331,8 +2331,8 @@ public class V8ObjectUtilsTest {
 
         assertEquals(1, v8Object.getKeys().length);
         assertEquals("child", v8Object.getKeys()[0]);
-        parent.release();
-        v8Object.release();
+        parent.close();
+        v8Object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2347,7 +2347,7 @@ public class V8ObjectUtilsTest {
         Map<String, Object> map = (Map<String, Object>) V8ObjectUtils.getValue(parent);
 
         assertEquals((map.get("child2")), (map.get("child1")));
-        parent.release();
+        parent.close();
     }
 
     @Test
@@ -2361,7 +2361,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2373,7 +2373,7 @@ public class V8ObjectUtilsTest {
         Int8Array result = (Int8Array) V8ObjectUtils.getValue(intsArray);
 
         assertEquals(24, result.length());
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2387,7 +2387,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2401,7 +2401,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(100, result.length());
         assertEquals(16, result.get(0));
-        int8ClampedArray.release();
+        int8ClampedArray.close();
     }
 
     @Test
@@ -2415,7 +2415,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2429,7 +2429,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2443,7 +2443,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2457,7 +2457,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -2471,7 +2471,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(25, result.length());
         assertEquals(16.2, result.get(0), 0.00001);
-        floatsArray.release();
+        floatsArray.close();
     }
 
     @Test
@@ -2485,7 +2485,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals(10, result.length());
         assertEquals(16.2, result.get(0), 0.0001);
-        floatsArray.release();
+        floatsArray.close();
     }
 
     @Test
@@ -2496,7 +2496,7 @@ public class V8ObjectUtilsTest {
         ArrayBuffer result = (ArrayBuffer) V8ObjectUtils.getValue(buf);
 
         assertEquals(100, result.limit());
-        buf.release();
+        buf.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2518,7 +2518,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2540,7 +2540,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2562,7 +2562,7 @@ public class V8ObjectUtilsTest {
         assertEquals(true, map.get("c"));
         assertEquals("string", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2584,7 +2584,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, map.get("c"));
         assertEquals("foo", map.get("d"));
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2601,7 +2601,7 @@ public class V8ObjectUtilsTest {
 
         assertEquals("object", result);
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2618,7 +2618,7 @@ public class V8ObjectUtilsTest {
 
         assertNull(result);
 
-        object.release();
+        object.close();
     }
 
     @Test
@@ -2635,7 +2635,7 @@ public class V8ObjectUtilsTest {
 
         assertTrue(result.isUndefined());
 
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2657,7 +2657,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2679,7 +2679,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2701,7 +2701,7 @@ public class V8ObjectUtilsTest {
         assertEquals(true, list.get(2));
         assertEquals("string", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2723,7 +2723,7 @@ public class V8ObjectUtilsTest {
         assertEquals(false, list.get(2));
         assertEquals("foo", list.get(3));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2742,7 +2742,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertEquals("object", list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2761,7 +2761,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertNull(list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2780,7 +2780,7 @@ public class V8ObjectUtilsTest {
         assertEquals(1, list.size());
         assertEquals(V8.getUndefined(), list.get(0));
 
-        array.release();
+        array.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2802,7 +2802,7 @@ public class V8ObjectUtilsTest {
         assertEquals("b", ((V8Function) map.get("b")).call(null, null));
 
         memoryManager.release();
-        object.release();
+        object.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2824,14 +2824,14 @@ public class V8ObjectUtilsTest {
         assertEquals("b", ((V8Function) list.get(1)).call(null, null));
 
         memoryManager.release();
-        object.release();
+        object.close();
     }
 
     private int registerAndRelease(final String name, final List<? extends Object> list) {
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
         v8.add(name, array);
         int size = array.length();
-        array.release();
+        array.close();
         return size;
     }
 
@@ -2839,7 +2839,7 @@ public class V8ObjectUtilsTest {
         V8Object object = V8ObjectUtils.toV8Object(v8, map);
         v8.add(name, object);
         int size = getNumberOfProperties(object);
-        object.release();
+        object.close();
         return size;
     }
 

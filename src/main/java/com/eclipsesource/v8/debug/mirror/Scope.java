@@ -63,7 +63,7 @@ public class Scope extends Mirror {
         try {
             v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -80,7 +80,7 @@ public class Scope extends Mirror {
         try {
             v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -97,7 +97,7 @@ public class Scope extends Mirror {
         try {
             v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -114,7 +114,7 @@ public class Scope extends Mirror {
         try {
             v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -131,7 +131,7 @@ public class Scope extends Mirror {
         try {
             v8Object.executeVoidFunction(SET_VARIABLE_VALUE, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -147,7 +147,7 @@ public class Scope extends Mirror {
             return (ObjectMirror) createMirror(mirror);
         } finally {
             if ( mirror != null ) {
-                mirror.release();
+                mirror.close();
             }
         }
 

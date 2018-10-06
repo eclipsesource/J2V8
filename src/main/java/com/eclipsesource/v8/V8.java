@@ -329,9 +329,19 @@ public class V8 extends V8Object {
 
     /*
      * (non-Javadoc)
+     * @see com.eclipsesource.v8.V8Value#close()
+     */
+    @Override
+    public void close() {
+        release(true);
+    }
+
+    /*
+     * (non-Javadoc)
      * @see com.eclipsesource.v8.V8Value#release()
      */
     @Override
+    @Deprecated
     public void release() {
         release(true);
     }
@@ -837,7 +847,7 @@ public class V8 extends V8Object {
         if (v8Value != null) {
             v8WeakReferences.remove(objectID);
             try {
-                v8Value.release();
+                v8Value.close();
             } catch (Exception e) {
                 // Swallow these exceptions. The V8 GC is running, and
                 // if we return to V8 with Java exception on our stack,
@@ -923,13 +933,13 @@ public class V8 extends V8Object {
             Object[] varArgs = (Object[]) args[args.length - 1];
             for (Object object : varArgs) {
                 if (object instanceof V8Value) {
-                    ((V8Value) object).release();
+                    ((V8Value) object).close();
                 }
             }
         }
         for (Object arg : args) {
             if (arg instanceof V8Value) {
-                ((V8Value) arg).release();
+                ((V8Value) arg).close();
             }
         }
     }

@@ -38,7 +38,7 @@ public class V8MapTest {
 
     @After
     public void tearDown() {
-        v8.release();
+        v8.close();
         if (V8.getActiveRuntimes() != 0) {
             throw new IllegalStateException("V8Runtimes not properly released");
         }
@@ -46,14 +46,14 @@ public class V8MapTest {
 
     @Test
     public void testCreateMap() {
-        new V8Map<String>();
+        new V8Map<String>().close();
     }
 
     @Test
     public void testReleaseEmptyMap() {
         V8Map<String> map = new V8Map<String>();
 
-        map.release();
+        map.close();
     }
 
     @Test
@@ -61,7 +61,7 @@ public class V8MapTest {
         V8Map<String> map = new V8Map<String>();
 
         assertEquals(0, map.size());
-        map.release();
+        map.close();
     }
 
     @Test
@@ -69,7 +69,7 @@ public class V8MapTest {
         V8Map<String> map = new V8Map<String>();
 
         assertTrue(map.isEmpty());
-        map.release();
+        map.close();
     }
 
     @Test
@@ -79,8 +79,8 @@ public class V8MapTest {
         map.put(v1, V8.getUndefined());
 
         assertEquals(V8.getUndefined(), map.get(v1));
-        v1.release();
-        map.release();
+        v1.close();
+        map.close();
     }
 
     @Test
@@ -88,10 +88,10 @@ public class V8MapTest {
         V8Map<String> map = new V8Map<String>();
         V8Object v1 = new V8Object(v8);
         map.put(v1, "foo");
-        v1.release();
+        v1.close();
 
         assertFalse(map.isEmpty());
-        map.release();
+        map.close();
     }
 
     @Test
@@ -105,10 +105,10 @@ public class V8MapTest {
         map.put(v3, "baz");
 
         assertEquals(3, map.size());
-        v1.release();
-        v2.release();
-        v3.release();
-        map.release();
+        v1.close();
+        v2.close();
+        v3.close();
+        map.close();
     }
 
     @Test
@@ -123,9 +123,10 @@ public class V8MapTest {
 
         map.clear();
         assertEquals(0, map.size());
-        v1.release();
-        v2.release();
-        v3.release();
+        v1.close();
+        v2.close();
+        v3.close();
+        map.close();
     }
 
     @Test
@@ -136,8 +137,8 @@ public class V8MapTest {
         map.put(v1, "bar");
 
         assertEquals("bar", map.get(v1));
-        v1.release();
-        map.release();
+        v1.close();
+        map.close();
     }
 
     @Test
@@ -149,8 +150,8 @@ public class V8MapTest {
 
         assertEquals("foo", map.get(v8Object));
 
-        v8Object.release();
-        map.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -161,8 +162,8 @@ public class V8MapTest {
 
         assertNull(map.get(v8Object));
 
-        v8Object.release();
-        map.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -174,8 +175,8 @@ public class V8MapTest {
 
         assertTrue(map.containsKey(v8Object));
 
-        v8Object.release();
-        map.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -186,8 +187,8 @@ public class V8MapTest {
 
         assertFalse(map.containsKey(v8Object));
 
-        v8Object.release();
-        map.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -199,8 +200,8 @@ public class V8MapTest {
 
         assertTrue(map.containsValue("foo"));
 
-        v8Object.release();
-        map.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -210,7 +211,7 @@ public class V8MapTest {
 
         assertFalse(map.containsValue("foo"));
 
-        map.release();
+        map.close();
     }
 
     @Test
@@ -222,7 +223,8 @@ public class V8MapTest {
 
         assertEquals("foo", map.remove(v8Object));
 
-        v8Object.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -233,7 +235,8 @@ public class V8MapTest {
 
         assertNull(map.remove(v8Object));
 
-        v8Object.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -241,9 +244,9 @@ public class V8MapTest {
         V8Object v8Object = new V8Object(v8);
         V8Map<String> map = new V8Map<String>();
         map.put(v8Object, "foo");
-        v8Object.release();
+        v8Object.close();
 
-        map.release();
+        map.close();
     }
 
     @Test
@@ -255,7 +258,8 @@ public class V8MapTest {
 
         map.remove(v8Object);
 
-        v8Object.release();
+        v8Object.close();
+        map.close();
     }
 
     @Test
@@ -264,10 +268,11 @@ public class V8MapTest {
         V8Object v8Object = new V8Object(v8);
         V8Map<String> map = new V8Map<String>();
         map.put(v8Object, "foo");
-        v8Object.release();
+        v8Object.close();
 
         try {
             v8.release(true);
+            map.close();
         } catch (IllegalStateException e) {
             return;
         }
@@ -284,8 +289,8 @@ public class V8MapTest {
 
         assertEquals(1, keySet.size());
         assertEquals(v1, keySet.iterator().next());
-        v1.release();
-        map.release();
+        v1.close();
+        map.close();
     }
 
     @Test
@@ -299,8 +304,8 @@ public class V8MapTest {
         assertEquals(1, entrySet.size());
         assertEquals(v1, entrySet.iterator().next().getKey());
         assertEquals("foo", entrySet.iterator().next().getValue());
-        v1.release();
-        map.release();
+        v1.close();
+        map.close();
     }
 
     @Test
@@ -313,8 +318,8 @@ public class V8MapTest {
 
         assertEquals(1, values.size());
         assertEquals("foo", values.iterator().next());
-        v1.release();
-        map.release();
+        v1.close();
+        map.close();
     }
 
     @Test
@@ -322,13 +327,13 @@ public class V8MapTest {
         V8Map<String> map = new V8Map<String>();
         V8Object v1 = new V8Object(v8);
         map.put(v1, "foo");
-        v1.release();
+        v1.close();
 
         Set<V8Value> keySet = map.keySet();
 
         assertEquals(1, keySet.size());
         assertFalse(keySet.iterator().next().isReleased());
-        map.release();
+        map.close();
     }
 
     @Test
@@ -336,17 +341,17 @@ public class V8MapTest {
         V8Map<String> map = new V8Map<String>();
         V8Object v1 = new V8Object(v8);
         map.put(v1, "foo");
-        v1.release();
+        v1.close();
         V8Map<String> newMap = new V8Map<String>();
         V8Object v2 = new V8Object(v8);
         newMap.put(v2, "bar");
-        v2.release();
+        v2.close();
 
         newMap.putAll(map);
 
-        map.release();
+        map.close();
         assertEquals(2, newMap.size());
-        newMap.release();
+        newMap.close();
     }
 
     @Test
@@ -356,14 +361,14 @@ public class V8MapTest {
         map.put(v1, "foo");
         V8Map<String> newMap = new V8Map<String>();
         newMap.put(v1, "bar");
-        v1.release();
+        v1.close();
 
         newMap.putAll(map);
 
-        map.release();
+        map.close();
         assertEquals(1, newMap.size());
         assertEquals("foo", newMap.values().iterator().next());
-        newMap.release();
+        newMap.close();
     }
 
 }

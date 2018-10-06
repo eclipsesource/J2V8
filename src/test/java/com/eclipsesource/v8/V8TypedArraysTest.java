@@ -35,7 +35,7 @@ public class V8TypedArraysTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -49,7 +49,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var buf = new ArrayBuffer(100); buf;");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -57,7 +57,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Int8Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -65,7 +65,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Int16Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -73,7 +73,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Uint8Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -81,7 +81,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Uint16Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -89,7 +89,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Int32Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -97,7 +97,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var ints = new Uint32Array(); ints");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -105,7 +105,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var floats = new Float32Array(); floats");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -113,7 +113,7 @@ public class V8TypedArraysTest {
         V8Value result = (V8Value) v8.executeScript("var floats = new Float64Array(); floats");
 
         assertNotNull(result);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -121,7 +121,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int32Array(buf); ints[0] = 7; ints");
 
         assertEquals(1, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -136,7 +136,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(7, result.get(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -144,7 +144,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(7, result.getInteger("0"));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -152,7 +152,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(V8Value.INTEGER, result.getType(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -160,7 +160,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var floats = new Float32Array(buf); floats[0] = 7.7; floats");
 
         assertEquals(V8Value.DOUBLE, result.getType(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -168,7 +168,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(V8Value.INT_16_ARRAY, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -191,7 +191,7 @@ public class V8TypedArraysTest {
         short result = (short) (byteBuffer.get() & 0xFF);
 
         assertEquals(240, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -202,7 +202,7 @@ public class V8TypedArraysTest {
         short result = (short) (byteBuffer.get() & 0xFF);
 
         assertEquals(20, result);
-        array.release();
+        array.close();
     }
 
     @Test
@@ -210,7 +210,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
         assertEquals(V8Value.BYTE, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -218,7 +218,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Int8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
         assertEquals(V8Value.INT_8_ARRAY, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -226,7 +226,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8ClampedArray(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
         assertEquals(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -234,7 +234,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8Array(buf); bytes[0] = 1; bytes[1] = 256; bytes");
 
         assertEquals(V8Value.UNSIGNED_INT_8_ARRAY, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -243,7 +243,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.INT_16_ARRAY, result.getType());
         assertEquals(4, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -252,7 +252,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.UNSIGNED_INT_16_ARRAY, result.getType());
         assertEquals(4, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -261,7 +261,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.INT_32_ARRAY, result.getType());
         assertEquals(2, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -270,7 +270,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.UNSIGNED_INT_32_ARRAY, result.getType());
         assertEquals(2, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -279,7 +279,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.FLOAT_32_ARRAY, result.getType());
         assertEquals(2, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -288,7 +288,7 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.FLOAT_64_ARRAY, result.getType());
         assertEquals(1, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -298,7 +298,7 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.BYTE, result.getType());
         assertEquals(1, result.getByte(0));
         assertEquals(0, result.getByte(1));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -306,7 +306,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float32Array(buf); floats[0] = 7.7; floats[1] = 7; floats");
 
         assertEquals(V8Value.FLOAT_32_ARRAY, result.getType());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -314,7 +314,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int32Array(buf); ints[0] = 255; ints");
 
         assertEquals(255, result.get(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -322,7 +322,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 255; ints");
 
         assertEquals(255, result.get(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -330,7 +330,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var floats = new Float32Array(buf); floats[0] = 255.5; floats");
 
         assertEquals(255.5, result.getDouble(0), 0.00001);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -338,7 +338,7 @@ public class V8TypedArraysTest {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(8); var floats = new Float64Array(buf); floats[0] = 255.5; floats");
 
         assertEquals(255.5, result.getDouble(0), 0.00001);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -350,7 +350,7 @@ public class V8TypedArraysTest {
         for (int i = 0; i < ints.length; i++) {
             assertEquals(i, ints[i]);
         }
-        result.release();
+        result.close();
     }
 
     @Test
@@ -360,7 +360,7 @@ public class V8TypedArraysTest {
         assertEquals(2, result.getKeys().length);
         assertEquals("0", result.getKeys()[0]);
         assertEquals("1", result.getKeys()[1]);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -373,7 +373,7 @@ public class V8TypedArraysTest {
         assertEquals(2, array.length());
         assertEquals(7, array.getInteger(0));
         assertEquals(17, array.getInteger(1));
-        array.release();
+        array.close();
     }
 
     @Test
@@ -386,7 +386,7 @@ public class V8TypedArraysTest {
         assertEquals(2, array.length());
         assertEquals(7.7, array.getDouble(0), 0.000001);
         assertEquals(17.7, array.getDouble(1), 0.000001);
-        array.release();
+        array.close();
     }
 
     @Test(expected = V8RuntimeException.class)
@@ -396,7 +396,7 @@ public class V8TypedArraysTest {
         try {
             array.push(7);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -410,7 +410,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -422,7 +422,7 @@ public class V8TypedArraysTest {
         try {
             array.push(7.7);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -436,7 +436,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -448,7 +448,7 @@ public class V8TypedArraysTest {
         try {
             array.push(true);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -462,7 +462,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -474,7 +474,7 @@ public class V8TypedArraysTest {
         try {
             array.push("foo");
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -488,7 +488,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -500,7 +500,7 @@ public class V8TypedArraysTest {
         try {
             array.pushUndefined();
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -514,7 +514,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -526,7 +526,7 @@ public class V8TypedArraysTest {
         try {
             array.push((V8Object) null);
         } finally {
-            array.release();
+            array.close();
         }
     }
 
@@ -540,7 +540,7 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
+            array.close();
         }
         fail("Expected failure");
     }
@@ -553,8 +553,8 @@ public class V8TypedArraysTest {
         try {
             array.push(obj);
         } finally {
-            array.release();
-            obj.release();
+            array.close();
+            obj.close();
         }
     }
 
@@ -569,8 +569,8 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
-            obj.release();
+            array.close();
+            obj.close();
         }
         fail("Expected failure");
     }
@@ -583,8 +583,8 @@ public class V8TypedArraysTest {
         try {
             array.push(obj);
         } finally {
-            array.release();
-            obj.release();
+            array.close();
+            obj.close();
         }
     }
 
@@ -599,8 +599,8 @@ public class V8TypedArraysTest {
             assertEquals("Cannot push to a Typed Array.", e.getMessage());
             return;
         } finally {
-            array.release();
-            obj.release();
+            array.close();
+            obj.close();
         }
         fail("Expected failure");
     }
@@ -641,7 +641,7 @@ public class V8TypedArraysTest {
         V8Array intsArray = (V8Array) v8.get("intsArray");
 
         assertEquals(V8Value.INTEGER, intsArray.getType());
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -652,7 +652,7 @@ public class V8TypedArraysTest {
         V8Array doublesArray = (V8Array) v8.get("doublesArray");
 
         assertEquals(V8Value.DOUBLE, doublesArray.getType());
-        doublesArray.release();
+        doublesArray.close();
     }
 
     @Test
@@ -664,7 +664,7 @@ public class V8TypedArraysTest {
         V8Array intsArray = (V8Array) v8.get("intsArray");
 
         assertEquals(V8Value.INTEGER, intsArray.getType());
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -676,7 +676,7 @@ public class V8TypedArraysTest {
         V8Array intsArray = (V8Array) v8.get("intsArray");
 
         assertEquals(V8Value.INTEGER, intsArray.getType());
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -688,7 +688,7 @@ public class V8TypedArraysTest {
         V8Array intsArray = (V8Array) v8.get("intsArray");
 
         assertEquals(V8Value.INTEGER, intsArray.getType());
-        intsArray.release();
+        intsArray.close();
     }
 
     @Test
@@ -699,17 +699,17 @@ public class V8TypedArraysTest {
         IntBuffer intBuffer = v8Int32Array.getByteBuffer().asIntBuffer();
 
         assertEquals(intBuffer, buffer.getBackingStore().asIntBuffer());
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testCreateArrayInvalidOffset_Int32Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         try {
-            new V8TypedArray(v8, buffer, V8Value.INTEGER, 1, 2);
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 1, 2).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -717,9 +717,9 @@ public class V8TypedArraysTest {
     public void testCreateArrayInvalidLength_Int32Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         try {
-            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 3);
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 3).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -727,9 +727,9 @@ public class V8TypedArraysTest {
     public void testCreateArrayInvalidLengthNegative_Int32Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         try {
-            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, -1);
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, -1).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -737,9 +737,9 @@ public class V8TypedArraysTest {
     public void testCreateArrayInvalidLengthWithOffset_Int32Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
         try {
-            new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 3);
+            new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 3).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -751,9 +751,9 @@ public class V8TypedArraysTest {
         V8ArrayBuffer result = v8Int32Array.getBuffer();
 
         assertEquals(result, buffer);
-        result.release();
-        buffer.release();
-        v8Int32Array.release();
+        result.close();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -769,8 +769,8 @@ public class V8TypedArraysTest {
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
         assertEquals(1, intBuffer.get(0));
         assertEquals(7, intBuffer.get(1));
-        buffer.release();
-        array.release();
+        buffer.close();
+        array.close();
     }
 
     @Test
@@ -784,8 +784,8 @@ public class V8TypedArraysTest {
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
         assertEquals(7, intBuffer.get());
         assertEquals(8, intBuffer.get());
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -799,8 +799,8 @@ public class V8TypedArraysTest {
         IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
         assertEquals(7, intBuffer.get());
         assertEquals(9, intBuffer.get());
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -815,8 +815,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8.executeIntegerScript("v8Int32Array[0];"));
         assertEquals(8, v8.executeIntegerScript("v8Int32Array[1];"));
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -831,8 +831,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int32Array.get(0));
         assertEquals(8, v8Int32Array.get(1));
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -847,8 +847,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int32Array.get(0));
         assertEquals(8, v8Int32Array.get(1));
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -862,8 +862,8 @@ public class V8TypedArraysTest {
         intBuffer.put(8);
 
         assertEquals(2, v8Int32Array.length());
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -877,8 +877,8 @@ public class V8TypedArraysTest {
         intBuffer.put(8);
 
         assertEquals(1, v8Int32Array.length());
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -893,8 +893,8 @@ public class V8TypedArraysTest {
 
         assertEquals(1, v8Int32Array.length());
         assertEquals(8, v8Int32Array.get(0));
-        buffer.release();
-        v8Int32Array.release();
+        buffer.close();
+        v8Int32Array.close();
     }
 
     @Test
@@ -905,9 +905,9 @@ public class V8TypedArraysTest {
 
         assertTrue(twinArray instanceof V8TypedArray);
         assertEquals(v8Int32Array, twinArray);
-        v8Int32Array.release();
-        twinArray.release();
-        buffer.release();
+        v8Int32Array.close();
+        twinArray.close();
+        buffer.close();
     }
 
     @Test
@@ -921,9 +921,9 @@ public class V8TypedArraysTest {
 
         assertEquals(7, v8Int32Array2.get(0));
         assertEquals(8, v8Int32Array2.get(1));
-        v8Int32Array1.release();
-        v8Int32Array2.release();
-        buffer.release();
+        v8Int32Array1.close();
+        v8Int32Array2.close();
+        buffer.close();
     }
 
     @Test
@@ -935,8 +935,8 @@ public class V8TypedArraysTest {
 
         assertTrue(array instanceof V8TypedArray);
         assertEquals(V8Value.INTEGER, array.getType());
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -951,8 +951,8 @@ public class V8TypedArraysTest {
 
         assertEquals(7, array.get(0));
         assertEquals(9, array.get(1));
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -963,17 +963,17 @@ public class V8TypedArraysTest {
         ByteBuffer intBuffer = v8Int8Array.getByteBuffer();
 
         assertEquals(intBuffer, buffer.getBackingStore());
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testCreateArrayInvalidLength_Int8Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         try {
-            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 9);
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 9).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -981,9 +981,9 @@ public class V8TypedArraysTest {
     public void testCreateArrayInvalidLengthNegative_Int8Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         try {
-            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, -1);
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 0, -1).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -991,9 +991,9 @@ public class V8TypedArraysTest {
     public void testCreateArrayInvalidLengthWithOffset_Int8Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
         try {
-            new V8TypedArray(v8, buffer, V8Value.BYTE, 4, 11);
+            new V8TypedArray(v8, buffer, V8Value.BYTE, 4, 11).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1005,9 +1005,9 @@ public class V8TypedArraysTest {
         V8ArrayBuffer result = v8Int8Array.getBuffer();
 
         assertEquals(result, buffer);
-        result.release();
-        buffer.release();
-        v8Int8Array.release();
+        result.close();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1023,8 +1023,8 @@ public class V8TypedArraysTest {
         ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(1, byteBuffer.get(0));
         assertEquals(7, byteBuffer.get(1));
-        buffer.release();
-        array.release();
+        buffer.close();
+        array.close();
     }
 
     @Test
@@ -1038,8 +1038,8 @@ public class V8TypedArraysTest {
         ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1054,8 +1054,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.INT_8_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1070,8 +1070,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.UNSIGNED_INT_8_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1086,8 +1086,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(255, byteBuffer.get() & 0xFF); // Java does not have Unsigned Bytes
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1102,8 +1102,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.INT_16_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1118,8 +1118,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.UNSIGNED_INT_16_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1134,8 +1134,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.INT_32_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1150,8 +1150,8 @@ public class V8TypedArraysTest {
         assertEquals(V8Value.UNSIGNED_INT_32_ARRAY, typedArray.getType());
         assertEquals(7, byteBuffer.get());
         assertEquals(8, byteBuffer.get());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1160,8 +1160,8 @@ public class V8TypedArraysTest {
         V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.FLOAT_32_ARRAY, 0, 2);
 
         assertEquals(V8Value.FLOAT_32_ARRAY, typedArray.getType());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1173,8 +1173,8 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.FLOAT_32_ARRAY, typedArray.getType());
         assertEquals(3.14, buffer.getBackingStore().asFloatBuffer().get(), 0.0001);
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1183,8 +1183,8 @@ public class V8TypedArraysTest {
         V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.FLOAT_64_ARRAY, 0, 1);
 
         assertEquals(V8Value.FLOAT_64_ARRAY, typedArray.getType());
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1196,8 +1196,8 @@ public class V8TypedArraysTest {
 
         assertEquals(V8Value.FLOAT_64_ARRAY, typedArray.getType());
         assertEquals(3.14159265359, buffer.getBackingStore().asDoubleBuffer().get(), 0.000000000001);
-        buffer.release();
-        typedArray.release();
+        buffer.close();
+        typedArray.close();
     }
 
     @Test
@@ -1211,8 +1211,8 @@ public class V8TypedArraysTest {
         ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(7, byteBuffer.get());
         assertEquals(9, byteBuffer.get());
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1227,8 +1227,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8.executeIntegerScript("v8Int8Array[0];"));
         assertEquals(8, v8.executeIntegerScript("v8Int8Array[1];"));
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1243,8 +1243,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int8Array.get(0));
         assertEquals(8, v8Int8Array.get(1));
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1259,8 +1259,8 @@ public class V8TypedArraysTest {
 
         assertEquals(4, v8Int8Array.get(0));
         assertEquals(8, v8Int8Array.get(1));
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1274,8 +1274,8 @@ public class V8TypedArraysTest {
         byteBuffer.put((byte) 8);
 
         assertEquals(2, v8Int8Array.length());
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1287,8 +1287,8 @@ public class V8TypedArraysTest {
         buffer.getBackingStore();
 
         assertEquals(1, v8Int8Array.length());
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1303,8 +1303,8 @@ public class V8TypedArraysTest {
 
         assertEquals(1, v8Int8Array.length());
         assertEquals(8, v8Int8Array.get(0));
-        buffer.release();
-        v8Int8Array.release();
+        buffer.close();
+        v8Int8Array.close();
     }
 
     @Test
@@ -1316,9 +1316,9 @@ public class V8TypedArraysTest {
         assertTrue(twinArray instanceof V8TypedArray);
         assertEquals(V8Value.BYTE, twinArray.getType());
         assertEquals(v8Int8Array, twinArray);
-        v8Int8Array.release();
-        twinArray.release();
-        buffer.release();
+        v8Int8Array.close();
+        twinArray.close();
+        buffer.close();
     }
 
     @Test
@@ -1332,9 +1332,9 @@ public class V8TypedArraysTest {
 
         assertEquals(7, v8Int8Array2.get(0));
         assertEquals(8, v8Int8Array2.get(1));
-        v8Int8Array1.release();
-        v8Int8Array2.release();
-        buffer.release();
+        v8Int8Array1.close();
+        v8Int8Array2.close();
+        buffer.close();
     }
 
     @Test
@@ -1345,8 +1345,8 @@ public class V8TypedArraysTest {
         V8Array array = (V8Array) v8.executeScript("new Int8Array(buf);");
 
         assertTrue(array instanceof V8TypedArray);
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -1361,17 +1361,17 @@ public class V8TypedArraysTest {
 
         assertEquals(7, array.get(0));
         assertEquals(9, array.get(1));
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTypedArrayWithIllegalType_Boolean() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.BOOLEAN, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.BOOLEAN, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1379,9 +1379,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_String() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.STRING, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.STRING, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1389,9 +1389,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_V8Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1399,9 +1399,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_V8Object() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.V8_OBJECT, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.V8_OBJECT, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1409,9 +1409,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_V8ArrayBuffer() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY_BUFFER, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.V8_ARRAY_BUFFER, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1419,9 +1419,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_V8Function() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.V8_FUNCTION, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.V8_FUNCTION, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1429,9 +1429,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_Null() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.NULL, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.NULL, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 
@@ -1439,9 +1439,9 @@ public class V8TypedArraysTest {
     public void testCreateTypedArrayWithIllegalType_Undefined() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
         try {
-            new V8TypedArray(v8, buffer, V8Value.UNDEFINED, 0, 10);
+            new V8TypedArray(v8, buffer, V8Value.UNDEFINED, 0, 10).close();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 

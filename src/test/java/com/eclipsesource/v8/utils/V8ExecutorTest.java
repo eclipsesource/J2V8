@@ -43,8 +43,8 @@ public class V8ExecutorTest {
         executor.start();
         V8Object key = new V8Object(runtime);
         runtime.registerV8Executor(key, executor);
-        key.release();
-        runtime.release();
+        key.close();
+        runtime.close();
     }
 
     @Test
@@ -56,8 +56,8 @@ public class V8ExecutorTest {
         runtime.registerV8Executor(key, executor);
 
         assertEquals(executor, runtime.getExecutor(key));
-        key.release();
-        runtime.release();
+        key.close();
+        runtime.close();
     }
 
     @Test
@@ -71,9 +71,9 @@ public class V8ExecutorTest {
         V8Executor result = runtime.getExecutor(anotherKey);
 
         assertNull(result);
-        key.release();
-        anotherKey.release();
-        runtime.release();
+        key.close();
+        anotherKey.close();
+        runtime.close();
     }
 
     @Test
@@ -87,8 +87,8 @@ public class V8ExecutorTest {
 
         assertEquals(executor, result);
         assertNull(runtime.getExecutor(key));
-        key.release();
-        runtime.release();
+        key.close();
+        runtime.close();
     }
 
     @Test
@@ -101,8 +101,8 @@ public class V8ExecutorTest {
         runtime.shutdownExecutors(false);
 
         assertTrue(runtime.getExecutor(key).isShuttingDown());
-        key.release();
-        runtime.release();
+        key.close();
+        runtime.close();
     }
 
     @Test
@@ -116,8 +116,8 @@ public class V8ExecutorTest {
         runtime.shutdownExecutors(true);
 
         assertTrue(runtime.getExecutor(key).isShuttingDown());
-        key.release();
-        runtime.release();
+        key.close();
+        runtime.close();
     }
 
     @Test

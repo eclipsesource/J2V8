@@ -161,7 +161,7 @@ public class NodeJSTest {
         File testScript = createTemporaryScriptFile("global.passed = true;", "testScript");
 
         nodeJS = NodeJS.createNodeJS();
-        nodeJS.require(testScript).release();
+        nodeJS.require(testScript).close();
         runMessageLoop();
 
         assertEquals(true, nodeJS.getRuntime().getBoolean("passed"));
@@ -179,7 +179,7 @@ public class NodeJSTest {
         runMessageLoop();
 
         assertEquals(7, exports.getInteger("foo"));
-        exports.release();
+        exports.close();
 
     }
 

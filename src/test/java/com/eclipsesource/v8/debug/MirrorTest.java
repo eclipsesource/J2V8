@@ -13,8 +13,8 @@ package com.eclipsesource.v8.debug;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -75,8 +75,8 @@ public class MirrorTest {
     @After
     public void tearDown() {
         try {
-            debugHandler.release();
-            v8.release();
+            debugHandler.close();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -96,9 +96,9 @@ public class MirrorTest {
                 ValueMirror objectValue2 = frame.getLocalValue(2);
                 result = objectValue1.equals(objectValue2);
                 result = (Boolean) result & objectValue2.equals(objectValue1);
-                objectValue1.release();
-                objectValue2.release();
-                frame.release();
+                objectValue1.close();
+                objectValue2.close();
+                frame.close();
             }
         });
 
@@ -117,9 +117,9 @@ public class MirrorTest {
                 ValueMirror objectValue1 = frame.getLocalValue(2);
                 ValueMirror objectValue2 = frame.getLocalValue(2);
                 result = objectValue1.hashCode() == objectValue2.hashCode();
-                objectValue1.release();
-                objectValue2.release();
-                frame.release();
+                objectValue1.close();
+                objectValue2.close();
+                frame.close();
             }
         });
 
@@ -138,9 +138,9 @@ public class MirrorTest {
                 ValueMirror objectValue1 = frame.getLocalValue(2);
                 ValueMirror objectValue2 = frame.getLocalValue(1);
                 result = objectValue1.equals(objectValue2);
-                objectValue1.release();
-                objectValue2.release();
-                frame.release();
+                objectValue1.close();
+                objectValue2.close();
+                frame.close();
             }
         });
 
@@ -158,8 +158,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror objectValue1 = frame.getLocalValue(2);
                 result = objectValue1.equals(new Object());
-                objectValue1.release();
-                frame.release();
+                objectValue1.close();
+                frame.close();
             }
         });
 
@@ -177,8 +177,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror objectValue1 = frame.getLocalValue(2);
                 result = objectValue1.equals(null);
-                objectValue1.release();
-                frame.release();
+                objectValue1.close();
+                frame.close();
             }
         });
 
@@ -197,8 +197,8 @@ public class MirrorTest {
                 ValueMirror number = frame.getLocalValue(0);
                 result = number.isValue() && number.isNumber();
                 result = (Boolean) result && number.getValue().equals(7);
-                number.release();
-                frame.release();
+                number.close();
+                frame.close();
             }
         });
 
@@ -217,8 +217,8 @@ public class MirrorTest {
                 ValueMirror booleanValue = frame.getLocalValue(1);
                 result = booleanValue.isValue() && booleanValue.isBoolean();
                 result = (Boolean) result && booleanValue.getValue().equals(false);
-                booleanValue.release();
-                frame.release();
+                booleanValue.close();
+                frame.close();
             }
         });
 
@@ -236,8 +236,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror objectValue = frame.getLocalValue(2);
                 result = objectValue.isValue() && objectValue.isObject();
-                objectValue.release();
-                frame.release();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -259,10 +259,10 @@ public class MirrorTest {
                 PropertyMirror property = properties.getProperty(0);
                 result = (Boolean) result && property.isProperty();
                 result = (Boolean) result && property.getName().equals("num");
-                properties.release();
-                property.release();
-                objectValue.release();
-                frame.release();
+                properties.close();
+                property.close();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -285,11 +285,11 @@ public class MirrorTest {
                 NumberMirror value = (NumberMirror) property.getValue();
                 result = (Boolean) result && value.isNumber();
                 result = (Boolean) result && value.toString().equals("3");
-                value.release();
-                properties.release();
-                property.release();
-                objectValue.release();
-                frame.release();
+                value.close();
+                properties.close();
+                property.close();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -312,11 +312,11 @@ public class MirrorTest {
                 BooleanMirror value = (BooleanMirror) property.getValue();
                 result = (Boolean) result && value.isBoolean();
                 result = (Boolean) result && value.toString().equals("false");
-                value.release();
-                properties.release();
-                property.release();
-                objectValue.release();
-                frame.release();
+                value.close();
+                properties.close();
+                property.close();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -339,11 +339,11 @@ public class MirrorTest {
                 StringMirror value = (StringMirror) property.getValue();
                 result = (Boolean) result && value.isString();
                 result = (Boolean) result && value.toString().equals("bar");
-                value.release();
-                properties.release();
-                property.release();
-                objectValue.release();
-                frame.release();
+                value.close();
+                properties.close();
+                property.close();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -366,11 +366,11 @@ public class MirrorTest {
                 NumberMirror value = (NumberMirror) property.getValue();
                 result = (Boolean) result && value.isNumber();
                 result = (Boolean) result && value.toString().equals("3.14");
-                value.release();
-                properties.release();
-                property.release();
-                objectValue.release();
-                frame.release();
+                value.close();
+                properties.close();
+                property.close();
+                objectValue.close();
+                frame.close();
             }
         });
 
@@ -389,8 +389,8 @@ public class MirrorTest {
                 ValueMirror arrayValue = frame.getLocalValue(3);
                 result = arrayValue.isValue() && arrayValue.isObject() && arrayValue.isArray();
                 result = (Boolean) result && (((ArrayMirror) arrayValue).length() == 3);
-                arrayValue.release();
-                frame.release();
+                arrayValue.close();
+                frame.close();
             }
         });
 
@@ -409,8 +409,8 @@ public class MirrorTest {
                 ValueMirror stringValue = frame.getLocalValue(4);
                 result = stringValue.isValue() && stringValue.isString();
                 result = (Boolean) result && stringValue.getValue().equals("foo");
-                stringValue.release();
-                frame.release();
+                stringValue.close();
+                frame.close();
             }
         });
 
@@ -428,8 +428,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror nullValue = frame.getLocalValue(5);
                 result = nullValue.isValue() && nullValue.isNull();
-                nullValue.release();
-                frame.release();
+                nullValue.close();
+                frame.close();
             }
         });
 
@@ -447,8 +447,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror undefinedValue = frame.getLocalValue(6);
                 result = undefinedValue.isValue() && undefinedValue.isUndefined();
-                undefinedValue.release();
-                frame.release();
+                undefinedValue.close();
+                frame.close();
             }
         });
 
@@ -466,8 +466,8 @@ public class MirrorTest {
                 Frame frame = state.getFrame(0);
                 ValueMirror functionValue = frame.getLocalValue(7);
                 result = functionValue.isValue() && functionValue.isFunction();
-                functionValue.release();
-                frame.release();
+                functionValue.close();
+                frame.close();
             }
         });
 
@@ -486,9 +486,9 @@ public class MirrorTest {
                 ObjectMirror mirror = (ObjectMirror) frame.getLocalValue(2);
                 V8Object object = (V8Object) mirror.getValue();
                 object.add("foo", 7);
-                mirror.release();
-                object.release();
-                frame.release();
+                mirror.close();
+                object.close();
+                frame.close();
             }
         });
 

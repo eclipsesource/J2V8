@@ -91,7 +91,7 @@ public class NodeJS {
                 try {
                     node.init(require.twin());
                 } finally {
-                    require.release();
+                    require.close();
                 }
             }
         }, STARTUP_CALLBACK);
@@ -137,10 +137,10 @@ public class NodeJS {
     public void release() {
         v8.checkThread();
         if (!require.isReleased()) {
-            require.release();
+            require.close();
         }
         if (!v8.isReleased()) {
-            v8.release();
+            v8.close();
         }
     }
 
@@ -168,7 +168,7 @@ public class NodeJS {
             requireParams.push(file.getAbsolutePath());
             return (V8Object) require.call(null, requireParams);
         } finally {
-            requireParams.release();
+            requireParams.close();
         }
     }
 
@@ -205,7 +205,7 @@ public class NodeJS {
                     requireParams.push(file.getAbsolutePath());
                     return require.call(null, requireParams);
                 } finally {
-                    requireParams.release();
+                    requireParams.close();
                 }
             }
         });

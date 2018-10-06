@@ -63,7 +63,7 @@ public class Frame extends Mirror {
             V8Object scriptObject = (V8Object) sourceLocation.get(SCRIPT);
             if (scriptObject != null) {
                 scriptName = scriptObject.getString(NAME);
-                scriptObject.release();
+                scriptObject.close();
             }
             if ((scriptName == null) && (functionScriptName != null)) {
                 scriptName = functionScriptName;
@@ -76,8 +76,8 @@ public class Frame extends Mirror {
                     sourceLocation.getInteger(COLUMN),
                     sourceLocation.getString(SOURCE_TEXT));
         } finally {
-            function.release();
-            sourceLocation.release();
+            function.close();
+            sourceLocation.close();
         }
     }
 
@@ -102,7 +102,7 @@ public class Frame extends Mirror {
         try {
             return v8Object.executeStringFunction(ARGUMENT_NAME, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -123,9 +123,9 @@ public class Frame extends Mirror {
             }
             return new ValueMirror(result);
         } finally {
-            parameters.release();
+            parameters.close();
             if (result != null) {
-                result.release();
+                result.close();
             }
         }
     }
@@ -147,9 +147,9 @@ public class Frame extends Mirror {
             }
             return createMirror(result);
         } finally {
-            parameters.release();
+            parameters.close();
             if (result != null) {
-                result.release();
+                result.close();
             }
         }
     }
@@ -175,7 +175,7 @@ public class Frame extends Mirror {
         try {
             return v8Object.executeStringFunction(LOCAL_NAME, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -193,9 +193,9 @@ public class Frame extends Mirror {
             scope = v8Object.executeObjectFunction(SCOPE, parameters);
             return new Scope(scope);
         } finally {
-            parameters.release();
+            parameters.close();
             if (scope != null) {
-                scope.release();
+                scope.close();
             }
         }
     }
@@ -212,7 +212,7 @@ public class Frame extends Mirror {
             return new FunctionMirror(function);
         } finally {
             if (function != null) {
-                function.release();
+                function.close();
             }
         }
     }

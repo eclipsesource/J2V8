@@ -38,7 +38,7 @@ public class V8LockerTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -90,7 +90,7 @@ public class V8LockerTest {
     @Test
     public void testReleaseAfterV8Released() {
         V8Locker v8Locker = new V8Locker(v8);
-        v8.release();
+        v8.close();
 
         v8Locker.release();
         v8 = V8.createV8Runtime(); // Create a new runtime so the teardown doesn't fail

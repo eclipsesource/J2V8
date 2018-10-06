@@ -92,7 +92,7 @@ public class V8ObjectUtils {
                 return v8Object;
             }
         } finally {
-            cache.release();
+            cache.close();
         }
     }
 
@@ -124,7 +124,7 @@ public class V8ObjectUtils {
         try {
             return toMap(object, cache, adapter);
         } finally {
-            cache.release();
+            cache.close();
         }
     }
 
@@ -156,7 +156,7 @@ public class V8ObjectUtils {
         try {
             return toList(array, cache, adapter);
         } finally {
-            cache.release();
+            cache.close();
         }
     }
 
@@ -258,7 +258,7 @@ public class V8ObjectUtils {
             return toV8Object(v8, map, cache).twin();
         } finally {
             for (V8Value v8Object : cache.values()) {
-                v8Object.release();
+                v8Object.close();
             }
         }
     }
@@ -278,7 +278,7 @@ public class V8ObjectUtils {
             return toV8Array(v8, list, cache).twin();
         } finally {
             for (V8Value v8Object : cache.values()) {
-                v8Object.release();
+                v8Object.close();
             }
         }
     }
@@ -310,7 +310,7 @@ public class V8ObjectUtils {
             return result;
         } finally {
             for (V8Value v8Object : cache.values()) {
-                v8Object.release();
+                v8Object.close();
             }
         }
     }
@@ -331,7 +331,7 @@ public class V8ObjectUtils {
             pushValue(v8, array, value, cache);
         } finally {
             for (V8Value v8Object : cache.values()) {
-                v8Object.release();
+                v8Object.close();
             }
         }
     }
@@ -360,7 +360,7 @@ public class V8ObjectUtils {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
             }
-            cache.release();
+            cache.close();
         }
     }
 
@@ -390,7 +390,7 @@ public class V8ObjectUtils {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
             }
-            cache.release();
+            cache.close();
         }
     }
 
@@ -436,7 +436,7 @@ public class V8ObjectUtils {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
             }
-            cache.release();
+            cache.close();
         }
     }
 
@@ -510,7 +510,7 @@ public class V8ObjectUtils {
                 setValue(v8, result, entry.getKey(), entry.getValue(), cache);
             }
         } catch (IllegalStateException e) {
-            result.release();
+            result.close();
             throw e;
         }
         return result;
@@ -528,7 +528,7 @@ public class V8ObjectUtils {
                 pushValue(v8, result, value, cache);
             }
         } catch (IllegalStateException e) {
-            result.release();
+            result.close();
             throw e;
         }
         return result;
@@ -553,7 +553,7 @@ public class V8ObjectUtils {
             cache.put(typedArray, result);
             return result;
         } finally {
-            arrayBuffer.release();
+            arrayBuffer.close();
         }
     }
 

@@ -149,8 +149,8 @@ public class V8Executor extends Thread {
                         parameters.push(strings);
                         runtime.executeVoidFunction(messageHandler, parameters);
                     } finally {
-                        strings.release();
-                        parameters.release();
+                        strings.close();
+                        parameters.close();
                     }
                 }
             }
@@ -159,7 +159,7 @@ public class V8Executor extends Thread {
         } finally {
             synchronized (this) {
                 if (runtime.getLocker().hasLock()) {
-                    runtime.release();
+                    runtime.close();
                     runtime = null;
                 }
                 terminated = true;

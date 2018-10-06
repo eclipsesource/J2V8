@@ -12,16 +12,16 @@ package com.eclipsesource.v8;
 
 /**
  * A base class for all V8 resources. V8 resources must
- * be released. The rules for releasing resources is as
+ * be closed/released. The rules for releasing resources is as
  * follows:
  *
- * 1. If you created it, you must release it, with one exception;
+ * 1. If you created it, you must close it, with one exception;
  *    if the object is being passed pack via a return statement,
  *    the system will release it for you.
  *
  * 2. If the system created it, you don’t need to worry about it,
  *    with one caveat; if the object was returned to you as a
- *    result of a method call, you must release it.
+ *    result of a method call, you must close it.
  */
 abstract public class V8Value implements Releasable {
 
@@ -184,7 +184,7 @@ abstract public class V8Value implements Releasable {
      * will be updated. Twins are .equal and .strict equals, but
      * not == in Java.
      *
-     * Twins must be released separately since they have their own
+     * Twins must be closed separately since they have their own
      * native resources.
      *
      * @return A new Java object pointing at the same V8 Value
@@ -203,13 +203,13 @@ abstract public class V8Value implements Releasable {
 
     /**
      * Sets the V8Value as weak reference. A weak reference will eventually
-     * be released when no more references exist to this object. Once setWeak
+     * be closed when no more references exist to this object. Once setWeak
      * is called, you should check if {@link V8Value#isReleased()} is true
      * before invoking any methods on this object.
      *
      * If any other references exist to this object, the object will not be
      * reclaimed. Even if no reference exist, V8 does not give any guarantee
-     * the object will be released, so this should only be used if there is no
+     * the object will be closed, so this should only be used if there is no
      * other way to track object usage.
      *
      * @return The receiver.
@@ -234,11 +234,12 @@ abstract public class V8Value implements Releasable {
         return v8.isWeak(v8.getV8RuntimePtr(), getHandle());
     }
 
-    /**
-     * Releases the native resources associated with this V8Value.
+    /*
+     * (non-Javadoc)
+     * @see java.io.Closeable#close()
      */
     @Override
-    public void release() {
+    public void close() {
         v8.checkThread();
         if (!released) {
             try {
@@ -248,6 +249,17 @@ abstract public class V8Value implements Releasable {
                 v8.release(v8.getV8RuntimePtr(), objectHandle);
             }
         }
+    }
+
+    /**
+     * Releases the native resources associated with this V8Value.
+     *
+     * @deprecated use close() instead.
+     */
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 
     /**

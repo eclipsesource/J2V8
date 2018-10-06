@@ -37,7 +37,7 @@ public class MemoryManagerTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -46,6 +46,7 @@ public class MemoryManagerTest {
         }
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testMemoryManagerReleasesObjects() {
         MemoryManager memoryManager = new MemoryManager(v8);
@@ -56,6 +57,7 @@ public class MemoryManagerTest {
         assertEquals(0, v8.getObjectReferenceCount());
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testObjectIsReleased() {
         MemoryManager memoryManager = new MemoryManager(v8);
@@ -87,7 +89,7 @@ public class MemoryManagerTest {
     public void testMemoryReferenceCount0_AfterRemove() {
         MemoryManager memoryManager = new MemoryManager(v8);
 
-        new V8Object(v8).release();
+        new V8Object(v8).close();
 
         assertEquals(0, memoryManager.getObjectReferenceCount());
     }
@@ -122,9 +124,10 @@ public class MemoryManagerTest {
         V8Object object = new V8Object(v8);
 
         assertEquals(1, v8.getObjectReferenceCount());
-        object.release();
+        object.close();
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testNestedMemoryManagers() {
         MemoryManager memoryManager1 = new MemoryManager(v8);
@@ -139,6 +142,7 @@ public class MemoryManagerTest {
         assertEquals(0, v8.getObjectReferenceCount());
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testNestedMemoryManagerHasProperObjectCount() {
         MemoryManager memoryManager1 = new MemoryManager(v8);
@@ -155,6 +159,7 @@ public class MemoryManagerTest {
         memoryManager1.release();
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testNestedMemoryManager_ReverseReleaseOrder() {
         MemoryManager memoryManager1 = new MemoryManager(v8);
@@ -213,7 +218,7 @@ public class MemoryManagerTest {
         memoryManager.release();
 
         assertFalse(object.isReleased());
-        object.release();
+        object.close();
     }
 
     @Test
@@ -225,9 +230,10 @@ public class MemoryManagerTest {
         memoryManager.release();
 
         assertFalse(object.isReleased());
-        object.release();
+        object.close();
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testTwins() {
         MemoryManager memoryManager = new MemoryManager(v8);
@@ -245,7 +251,7 @@ public class MemoryManagerTest {
 
         V8Object object = new V8Object(v8);
         object.twin();
-        object.release();
+        object.close();
 
         assertEquals(1, memoryManager.getObjectReferenceCount());
         memoryManager.release();
@@ -257,7 +263,7 @@ public class MemoryManagerTest {
         MemoryManager memoryManager = new MemoryManager(v8);
 
         V8Object foo1 = v8.getObject("foo");
-        v8.getObject("foo").release();
+        v8.getObject("foo").close();
 
         assertEquals(1, memoryManager.getObjectReferenceCount());
         memoryManager.release();
@@ -276,6 +282,7 @@ public class MemoryManagerTest {
     MemoryManager memoryManager;
 
     //@Test
+    @SuppressWarnings("resource")
     public void testExceptionDuringReleaseDoesNotReleaseMemoryManager() {
         memoryManager = new MemoryManager(v8);
         ReferenceHandler handler = new ReferenceHandler() {

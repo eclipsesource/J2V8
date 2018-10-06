@@ -58,7 +58,7 @@ public class ExecutionState implements Releasable {
         try {
             v8Object.executeVoidFunction(PREPARE_STEP, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -76,19 +76,25 @@ public class ExecutionState implements Releasable {
             frame = v8Object.executeObjectFunction(FRAME, parameters);
             return new Frame(frame);
         } finally {
-            parameters.release();
+            parameters.close();
             if (frame != null) {
-                frame.release();
+                frame.close();
             }
         }
     }
 
     @Override
-    public void release() {
+    public void close() {
         if ((v8Object != null) && !v8Object.isReleased()) {
-            v8Object.release();
+            v8Object.close();
             v8Object = null;
         }
+    }
+
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 
 }

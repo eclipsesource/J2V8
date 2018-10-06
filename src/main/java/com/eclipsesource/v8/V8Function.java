@@ -83,6 +83,7 @@ public class V8Function extends V8Object {
      *
      * @return The result of JavaScript function.
      */
+    @SuppressWarnings("resource")
     public Object call(V8Object receiver, final V8Array parameters) {
         v8.checkThread();
         checkReleased();

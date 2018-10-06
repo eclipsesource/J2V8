@@ -59,7 +59,7 @@ public class V8CallbackTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -377,7 +377,7 @@ public class V8CallbackTest {
             @Override
             public V8Object answer(final InvocationOnMock invocation) throws Throwable {
                 V8Object result = new V8Object(v8);
-                result.release();
+                result.close();
                 return result;
             }
 
@@ -420,7 +420,7 @@ public class V8CallbackTest {
         V8Object result = v8.executeObjectScript("foo();");
 
         assertEquals("john", result.getString("name"));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -467,7 +467,7 @@ public class V8CallbackTest {
         V8Array result = v8.executeArrayScript("foo();");
 
         assertEquals("john", result.getString(0));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -487,8 +487,8 @@ public class V8CallbackTest {
         for (int i = 0; i < 25; i++) {
             assertEquals(i, result.getInteger(i));
         }
-        arrayBuffer.release();
-        result.release();
+        arrayBuffer.close();
+        result.close();
     }
 
     @Test
@@ -738,7 +738,7 @@ public class V8CallbackTest {
                 V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 8);
                 V8TypedArray array = new V8TypedArray(v8, arrayBuffer, V8Value.INT_8_ARRAY, 0, 8);
                 array.add("0", 8);
-                arrayBuffer.release();
+                arrayBuffer.close();
                 return array;
             }
         };
@@ -760,7 +760,7 @@ public class V8CallbackTest {
                 V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 8);
                 V8TypedArray array = new V8TypedArray(v8, arrayBuffer, V8Value.INT_16_ARRAY, 0, 4);
                 array.add("0", 8000);
-                arrayBuffer.release();
+                arrayBuffer.close();
                 return array;
             }
         };
@@ -782,7 +782,7 @@ public class V8CallbackTest {
                 V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 8);
                 V8TypedArray array = new V8TypedArray(v8, arrayBuffer, V8Value.INT_32_ARRAY, 0, 2);
                 array.add("0", 800000000);
-                arrayBuffer.release();
+                arrayBuffer.close();
                 return array;
             }
         };
@@ -804,7 +804,7 @@ public class V8CallbackTest {
                 V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, 8);
                 V8TypedArray array = new V8TypedArray(v8, arrayBuffer, V8Value.FLOAT_32_ARRAY, 0, 2);
                 array.add("0", 3.14);
-                arrayBuffer.release();
+                arrayBuffer.close();
                 return array;
             }
         };
@@ -838,7 +838,7 @@ public class V8CallbackTest {
         v8Object.executeVoidFunction("foo", null);
 
         verify(callback).voidMethodNoParameters();
-        v8Object.release();
+        v8Object.close();
     }
 
     @Test
@@ -850,7 +850,7 @@ public class V8CallbackTest {
         v8Array.executeVoidFunction("foo", null);
 
         verify(callback).voidMethodNoParameters();
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -864,7 +864,7 @@ public class V8CallbackTest {
 
         verify(callback).intMethodNoParameters();
         assertEquals(99, result);
-        v8Object.release();
+        v8Object.close();
     }
 
     @Test
@@ -878,7 +878,7 @@ public class V8CallbackTest {
 
         verify(callback).intMethodNoParameters();
         assertEquals(99, result);
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -892,7 +892,7 @@ public class V8CallbackTest {
 
         verify(callback).doubleMethodNoParameters();
         assertEquals(99.9, result, 0.000001);
-        v8Object.release();
+        v8Object.close();
     }
 
     @Test
@@ -906,7 +906,7 @@ public class V8CallbackTest {
 
         verify(callback).doubleMethodNoParameters();
         assertEquals(99.9, result, 0.000001);
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -920,7 +920,7 @@ public class V8CallbackTest {
 
         verify(callback).booleanMethodNoParameters();
         assertFalse(result);
-        v8Object.release();
+        v8Object.close();
     }
 
     @Test
@@ -934,7 +934,7 @@ public class V8CallbackTest {
 
         verify(callback).booleanMethodNoParameters();
         assertFalse(result);
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -948,7 +948,7 @@ public class V8CallbackTest {
 
         verify(callback).stringMethodNoParameters();
         assertEquals("mystring", result);
-        v8Object.release();
+        v8Object.close();
     }
 
     @Test
@@ -962,7 +962,7 @@ public class V8CallbackTest {
 
         verify(callback).stringMethodNoParameters();
         assertEquals("mystring", result);
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -976,8 +976,8 @@ public class V8CallbackTest {
 
         verify(callback).v8ObjectMethodNoParameters();
         assertEquals("bob", result.getString("first"));
-        v8Object.release();
-        result.release();
+        v8Object.close();
+        result.close();
     }
 
     @Test
@@ -991,8 +991,8 @@ public class V8CallbackTest {
 
         verify(callback).v8ObjectMethodNoParameters();
         assertEquals("bob", result.getString("first"));
-        v8Array.release();
-        result.release();
+        v8Array.close();
+        result.close();
     }
 
     @Test
@@ -1009,8 +1009,8 @@ public class V8CallbackTest {
         assertEquals("a", result.getString(0));
         assertEquals("b", result.getString(1));
         assertEquals("c", result.getString(2));
-        v8Object.release();
-        result.release();
+        v8Object.close();
+        result.close();
     }
 
     @Test
@@ -1027,8 +1027,8 @@ public class V8CallbackTest {
         assertEquals("a", result.getString(0));
         assertEquals("b", result.getString(1));
         assertEquals("c", result.getString(2));
-        v8Array.release();
-        result.release();
+        v8Array.close();
+        result.close();
     }
 
     @Test
@@ -1066,7 +1066,7 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
-        v8.executeArrayScript("foo();[]").release();
+        v8.executeArrayScript("foo();[]").close();
 
         verify(callback).voidMethodNoParameters();
     }
@@ -1076,7 +1076,7 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodNoParameters", "foo", new Class<?>[0]);
 
-        v8.executeObjectScript("foo(); bar={}; bar;").release();
+        v8.executeObjectScript("foo(); bar={}; bar;").close();
 
         verify(callback).voidMethodNoParameters();
     }
@@ -1249,7 +1249,7 @@ public class V8CallbackTest {
         assertEquals("how", result.getString(2));
         assertEquals("are", result.getString(3));
         assertEquals("you", result.getString(4));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -1293,7 +1293,7 @@ public class V8CallbackTest {
 
         assertEquals("smith", result.getString("first"));
         assertEquals("john", result.getString("last"));
-        result.release();
+        result.close();
     }
 
     @Test(expected = RuntimeException.class)
@@ -1518,6 +1518,7 @@ public class V8CallbackTest {
         assertEquals("foobar", result);
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testObjectMethodReturnsV8Object() {
         ICallback callback = mock(ICallback.class);
@@ -1527,9 +1528,10 @@ public class V8CallbackTest {
         V8Object result = v8.executeObjectFunction("foo", null);
 
         assertEquals("bar", result.getString("foo"));
-        result.release();
+        result.close();
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testObjectMethodReturnsV8Array() {
         ICallback callback = mock(ICallback.class);
@@ -1541,7 +1543,7 @@ public class V8CallbackTest {
         assertEquals(2, result.length());
         assertEquals(1, result.getInteger(0));
         assertEquals("a", result.getString(1));
-        result.release();
+        result.close();
     }
 
     @Test(expected = V8ScriptExecutionException.class)
@@ -1651,12 +1653,13 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
                 Integer.TYPE, Object[].class }, true);
-        V8Array parameters = new V8Array(v8).push(1).push(2);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(1).push(2);
         doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
 
         v8.executeVoidScript("foo(1, 2);");
 
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -1664,12 +1667,13 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
                 Integer.TYPE, Object[].class }, true);
-        V8Array parameters = new V8Array(v8).push(1).push(2).push(3).push(4);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(1).push(2).push(3).push(4);
         doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
 
         v8.executeVoidScript("foo(1, 2, 3, 4);");
 
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -1677,12 +1681,13 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
                 Integer.TYPE, Object[].class }, true);
-        V8Array parameters = new V8Array(v8).push(1).push(2).push(3).push(false);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(1).push(2).push(3).push(false);
         doAnswer(constructReflectiveAnswer(v8, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
 
         v8.executeVoidScript("foo(1, 2, 3, false);");
 
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -1690,12 +1695,13 @@ public class V8CallbackTest {
         ICallback callback = mock(ICallback.class);
         v8.registerJavaMethod(callback, "voidMethodVarArgsReceiverAndOthers", "foo", new Class<?>[] { V8Object.class, Integer.TYPE,
                 Integer.TYPE, Object[].class }, false);
-        V8Array parameters = new V8Array(v8).push(v8).push(1).push(2).push(3).push(false);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(v8).push(1).push(2).push(3).push(false);
         doAnswer(constructReflectiveAnswer(null, parameters, null)).when(callback).voidMethodVarArgsReceiverAndOthers(any(V8Object.class), anyInt(), anyInt());
 
         v8.executeVoidScript("foo(this, 1, 2, 3, false);");
 
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -1782,8 +1788,10 @@ public class V8CallbackTest {
     public void testInvokeCallbackWithParameters() {
         JavaCallback callback = mock(JavaCallback.class);
         v8.registerJavaMethod(callback, "foo");
-        V8Object object = new V8Object(v8).add("foo", "bar");
-        V8Array array = new V8Array(v8).push(1).push(2).push(3);
+        V8Object object = new V8Object(v8);
+        object.add("foo", "bar");
+        V8Array array = new V8Array(v8);
+        array.push(1).push(2).push(3);
         V8Array parameters = new V8Array(v8);
         parameters.push(7);
         parameters.push("test");
@@ -1794,9 +1802,9 @@ public class V8CallbackTest {
         doAnswer(constructAnswer(null, parameters, null)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         v8.executeVoidFunction("foo", parameters);
-        parameters.release();
-        object.release();
-        array.release();
+        parameters.close();
+        object.close();
+        array.close();
     }
 
     @Test
@@ -1823,8 +1831,10 @@ public class V8CallbackTest {
     public void testInvokeVoidCallbackWithParameters() {
         JavaVoidCallback callback = mock(JavaVoidCallback.class);
         v8.registerJavaMethod(callback, "foo");
-        V8Object object = new V8Object(v8).add("foo", "bar");
-        V8Array array = new V8Array(v8).push(1).push(2).push(3);
+        V8Object object = new V8Object(v8);
+        object.add("foo", "bar");
+        V8Array array = new V8Array(v8);
+        array.push(1).push(2).push(3);
         V8Array parameters = new V8Array(v8);
         parameters.push(7);
         parameters.push("test");
@@ -1835,9 +1845,9 @@ public class V8CallbackTest {
         doAnswer(constructAnswer(null, parameters, null)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         v8.executeVoidFunction("foo", parameters);
-        parameters.release();
-        object.release();
-        array.release();
+        parameters.close();
+        object.close();
+        array.close();
     }
 
     @Test
@@ -1859,7 +1869,7 @@ public class V8CallbackTest {
         doAnswer(constructAnswer(bar, null, 77)).when(callback).invoke(any(V8Object.class), any(V8Array.class));
 
         bar.executeVoidFunction("foo", null);
-        bar.release();
+        bar.close();
     }
 
     @Test

@@ -73,8 +73,8 @@ public class V8MultiThreadTest {
                     V8Array parameters = V8ObjectUtils.toV8Array(runtime, data);
                     V8Array _result = runtime.executeArrayFunction("sort", parameters);
                     result = V8ObjectUtils.toList(_result);
-                    _result.release();
-                    parameters.release();
+                    _result.close();
+                    parameters.close();
                 }
             });
             t.start();
@@ -108,7 +108,7 @@ public class V8MultiThreadTest {
         }
         v8.release(false);
         v8TempRuntime.getLocker().acquire();
-        v8TempRuntime.release();
+        v8TempRuntime.close();
     }
 
     @Test(expected = Exception.class)
@@ -126,7 +126,7 @@ public class V8MultiThreadTest {
             }, "foo");
             v8.executeFunction("foo", null);
         } finally {
-            v8.release();
+            v8.close();
         }
     }
 
@@ -146,14 +146,15 @@ public class V8MultiThreadTest {
                     for (int i = 0; i < max; i++) {
                         data.push(max - i);
                     }
-                    V8Array parameters = new V8Array(v8).push(data);
+                    V8Array parameters = new V8Array(v8);
+                    parameters.push(data);
                     V8Array result = v8.executeArrayFunction("sort", parameters);
                     synchronized (threads) {
                         mergeSortResults.add(V8ObjectUtils.toList(result));
                     }
-                    result.release();
-                    parameters.release();
-                    data.release();
+                    result.close();
+                    parameters.close();
+                    data.close();
                 }
 
             });

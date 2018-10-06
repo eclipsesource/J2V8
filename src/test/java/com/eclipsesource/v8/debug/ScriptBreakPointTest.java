@@ -11,8 +11,8 @@
 package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,9 +45,9 @@ public class ScriptBreakPointTest {
 
     @After
     public void tearDown() {
-        handler.release();
+        handler.close();
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -93,7 +93,7 @@ public class ScriptBreakPointTest {
 
         verify(breakHandler, times(0)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         breakPoint.release();
-        handler.release();
+        handler.close();
     }
 
     @Test
@@ -109,7 +109,7 @@ public class ScriptBreakPointTest {
 
         verify(breakHandler, times(1)).onBreak(eq(DebugEvent.Break), any(ExecutionState.class), any(EventData.class), any(V8Object.class));
         breakPoint.release();
-        handler.release();
+        handler.close();
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ScriptBreakPointTest {
 
         assertEquals("x=7;", result);
         breakPoint.release();
-        handler.release();
+        handler.close();
     }
 
     @Test
@@ -136,6 +136,6 @@ public class ScriptBreakPointTest {
 
         assertEquals("undefined", result);
         breakPoint.release();
-        handler.release();
+        handler.close();
     }
 }

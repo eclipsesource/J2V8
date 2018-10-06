@@ -40,7 +40,7 @@ public class PropertyMirror extends Mirror {
         try {
             return createMirror(mirror);
         } finally {
-            mirror.release();
+            mirror.close();
         }
     }
 

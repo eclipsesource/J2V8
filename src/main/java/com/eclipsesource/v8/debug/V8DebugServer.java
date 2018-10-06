@@ -141,7 +141,7 @@ public class V8DebugServer {
         try {
             debugObject = debugScope.getObject(V8_DEBUG_OBJECT);
         } finally {
-            debugScope.release();
+            debugScope.close();
         }
 
         runtime.executeVoidScript("(function() {\n"
@@ -236,15 +236,15 @@ public class V8DebugServer {
 
         //release resources
         if (runningStateDcp != null) {
-            runningStateDcp.release();
+            runningStateDcp.close();
             runningStateDcp = null;
         }
         if (debugObject != null) {
-            debugObject.release();
+            debugObject.close();
             debugObject = null;
         }
         if (stoppedStateDcp != null) {
-            stoppedStateDcp.release();
+            stoppedStateDcp.close();
             stoppedStateDcp = null;
         }
     };
@@ -329,6 +329,7 @@ public class V8DebugServer {
         V8Array params = new V8Array(runtime);
         params.push(message);
 
+        @SuppressWarnings("resource")
         V8Object dcp = stoppedStateDcp != null ? stoppedStateDcp : runningStateDcp;
         Object result = dcp.executeFunction("processDebugJSONRequest", params);
 
@@ -356,14 +357,15 @@ public class V8DebugServer {
         V8Array parameters = null;
         try {
             debugHandler = (V8Function) debugObject.getObject(DEBUG_BREAK_HANDLER);
-            parameters = new V8Array(runtime).push(debugHandler);
+            parameters = new V8Array(runtime);
+            parameters.push(debugHandler);
             debugObject.executeFunction(SET_LISTENER, parameters);
         } finally {
             if ((debugHandler != null) && !debugHandler.isReleased()) {
-                debugHandler.release();
+                debugHandler.close();
             }
             if ((parameters != null) && !parameters.isReleased()) {
-                parameters.release();
+                parameters.close();
             }
         }
     }
@@ -375,7 +377,7 @@ public class V8DebugServer {
                 params.push(false);
                 stoppedStateDcp = execState.executeObjectFunction("debugCommandProcessor", params);
             } finally {
-                params.release();
+                params.close();
             }
 
             //send event to debugger
@@ -394,10 +396,10 @@ public class V8DebugServer {
                 }
                 sendJson(json);
             } finally {
-                params.release();
-                breakpointsHit.release();
+                params.close();
+                breakpointsHit.close();
                 if (event != null) {
-                    event.release();
+                    event.close();
                 }
             }
 
@@ -410,7 +412,7 @@ public class V8DebugServer {
                 }
             }
         } finally {
-            stoppedStateDcp.release();
+            stoppedStateDcp.close();
             stoppedStateDcp = null;
         }
     }
@@ -437,10 +439,10 @@ public class V8DebugServer {
                 sendJson(json);
             }
         } finally {
-            params.release();
-            script.release();
+            params.close();
+            script.close();
             if (event != null) {
-                event.release();
+                event.close();
             }
         }
     }

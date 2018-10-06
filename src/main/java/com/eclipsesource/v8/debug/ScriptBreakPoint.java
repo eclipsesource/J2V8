@@ -61,7 +61,7 @@ public class ScriptBreakPoint implements Releasable {
         try {
             v8Object.executeVoidFunction(SET_CONDITION, parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -80,10 +80,15 @@ public class ScriptBreakPoint implements Releasable {
     }
 
     @Override
-    public void release() {
+    public void close() {
         if ((v8Object != null) && !v8Object.isReleased()) {
-            v8Object.release();
+            v8Object.close();
             v8Object = null;
         }
+    }
+
+    @Override
+    public void release() {
+        close();
     }
 }

@@ -47,7 +47,7 @@ public class V8Thread extends Thread {
         } finally {
             synchronized (this) {
                 if (runtime.getLocker().hasLock()) {
-                    runtime.release();
+                    runtime.close();
                     runtime = null;
                 }
             }

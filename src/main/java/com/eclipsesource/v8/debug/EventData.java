@@ -25,10 +25,16 @@ public class EventData implements Releasable {
     }
 
     @Override
-    public void release() {
+    public void close() {
         if (!v8Object.isReleased()) {
-            v8Object.release();
+            v8Object.close();
         }
+    }
+
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 
 }

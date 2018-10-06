@@ -399,15 +399,15 @@ public class V8Object extends V8Value {
                 } else if (object instanceof V8Value) {
                     parameterArray.push((V8Value) object);
                 } else if (object instanceof Integer) {
-                    parameterArray.push((Integer) object);
+                    parameterArray.push(object);
                 } else if (object instanceof Double) {
-                    parameterArray.push((Double) object);
+                    parameterArray.push(object);
                 } else if (object instanceof Long) {
                     parameterArray.push(((Long) object).doubleValue());
                 } else if (object instanceof Float) {
                     parameterArray.push(((Float) object).floatValue());
                 } else if (object instanceof Boolean) {
-                    parameterArray.push((Boolean) object);
+                    parameterArray.push(object);
                 } else if (object instanceof String) {
                     parameterArray.push((String) object);
                 } else {
@@ -416,7 +416,7 @@ public class V8Object extends V8Value {
             }
             return executeFunction(name, parameterArray);
         } finally {
-            parameterArray.release();
+            parameterArray.close();
         }
     }
 
@@ -685,8 +685,17 @@ public class V8Object extends V8Value {
 
         /*
          * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#close()
+         */
+        @Override
+        public void close() {
+        }
+
+        /*
+         * (non-Javadoc)
          * @see com.eclipsesource.v8.V8Value#release()
          */
+        @Deprecated
         @Override
         public void release() {
         }

@@ -13,8 +13,8 @@ package com.eclipsesource.v8.debug;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -64,8 +64,8 @@ public class ScopeTest {
     @After
     public void tearDown() {
         try {
-            debugHandler.release();
-            v8.release();
+            debugHandler.close();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -83,8 +83,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 result = scope.getType();
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -102,8 +102,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(2);
                 result = scope.getType();
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -121,8 +121,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(3);
                 result = scope.getType();
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -140,8 +140,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(1);
                 result = scope.getType();
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -159,8 +159,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", 0);
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -177,18 +177,19 @@ public class ScopeTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
-                V8Object newValue = new V8Object(v8).add("foo", "bar");
+                V8Object newValue = new V8Object(v8);
+                newValue.add("foo", "bar");
                 scope.setVariableValue("z", newValue);
-                newValue.release();
-                scope.release();
-                frame.release();
+                newValue.close();
+                scope.close();
+                frame.close();
             }
         });
 
         V8Object result = v8.executeObjectScript(script, "script", 0);
 
         assertEquals("bar", result.getString("foo"));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -200,8 +201,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", false);
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -219,8 +220,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", 3.14);
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -238,8 +239,8 @@ public class ScopeTest {
                 Frame frame = state.getFrame(0);
                 Scope scope = frame.getScope(0);
                 scope.setVariableValue("z", "someString");
-                scope.release();
-                frame.release();
+                scope.close();
+                frame.close();
             }
         });
 
@@ -261,9 +262,9 @@ public class ScopeTest {
                 result = propertyNames.length == 2;
                 result = (Boolean) result && propertyNames[0].equals("z");
                 result = (Boolean) result && propertyNames[1].equals("k");
-                scopeObject.release();
-                scope.release();
-                frame.release();
+                scopeObject.close();
+                scope.close();
+                frame.close();
             }
         });
 

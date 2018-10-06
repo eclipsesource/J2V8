@@ -98,7 +98,7 @@ public class MemoryManager {
         releasing = true;
         try {
             for (V8Value reference : references) {
-                reference.release();
+                reference.close();
             }
             v8.removeReferenceHandler(memoryManagerReferenceHandler);
             references.clear();

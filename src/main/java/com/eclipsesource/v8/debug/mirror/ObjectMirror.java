@@ -64,9 +64,9 @@ public class ObjectMirror extends ValueMirror {
             }
             return result;
         } finally {
-            parameters.release();
+            parameters.close();
             if (propertyNames != null) {
-                propertyNames.release();
+                propertyNames.close();
             }
         }
     }
@@ -87,9 +87,9 @@ public class ObjectMirror extends ValueMirror {
             result = v8Object.executeArrayFunction(PROPERTIES, parameters);
             return new PropertiesArray(result);
         } finally {
-            parameters.release();
+            parameters.close();
             if ((result != null) && !result.isReleased()) {
-                result.release();
+                result.close();
                 result = null;
             }
         }

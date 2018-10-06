@@ -36,7 +36,7 @@ public class FunctionMirror extends ObjectMirror {
     /**
      * Returns the name of the Script associated with
      * this FunctionMirror.
-     * 
+     *
      * @return The name of the script.
      */
     public String getScriptName() {
@@ -44,7 +44,7 @@ public class FunctionMirror extends ObjectMirror {
         try {
             return script.executeStringFunction(NAME, null);
         } finally {
-            script.release();
+            script.close();
         }
     }
 

@@ -36,15 +36,29 @@ public class PropertiesArray implements Releasable {
         try {
             return new PropertyMirror(result);
         } finally {
-            result.release();
+            result.close();
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.io.Closeable#close()
+     */
     @Override
-    public void release() {
+    public void close() {
         if (!v8Array.isReleased()) {
-            v8Array.release();
+            v8Array.close();
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.Releasable#release()
+     */
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 
     /**

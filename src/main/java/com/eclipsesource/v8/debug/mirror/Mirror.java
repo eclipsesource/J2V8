@@ -156,12 +156,26 @@ public class Mirror implements Releasable {
         return false;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.io.Closeable#close()
+     */
     @Override
-    public void release() {
+    public void close() {
         if ((v8Object != null) && !v8Object.isReleased()) {
-            v8Object.release();
+            v8Object.close();
             v8Object = null;
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.eclipsesource.v8.Releasable#release()
+     */
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 
     protected static boolean isValue(final V8Object mirror) {

@@ -36,7 +36,7 @@ public class V8ArrayBufferTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -52,8 +52,8 @@ public class V8ArrayBufferTest {
 
         V8Value result = (V8Value) v8.executeScript("var ints = new Int8Array(buffer); ints");
         assertNotNull(result);
-        result.release();
-        buffer.release();
+        result.close();
+        buffer.close();
     }
 
     @Test
@@ -61,7 +61,7 @@ public class V8ArrayBufferTest {
         V8Array container = (V8Array) v8.executeScript("var buf = new ArrayBuffer(100); var container = [buf]; container");
 
         assertEquals(V8Value.V8_ARRAY_BUFFER, container.getType(0));
-        container.release();
+        container.close();
     }
 
     @Test
@@ -69,7 +69,7 @@ public class V8ArrayBufferTest {
         V8Value result = (V8Value) v8.executeScript("var buf = new ArrayBuffer(100);  buf;");
 
         assertTrue(result instanceof V8ArrayBuffer);
-        result.release();
+        result.close();
     }
 
     @Test
@@ -79,8 +79,8 @@ public class V8ArrayBufferTest {
         V8Array result = (V8Array) v8.executeScript("var ints = new Int32Array(buf); ints[0] = 7; ints");
 
         assertEquals(1, result.length());
-        result.release();
-        buffer.release();
+        result.close();
+        buffer.close();
     }
 
     @Test
@@ -91,7 +91,7 @@ public class V8ArrayBufferTest {
 
         assertEquals(4, byteBuffer.limit());
         assertEquals(7, byteBuffer.get(0));
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -102,7 +102,7 @@ public class V8ArrayBufferTest {
 
         assertEquals(1, intBuffer.limit());
         assertEquals(7, intBuffer.get(0));
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -113,7 +113,7 @@ public class V8ArrayBufferTest {
 
         assertEquals(2, shortBuffer.limit());
         assertEquals(7, shortBuffer.get(0));
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -124,7 +124,7 @@ public class V8ArrayBufferTest {
 
         assertEquals(1, floatBuffer.limit());
         assertEquals(7.7, floatBuffer.get(0), 0.00001);
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -135,7 +135,7 @@ public class V8ArrayBufferTest {
 
         assertEquals(1, doubleBuffer.limit());
         assertEquals(7.7, doubleBuffer.get(0), 0.00001);
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -146,7 +146,7 @@ public class V8ArrayBufferTest {
         int result = v8.executeIntegerScript("var ints = new Int16Array(buf); ints[0] = 7; ints[0]");
 
         assertEquals(7, result);
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -157,8 +157,8 @@ public class V8ArrayBufferTest {
         V8Array result = (V8Array) v8.executeScript("var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(7, result.get(0));
-        result.release();
-        buffer.release();
+        result.close();
+        buffer.close();
     }
 
     @Test
@@ -169,8 +169,8 @@ public class V8ArrayBufferTest {
         V8Array result = (V8Array) v8.executeScript("var ints = new Int16Array(buf); ints[0] = 7; ints");
 
         assertEquals(7, result.getInteger("0"));
-        result.release();
-        buffer.release();
+        result.close();
+        buffer.close();
     }
 
     @Test
@@ -181,7 +181,7 @@ public class V8ArrayBufferTest {
         v8.executeVoidScript("var ints = new Int32Array(buf); ints[0] = 255;");
 
         assertEquals(255, buffer.getBackingStore().asIntBuffer().get(0));
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -192,7 +192,7 @@ public class V8ArrayBufferTest {
         v8.executeVoidScript("var ints = new Int16Array(buf); ints[0] = 255;");
 
         assertEquals(255, buffer.getBackingStore().asShortBuffer().get(0));
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -203,7 +203,7 @@ public class V8ArrayBufferTest {
         v8.executeVoidScript("var floats = new Float32Array(buf); floats[0] = 255.5;");
 
         assertEquals(255.5, buffer.getBackingStore().asFloatBuffer().get(0), 0.00001);
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -214,7 +214,7 @@ public class V8ArrayBufferTest {
         v8.executeVoidScript("var floats = new Float64Array(buf); floats[0] = 255.5;");
 
         assertEquals(255.5, buffer.getBackingStore().asDoubleBuffer().get(0), 0.00001);
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -229,7 +229,7 @@ public class V8ArrayBufferTest {
         for (int i = 0; i < intBuffer.limit(); i++) {
             assertEquals(i, intBuffer.get(i));
         }
-        buffer.release();
+        buffer.close();
     }
 
     @Test
@@ -245,8 +245,8 @@ public class V8ArrayBufferTest {
         assertEquals(2, array.length());
         assertEquals(7, array.getInteger(0));
         assertEquals(17, array.getInteger(1));
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -262,8 +262,8 @@ public class V8ArrayBufferTest {
         assertEquals(2, array.length());
         assertEquals(7.7, array.getDouble(0), 0.000001);
         assertEquals(17.7, array.getDouble(1), 0.000001);
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -280,8 +280,8 @@ public class V8ArrayBufferTest {
         assertEquals(2, array.length());
         assertEquals(7, array.getInteger(0));
         assertEquals(17, array.getInteger(1));
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -298,8 +298,8 @@ public class V8ArrayBufferTest {
         assertEquals(2, array.length());
         assertEquals(7.7, array.getDouble(0), 0.000001);
         assertEquals(17.7, array.getDouble(1), 0.000001);
-        array.release();
-        buffer.release();
+        array.close();
+        buffer.close();
     }
 
     @Test
@@ -314,16 +314,16 @@ public class V8ArrayBufferTest {
 
         assertEquals(7, array2.get(0));
         assertEquals(9, array2.get(1));
-        array1.release();
-        array2.release();
-        buffer1.release();
-        buffer2.release();
+        array1.close();
+        array2.close();
+        buffer1.close();
+        buffer2.close();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testByteBufferMustBeDirectBuffer() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        new V8ArrayBuffer(v8, byteBuffer);
+        new V8ArrayBuffer(v8, byteBuffer).close();
     }
 
     @Test
@@ -333,18 +333,19 @@ public class V8ArrayBufferTest {
         V8ArrayBuffer buffer = (V8ArrayBuffer) v8.get("buffer");
 
         assertNotNull(buffer);
-        buffer.release();
+        buffer.close();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGetBackingStoreV8Released() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
-        v8.release();
+        v8.close();
 
         try {
             buffer.getBackingStore();
         } finally {
             v8 = V8.createV8Runtime();
         }
+        buffer.close();
     }
 }

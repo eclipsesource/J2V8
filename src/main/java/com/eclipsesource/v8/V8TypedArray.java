@@ -57,7 +57,7 @@ public class V8TypedArray extends V8Array {
         try {
             return buffer.getBackingStore();
         } finally {
-            buffer.release();
+            buffer.close();
         }
     }
 

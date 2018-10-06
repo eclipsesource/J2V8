@@ -12,8 +12,8 @@ package com.eclipsesource.v8.debug;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -59,8 +59,8 @@ public class FrameTest {
     @After
     public void tearDown() {
         try {
-            debugHandler.release();
-            v8.release();
+            debugHandler.close();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -77,14 +77,14 @@ public class FrameTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getFunction();
-                frame.release();
+                frame.close();
             }
         });
 
         v8.executeScript(script, "script", 0);
 
         assertEquals("foo", ((FunctionMirror) result).getName());
-        ((FunctionMirror) result).release();
+        ((FunctionMirror) result).close();
     }
 
     @Test
@@ -95,7 +95,7 @@ public class FrameTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getSourceLocation();
-                frame.release();
+                frame.close();
             }
         });
 
@@ -114,7 +114,7 @@ public class FrameTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getLocalCount();
-                frame.release();
+                frame.close();
             }
         });
 
@@ -131,7 +131,7 @@ public class FrameTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getArgumentCount();
-                frame.release();
+                frame.close();
             }
         });
 
@@ -148,7 +148,7 @@ public class FrameTest {
             public void onBreak(final DebugEvent event, final ExecutionState state, final EventData eventData, final V8Object data) {
                 Frame frame = state.getFrame(0);
                 result = frame.getScopeCount();
-                frame.release();
+                frame.close();
             }
         });
 
@@ -167,9 +167,9 @@ public class FrameTest {
                 Scope scope0 = frame.getScope(0);
                 Scope scope1 = frame.getScope(1);
                 result = (scope0 != null) && (scope1 != null);
-                scope0.release();
-                scope1.release();
-                frame.release();
+                scope0.close();
+                scope1.close();
+                frame.close();
             }
         });
 
@@ -193,7 +193,7 @@ public class FrameTest {
                 result = (Boolean) result && local1.equals("x");
                 result = (Boolean) result && local2.equals("y");
                 result = (Boolean) result && local3.equals("z");
-                frame.release();
+                frame.close();
             }
         });
 
@@ -217,7 +217,7 @@ public class FrameTest {
                 result = (Boolean) result && arg1.equals("a");
                 result = (Boolean) result && arg2.equals("b");
                 result = (Boolean) result && arg3.equals("c");
-                frame.release();
+                frame.close();
             }
         });
 
@@ -241,10 +241,10 @@ public class FrameTest {
                 result = (Boolean) result && arg1.getValue().equals(1);
                 result = (Boolean) result && arg2.getValue().equals(2);
                 result = (Boolean) result && arg3.getValue().equals("yes");
-                arg1.release();
-                arg2.release();
-                arg3.release();
-                frame.release();
+                arg1.close();
+                arg2.close();
+                arg3.close();
+                frame.close();
             }
         });
 
@@ -269,11 +269,11 @@ public class FrameTest {
                 result = (Boolean) result && local2.getValue().equals(8);
                 V8Object z = (V8Object) local3.getValue();
                 result = (Boolean) result && (z.getInteger("foo") == 3);
-                local1.release();
-                local2.release();
-                local3.release();
-                z.release();
-                frame.release();
+                local1.close();
+                local2.close();
+                local3.close();
+                z.close();
+                frame.close();
             }
         });
 

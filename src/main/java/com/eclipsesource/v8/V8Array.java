@@ -635,9 +635,18 @@ public class V8Array extends V8Object {
 
         /*
          * (non-Javadoc)
+         * @see com.eclipsesource.v8.V8Value#close()
+         */
+        @Override
+        public void close() {
+        }
+
+        /*
+         * (non-Javadoc)
          * @see com.eclipsesource.v8.V8Value#release()
          */
         @Override
+        @Deprecated
         public void release() {
         }
 

@@ -32,7 +32,7 @@ public class V8JSFunctionCallTest {
     @After
     public void tearDown() {
         try {
-            v8.release();
+            v8.close();
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
@@ -46,13 +46,13 @@ public class V8JSFunctionCallTest {
     public void testHandleReleasedReceiver() {
         V8Object object = v8.executeObjectScript("var x = { a: function() { return 10; } }; x;");
         V8Function function = (V8Function) object.get("a");
-        object.release();
+        object.close();
         V8Array parameters = new V8Array(v8);
         try {
             function.call(object, parameters);
         } finally {
-            parameters.release();
-            function.release();
+            parameters.close();
+            function.close();
         }
     }
 
@@ -61,12 +61,12 @@ public class V8JSFunctionCallTest {
         V8Object object = v8.executeObjectScript("var x = { a: function() { return 10; } }; x;");
         V8Function function = (V8Function) object.get("a");
         V8Array parameters = new V8Array(v8);
-        parameters.release();
+        parameters.close();
         try {
             function.call(object, parameters);
         } finally {
-            object.release();
-            function.release();
+            object.close();
+            function.close();
         }
     }
 
@@ -77,20 +77,21 @@ public class V8JSFunctionCallTest {
         V8Object result = v8.getObject("add");
 
         assertTrue(result instanceof V8Function);
-        result.release();
+        result.close();
     }
 
     @Test
     public void testCallFunction() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Function function = (V8Function) v8.getObject("add");
-        V8Array parameters = new V8Array(v8).push(7).push(8);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7).push(8);
 
         Object result = function.call(v8, parameters);
 
         assertEquals(15, result);
-        function.release();
-        parameters.release();
+        function.close();
+        parameters.close();
     }
 
     @Test
@@ -101,7 +102,7 @@ public class V8JSFunctionCallTest {
         boolean result = (Boolean) function.call(v8, null);
 
         assertTrue(result);
-        function.release();
+        function.close();
     }
 
     @Test
@@ -112,7 +113,7 @@ public class V8JSFunctionCallTest {
         Object result = function.call(null, null);
 
         assertEquals(v8, result);
-        function.release();
+        function.close();
         ((Releasable) result).release();
     }
 
@@ -120,30 +121,33 @@ public class V8JSFunctionCallTest {
     public void testCallFunctionOnUndefined() {
         v8.executeVoidScript("function add(x, y) {return x+y;}");
         V8Function function = (V8Function) v8.getObject("add");
-        V8Array parameters = new V8Array(v8).push(7).push(8);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(7).push(8);
 
         Object result = function.call(new V8Object.Undefined(), parameters);
 
         assertEquals(15, result);
-        function.release();
-        parameters.release();
+        function.close();
+        parameters.close();
     }
 
     @Test
     public void testFunctionScope() {
         v8.executeVoidScript("function say() { return this.name + ' say meow!'} ");
         V8Function function = (V8Function) v8.getObject("say");
-        V8Object ginger = new V8Object(v8).add("name", "ginger");
-        V8Object felix = new V8Object(v8).add("name", "felix");
+        V8Object ginger = new V8Object(v8);
+        ginger.add("name", "ginger");
+        V8Object felix = new V8Object(v8);
+        felix.add("name", "felix");
 
         Object result1 = function.call(ginger, null);
         Object result2 = function.call(felix, null);
 
         assertEquals("ginger say meow!", result1);
         assertEquals("felix say meow!", result2);
-        function.release();
-        ginger.release();
-        felix.release();
+        function.close();
+        ginger.close();
+        felix.close();
     }
 
     @Test
@@ -156,7 +160,7 @@ public class V8JSFunctionCallTest {
         int result = v8.executeIntegerFunction("add", parameters);
 
         assertEquals(15, result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -169,7 +173,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeIntegerFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -183,7 +187,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeIntegerFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -197,7 +201,7 @@ public class V8JSFunctionCallTest {
         double result = v8.executeDoubleFunction("add", parameters);
 
         assertEquals(3.3, result, 0.000001);
-        parameters.release();
+        parameters.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -210,7 +214,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeDoubleFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -224,7 +228,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeDoubleFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -238,7 +242,7 @@ public class V8JSFunctionCallTest {
         String result = v8.executeStringFunction("add", parameters);
 
         assertEquals("hello, world!", result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -251,7 +255,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeStringFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -265,7 +269,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeStringFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -279,7 +283,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeBooleanFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -293,7 +297,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeBooleanFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -307,7 +311,7 @@ public class V8JSFunctionCallTest {
         boolean result = v8.executeBooleanFunction("add", parameters);
 
         assertTrue(result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -325,8 +329,8 @@ public class V8JSFunctionCallTest {
         assertFalse(result.getBoolean(1));
         assertEquals(7, result.getInteger(2));
         assertEquals("foo", result.getString(3));
-        parameters.release();
-        result.release();
+        parameters.close();
+        result.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -339,7 +343,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeArrayFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -356,8 +360,8 @@ public class V8JSFunctionCallTest {
         assertEquals("John", result.getString("first"));
         assertEquals("Smith", result.getString("last"));
         assertEquals(7, result.getInteger("age"));
-        parameters.release();
-        result.release();
+        parameters.close();
+        result.close();
     }
 
     @Test(expected = V8ResultUndefined.class)
@@ -370,7 +374,7 @@ public class V8JSFunctionCallTest {
         try {
             v8.executeObjectFunction("add", parameters);
         } finally {
-            parameters.release();
+            parameters.close();
         }
     }
 
@@ -389,8 +393,8 @@ public class V8JSFunctionCallTest {
         assertEquals("John", v8Object.getString("first"));
         assertEquals("Smith", v8Object.getString("last"));
         assertEquals(7, v8Object.getInteger("age"));
-        parameters.release();
-        v8Object.release();
+        parameters.close();
+        v8Object.close();
     }
 
     @Test
@@ -405,7 +409,7 @@ public class V8JSFunctionCallTest {
 
         assertTrue(result instanceof Integer);
         assertEquals(7, result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -465,7 +469,7 @@ public class V8JSFunctionCallTest {
         assertEquals(1, v8Array.get(0));
         assertEquals(2, v8Array.get(1));
         assertEquals(3, v8Array.get(2));
-        v8Array.release();
+        v8Array.close();
     }
 
     @Test
@@ -491,8 +495,8 @@ public class V8JSFunctionCallTest {
         assertEquals("John", result.getString("first"));
         assertEquals("Smith", result.getString("last"));
         assertEquals(7, result.getInteger("age"));
-        parameters.release();
-        result.release();
+        parameters.close();
+        result.close();
     }
 
     @Test
@@ -503,7 +507,7 @@ public class V8JSFunctionCallTest {
         int result = v8.executeIntegerFunction("foo", parameters);
 
         assertEquals(7, result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -514,7 +518,7 @@ public class V8JSFunctionCallTest {
         double result = v8.executeDoubleFunction("foo", parameters);
 
         assertEquals(7.2, result, 0.0000001);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -525,7 +529,7 @@ public class V8JSFunctionCallTest {
         String result = v8.executeStringFunction("foo", parameters);
 
         assertEquals("hello", result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -536,7 +540,7 @@ public class V8JSFunctionCallTest {
         boolean result = v8.executeBooleanFunction("foo", parameters);
 
         assertTrue(result);
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -547,8 +551,8 @@ public class V8JSFunctionCallTest {
         V8Array result = v8.executeArrayFunction("foo", parameters);
 
         assertEquals(0, result.length());
-        parameters.release();
-        result.release();
+        parameters.close();
+        result.close();
     }
 
     @Test
@@ -559,8 +563,8 @@ public class V8JSFunctionCallTest {
         V8Object result = v8.executeObjectFunction("foo", parameters);
 
         assertEquals(8, result.getInteger("bar"));
-        parameters.release();
-        result.release();
+        parameters.close();
+        result.close();
     }
 
     @Test
@@ -571,7 +575,7 @@ public class V8JSFunctionCallTest {
         v8.executeVoidFunction("foo", parameters);
 
         assertEquals(7, v8.getInteger("x"));
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -617,7 +621,7 @@ public class V8JSFunctionCallTest {
         V8Array result = v8.executeArrayFunction("foo", null);
 
         assertEquals(2, result.length());
-        result.release();
+        result.close();
     }
 
     @Test
@@ -627,7 +631,7 @@ public class V8JSFunctionCallTest {
         V8Object result = v8.executeObjectFunction("foo", null);
 
         assertEquals("b", result.getString("a"));
-        result.release();
+        result.close();
     }
 
     @Test
@@ -650,10 +654,10 @@ public class V8JSFunctionCallTest {
         parameters.push(7);
         parameters.push(8);
         int result = object.executeIntegerFunction("addFuction", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals(15, result);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -667,10 +671,10 @@ public class V8JSFunctionCallTest {
         parameters.push(7.1);
         parameters.push(8.1);
         double result = object.executeDoubleFunction("addFuction", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals(15.2, result, 0.000001);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -684,10 +688,10 @@ public class V8JSFunctionCallTest {
         parameters.push("hello, ");
         parameters.push("world!");
         String result = object.executeStringFunction("addFuction", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals("hello, world!", result);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -701,10 +705,10 @@ public class V8JSFunctionCallTest {
         parameters.push(true);
         parameters.push(false);
         boolean result = object.executeBooleanFunction("addFuction", parameters);
-        parameters.release();
+        parameters.close();
 
         assertFalse(result);
-        object.release();
+        object.close();
     }
 
     @Test
@@ -718,12 +722,12 @@ public class V8JSFunctionCallTest {
         parameters.push(true);
         parameters.push(false);
         V8Array result = object.executeArrayFunction("addFuction", parameters);
-        parameters.release();
+        parameters.close();
 
         assertFalse(result.getBoolean(1));
         assertTrue(result.getBoolean(0));
-        result.release();
-        object.release();
+        result.close();
+        object.close();
     }
 
     @Test
@@ -737,12 +741,12 @@ public class V8JSFunctionCallTest {
         parameters.push(8);
         parameters.push(9);
         V8Object result = object.executeObjectFunction("pointGetter", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals(8, result.getInteger("x"));
         assertEquals(9, result.getInteger("y"));
-        result.release();
-        object.release();
+        result.close();
+        object.close();
     }
 
     @Test
@@ -756,11 +760,11 @@ public class V8JSFunctionCallTest {
         parameters.push(8);
         parameters.push(9);
         object.executeVoidFunction("pointSetter", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals(8, object.getInteger("x"));
         assertEquals(9, object.getInteger("y"));
-        object.release();
+        object.close();
     }
 
     @Test
@@ -771,7 +775,7 @@ public class V8JSFunctionCallTest {
         parameters.push("abcdefghijklmnopqrstuvwxyz");
 
         assertEquals(26, v8.executeIntegerFunction("countLength", parameters));
-        parameters.release();
+        parameters.close();
     }
 
     @Test
@@ -792,9 +796,9 @@ public class V8JSFunctionCallTest {
         int result = v8.executeIntegerFunction("add", parameters);
 
         assertEquals(15, result);
-        obj1.release();
-        obj2.release();
-        parameters.release();
+        obj1.close();
+        obj2.close();
+        parameters.close();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -869,37 +873,41 @@ public class V8JSFunctionCallTest {
 
     @Test
     public void testExecuteJSFunction_V8Object() {
-        V8Object object = new V8Object(v8).add("first", 7).add("second", 8);
+        V8Object object = new V8Object(v8);
+        object.add("first", 7).add("second", 8);
         v8.executeVoidScript("function add(p1) {return p1.first + p1.second;}");
 
         int result = (Integer) v8.executeJSFunction("add", object);
 
         assertEquals(15, result);
-        object.release();
+        object.close();
     }
 
     @Test
     public void testExecuteJSFunction_V8Array() {
-        V8Object array = new V8Array(v8).push(7).push(8);
+        V8Array array = new V8Array(v8);
+        array.push(7).push(8);
         v8.executeVoidScript("function add(p1) {return p1[0] + p1[1];}");
 
         int result = (Integer) v8.executeJSFunction("add", array);
 
         assertEquals(15, result);
-        array.release();
+        array.close();
     }
 
     @Test
     public void testExecuteJSFunction_Mixed() {
-        V8Object array = new V8Array(v8).push(7).push(8);
-        V8Object object = new V8Object(v8).add("first", 7).add("second", 8);
+        V8Array array = new V8Array(v8);
+        array.push(7).push(8);
+        V8Object object = new V8Object(v8);
+        object.add("first", 7).add("second", 8);
         v8.executeVoidScript("function add(p1, p2) {return p1[0] + p1[1] + p2.first + p2.second ;}");
 
         int result = (Integer) v8.executeJSFunction("add", array, object);
 
         assertEquals(30, result);
-        object.release();
-        array.release();
+        object.close();
+        array.close();
     }
 
     @Test
@@ -916,7 +924,7 @@ public class V8JSFunctionCallTest {
         int result = (Integer) v8.executeJSFunction("add", function);
 
         assertEquals(7, result);
-        function.release();
+        function.close();
     }
 
     @Test
@@ -952,6 +960,7 @@ public class V8JSFunctionCallTest {
         V8Object undefined = new V8Object.Undefined();
 
         undefined.executeJSFunction("test", (Object[]) null);
+        undefined.close();
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -960,6 +969,7 @@ public class V8JSFunctionCallTest {
         V8Object undefined = new V8Object.Undefined();
 
         undefined.executeFunction("test", null);
+        undefined.close();
     }
 
     @Test
@@ -981,12 +991,13 @@ public class V8JSFunctionCallTest {
             }
         });
 
-        V8Array paramters = new V8Array(v8).push("👄");
+        V8Array paramters = new V8Array(v8);
+        paramters.push("👄");
         Object result = v8Function.call(null, paramters);
 
         assertEquals("👄", result);
-        paramters.release();
-        v8Function.release();
+        paramters.close();
+        v8Function.close();
     }
 
     @Test
@@ -1002,7 +1013,7 @@ public class V8JSFunctionCallTest {
         function.call(null, null);
 
         assertEquals("passed", result);
-        function.release();
+        function.close();
     }
 
     @Test
@@ -1016,10 +1027,11 @@ public class V8JSFunctionCallTest {
                 return null;
             }
         });
-        V8Array parameters = new V8Array(v8).push(function);
+        V8Array parameters = new V8Array(v8);
+        parameters.push(function);
         v8.executeVoidFunction("doSomething", parameters);
-        function.release();
-        parameters.release();
+        function.close();
+        parameters.close();
 
         assertEquals("passed", result);
     }
@@ -1035,10 +1047,11 @@ public class V8JSFunctionCallTest {
                 return null;
             }
         });
-        V8Array parameters = new V8Array(v8).push(function);
-        function.release();
+        V8Array parameters = new V8Array(v8);
+        parameters.push(function);
+        function.close();
         v8.executeVoidFunction("doSomething", parameters);
-        parameters.release();
+        parameters.close();
 
         assertEquals("passed", result);
     }
@@ -1061,6 +1074,7 @@ public class V8JSFunctionCallTest {
             V8Array a = (V8Array) engine2.get("a");
 
             function.call(null, a);
+            function.close();
         } finally {
             engine.release(false);
             engine2.release(false);
@@ -1086,6 +1100,7 @@ public class V8JSFunctionCallTest {
             V8Object a = (V8Object) engine2.get("a");
 
             function.call(a, null);
+            function.close();
         } finally {
             engine.release(false);
             engine2.release(false);
