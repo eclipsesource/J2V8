@@ -12,6 +12,7 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -1858,6 +1859,13 @@ public class V8Test {
         v8.setData("foo", value);
 
         assertNull(v8.getData("bar"));
+    }
+
+    @Test
+    public void testInitEmptyContainerNonNull() {
+        long initEmptyContainer = v8.initEmptyContainer(v8.getV8RuntimePtr());
+
+        assertNotEquals(0l, initEmptyContainer);
     }
 
 }

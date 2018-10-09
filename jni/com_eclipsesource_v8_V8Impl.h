@@ -61,6 +61,14 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _initEmptyContainer
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initEmptyContainer
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _acquireLock
  * Signature: (J)V
  */

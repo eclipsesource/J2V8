@@ -511,6 +511,13 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1lowMemoryNotification
   runtime->isolate->LowMemoryNotification();
 }
 
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initEmptyContainer
+(JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Persistent<Object>* container = new Persistent<Object>;
+  return reinterpret_cast<jlong>(container);
+}
+
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 (JNIEnv *env, jobject, jlong v8RuntimePtr) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);

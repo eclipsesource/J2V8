@@ -1039,6 +1039,10 @@ public class V8 extends V8Object {
         return _initNewV8Object(v8RuntimePtr);
     }
 
+    protected long initEmptyContainer(final long v8RuntimePtr) {
+        return _initEmptyContainer(v8RuntimePtr);
+    }
+
     protected void acquireLock(final long v8RuntimePtr) {
         _acquireLock(v8RuntimePtr);
     }
@@ -1386,6 +1390,8 @@ public class V8 extends V8Object {
     }
 
     private native long _initNewV8Object(long v8RuntimePtr);
+
+    private native long _initEmptyContainer(long v8RuntimePtr);
 
     private native void _acquireLock(long v8RuntimePtr);
 
