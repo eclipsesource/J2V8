@@ -116,6 +116,7 @@ public class V8ArrayTest {
     }
 
     /*** Undefined ***/
+    @SuppressWarnings("resource")
     @Test
     public void testUndefinedObjectProperty() {
         V8Array result = v8.getArray("array");
@@ -123,6 +124,7 @@ public class V8ArrayTest {
         assertTrue(result.isUndefined());
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testObjectUndefinedEqualsArrayUndefined() {
         assertEquals(new V8Object.Undefined(), new V8Array.Undefined());
@@ -134,6 +136,7 @@ public class V8ArrayTest {
         assertEquals(new V8Object.Undefined().hashCode(), new V8Array.Undefined().hashCode());
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testUndefinedEqual() {
         V8Array undefined1 = v8.getArray("foo");

@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.eclipsesource.v8.utils;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -21,21 +20,8 @@ import java.util.Map.Entry;
 import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8ArrayBuffer;
 import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8TypedArray;
 import com.eclipsesource.v8.V8Value;
-import com.eclipsesource.v8.utils.typedarrays.ArrayBuffer;
-import com.eclipsesource.v8.utils.typedarrays.Float32Array;
-import com.eclipsesource.v8.utils.typedarrays.Float64Array;
-import com.eclipsesource.v8.utils.typedarrays.Int16Array;
-import com.eclipsesource.v8.utils.typedarrays.Int32Array;
-import com.eclipsesource.v8.utils.typedarrays.Int8Array;
-import com.eclipsesource.v8.utils.typedarrays.TypedArray;
-import com.eclipsesource.v8.utils.typedarrays.UInt16Array;
-import com.eclipsesource.v8.utils.typedarrays.UInt32Array;
-import com.eclipsesource.v8.utils.typedarrays.UInt8Array;
-import com.eclipsesource.v8.utils.typedarrays.UInt8ClampedArray;
 
 /**
  * A set of static helper methods to convert V8Objects / V8Arrays to
@@ -355,7 +341,11 @@ public class V8ObjectUtils {
         try {
             object = array.get(index);
             type = array.getType(index);
-            return getValue(object, type, cache, DEFAULT_TYPE_ADAPTER);
+            Object result = getValue(object, type, cache, DEFAULT_TYPE_ADAPTER);
+            if ((result == object) && (result instanceof V8Value)) {
+                return ((V8Value) result).twin();
+            }
+            return result;
         } finally {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
@@ -385,7 +375,11 @@ public class V8ObjectUtils {
         try {
             object = array.get(index);
             type = array.getType(index);
-            return getValue(object, type, cache, adapter);
+            Object result = getValue(object, type, cache, adapter);
+            if ((result == object) && (result instanceof V8Value)) {
+                return ((V8Value) result).twin();
+            }
+            return result;
         } finally {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
@@ -431,7 +425,11 @@ public class V8ObjectUtils {
         try {
             object = v8Object.get(key);
             type = v8Object.getType(key);
-            return getValue(object, type, cache, adapter);
+            Object result = getValue(object, type, cache, adapter);
+            if ((result == object) && (result instanceof V8Value)) {
+                return ((V8Value) result).twin();
+            }
+            return result;
         } finally {
             if (object instanceof Releasable) {
                 ((Releasable) object).release();
@@ -534,29 +532,6 @@ public class V8ObjectUtils {
         return result;
     }
 
-    private static V8ArrayBuffer toV8ArrayBuffer(final V8 v8, final ArrayBuffer arrayBuffer, final Map<Object, V8Value> cache) {
-        if (cache.containsKey(arrayBuffer)) {
-            return (V8ArrayBuffer) cache.get(arrayBuffer);
-        }
-        V8ArrayBuffer result = new V8ArrayBuffer(v8, arrayBuffer.getByteBuffer());
-        cache.put(arrayBuffer, result);
-        return result;
-    }
-
-    private static V8TypedArray toV8TypedArray(final V8 v8, final TypedArray typedArray, final Map<Object, V8Value> cache) {
-        if (cache.containsKey(typedArray)) {
-            return (V8TypedArray) cache.get(typedArray);
-        }
-        V8ArrayBuffer arrayBuffer = new V8ArrayBuffer(v8, typedArray.getByteBuffer());
-        try {
-            V8TypedArray result = new V8TypedArray(v8, arrayBuffer, typedArray.getType(), 0, typedArray.length());
-            cache.put(typedArray, result);
-            return result;
-        } finally {
-            arrayBuffer.close();
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private static Object getV8Result(final V8 v8, final Object value, final Map<Object, V8Value> cache) {
         if (cache.containsKey(value)) {
@@ -566,10 +541,6 @@ public class V8ObjectUtils {
             return toV8Object(v8, (Map<String, ? extends Object>) value, cache);
         } else if (value instanceof List<?>) {
             return toV8Array(v8, (List<? extends Object>) value, cache);
-        } else if (value instanceof TypedArray) {
-            return toV8TypedArray(v8, (TypedArray) value, cache);
-        } else if (value instanceof ArrayBuffer) {
-            return toV8ArrayBuffer(v8, (ArrayBuffer) value, cache);
         }
         return value;
     }
@@ -592,12 +563,6 @@ public class V8ObjectUtils {
             result.push(value);
         } else if (value instanceof V8Object) {
             result.push((V8Object) value);
-        } else if (value instanceof TypedArray) {
-            V8TypedArray v8TypedArray = toV8TypedArray(v8, (TypedArray) value, cache);
-            result.push(v8TypedArray);
-        } else if (value instanceof ArrayBuffer) {
-            V8ArrayBuffer v8ArrayBuffer = toV8ArrayBuffer(v8, (ArrayBuffer) value, cache);
-            result.push(v8ArrayBuffer);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.push(object);
@@ -627,12 +592,6 @@ public class V8ObjectUtils {
             result.add(key, (Boolean) value);
         } else if (value instanceof V8Object) {
             result.add(key, (V8Object) value);
-        } else if (value instanceof TypedArray) {
-            V8TypedArray typedArray = toV8TypedArray(v8, (TypedArray) value, cache);
-            result.add(key, typedArray);
-        } else if (value instanceof ArrayBuffer) {
-            V8ArrayBuffer v8ArrayBuffer = toV8ArrayBuffer(v8, (ArrayBuffer) value, cache);
-            result.add(key, v8ArrayBuffer);
         } else if (value instanceof Map) {
             V8Object object = toV8Object(v8, (Map) value, cache);
             result.add(key, object);
@@ -658,9 +617,9 @@ public class V8ObjectUtils {
             case V8Value.V8_FUNCTION:
                 return IGNORE;
             case V8Value.V8_ARRAY_BUFFER:
-                return new ArrayBuffer(((V8ArrayBuffer) value).getBackingStore());
+                return (value);
             case V8Value.V8_TYPED_ARRAY:
-                return toTypedArray((V8Array) value);
+                return (value);
             case V8Value.V8_ARRAY:
                 return toList((V8Array) value, cache, adapter);
             case V8Value.V8_OBJECT:
@@ -671,33 +630,6 @@ public class V8ObjectUtils {
                 return V8.getUndefined();
             default:
                 throw new IllegalStateException("Cannot convert type " + V8Value.getStringRepresentation(valueType));
-        }
-    }
-
-    private static Object toTypedArray(final V8Array typedArray) {
-        int arrayType = typedArray.getType();
-        ByteBuffer buffer = ((V8TypedArray) typedArray).getByteBuffer();
-        switch (arrayType) {
-            case V8Value.INT_8_ARRAY:
-                return new Int8Array(buffer);
-            case V8Value.UNSIGNED_INT_8_ARRAY:
-                return new UInt8Array(buffer);
-            case V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY:
-                return new UInt8ClampedArray(buffer);
-            case V8Value.INT_16_ARRAY:
-                return new Int16Array(buffer);
-            case V8Value.UNSIGNED_INT_16_ARRAY:
-                return new UInt16Array(buffer);
-            case V8Value.INT_32_ARRAY:
-                return new Int32Array(buffer);
-            case V8Value.UNSIGNED_INT_32_ARRAY:
-                return new UInt32Array(buffer);
-            case V8Value.FLOAT_32_ARRAY:
-                return new Float32Array(buffer);
-            case V8Value.FLOAT_64_ARRAY:
-                return new Float64Array(buffer);
-            default:
-                throw new IllegalStateException("Known Typed Array type: " + V8Value.getStringRepresentation(arrayType));
         }
     }
 

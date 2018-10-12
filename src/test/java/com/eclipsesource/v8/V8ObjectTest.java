@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -1653,7 +1652,7 @@ public class V8ObjectTest {
 
         V8ArrayBuffer twin = arrayBuffer.twin();
 
-        assertSame(twin.getBackingStore(), arrayBuffer.getBackingStore());
+        assertEquals(twin.byteBuffer, arrayBuffer.byteBuffer);
         arrayBuffer.close();
         twin.close();
     }

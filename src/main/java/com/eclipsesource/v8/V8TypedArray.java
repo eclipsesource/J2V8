@@ -10,8 +10,6 @@
  ******************************************************************************/
 package com.eclipsesource.v8;
 
-import java.nio.ByteBuffer;
-
 /**
  * A representation of a JS TypedArray in Java. The typed array is simply a 'view' onto
  * a back buffer.
@@ -37,6 +35,41 @@ public class V8TypedArray extends V8Array {
         super(v8);
     }
 
+    @Override
+    protected V8Value createTwin() {
+        v8.checkThread();
+        checkReleased();
+        return new V8TypedArray(v8);
+    }
+
+    @Override
+    public Object get(final int index) {
+        v8.checkThread();
+        checkReleased();
+        int type = getType();
+        switch (type) {
+            case FLOAT_32_ARRAY:
+                return ((Number) super.get(index)).floatValue();
+            case FLOAT_64_ARRAY:
+                return super.get(index);
+            case INT_32_ARRAY:
+                return super.get(index);
+            case INT_16_ARRAY:
+                return ((Number) super.get(index)).shortValue();
+            case INT_8_ARRAY:
+                return ((Number) super.get(index)).byteValue();
+            case UNSIGNED_INT_16_ARRAY:
+                return 0xFFFF & (Integer) super.get(index);
+            case UNSIGNED_INT_32_ARRAY:
+                return 0x00000000FFFFFFFF & ((Number) super.get(index)).longValue();
+            case UNSIGNED_INT_8_CLAMPED_ARRAY:
+                return (short) (0x00FF & ((Number) super.get(index)).byteValue());
+            case UNSIGNED_INT_8_ARRAY:
+                return (short) (0x00FF & ((Number) super.get(index)).shortValue());
+        }
+        return null;
+    }
+
     /**
      * Provide access to the underlying ByteBuffer used for this TypedArray.
      * The V8ArrayBuffer must be released.
@@ -45,20 +78,6 @@ public class V8TypedArray extends V8Array {
      */
     public V8ArrayBuffer getBuffer() {
         return (V8ArrayBuffer) get("buffer");
-    }
-
-    /**
-     * Returns the underlying ByteBuffer used to back this TypedArray.
-     *
-     * @return The ByteBuffer used as the backing store for this TypedArray
-     */
-    public ByteBuffer getByteBuffer() {
-        V8ArrayBuffer buffer = getBuffer();
-        try {
-            return buffer.getBackingStore();
-        } finally {
-            buffer.close();
-        }
     }
 
     @Override
@@ -136,7 +155,7 @@ public class V8TypedArray extends V8Array {
             throw new IllegalStateException("RangeError: Invalid typed array length");
         }
         int limit = (arrayData.size * getStructureSize(arrayData.type)) + arrayData.offset;
-        if (limit > arrayData.buffer.getBackingStore().limit()) {
+        if (limit > arrayData.buffer.limit()) {
             throw new IllegalStateException("RangeError: Invalid typed array length");
         }
     }
@@ -145,11 +164,6 @@ public class V8TypedArray extends V8Array {
         if ((arrayData.offset % getStructureSize(arrayData.type)) != 0) {
             throw new IllegalStateException("RangeError: Start offset of Int32Array must be a multiple of " + getStructureSize(arrayData.type));
         }
-    }
-
-    @Override
-    protected V8Value createTwin() {
-        return new V8TypedArray(v8);
     }
 
     private static class V8ArrayData {

@@ -15,10 +15,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -135,7 +131,7 @@ public class V8TypedArraysTest {
     public void testGetTypedArrayIntValue() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 7; ints");
 
-        assertEquals(7, result.get(0));
+        assertEquals((short) 7, result.get(0));
         result.close();
     }
 
@@ -186,23 +182,25 @@ public class V8TypedArraysTest {
     @Test
     public void testAccessSignedValueFromUnsignedByte_Greater128() {
         V8TypedArray array = (V8TypedArray) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8ClampedArray(buf); bytes[0] = 240; bytes[1] = 7; bytes");
-        ByteBuffer byteBuffer = array.getByteBuffer();
+        V8ArrayBuffer arrayBuffer = array.getBuffer();
 
-        short result = (short) (byteBuffer.get() & 0xFF);
+        short result = (short) (arrayBuffer.get() & 0xFF);
 
         assertEquals(240, result);
         array.close();
+        arrayBuffer.close();
     }
 
     @Test
     public void testAccessSignedValueFromUnsignedByte_Less128() {
         V8TypedArray array = (V8TypedArray) v8.executeScript("var buf = new ArrayBuffer(8); var bytes = new Uint8Array(buf); bytes[0] = 20; bytes[1] = 7; bytes");
-        ByteBuffer byteBuffer = array.getByteBuffer();
+        V8ArrayBuffer arrayBuffer = array.getBuffer();
 
-        short result = (short) (byteBuffer.get() & 0xFF);
+        short result = (short) (arrayBuffer.get() & 0xFF);
 
         assertEquals(20, result);
         array.close();
+        arrayBuffer.close();
     }
 
     @Test
@@ -321,7 +319,7 @@ public class V8TypedArraysTest {
     public void testGetTypedArrayType16BitValue() {
         V8Array result = (V8Array) v8.executeScript("var buf = new ArrayBuffer(4); var ints = new Int16Array(buf); ints[0] = 255; ints");
 
-        assertEquals(255, result.get(0));
+        assertEquals((short) 255, result.get(0));
         result.close();
     }
 
@@ -691,18 +689,6 @@ public class V8TypedArraysTest {
         intsArray.close();
     }
 
-    @Test
-    public void testGetIntBufferFromInt32Array() {
-        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
-        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
-
-        IntBuffer intBuffer = v8Int32Array.getByteBuffer().asIntBuffer();
-
-        assertEquals(intBuffer, buffer.getBackingStore().asIntBuffer());
-        buffer.close();
-        v8Int32Array.close();
-    }
-
     @Test(expected = IllegalStateException.class)
     public void testCreateArrayInvalidOffset_Int32Array() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
@@ -766,9 +752,8 @@ public class V8TypedArraysTest {
 
         V8ArrayBuffer buffer = array.getBuffer();
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        assertEquals(1, intBuffer.get(0));
-        assertEquals(7, intBuffer.get(1));
+        assertEquals(1, buffer.getInt(0));
+        assertEquals(7, buffer.getInt(4));
         buffer.close();
         array.close();
     }
@@ -781,9 +766,8 @@ public class V8TypedArraysTest {
         v8Int32Array.add("0", 7);
         v8Int32Array.add("1", 8);
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        assertEquals(7, intBuffer.get());
-        assertEquals(8, intBuffer.get());
+        assertEquals(7, buffer.getInt());
+        assertEquals(8, buffer.getInt());
         buffer.close();
         v8Int32Array.close();
     }
@@ -796,9 +780,8 @@ public class V8TypedArraysTest {
 
         v8.executeVoidScript("v8Int32Array[0] = 7; v8Int32Array[1] = 9;");
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        assertEquals(7, intBuffer.get());
-        assertEquals(9, intBuffer.get());
+        assertEquals(7, buffer.getInt());
+        assertEquals(9, buffer.getInt());
         buffer.close();
         v8Int32Array.close();
     }
@@ -809,9 +792,8 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
         v8.add("v8Int32Array", v8Int32Array);
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
+        buffer.putInt(4);
+        buffer.putInt(8);
 
         assertEquals(4, v8.executeIntegerScript("v8Int32Array[0];"));
         assertEquals(8, v8.executeIntegerScript("v8Int32Array[1];"));
@@ -825,25 +807,8 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
         v8.add("v8Int32Array", v8Int32Array);
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
-
-        assertEquals(4, v8Int32Array.get(0));
-        assertEquals(8, v8Int32Array.get(1));
-        buffer.close();
-        v8Int32Array.close();
-    }
-
-    @Test
-    public void testInt32TypedArray_BufferReleased() {
-        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
-        V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
-        v8.add("v8Int32Array", v8Int32Array);
-
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
+        buffer.putInt(4);
+        buffer.putInt(8);
 
         assertEquals(4, v8Int32Array.get(0));
         assertEquals(8, v8Int32Array.get(1));
@@ -857,10 +822,6 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 2);
         v8.add("v8Int32Array", v8Int32Array);
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
-
         assertEquals(2, v8Int32Array.length());
         buffer.close();
         v8Int32Array.close();
@@ -871,10 +832,6 @@ public class V8TypedArraysTest {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 0, 1);
         v8.add("v8Int32Array", v8Int32Array);
-
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
 
         assertEquals(1, v8Int32Array.length());
         buffer.close();
@@ -887,12 +844,11 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int32Array = new V8TypedArray(v8, buffer, V8Value.INTEGER, 4, 1);
         v8.add("v8Int32Array", v8Int32Array);
 
-        IntBuffer intBuffer = buffer.getBackingStore().asIntBuffer();
-        intBuffer.put(4);
-        intBuffer.put(8);
+        buffer.putInt(4);
+        buffer.putInt(8);
 
         assertEquals(1, v8Int32Array.length());
-        assertEquals(8, v8Int32Array.get(0));
+        assertEquals(8, v8Int32Array.getInteger(0));
         buffer.close();
         v8Int32Array.close();
     }
@@ -960,11 +916,11 @@ public class V8TypedArraysTest {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
 
-        ByteBuffer intBuffer = v8Int8Array.getByteBuffer();
-
-        assertEquals(intBuffer, buffer.getBackingStore());
+        V8ArrayBuffer arrayBuffer = v8Int8Array.getBuffer();
+        assertEquals(arrayBuffer, buffer);
         buffer.close();
         v8Int8Array.close();
+        arrayBuffer.close();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1020,9 +976,8 @@ public class V8TypedArraysTest {
 
         V8ArrayBuffer buffer = array.getBuffer();
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        assertEquals(1, byteBuffer.get(0));
-        assertEquals(7, byteBuffer.get(1));
+        assertEquals(1, buffer.get(0));
+        assertEquals(7, buffer.get(1));
         buffer.close();
         array.close();
     }
@@ -1035,9 +990,8 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.get());
+        assertEquals(8, buffer.get());
         buffer.close();
         typedArray.close();
     }
@@ -1050,10 +1004,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(V8Value.INT_8_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.get());
+        assertEquals(8, buffer.get());
         buffer.close();
         typedArray.close();
     }
@@ -1066,10 +1019,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(V8Value.UNSIGNED_INT_8_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.get());
+        assertEquals(8, buffer.get());
         buffer.close();
         typedArray.close();
     }
@@ -1082,10 +1034,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 270);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
         assertEquals(V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(255, byteBuffer.get() & 0xFF); // Java does not have Unsigned Bytes
+        assertEquals(7, buffer.get());
+        assertEquals(255, buffer.get() & 0xFF); // Java does not have Unsigned Bytes
         buffer.close();
         typedArray.close();
     }
@@ -1098,10 +1049,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        ShortBuffer byteBuffer = buffer.getBackingStore().asShortBuffer();
         assertEquals(V8Value.INT_16_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.getShort());
+        assertEquals(8, buffer.getShort());
         buffer.close();
         typedArray.close();
     }
@@ -1114,10 +1064,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        ShortBuffer byteBuffer = buffer.getBackingStore().asShortBuffer();
         assertEquals(V8Value.UNSIGNED_INT_16_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.getShort());
+        assertEquals(8, buffer.getShort());
         buffer.close();
         typedArray.close();
     }
@@ -1130,10 +1079,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        IntBuffer byteBuffer = buffer.getBackingStore().asIntBuffer();
         assertEquals(V8Value.INT_32_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.getInt());
+        assertEquals(8, buffer.getInt());
         buffer.close();
         typedArray.close();
     }
@@ -1146,10 +1094,9 @@ public class V8TypedArraysTest {
         typedArray.add("0", 7);
         typedArray.add("1", 8);
 
-        IntBuffer byteBuffer = buffer.getBackingStore().asIntBuffer();
         assertEquals(V8Value.UNSIGNED_INT_32_ARRAY, typedArray.getType());
-        assertEquals(7, byteBuffer.get());
-        assertEquals(8, byteBuffer.get());
+        assertEquals(7, buffer.getInt());
+        assertEquals(8, buffer.getInt());
         buffer.close();
         typedArray.close();
     }
@@ -1172,7 +1119,7 @@ public class V8TypedArraysTest {
         typedArray.add("0", 3.14);
 
         assertEquals(V8Value.FLOAT_32_ARRAY, typedArray.getType());
-        assertEquals(3.14, buffer.getBackingStore().asFloatBuffer().get(), 0.0001);
+        assertEquals(3.14, buffer.getFloat(), 0.0001);
         buffer.close();
         typedArray.close();
     }
@@ -1195,7 +1142,7 @@ public class V8TypedArraysTest {
         typedArray.add("0", 3.14159265359);
 
         assertEquals(V8Value.FLOAT_64_ARRAY, typedArray.getType());
-        assertEquals(3.14159265359, buffer.getBackingStore().asDoubleBuffer().get(), 0.000000000001);
+        assertEquals(3.14159265359, buffer.getDouble(), 0.000000000001);
         buffer.close();
         typedArray.close();
     }
@@ -1208,9 +1155,8 @@ public class V8TypedArraysTest {
 
         v8.executeVoidScript("v8Int8Array[0] = 7; v8Int8Array[1] = 9;");
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        assertEquals(7, byteBuffer.get());
-        assertEquals(9, byteBuffer.get());
+        assertEquals(7, buffer.get());
+        assertEquals(9, buffer.get());
         buffer.close();
         v8Int8Array.close();
     }
@@ -1221,9 +1167,8 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
         v8.add("v8Int8Array", v8Int8Array);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        byteBuffer.put((byte) 4);
-        byteBuffer.put((byte) 8);
+        buffer.put((byte) 4);
+        buffer.put((byte) 8);
 
         assertEquals(4, v8.executeIntegerScript("v8Int8Array[0];"));
         assertEquals(8, v8.executeIntegerScript("v8Int8Array[1];"));
@@ -1237,28 +1182,11 @@ public class V8TypedArraysTest {
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
         v8.add("v8Int8Array", v8Int8Array);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        byteBuffer.put((byte) 4);
-        byteBuffer.put((byte) 8);
+        buffer.put((byte) 4);
+        buffer.put((byte) 8);
 
-        assertEquals(4, v8Int8Array.get(0));
-        assertEquals(8, v8Int8Array.get(1));
-        buffer.close();
-        v8Int8Array.close();
-    }
-
-    @Test
-    public void testInt8TypedArray_BufferReleased() {
-        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
-        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
-        v8.add("v8Int8Array", v8Int8Array);
-
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        byteBuffer.put((byte) 4);
-        byteBuffer.put((byte) 8);
-
-        assertEquals(4, v8Int8Array.get(0));
-        assertEquals(8, v8Int8Array.get(1));
+        assertEquals((byte) 4, v8Int8Array.get(0));
+        assertEquals((byte) 8, v8Int8Array.get(1));
         buffer.close();
         v8Int8Array.close();
     }
@@ -1267,11 +1195,9 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_Length() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
-        v8.add("v8Int8Array", v8Int8Array);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        byteBuffer.put((byte) 4);
-        byteBuffer.put((byte) 8);
+        buffer.put((byte) 4);
+        buffer.put((byte) 8);
 
         assertEquals(2, v8Int8Array.length());
         buffer.close();
@@ -1282,9 +1208,6 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_CustomLength() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 1);
-        v8.add("v8Int8Array", v8Int8Array);
-
-        buffer.getBackingStore();
 
         assertEquals(1, v8Int8Array.length());
         buffer.close();
@@ -1295,14 +1218,153 @@ public class V8TypedArraysTest {
     public void testInt8TypedArray_CustomOffset() {
         V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
         V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.BYTE, 1, 1);
-        v8.add("v8Int8Array", v8Int8Array);
 
-        ByteBuffer byteBuffer = buffer.getBackingStore();
-        byteBuffer.put((byte) 4);
-        byteBuffer.put((byte) 8);
+        buffer.put((byte) 4);
+        buffer.put((byte) 8);
 
         assertEquals(1, v8Int8Array.length());
-        assertEquals(8, v8Int8Array.get(0));
+        assertEquals((byte) 8, v8Int8Array.get(0));
+        buffer.close();
+        v8Int8Array.close();
+    }
+
+    @Test
+    public void testFloat32TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.FLOAT_32_ARRAY, 0, 2);
+
+        typedArray.add("0", 123.45);
+        typedArray.add("1", -3.14159);
+
+        assertEquals(2, typedArray.length());
+        assertEquals(123.45, (Float) typedArray.get(0), 0.00001);
+        assertEquals(-3.14159, (Float) typedArray.get(1), 0.0001);
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testFloat64TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 16);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.FLOAT_64_ARRAY, 0, 2);
+
+        typedArray.add("0", 123.45);
+        typedArray.add("1", -3.14159);
+
+        assertEquals(2, typedArray.length());
+        assertEquals(123.45, (Double) typedArray.get(0), 0.00001);
+        assertEquals(-3.14159, (Double) typedArray.get(1), 0.0001);
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testUInt32TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.UNSIGNED_INT_32_ARRAY, 0, 2);
+
+        typedArray.add("0", (long) (Integer.MAX_VALUE + 1));
+        typedArray.add("1", -1);
+
+        assertEquals(2, typedArray.length());
+        assertEquals(2147483648L, typedArray.get(0));
+        assertEquals(4294967295L, typedArray.get(1));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testInt32TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 12);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.INT_32_ARRAY, 0, 3);
+
+        typedArray.add("0", (long) (Integer.MAX_VALUE));
+        typedArray.add("1", (long) (Integer.MAX_VALUE + 1));
+        typedArray.add("2", (long) (Integer.MIN_VALUE));
+
+        assertEquals(3, typedArray.length());
+        assertEquals(2147483647, typedArray.get(0));
+        assertEquals(-2147483648, typedArray.get(1));
+        assertEquals(-2147483648, typedArray.get(2));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testUInt16TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 4);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.UNSIGNED_INT_16_ARRAY, 0, 2);
+
+        typedArray.add("0", Short.MAX_VALUE + 1);
+        typedArray.add("1", -1);
+
+        assertEquals(2, typedArray.length());
+        assertEquals(32768, typedArray.get(0));
+        assertEquals(65535, typedArray.get(1));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testInt16TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 6);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.INT_16_ARRAY, 0, 3);
+
+        typedArray.add("0", Short.MAX_VALUE);
+        typedArray.add("1", Short.MAX_VALUE + 1);
+        typedArray.add("2", Short.MIN_VALUE);
+
+        assertEquals(3, typedArray.length());
+        assertEquals((short) 32767, typedArray.get(0));
+        assertEquals((short) -32768, typedArray.get(1));
+        assertEquals((short) -32768, typedArray.get(2));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testInt8TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 3);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.INT_8_ARRAY, 0, 3);
+
+        typedArray.add("0", Byte.MAX_VALUE);
+        typedArray.add("1", Byte.MAX_VALUE + 1);
+        typedArray.add("2", Byte.MIN_VALUE);
+
+        assertEquals(3, typedArray.length());
+        assertEquals((byte) 127, typedArray.get(0));
+        assertEquals((byte) -128, typedArray.get(1));
+        assertEquals((byte) -128, typedArray.get(2));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testUInt8TypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray typedArray = new V8TypedArray(v8, buffer, V8Value.UNSIGNED_INT_8_ARRAY, 0, 8);
+
+        typedArray.add("0", (short) 255);
+        typedArray.add("1", (short) -1);
+
+        assertEquals(8, typedArray.length());
+        assertEquals((short) 255, typedArray.get(0));
+        assertEquals((short) 255, typedArray.get(1));
+        buffer.close();
+        typedArray.close();
+    }
+
+    @Test
+    public void testUInt8ClampedTypedArray_addInJava() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 8);
+        V8TypedArray v8Int8Array = new V8TypedArray(v8, buffer, V8Value.UNSIGNED_INT_8_CLAMPED_ARRAY, 0, 8);
+
+        v8Int8Array.add("0", (short) 256);
+        v8Int8Array.add("1", -1);
+
+        assertEquals(8, v8Int8Array.length());
+        assertEquals((short) 255, v8Int8Array.get(0));
+        assertEquals((short) 0, v8Int8Array.get(1));
         buffer.close();
         v8Int8Array.close();
     }
@@ -1330,8 +1392,8 @@ public class V8TypedArraysTest {
         v8Int8Array1.add("0", 7);
         v8Int8Array1.add("1", 8);
 
-        assertEquals(7, v8Int8Array2.get(0));
-        assertEquals(8, v8Int8Array2.get(1));
+        assertEquals((byte) 7, v8Int8Array2.get(0));
+        assertEquals((byte) 8, v8Int8Array2.get(1));
         v8Int8Array1.close();
         v8Int8Array2.close();
         buffer.close();
@@ -1359,8 +1421,8 @@ public class V8TypedArraysTest {
 
         V8TypedArray array = new V8TypedArray(v8, buffer, V8Value.BYTE, 0, 2);
 
-        assertEquals(7, array.get(0));
-        assertEquals(9, array.get(1));
+        assertEquals((byte) 7, array.get(0));
+        assertEquals((byte) 9, array.get(1));
         array.close();
         buffer.close();
     }
