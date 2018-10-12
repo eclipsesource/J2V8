@@ -2018,7 +2018,12 @@ jobject getResult(JNIEnv *env, jobject &v8, jlong v8RuntimePtr, Handle<Value> &r
   else if (result->IsArrayBuffer()) {
     ArrayBuffer* arrayBuffer = ArrayBuffer::Cast(*result);
     if ( arrayBuffer->GetContents().Data() == NULL ) {
-      return NULL;
+      jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), 0);
+      jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);
+      jlong resultHandle = getHandle(env, objectResult);
+      v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
+      reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(isolate));
+      return objectResult;
     }
     jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), arrayBuffer->ByteLength());
     jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);

@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class V8ArrayBufferTest {
@@ -43,7 +42,6 @@ public class V8ArrayBufferTest {
     }
 
     @Test
-    @Ignore
     public void testEmptyArrayBufferReturned() {
         V8ArrayBuffer arrayBuffer = (V8ArrayBuffer) v8.executeScript("new ArrayBuffer(0);");
 
