@@ -21,6 +21,10 @@ public interface Releasable extends Closeable {
      * Release the underlying resources. Once an object is released
      * it typically cannot be used again.
      */
-    void release();
+    void close();
 
+    /**
+     * Synonym for {@link #close()}.
+     */
+    void release();
 }
