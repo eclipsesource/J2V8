@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <bundle id="com.eclipsesource.j2v8.linux_x86_64" version="0.0.0"/>
-   <bundle id="com.eclipsesource.j2v8.win32_x86" version="0.0.0"/>
-   <bundle id="com.eclipsesource.j2v8.win32_x86_64" version="0.0.0"/>
-   <bundle id="com.eclipsesource.j2v8.macosx_x86_64" version="0.0.0"/>
-</site>
