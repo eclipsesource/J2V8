@@ -128,14 +128,6 @@ function (get_njs_libs nodejs_dir config_name fail_on_missing_libs)
 
         # Node.js link libraries
         set (njs_libs
-            # node libs
-            ${njs_out_deps}/uv/libuv.a
-            ${njs_out_deps}/openssl/libopenssl.a
-            ${njs_out_deps}/http_parser/libhttp_parser.a
-            ${njs_out_deps}/gtest/libgtest.a
-            ${njs_out_deps}/zlib/libzlib.a
-            ${njs_out_deps}/cares/libcares.a
-
             # v8 libs
             ${njs_out_v8}/libv8_base.a
             ${njs_out_v8}/libv8_nosnapshot.a
@@ -143,25 +135,6 @@ function (get_njs_libs nodejs_dir config_name fail_on_missing_libs)
             ${njs_out_v8}/libv8_libbase.a
             ${njs_out_v8}/libv8_libsampler.a
         )
-
-        # verify that all required Node.js libs actually exist
-        if (${fail_on_missing_libs})
-            assert_nodejs_libs_exist(${njs_libs} ${njs_out_target}/libnode.a)
-        endif()
-
-        # finalize linker settings
-        set (njs_libs
-            # <LinkerGroup>
-            -Wl,--start-group
-                # the carefree libs
-                ${njs_libs}
-
-                # Node.js libs that require special linker treatments
-                -Wl,--whole-archive ${njs_out_target}/libnode.a -Wl,--no-whole-archive
-            -Wl,--end-group
-            # </LinkerGroup>
-        )
-
         set (njs_${config_name}_libs ${njs_libs} PARENT_SCOPE)
     #}
     #-----------------------------------------------------------------------
