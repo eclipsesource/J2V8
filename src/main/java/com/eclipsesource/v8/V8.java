@@ -43,7 +43,7 @@ public class V8 extends V8Object {
     private volatile static int          runtimeCounter          = 0;
     private static String                v8Flags                 = null;
     private static boolean               initialized             = false;
-    protected Map<Long, V8Value>         v8WeakReferences        = new HashMap<Long, V8Value>();
+    protected Map<Long, WeakRefEntry>    v8WeakReferences        = new HashMap<Long, WeakRefEntry>();
 
     private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
@@ -68,6 +68,16 @@ public class V8 extends V8Object {
         JavaCallback     callback;
         JavaVoidCallback voidCallback;
         boolean          includeReceiver;
+    }
+
+    static class WeakRefEntry {
+        V8Value value;
+        WeakReferenceHandler handler;
+
+        WeakRefEntry(V8Value value, WeakReferenceHandler handler) {
+            this.value = value;
+            this.handler = handler;
+        }
     }
 
     private synchronized static void load(final String tmpDirectory) {
@@ -843,8 +853,13 @@ public class V8 extends V8Object {
     }
 
     protected void weakReferenceReleased(final long objectID) {
-        V8Value v8Value = v8WeakReferences.get(objectID);
+        WeakRefEntry entry = v8WeakReferences.get(objectID);
+        V8Value v8Value = entry.value;
+        WeakReferenceHandler handler = entry.handler;
         if (v8Value != null) {
+            if (handler != null) {
+                handler.v8WeakReferenceCollected(v8Value);
+            }
             v8WeakReferences.remove(objectID);
             try {
                 v8Value.close();
