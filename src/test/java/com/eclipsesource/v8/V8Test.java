@@ -1868,4 +1868,36 @@ public class V8Test {
         assertNotEquals(0l, initEmptyContainer);
     }
 
+    @Test
+    public void testSetStackTraceLimit() {
+        v8.executeVoidScript("Error.stackTraceLimit = Infinity");
+        String script = "function a() { dieInHell(); }\n" +
+                "function b() { a(); }\n" +
+                "function c() { b(); }\n" +
+                "function d() { c(); }\n" +
+                "function e() { d(); }\n" +
+                "function f() { e(); }\n" +
+                "function g() { f(); }\n" +
+                "function h() { g(); }\n" +
+                "function i() { h(); }\n" +
+                "function j() { i(); }\n" +
+                "function k() { j(); }\n" +
+                "function l() { k(); }\n" +
+                "function m() { l(); }\n" +
+                "function n() { m(); }\n" +
+                "function o() { n(); }\n" +
+                "function p() { o(); }\n" +
+                "function q() { p(); }\n" +
+                "\n" +
+                "q();";
+        try {
+            v8.executeScript(script);
+        } catch (V8ScriptException e) {
+            int jsStackLength = e.getJSStackTrace().split("\n").length;
+            assertEquals(19, jsStackLength);
+            return;
+        }
+        fail("Exception not thrown");
+    }
+
 }
