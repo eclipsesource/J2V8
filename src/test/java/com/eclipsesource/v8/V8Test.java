@@ -80,6 +80,37 @@ public class V8Test {
         assertNotNull(v8);
     }
 
+    @SuppressWarnings("resource")
+    @Test
+    public void testReleaseRuntimeReportsMemoryLeaks() {
+        V8 localV8 = V8.createV8Runtime();
+        new V8Object(localV8);
+        try {
+            localV8.release(true);
+        } catch (IllegalStateException ise) {
+            String message = ise.getMessage();
+            assertEquals("1 Object(s) still exist in runtime", message);
+            return;
+        }
+        fail("Exception should have been thrown");
+    }
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testReleaseRuntimeWithWeakReferencesReportsCorrectMemoryLeaks() {
+        V8 localV8 = V8.createV8Runtime();
+        new V8Object(localV8);
+        new V8Object(localV8).setWeak();
+        try {
+            localV8.release(true);
+        } catch (IllegalStateException ise) {
+            String message = ise.getMessage();
+            assertEquals("1 Object(s) still exist in runtime", message);
+            return;
+        }
+        fail("Exception should have been thrown");
+    }
+
     @Test
     public void testObjectReferenceZero() {
         long objectReferenceCount = v8.getObjectReferenceCount();

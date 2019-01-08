@@ -385,7 +385,7 @@ public class V8 extends V8Object {
             v8RuntimePtr = 0L;
             released = true;
             if (reportMemoryLeaks && (getObjectReferenceCount() > 0)) {
-                throw new IllegalStateException(objectReferences + " Object(s) still exist in runtime");
+                throw new IllegalStateException(getObjectReferenceCount() + " Object(s) still exist in runtime");
             }
         }
     }
