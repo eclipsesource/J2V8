@@ -1838,4 +1838,13 @@ public class V8ObjectTest {
         assertTrue(object.isWeak());
     }
 
+    @SuppressWarnings("resource")
+    @Test
+    public void testClearWeakMakesObjectWeak() {
+        V8Value object = new V8Object(v8).setWeak().clearWeak();
+
+        assertFalse(object.isWeak());
+        object.close();
+    }
+
 }

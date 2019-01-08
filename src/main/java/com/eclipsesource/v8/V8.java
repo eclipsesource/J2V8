@@ -1087,6 +1087,10 @@ public class V8 extends V8Object {
         _setWeak(v8RuntimePtr, objectHandle);
     }
 
+    protected void clearWeak(final long v8RuntimePtr, final long objectHandle) {
+        _clearWeak(v8RuntimePtr, objectHandle);
+    }
+
     protected boolean isWeak(final long v8RuntimePtr, final long objectHandle) {
         return _isWeak(v8RuntimePtr, objectHandle);
     }
@@ -1562,6 +1566,8 @@ public class V8 extends V8Object {
     private native long _initNewV8UInt8ClampedArray(long runtimePtr, long bufferHandle, int offset, int size);
 
     private native void _setWeak(long runtimePtr, long objectHandle);
+
+    private native void _clearWeak(long runtimePtr, long objectHandle);
 
     private native boolean _isWeak(long runtimePtr, long objectHandle);
 

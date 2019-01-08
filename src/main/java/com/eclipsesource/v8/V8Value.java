@@ -223,6 +223,24 @@ abstract public class V8Value implements Releasable {
     }
 
     /**
+     * Clears any weak reference set on this V8Value and makes this a strong
+     * reference. Strong references will not be garbage collected and this
+     * Object must be explicitly released.
+     *
+     * Calling clearWeak does nothing if the object is not currently set
+     * to weak.
+     *
+     * @return The receiver.
+     */
+    public V8Value clearWeak() {
+        v8.checkThread();
+        v8.checkReleased();
+        v8.v8WeakReferences.remove(getHandle());
+        v8.clearWeak(v8.getV8RuntimePtr(), getHandle());
+        return this;
+    }
+
+    /**
      * If {@link V8Value#setWeak()} has been called on this Object, this method
      * will return true. Otherwise it will return false.
      *
