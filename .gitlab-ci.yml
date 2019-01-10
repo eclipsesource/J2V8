@@ -25,6 +25,8 @@ maven_verify:
     - python nodejs.py diff apply
     - python build.py -t android -a arm --docker all > arm.txt
     - python build.py -t android -a x86 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
+    - python build.py -t android -a x86_64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
+    - python build.py -t android -a arm64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
   artifacts:
     paths:
       - build/outputs/aar/**
