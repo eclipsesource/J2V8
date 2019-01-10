@@ -32,6 +32,7 @@ def build_node_js(config):
             sh -c \"                \\
             cd ./node;              \\
             ./configure             \\
+            --cross-compiling       \\
             --without-intl          \\
             --without-inspector     \\
             --dest-cpu=$ARCH        \\
