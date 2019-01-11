@@ -749,6 +749,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _clearWeak
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1clearWeak
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _isWeak
  * Signature: (JJ)Z
  */

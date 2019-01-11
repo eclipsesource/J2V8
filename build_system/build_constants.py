@@ -61,6 +61,8 @@ avail_targets = platform_configs.keys()
 
 avail_architectures = [
     c.arch_x86,
+    c.arch_x86_64,
     c.arch_x64,
     c.arch_arm,
+    c.arch_arm64
 ]

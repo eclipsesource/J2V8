@@ -1729,6 +1729,36 @@ public class V8ObjectUtilsTest {
     }
 
     @Test
+    public void testV8ArrayBufferInMap() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("buffer", buffer);
+
+        V8Object v8Object = V8ObjectUtils.toV8Object(v8, map);
+
+        V8Value result = (V8Value) v8Object.get("buffer");
+        assertEquals(buffer, result);
+        buffer.close();
+        result.close();
+        v8Object.close();
+    }
+
+    @Test
+    public void testV8ArrayBufferInList() {
+        V8ArrayBuffer buffer = new V8ArrayBuffer(v8, 10);
+        List<Object> list = new ArrayList<Object>();
+        list.add(buffer);
+
+        V8Array v8Array = V8ObjectUtils.toV8Array(v8, list);
+
+        V8Value result = (V8Value) v8Array.get(0);
+        assertEquals(buffer, result);
+        buffer.close();
+        result.close();
+        v8Array.close();
+    }
+
+    @Test
     public void testIntegerTypeAdapter_Map() {
         V8Object object = v8.executeObjectScript("x = {a:1, b:3.14, c:false, d:'string'}; x");
 

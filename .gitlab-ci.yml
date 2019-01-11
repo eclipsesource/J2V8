@@ -1,0 +1,34 @@
+# The build image for all regulator projects is available at
+# https://regulator.innoopract.com/build-tools/regulator-build-image
+# Whenever changes are submitted to the master branch, the image is
+# automatically built and uploaded to the projects container registry.
+image: docker:18.06.1-ce-dind
+
+variables:
+  DOCKER_HOST: tcp://localhost:2375/
+
+stages:
+  - build
+
+services:
+  - name: docker:dind
+    entrypoint:
+      - dockerd-entrypoint.sh
+
+maven_verify:
+  stage: build
+  script:
+    - docker info
+    - apk add --update python python git gzip tar openjdk8
+    - COMMIT_HASH=`git rev-parse HEAD` && sed -i "s/Unknown\ revision\ ID/$COMMIT_HASH/g" src/main/java/com/eclipsesource/v8/V8.java
+    - python nodejs.py git clone
+    - python nodejs.py diff apply
+    - python build.py -t android -a arm --docker all > arm.txt
+    - python build.py -t android -a x86 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
+    - python build.py -t android -a x86_64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
+    - python build.py -t android -a arm64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt
+  artifacts:
+    paths:
+      - build/outputs/aar/**
+      - arm.txt
+      - x86.txt

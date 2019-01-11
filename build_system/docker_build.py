@@ -31,12 +31,12 @@ class DockerBuildSystem(BuildSystem):
             # NOTE: the additional newlines are important for the regex matching
             version_str = utils.execute_to_str("docker version") + "\n\n"
 
-            server_match = re.search(r"Server:(.*)\n\n", version_str + "\n\n", re.DOTALL)
+            docker_version_match = re.search(r"Client:(.*)\n\n", version_str + "\n\n", re.DOTALL)
 
-            if (server_match is None or server_match.group(1) is None):
+            if (docker_version_match is None or docker_version_match.group(1) is None):
                 utils.cli_exit("ERROR: Unable to determine docker server version from version string: \n\n" + version_str)
 
-            version_match = re.search(r"^  OS/Arch:\s+(.*)$", server_match.group(1), re.MULTILINE)
+            version_match = re.search(r"OS/Arch:\s+(.*)$", docker_version_match.group(1), re.MULTILINE)
 
             if (version_match is None):
                 utils.cli_exit("ERROR: Unable to determine docker server platform from version string: \n\n" + version_str)

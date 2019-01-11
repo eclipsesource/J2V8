@@ -6,7 +6,7 @@ import build_utils as b
 import cmake_utils as cmu
 import os
 
-android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm])
+android_config = PlatformConfig(c.target_android, [c.arch_x86, c.arch_arm, c.arch_arm64, c.arch_x86_64])
 
 android_config.set_cross_configs({
     "docker": DockerBuildStep(
@@ -22,20 +22,28 @@ android_config.set_cross_compilers({
 
 android_config.set_file_abis({
     c.arch_arm: "armeabi-v7a",
-    c.arch_x86: "x86"
+    c.arch_x86: "x86",
+    c.arch_x86_64: "x86_64",
+    c.arch_arm64: "arm64-v8a"
 })
 
 #-----------------------------------------------------------------------
 def build_node_js(config):
+    arch = config.inject_env("$ARCH")
+    if ("x86_64" in arch):
+        os.environ['DEST_CPU'] = "x64"
+    else:
+        os.environ['DEST_CPU'] = arch
     return [
-        """android-gcc-toolchain $ARCH --api 17 --host gcc-lpthread -C \
+        """android-gcc-toolchain $ARCH --api 21 --host gcc-lpthread -C \
             sh -c \"                \\
             cd ./node;              \\
             ./configure             \\
-            --without-intl          \\
+            --cross-compiling       \\
             --without-inspector     \\
-            --dest-cpu=$ARCH        \\
+            --dest-cpu=$DEST_CPU    \\
             --dest-os=$PLATFORM     \\
+            --openssl-no-asm        \\
             --without-snapshot      \\
             --enable-static &&      \\
             CFLAGS=-fPIC CXXFLAGS=-fPIC make -j4\"  \
