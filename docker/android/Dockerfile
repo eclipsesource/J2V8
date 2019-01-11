@@ -69,7 +69,7 @@ RUN cd /temp && gradle --dry-run
 # Install the Android tools
 RUN sdkmanager emulator
 RUN sdkmanager tools
-RUN sdkmanager "system-images;android-19;default;armeabi-v7a"
+RUN sdkmanager "system-images;android-21;default;armeabi-v7a"
 
 # Required for Android ARM Emulator
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5widgets5
