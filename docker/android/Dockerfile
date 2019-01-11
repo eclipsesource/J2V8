@@ -21,7 +21,7 @@ RUN echo "Preparing Android NDK..." && \
     mkdir -p /build && \
     cd /build && \
     curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
-    unzip $NDK_NAME.zip && \
+    unzip -qq $NDK_NAME.zip && \
     rm $NDK_NAME.zip
 
 RUN echo "Preparing Android GCC-Toolchain..." && \
@@ -37,7 +37,7 @@ ENV PATH "$PATH:$ANDROID_HOME/platform-tools"
 RUN mkdir -p ${ANDROID_HOME} && \
     cd ${ANDROID_HOME} && \
     wget -q https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip -O android_tools.zip && \
-    unzip android_tools.zip && \
+    unzip -qq android_tools.zip && \
     rm android_tools.zip
 
 RUN mkdir /usr/local/android-sdk/tools/keymaps && \
