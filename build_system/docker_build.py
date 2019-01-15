@@ -103,7 +103,7 @@ class DockerBuildSystem(BuildSystem):
         image_name = self.get_image_name(config)
 
         print ("Building docker image: " + config.inject_env(image_name))
-        self.exec_host_cmd("docker build " + args_str + " -f $PLATFORM/Dockerfile -t \"" + image_name + "\" . > docker_$PLATFORM_build-output.txt", config)
+        self.exec_host_cmd("docker build " + args_str + " -f $PLATFORM/Dockerfile -t \"" + image_name + "\" . ", config)
 
     def exec_build(self, config):
         print ("DOCKER running " + config.platform + "@" + config.arch + " => " + config.name)
