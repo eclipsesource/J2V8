@@ -38,6 +38,7 @@ public class V8ExecutorTest {
     }
 
     @Test
+    @Ignore
     public void testNestedExecutorExecution() {
         V8 runtime = V8.createV8Runtime();
         V8Executor executor = new V8Executor("");
