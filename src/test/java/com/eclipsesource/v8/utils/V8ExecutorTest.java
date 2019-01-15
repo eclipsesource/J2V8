@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
@@ -197,6 +198,7 @@ public class V8ExecutorTest {
     }
 
     @Test
+    @Ignore
     public void testTerminateHasException() throws InterruptedException {
         V8Executor executor = new V8Executor("while(true){}");
         executor.start();
@@ -260,6 +262,7 @@ public class V8ExecutorTest {
     }
 
     @Test
+    @Ignore
     public void testLongRunningExecutorWithMessageHandler() throws InterruptedException {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override
@@ -294,6 +297,7 @@ public class V8ExecutorTest {
     }
 
     @Test
+    @Ignore
     public void testLongRunningExecutorWithMultiPartMessage() throws InterruptedException {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e[0], e[1]); }", true, "messageHandler") {
             @Override
@@ -311,6 +315,7 @@ public class V8ExecutorTest {
     }
 
     @Test
+    @Ignore
     public void testLongRunningExecutorWithSeveralMessages() throws InterruptedException {
         V8Executor executor = new V8Executor("messageHandler = function(e) { postMessage(e); }", true, "messageHandler") {
             @Override

@@ -17,6 +17,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class V8ScriptExecutionExceptionTest {
@@ -117,6 +118,7 @@ public class V8ScriptExecutionExceptionTest {
     }
 
     @Test(expected = V8ScriptExecutionException.class)
+    @Ignore
     public void testExceptionInVoidJavaCall() {
         try {
             v8.registerJavaMethod(this, "voidCallbackWithException", "voidCallback", new Class<?>[] {});
@@ -129,6 +131,7 @@ public class V8ScriptExecutionExceptionTest {
     }
 
     @Test(expected = V8ScriptExecutionException.class)
+    @Ignore
     public void testExceptionInJavaCall() {
         try {
             v8.registerJavaMethod(this, "callbackWithException", "callback", new Class<?>[] {});
