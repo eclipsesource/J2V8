@@ -41,8 +41,11 @@ public class V8ArrayBuffer extends V8Value {
         byteBuffer.order(ByteOrder.nativeOrder());
     }
 
-    public V8ArrayBuffer(final V8 v8, final ByteBuffer byteBuffer) {
+    public V8ArrayBuffer(final V8 v8, ByteBuffer byteBuffer) {
         super(v8);
+        if (byteBuffer == null) {
+            byteBuffer = ByteBuffer.allocateDirect(0);
+        }
         if (!byteBuffer.isDirect()) {
             throw new IllegalArgumentException("ByteBuffer must be a allocated as a direct ByteBuffer");
         }
