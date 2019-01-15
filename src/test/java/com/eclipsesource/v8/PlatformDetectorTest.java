@@ -30,20 +30,16 @@ public class PlatformDetectorTest {
 
     @Before
     public void setup() {
-        if (!skipTest()) {
-            osName = System.getProperty("os.name");
-            vendor = System.getProperty("java.specification.vendor");
-            arch = System.getProperty("os.arch");
-        }
+        osName = System.getProperty("os.name");
+        vendor = System.getProperty("java.specification.vendor");
+        arch = System.getProperty("os.arch");
     }
 
     @After
     public void tearDown() {
-        if (!skipTest()) {
-            System.setProperty("os.name", osName);
-            System.setProperty("java.specification.vendor", vendor);
-            System.setProperty("os.arch", arch);
-        }
+        System.setProperty("os.name", osName);
+        System.setProperty("java.specification.vendor", vendor);
+        System.setProperty("os.arch", arch);
     }
 
     private static boolean skipTest() {
