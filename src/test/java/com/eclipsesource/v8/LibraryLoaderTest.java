@@ -47,28 +47,24 @@ public class LibraryLoaderTest {
 
     @Before
     public void setup() throws Exception {
-        if (!skipTest()) {
-            osName = System.getProperty("os.name");
-            vendor = System.getProperty("java.specification.vendor");
-            arch = System.getProperty("os.arch");
+        osName = System.getProperty("os.name");
+        vendor = System.getProperty("java.specification.vendor");
+        arch = System.getProperty("os.arch");
 
-            Class<?> vendorClass = PlatformDetector.Vendor.class;
-            releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
-            makeFinalStaticAccessible(releaseFilesField);
+        Class<?> vendorClass = PlatformDetector.Vendor.class;
+        releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
+        makeFinalStaticAccessible(releaseFilesField);
 
-            releaseFiles = (String[]) releaseFilesField.get(null);
-        }
+        releaseFiles = (String[]) releaseFilesField.get(null);
     }
 
     @After
     public void tearDown() throws Exception {
-        if (!skipTest()) {
-            System.setProperty("os.name", osName);
-            System.setProperty("java.specification.vendor", vendor);
-            System.setProperty("os.arch", arch);
+        System.setProperty("os.name", osName);
+        System.setProperty("java.specification.vendor", vendor);
+        System.setProperty("os.arch", arch);
 
-            releaseFilesField.set(null, releaseFiles);
-        }
+        releaseFilesField.set(null, releaseFiles);
     }
 
     private static boolean skipTest() {
