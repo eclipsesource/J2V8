@@ -14,6 +14,7 @@ package com.eclipsesource.v8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 
@@ -29,20 +30,31 @@ public class PlatformDetectorTest {
 
     @Before
     public void setup() {
-        osName = System.getProperty("os.name");
-        vendor = System.getProperty("java.specification.vendor");
-        arch = System.getProperty("os.arch");
+        if (!skipTest()) {
+            osName = System.getProperty("os.name");
+            vendor = System.getProperty("java.specification.vendor");
+            arch = System.getProperty("os.arch");
+        }
     }
 
     @After
     public void tearDown() {
-        System.setProperty("os.name", osName);
-        System.setProperty("java.specification.vendor", vendor);
-        System.setProperty("os.arch", arch);
+        if (!skipTest()) {
+            System.setProperty("os.name", osName);
+            System.setProperty("java.specification.vendor", vendor);
+            System.setProperty("os.arch", arch);
+        }
     }
+
+    private static boolean skipTest() {
+        return "android".equalsIgnoreCase(PlatformDetector.OS.getName());
+    }
+
+    private final static String skipMessage = "Skipped test (Cannot detect other platforms when running on Android)";
 
     @Test
     public void testGetOSUnknown() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "???");
         System.setProperty("java.specification.vendor", "???");
 
@@ -58,6 +70,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetOSMac() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "Mac OS X");
         System.setProperty("java.specification.vendor", "Apple");
 
@@ -66,6 +79,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetOSLinux() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "Linux");
         System.setProperty("java.specification.vendor", "OSS");
 
@@ -74,6 +88,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetOSWindows() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "Windows");
         System.setProperty("java.specification.vendor", "Microsoft");
 
@@ -102,9 +117,10 @@ public class PlatformDetectorTest {
 
         PlatformDetector.Arch.getName();
     }
-    
+
     @Test
     public void testGetArchaarch64() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.arch", "aarch64");
 
         assertEquals("aarch_64", PlatformDetector.Arch.getName());
@@ -112,6 +128,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetArchx86() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.arch", "x86");
 
         assertEquals("x86_32", PlatformDetector.Arch.getName());
@@ -119,6 +136,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetArchx86_64() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.arch", "x86_64");
 
         assertEquals("x86_64", PlatformDetector.Arch.getName());
@@ -126,6 +144,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void testGetArchx64FromAmd64() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.arch", "amd64");
 
         assertEquals("x86_64", PlatformDetector.Arch.getName());
@@ -140,6 +159,7 @@ public class PlatformDetectorTest {
 
     @Test
     public void test686isX86() {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.arch", "i686");
 
         assertEquals("x86_32", PlatformDetector.Arch.getName());
@@ -157,4 +177,5 @@ public class PlatformDetectorTest {
     private boolean isAlpineLinux() {
         return new File("/etc/alpine-release").exists();
     }
+
 }

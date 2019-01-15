@@ -13,15 +13,11 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
-import java.io.File;
 import java.io.PrintWriter;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
-import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +32,7 @@ public class LibraryLoaderTest {
     private Field releaseFilesField;
     private String[] releaseFiles;
 
-    static void makeFinalStaticAccessible(Field field) {
+    static void makeFinalStaticAccessible(final Field field) {
         field.setAccessible(true);
 
         try {
@@ -51,28 +47,39 @@ public class LibraryLoaderTest {
 
     @Before
     public void setup() throws Exception {
-        osName = System.getProperty("os.name");
-        vendor = System.getProperty("java.specification.vendor");
-        arch = System.getProperty("os.arch");
+        if (!skipTest()) {
+            osName = System.getProperty("os.name");
+            vendor = System.getProperty("java.specification.vendor");
+            arch = System.getProperty("os.arch");
 
-        Class<?> vendorClass = PlatformDetector.Vendor.class;
-        releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
-        makeFinalStaticAccessible(releaseFilesField);
+            Class<?> vendorClass = PlatformDetector.Vendor.class;
+            releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
+            makeFinalStaticAccessible(releaseFilesField);
 
-        releaseFiles = (String[])releaseFilesField.get(null);
+            releaseFiles = (String[]) releaseFilesField.get(null);
+        }
     }
 
     @After
     public void tearDown() throws Exception {
-        System.setProperty("os.name", osName);
-        System.setProperty("java.specification.vendor", vendor);
-        System.setProperty("os.arch", arch);
+        if (!skipTest()) {
+            System.setProperty("os.name", osName);
+            System.setProperty("java.specification.vendor", vendor);
+            System.setProperty("os.arch", arch);
 
-        releaseFilesField.set(null, releaseFiles);
+            releaseFilesField.set(null, releaseFiles);
+        }
     }
+
+    private static boolean skipTest() {
+        return "android".equalsIgnoreCase(PlatformDetector.OS.getName());
+    }
+
+    private final static String skipMessage = "Skipped test (Cannot detect other platforms when running on Android)";
 
     @Test
     public void testAndroidLibNameStructure() throws Exception {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "Android");
         System.setProperty("java.specification.vendor", "...");
         System.setProperty("os.arch", "x64");
@@ -90,8 +97,9 @@ public class LibraryLoaderTest {
     public void testLinuxLibNameStructure() throws Exception {
 
         // skip this test on android
-        if (PlatformDetector.OS.isAndroid())
+        if (PlatformDetector.OS.isAndroid()) {
             return;
+        }
 
         System.setProperty("os.name", "Linux");
         System.setProperty("java.specification.vendor", "OSS");
@@ -117,6 +125,7 @@ public class LibraryLoaderTest {
 
     @Test
     public void testMacOSXLibNameStructure() throws Exception {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "MacOSX");
         System.setProperty("java.specification.vendor", "Apple");
         System.setProperty("os.arch", "x64");
@@ -126,6 +135,7 @@ public class LibraryLoaderTest {
 
     @Test
     public void testWindowsLibNameStructure() throws Exception {
+        assumeFalse(skipMessage, skipTest()); // conditional skip
         System.setProperty("os.name", "Windows");
         System.setProperty("java.specification.vendor", "Microsoft");
         System.setProperty("os.arch", "x64");
@@ -133,7 +143,7 @@ public class LibraryLoaderTest {
         performTests(Platform.WINDOWS, null, ".dll");
     }
 
-    private void performTests(String expectedOsName, String expectedVendor, String expectedLibExtension) {
+    private void performTests(final String expectedOsName, final String expectedVendor, final String expectedLibExtension) {
         // API calls
         String libName = LibraryLoader.computeLibraryShortName(true);
         String[] parts = libName.split("-");
@@ -143,8 +153,9 @@ public class LibraryLoaderTest {
         int expectedParts = expectedVendor != null ? 4 : 3;
         assertEquals(expectedParts, parts.length);
         assertEquals("j2v8", parts[i++]);
-        if (expectedVendor != null)
+        if (expectedVendor != null) {
             assertEquals(expectedVendor, parts[i++]);
+        }
         assertEquals(expectedOsName, parts[i++]);
         assertEquals("x86_64", parts[i++]);
 
