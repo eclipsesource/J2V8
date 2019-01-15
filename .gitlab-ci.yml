@@ -9,6 +9,7 @@ variables:
 
 stages:
   - build
+  - deploy
 
 services:
   - name: docker:dind
@@ -35,3 +36,10 @@ maven_verify:
       - x86.txt
       - x86_64.txt
       - arm64.txt
+
+deploy:
+  stage: deploy
+  script:
+    - ./gradlew uploadArchives
+  only:
+    - master
