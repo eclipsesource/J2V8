@@ -40,6 +40,7 @@ maven_verify:
 deploy:
   stage: deploy
   script:
+    - apk add --update python python git gzip tar openjdk8 bash
     - ./gradlew uploadArchives
   only:
     - master
