@@ -31,7 +31,9 @@ public class V8TypedArraysTest {
     @After
     public void tearDown() {
         try {
-            v8.close();
+            if (v8 != null) {
+                v8.close();
+            }
             if (V8.getActiveRuntimes() != 0) {
                 throw new IllegalStateException("V8Runtimes not properly released");
             }
