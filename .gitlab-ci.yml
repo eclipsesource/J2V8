@@ -53,10 +53,11 @@ maven_verify:
       - x86.txt
       - x86_64.txt
       - arm64.txt
+      - src/main/jniLibs/**/*
 
 deploy:
   stage: deploy
   script:
-    - ./gradlew uploadArchives
+    - python build.py -t android -a arm j2v8release --keep-native-libs --docker
   only:
     - master
