@@ -27,7 +27,6 @@ before_script:
 
 stages:
   - build
-  - deploy
 
 services:
   - name: docker:dind
@@ -54,10 +53,29 @@ maven_verify:
       - x86_64.txt
       - arm64.txt
       - src/main/jniLibs/**/*
+  except:
+    - master
 
-deploy:
-  stage: deploy
+maven_verify_deploy:
+  stage: build
   script:
+    - docker info
+    - COMMIT_HASH=`git rev-parse HEAD` && sed -i "s/Unknown\ revision\ ID/$COMMIT_HASH/g" src/main/java/com/eclipsesource/v8/V8.java
+    - python nodejs.py git clone
+    - python nodejs.py diff apply
+    - python build.py -t android -a arm --docker all > arm.txt 2>&1 && ! grep -q BUILD\ FAILED arm.txt && echo passed || exit 1
+    - python build.py -t android -a x86 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt 2>&1 && ! grep -q BUILD\ FAILED x86.txt && echo passed || exit 1
+    - python build.py -t android -a x86_64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86_64.txt 2>&1 && ! grep -q BUILD\ FAILED x86_64.txt && echo passed || exit 1
+    - python build.py -t android -a arm64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > arm64.txt 2>&1 && ! grep -q BUILD\ FAILED arm64.txt && echo passed || exit 1
     - python build.py -t android -a arm j2v8release --keep-native-libs --docker
+  artifacts:
+    when: always
+    paths:
+      - build/outputs/aar/**
+      - arm.txt
+      - x86.txt
+      - x86_64.txt
+      - arm64.txt
+      - src/main/jniLibs/**/*
   only:
     - master
