@@ -128,7 +128,7 @@ class DockerBuildSystem(BuildSystem):
         image_name = self.get_image_name(config)
         container_name = self.get_container_name(config)
 
-        docker_run_str = "docker run " + extra_options + " -P -v $CWD:" + mount_point + \
+        docker_run_str = "docker run " + extra_options + " -e MAVEN_REPO_USER=$MAVEN_REPO_USER -e MAVEN_REPO_PASS=$MAVEN_REPO_PASS -P -v $CWD:" + mount_point + \
             " --name " + container_name + " " + image_name + " " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(docker_run_str, config)

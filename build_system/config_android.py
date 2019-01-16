@@ -132,3 +132,11 @@ def build_j2v8_test(config):
 
 android_config.build_step(c.build_j2v8_test, build_j2v8_test)
 #-----------------------------------------------------------------------
+def build_j2v8_release(config):
+    return \
+        u.setVersionEnv(config) + \
+        u.gradle(" uploadArchives")
+
+android_config.build_step(c.build_j2v8_release, build_j2v8_release)
+#-----------------------------------------------------------------------
+
