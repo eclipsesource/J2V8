@@ -11,7 +11,7 @@ variables:
   ANDROID_SDK_TOOLS:   "4333796"
 
 before_script:
-  - apk add --update python python git gzip tar openjdk8 bash wget unzip libstdc++ 
+  - apk add --update python git gzip tar openjdk8 bash wget unzip libstdc++ 
   - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
   - unzip -d android-sdk-linux android-sdk.zip
   - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
@@ -38,7 +38,6 @@ maven_verify:
   stage: build
   script:
     - docker info
-    - apk add --update python python git gzip tar openjdk8 bash
     - COMMIT_HASH=`git rev-parse HEAD` && sed -i "s/Unknown\ revision\ ID/$COMMIT_HASH/g" src/main/java/com/eclipsesource/v8/V8.java
     - python nodejs.py git clone
     - python nodejs.py diff apply
@@ -58,7 +57,6 @@ maven_verify:
 deploy:
   stage: deploy
   script:
-    - apk add --update python python git gzip tar openjdk8 bash
     - ./gradlew uploadArchives
   only:
     - master

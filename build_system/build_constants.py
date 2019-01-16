@@ -25,6 +25,7 @@ atomic_build_steps = [
     CLIStep(c.build_j2v8_java, "        Compiles the Java source code and packages it, including the previously built native libraries, into the final package artifacts.\n" +
                        "                For the execution of this build-step Maven (Java) or Gradle (Android) are used for the respective target platforms."),
     CLIStep(c.build_j2v8_test, "       Runs the Java (JUnit/Gradle) unit tests."),
+    CLIStep(c.build_j2v8_release, "       Release J2V8."),
 ]
 
 # build_steps_help = dict(atomic_build_steps)
