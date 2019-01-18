@@ -1317,7 +1317,7 @@ public class V8ObjectTest {
     public void testGetKeysOnObject() {
         V8Object v8Object = new V8Object(v8);
         v8Object.add("integer", 1).add("double", 1.1).add("boolean", true)
-                        .add("string", "hello, world!");
+                .add("string", "hello, world!");
 
         String[] keys = v8Object.getKeys();
 
@@ -1842,11 +1842,19 @@ public class V8ObjectTest {
 
     @SuppressWarnings("resource")
     @Test
-    public void testClearWeakMakesObjectWeak() {
+    public void testClearWeakMakesObjectNonWeak() {
         V8Value object = new V8Object(v8).setWeak().clearWeak();
 
         assertFalse(object.isWeak());
         object.close();
+    }
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testReleaseWeakObjectDoesNotAffectReferenceCount() {
+        new V8Object(v8).setWeak().close();
+
+        assertEquals(0, v8.getObjectReferenceCount());
     }
 
 }
