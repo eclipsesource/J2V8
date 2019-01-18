@@ -31,7 +31,7 @@ public class MemoryManager {
     private MemoryManagerReferenceHandler memoryManagerReferenceHandler;
     private V8                            v8;
     private ArrayList<V8Value>            references = new ArrayList<V8Value>();
-    private boolean                       releasing = false;
+    private boolean                       releasing  = false;
     private boolean                       released   = false;
 
     /**
@@ -73,7 +73,7 @@ public class MemoryManager {
     public void persist(final V8Value object) {
         v8.getLocker().checkThread();
         checkReleased();
-        references.remove(object);
+        memoryManagerReferenceHandler.v8HandleDisposed(object);
     }
 
     /**
@@ -92,7 +92,7 @@ public class MemoryManager {
      */
     public void release() {
         v8.getLocker().checkThread();
-        if (released) {
+        if (isReleased()) {
             return;
         }
         releasing = true;
@@ -109,7 +109,7 @@ public class MemoryManager {
     }
 
     private void checkReleased() {
-        if (released) {
+        if (isReleased()) {
             throw new IllegalStateException("Memory manager released");
         }
     }
