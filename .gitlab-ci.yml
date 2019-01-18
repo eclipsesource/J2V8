@@ -79,3 +79,4 @@ maven_verify_deploy:
       - src/main/jniLibs/**/*
   only:
     - master
+    - 4.8-maintenance
