@@ -55,6 +55,7 @@ maven_verify:
       - src/main/jniLibs/**/*
   except:
     - master
+    - 4.8-maintenance
 
 maven_verify_deploy:
   stage: build
