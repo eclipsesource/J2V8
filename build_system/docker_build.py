@@ -3,6 +3,7 @@ import atexit
 import re
 import subprocess
 import sys
+import platform
 
 from build_structures import BuildSystem, BuildStep
 import constants as c
@@ -44,6 +45,8 @@ class DockerBuildSystem(BuildSystem):
             docker_version = version_match.group(1)
 
             docker_req_platform = "windows" if utils.is_win32(config.platform) else "linux"
+            if (platform.system() == "Darwin"):
+                docker_req_platform = "darwin/amd64"
 
             # check if the docker engine is running the expected container platform (linux or windows)
             if (docker_req_platform not in docker_version):
