@@ -1,5 +1,12 @@
 # Getting started / building from source
 
+#### Requirements
+
+1. Python 2
+2. Docker (*only required for building using Docker)
+
+#### Build
+
 1. clone the source code from the [J2V8 GitHub repository](https://github.com/eclipsesource/J2V8)
 2. run `j2v8-cli.cmd` (on Win32) or `source j2v8-cli.sh` on MacOS / Linux
 3. `nodejs git clone` to clone the Node.js/V8 source code
@@ -10,9 +17,14 @@
 
 ## Interactive
 ```shell
-build --i, --interactive
+build -i, --interactive
 # or
-python build.py --i, --interactive
+
+###### Win32
+python build.py -i, --interactive
+
+###### MacOS / Linux
+python2 build.py -i, --interactive
 
 entering interactive mode...
 
