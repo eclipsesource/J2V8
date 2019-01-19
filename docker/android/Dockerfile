@@ -49,7 +49,8 @@ ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
 
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 
-RUN yes | sdkmanager --licenses
+COPY ./shared/install-android-dependencies.sh /temp/docker/shared
+RUN ./install-android-dependencies.sh
 
 COPY ./shared/install.cmake.sh /temp/docker/shared
 RUN ./install.cmake.sh
