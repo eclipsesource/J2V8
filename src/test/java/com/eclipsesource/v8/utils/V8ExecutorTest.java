@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.v8.JavaVoidCallback;
@@ -141,8 +140,7 @@ public class V8ExecutorTest {
     }
 
     @Test
-    @Ignore
-    public void testForceTerminateNestedExecutors() {
+    public void testForceTerminateNestedExecutors() throws InterruptedException {
         V8 runtime = V8.createV8Runtime();
         runtime.terminateExecution();
         V8Executor executor = new V8Executor("while (true){}");
@@ -153,6 +151,7 @@ public class V8ExecutorTest {
         runtime.shutdownExecutors(true);
 
         assertTrue(runtime.getExecutor(key).isShuttingDown());
+        executor.join();
         key.close();
         runtime.close();
     }
