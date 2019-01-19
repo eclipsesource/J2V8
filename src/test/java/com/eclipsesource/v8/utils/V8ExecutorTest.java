@@ -304,7 +304,7 @@ public class V8ExecutorTest {
         };
         executor.start();
         executor.postMessage("");
-        Thread.sleep(500);
+        Thread.sleep(2000);
         executor.forceTermination();
         executor.join();
 
@@ -321,7 +321,7 @@ public class V8ExecutorTest {
         };
         executor.start();
         executor.postMessage();
-        Thread.sleep(500);
+        Thread.sleep(2000);
         executor.forceTermination();
         executor.join();
 
@@ -384,7 +384,7 @@ public class V8ExecutorTest {
     public void testShutdownDoesNotTerminateLongRunningTask() throws InterruptedException {
         V8Executor executor = new V8Executor("while(true)", true, "messageHandler");
         executor.shutdown();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         assertFalse(executor.hasTerminated());
         executor.forceTermination();
     }
