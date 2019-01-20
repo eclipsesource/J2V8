@@ -17,7 +17,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class V8ScriptExecutionExceptionTest {
@@ -111,36 +110,33 @@ public class V8ScriptExecutionExceptionTest {
     }
 
     public void voidCallbackWithException() {
-        ((Object) null).toString();
+        throw new RuntimeException("Test Exception");
     }
 
     public Object callbackWithException() {
-        ((Object) null).toString();
-        return null;
+        throw new RuntimeException("Test Exception");
     }
 
     @Test(expected = V8ScriptExecutionException.class)
-    @Ignore
     public void testExceptionInVoidJavaCall() {
         try {
             v8.registerJavaMethod(this, "voidCallbackWithException", "voidCallback", new Class<?>[] {});
             v8.executeVoidScript("voidCallback()");
         } catch (V8ScriptExecutionException e) {
-            assertEquals("Unhandled Java Exception", e.getJSMessage());
-            assertTrue(e.getCause() instanceof NullPointerException);
+            assertEquals("Test Exception", e.getJSMessage());
+            assertTrue(e.getCause() instanceof RuntimeException);
             throw e;
         }
     }
 
     @Test(expected = V8ScriptExecutionException.class)
-    @Ignore
     public void testExceptionInJavaCall() {
         try {
             v8.registerJavaMethod(this, "callbackWithException", "callback", new Class<?>[] {});
             v8.executeVoidScript("callback()");
         } catch (V8ScriptExecutionException e) {
-            assertEquals("Unhandled Java Exception", e.getJSMessage());
-            assertTrue(e.getCause() instanceof NullPointerException);
+            assertEquals("Test Exception", e.getJSMessage());
+            assertTrue(e.getCause() instanceof RuntimeException);
             throw e;
         }
     }
