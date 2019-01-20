@@ -63,10 +63,11 @@ public class V8ExecutorTest {
         runtime.registerV8Executor(key, executor);
         key.release();
         runtime.release();
+        executor.join();
     }
 
     @Test
-    public void testNestedExecutorExecution() {
+    public void testNestedExecutorExecution() throws InterruptedException {
         V8 runtime = V8.createV8Runtime();
         runtime.terminateExecution();
         V8Executor executor = new V8Executor("");
@@ -75,6 +76,7 @@ public class V8ExecutorTest {
         runtime.registerV8Executor(key, executor);
         key.close();
         runtime.close();
+        executor.join();
     }
 
     @Test
