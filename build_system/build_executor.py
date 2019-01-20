@@ -66,7 +66,15 @@ def multi_step(alias, include, exclude = []):
 def init_buildsteps():
     """Setup of all available build-step atomics & combinations"""
     # special alias to group all build steps into a single one
-    multi_step(c.build_all, bc.atomic_build_step_sequence)
+    multi_step(c.build_all, [
+        c.build_node_js,
+        c.build_j2v8_cmake,
+        c.build_j2v8_jni,
+        c.build_j2v8_cpp,
+        c.build_j2v8_optimize,
+        c.build_j2v8_java,
+        c.build_j2v8_test,
+    ])
 
     # atomic steps
     for step in list(bc.atomic_build_step_sequence):
