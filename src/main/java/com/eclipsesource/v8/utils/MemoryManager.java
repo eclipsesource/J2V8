@@ -92,7 +92,7 @@ public class MemoryManager {
      */
     public void release() {
         v8.getLocker().checkThread();
-        if (isReleased()) {
+        if (released) {
             return;
         }
         releasing = true;
@@ -109,7 +109,7 @@ public class MemoryManager {
     }
 
     private void checkReleased() {
-        if (isReleased()) {
+        if (released) {
             throw new IllegalStateException("Memory manager released");
         }
     }
