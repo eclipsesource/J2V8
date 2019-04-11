@@ -3,7 +3,11 @@ apply plugin: 'signing'
 
 group = 'com.eclipsesource.j2v8'
 archivesBaseName = 'j2v8'
-version = '4.8.3-SNAPSHOT'
+version = System.getenv('J2V8_FULL_VERSION')
+
+ext."signing.secretKeyRingFile" = '/.gnupg/secring.gpg'
+ext."signing.password" = System.getenv("KEYSTORE_PASSWORD")
+ext."signing.keyId" = System.getenv("KEY_ID")
 
 configurations {
     archives {
@@ -62,6 +66,7 @@ android {
 
         // androidTest.setRoot('src/test')
     }
+
 }
 
 // see: https://github.com/square/spoon
@@ -81,18 +86,18 @@ spoon {
 }
 
 signing {
-    //required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
-    //sign configurations.archives
+    // required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
 }
 
 uploadArchives {
   repositories {
     mavenDeployer {
-      //beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      //repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        //authentication(userName: project.hasProperty('ossrhUsername')?ossrhUsername:'', password: project.hasProperty('ossrhPassword')?ossrhPassword:'')
-      //}
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: System.getenv("MAVEN_REPO_USER"), password: System.getenv("MAVEN_REPO_PASS") )
+      }
 
       snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
         authentication(userName: System.getenv("MAVEN_REPO_USER"), password: System.getenv("MAVEN_REPO_PASS") )
