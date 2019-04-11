@@ -77,6 +77,19 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5widgets5
 ENV QT_QPA_PLATFORM offscreen
 ENV LD_LIBRARY_PATH ${ANDROID_HOME}/tools/lib64:${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib
 
+ARG KEYSTORE
+ARG KEYSTORE_PASSWORD
+
+ENV KEYSTORE=$KEYSTORE
+ENV KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
+
+RUN mkdir ~/.gnupg
+
+RUN if [ -n "$KEYSTORE" ]; then echo $KEYSTORE | base64 -d > my-private-key.asc; fi
+RUN if [ -n "$KEYSTORE" -a -n "$KEYSTORE_PASSWORD" ]; then echo $KEYSTORE_PASSWORD | gpg --import --batch --yes --passphrase-fd 0 my-private-key.asc; fi
+
+RUN cp -r ~/.gnupg /
+
 EXPOSE 22
 EXPOSE 5037
 EXPOSE 5554
