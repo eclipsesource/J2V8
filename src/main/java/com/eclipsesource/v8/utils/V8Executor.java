@@ -125,9 +125,6 @@ public class V8Executor extends Thread {
                 if (scriptResult instanceof Releasable) {
                     ((Releasable) scriptResult).release();
                 }
-                if (scriptResult instanceof Releasable) {
-                    ((Releasable) scriptResult).release();
-                }
             }
             while (!forceTerminating && longRunning) {
                 synchronized (this) {
