@@ -107,13 +107,6 @@ public class PlatformDetectorTest {
         assertEquals("so", PlatformDetector.OS.getLibFileExtension());
     }
 
-    @Test(expected = UnsatisfiedLinkError.class)
-    public void testGetArchxNaCl() {
-        System.setProperty("os.arch", "nacl");
-
-        PlatformDetector.Arch.getName();
-    }
-
     @Test
     public void testGetArchaarch64() {
         assumeFalse(skipMessage, skipTest()); // conditional skip
@@ -146,7 +139,7 @@ public class PlatformDetectorTest {
         assertEquals("x86_64", PlatformDetector.Arch.getName());
     }
 
-    @Test(expected = UnsatisfiedLinkError.class)
+    @Test
     public void testGetArcharmv7l() {
         System.setProperty("os.arch", "armv7l");
 

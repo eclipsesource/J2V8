@@ -174,6 +174,15 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env
   return env->NewStringUTF(utfString);
 }
 
+
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getConstructorName
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
+  Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
+  String::Value unicodeString(object->GetConstructorName());
+  return env->NewString(*unicodeString, unicodeString.length());
+}
+
 Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
   const uint16_t* unicodeString = env->GetStringChars(string, NULL);
   int length = env->GetStringLength(string);

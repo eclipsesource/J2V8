@@ -30,14 +30,6 @@ utilities for using J2V8 in a Java System. The J2V8 utils contains all
 the classes found in `com.eclipsesource.v8.utils`. The J2V8 utils should
 have no external dependencies other than JRE 1.6, and J2V8 core.
 
-## Contributor License Agreement (CLA)
-
-J2V8 was originally developed by Innoopract Informationssysteme GMBH for
-the [Tabris.js](https://tabrisjs.com) project. However, we believe that
-J2V8 is more broadly useful, which is why we Open Sourced the project.
-To help protect all J2V8 users, and to protect all contributions, we are asking
-that all contributors sign the CLA. A copy of the CLA can be found [here](https://www.clahub.com/agreements/eclipsesource/J2V8).
-
 ## Submitting changes
 
  * Sign the [Contributor License Agreement](https://www.clahub.com/agreements/eclipsesource/J2V8).

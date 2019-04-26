@@ -11,7 +11,9 @@ variables:
   ANDROID_SDK_TOOLS:   "4333796"
 
 before_script:
+  - apk add --no-cache nss
   - apk add --update python git gzip tar openjdk8 bash wget unzip libstdc++ 
+  - apk add gnupg
   - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
   - unzip -d android-sdk-linux android-sdk.zip
   - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
@@ -40,7 +42,7 @@ maven_verify:
     - COMMIT_HASH=`git rev-parse HEAD` && sed -i "s/Unknown\ revision\ ID/$COMMIT_HASH/g" src/main/java/com/eclipsesource/v8/V8.java
     - python nodejs.py git clone
     - python nodejs.py diff apply
-    - python build.py -t android -a arm --docker all ~j2v8release > arm.txt 2>&1 && ! grep -q BUILD\ FAILED arm.txt && echo passed || exit 1
+    - python build.py -t android -a arm --docker all > arm.txt 2>&1 && ! grep -q BUILD\ FAILED arm.txt && echo passed || exit 1
     - python build.py -t android -a x86 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt 2>&1 && ! grep -q BUILD\ FAILED x86.txt && echo passed || exit 1
     - python build.py -t android -a x86_64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86_64.txt 2>&1 && ! grep -q BUILD\ FAILED x86_64.txt && echo passed || exit 1
     - python build.py -t android -a arm64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > arm64.txt 2>&1 && ! grep -q BUILD\ FAILED arm64.txt && echo passed || exit 1
@@ -63,7 +65,7 @@ maven_verify_deploy:
     - COMMIT_HASH=`git rev-parse HEAD` && sed -i "s/Unknown\ revision\ ID/$COMMIT_HASH/g" src/main/java/com/eclipsesource/v8/V8.java
     - python nodejs.py git clone
     - python nodejs.py diff apply
-    - python build.py -t android -a arm --docker all ~j2v8release > arm.txt 2>&1 && ! grep -q BUILD\ FAILED arm.txt && echo passed || exit 1
+    - python build.py -t android -a arm --docker all > arm.txt 2>&1 && ! grep -q BUILD\ FAILED arm.txt && echo passed || exit 1
     - python build.py -t android -a x86 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86.txt 2>&1 && ! grep -q BUILD\ FAILED x86.txt && echo passed || exit 1
     - python build.py -t android -a x86_64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > x86_64.txt 2>&1 && ! grep -q BUILD\ FAILED x86_64.txt && echo passed || exit 1
     - python build.py -t android -a arm64 --keep-native-libs  --docker nodejs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java > arm64.txt 2>&1 && ! grep -q BUILD\ FAILED arm64.txt && echo passed || exit 1

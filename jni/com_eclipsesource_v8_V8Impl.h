@@ -557,6 +557,14 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setPrototype
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _getConstructorName
+ * Signature: (JJ)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getConstructorName
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _getType
  * Signature: (JJ)I
  */

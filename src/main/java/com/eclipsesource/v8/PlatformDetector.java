@@ -282,10 +282,10 @@ public class PlatformDetector {
         if (value.matches("^(sparcv9|sparc64)$")) {
             return "sparc_64";
         }
-        if (value.matches("^(arm|arm32)$")) {
+        if (value.matches("^(arm|arm32)$") || value.startsWith("armv7")) {
             return "arm_32";
         }
-        if ("aarch64".equals(value)) {
+        if ("aarch64".equals(value) || value.startsWith("armv8")) {
             return "aarch_64";
         }
         if (value.matches("^(ppc|ppc32)$")) {

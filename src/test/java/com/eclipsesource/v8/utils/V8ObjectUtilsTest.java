@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1254,7 +1255,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [buf];\n"
                 + "root;\n");
 
-        V8ArrayBuffer result = (V8ArrayBuffer) V8ObjectUtils.getValue(root, 0);
+        V8ArrayBuffer result = ((ArrayBuffer) V8ObjectUtils.getValue(root, 0)).getV8ArrayBuffer();
 
         assertEquals(100, result.limit());
         root.close();
@@ -1269,7 +1270,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((byte) 16, result.get(0));
@@ -1284,7 +1285,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(24, result.length());
         root.close();
@@ -1299,7 +1300,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1315,7 +1316,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [int8ClampedArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1331,7 +1332,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1347,7 +1348,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
@@ -1363,7 +1364,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
@@ -1380,7 +1381,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [intsArray]\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals((long) 16, result.get(0));
@@ -1396,7 +1397,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [floatsArray];"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16.2, (Float) result.get(0), 0.00001);
@@ -1412,7 +1413,7 @@ public class V8ObjectUtilsTest {
                 + "var root = [floatsArray];\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, 0);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, 0)).getV8TypedArray();
 
         assertEquals(10, result.length());
         assertEquals(16.2, (Double) result.get(0), 0.0001);
@@ -1426,7 +1427,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : buf };\n"
                 + "root;\n");
 
-        V8ArrayBuffer result = (V8ArrayBuffer) V8ObjectUtils.getValue(root, "items");
+        V8ArrayBuffer result = ((ArrayBuffer) V8ObjectUtils.getValue(root, "items")).getV8ArrayBuffer();
 
         assertEquals(100, result.limit());
         root.close();
@@ -1441,7 +1442,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((byte) 16, result.get(0));
@@ -1457,7 +1458,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1473,7 +1474,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : int8ClampedArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1489,7 +1490,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals((short) 16, result.get(0));
@@ -1505,7 +1506,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
@@ -1521,7 +1522,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
@@ -1537,7 +1538,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : intsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals((long) 16, result.get(0));
@@ -1553,7 +1554,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : floatsArray };"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16.2, (Float) result.get(0), 0.00001);
@@ -1569,7 +1570,7 @@ public class V8ObjectUtilsTest {
                 + "var root = { 'items' : floatsArray };\n"
                 + "root;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(root, "items");
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(root, "items")).getV8TypedArray();
 
         assertEquals(10, result.length());
         assertEquals(16.2, (Double) result.get(0), 0.0001);
@@ -1577,111 +1578,110 @@ public class V8ObjectUtilsTest {
         result.close();
     }
 
-    /*
+
     @Test
     public void testTypedArrayInMap() {
-        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
-        int8Array.put(0, (byte) 7);
+        TypedArray int8Array = new TypedArray(v8, new ArrayBuffer(v8, ByteBuffer.allocateDirect(8)), V8Value.INT_8_ARRAY, 0, 8);
+        V8TypedArray v8TypedArray = int8Array.getV8TypedArray();
+        V8ArrayBuffer v8ArrayBuffer = v8TypedArray.getBuffer();
+        v8ArrayBuffer.put(0, (byte) 7);
+        v8TypedArray.close();
+        v8ArrayBuffer.close();
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("array", int8Array);
 
         V8Object object = V8ObjectUtils.toV8Object(v8, map);
 
         V8TypedArray v8Array = (V8TypedArray) object.get("array");
-        assertEquals(7, v8Array.get(0));
+        assertEquals((byte) 7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
         v8Array.close();
         object.close();
     }
-    */
 
-    /*
     @Test
     public void testGetTypedArray() {
-        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
-        int8Array.put(0, (byte) 7);
+        TypedArray int8Array = new TypedArray(v8, new ArrayBuffer(v8, ByteBuffer.allocateDirect(8)), V8Value.INT_8_ARRAY, 0, 8);
+        V8TypedArray v8TypedArray = int8Array.getV8TypedArray();
+        V8ArrayBuffer v8ArrayBuffer = v8TypedArray.getBuffer();
+        v8ArrayBuffer.put(0, (byte) 7);
+        v8TypedArray.close();
+        v8ArrayBuffer.close();
 
         V8TypedArray v8Array = (V8TypedArray) V8ObjectUtils.getV8Result(v8, int8Array);
 
-        assertEquals(7, v8Array.get(0));
+        assertEquals((byte) 7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
         v8Array.close();
     }
-    */
 
-    /*
     @Test
     public void testByteBufferInMap() {
-        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(v8, ByteBuffer.allocateDirect(8));
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("buffer", arrayBuffer);
 
         V8Object object = V8ObjectUtils.toV8Object(v8, map);
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) object.get("buffer");
-        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        assertEquals(arrayBuffer.getV8ArrayBuffer().setWeak(), v8ArrayBuffer);
         v8ArrayBuffer.close();
         object.close();
     }
-    */
 
-    /*
     @Test
     public void testArrayBufferInList() {
-        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(v8, ByteBuffer.allocateDirect(8));
         List<Object> list = new ArrayList<Object>();
         list.add(arrayBuffer);
 
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) array.get(0);
-        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        assertEquals(arrayBuffer.getV8ArrayBuffer().setWeak(), v8ArrayBuffer);
         v8ArrayBuffer.close();
         array.close();
     }
-    */
 
-    /*
     @Test
     public void testGetArrayBuffer() {
-        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(v8, ByteBuffer.allocateDirect(8));
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
 
-        assertEquals(arrayBuffer.getByteBuffer(), v8ArrayBuffer.getBackingStore());
+        assertEquals(arrayBuffer.getV8ArrayBuffer().setWeak(), v8ArrayBuffer);
         v8ArrayBuffer.close();
     }
-    */
 
-    /*
     @Test
     public void testGetArrayBufferNotReleased() {
-        ArrayBuffer arrayBuffer = new ArrayBuffer(8);
+        ArrayBuffer arrayBuffer = new ArrayBuffer(v8, ByteBuffer.allocateDirect(8));
 
         V8ArrayBuffer v8ArrayBuffer = (V8ArrayBuffer) V8ObjectUtils.getV8Result(v8, arrayBuffer);
 
         assertFalse(v8ArrayBuffer.isReleased());
         v8ArrayBuffer.close();
     }
-    */
 
-    /*
     @Test
     public void testTypedArrayInList() {
-        Int8Array int8Array = new Int8Array(ByteBuffer.allocateDirect(8));
-        int8Array.put(0, (byte) 7);
+        TypedArray int8Array = new TypedArray(v8, new ArrayBuffer(v8, ByteBuffer.allocateDirect(8)), V8Value.INT_8_ARRAY, 0, 8);
+        V8TypedArray v8TypedArray = int8Array.getV8TypedArray();
+        V8ArrayBuffer v8ArrayBuffer = v8TypedArray.getBuffer();
+        v8ArrayBuffer.put(0, (byte) 7);
+        v8TypedArray.close();
+        v8ArrayBuffer.close();
         List<Object> list = new ArrayList<Object>();
         list.add(int8Array);
 
         V8Array array = V8ObjectUtils.toV8Array(v8, list);
 
         V8Array v8Array = (V8Array) array.get(0);
-        assertEquals(7, v8Array.get(0));
+        assertEquals((byte) 7, v8Array.get(0));
         assertEquals(V8Value.INT_8_ARRAY, v8Array.getType());
         v8Array.close();
         array.close();
     }
-    */
 
     @Test
     public void testPushV8ArrayToArray() {
@@ -2414,11 +2414,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((byte) 16, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2427,10 +2428,11 @@ public class V8ObjectUtilsTest {
                 + "var intsArray = new Int8Array(24);\n"
                 + "intsArray");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(24, result.length());
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2440,11 +2442,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2454,11 +2457,12 @@ public class V8ObjectUtilsTest {
                 + "int8ClampedArray[0] = 16;\n"
                 + "int8ClampedArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(int8ClampedArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(int8ClampedArray)).getV8TypedArray();
 
         assertEquals(100, result.length());
         assertEquals((short) 16, result.get(0));
         int8ClampedArray.close();
+        result.close();
     }
 
     @Test
@@ -2468,11 +2472,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals((short) 16, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2482,11 +2487,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(50, result.length());
         assertEquals(16, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2496,11 +2502,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2510,11 +2517,12 @@ public class V8ObjectUtilsTest {
                 + "intsArray[0] = 16;\n"
                 + "intsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(intsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(intsArray)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16L, result.get(0));
         intsArray.close();
+        result.close();
     }
 
     @Test
@@ -2524,11 +2532,12 @@ public class V8ObjectUtilsTest {
                 + "floatsArray[0] = 16.2;\n"
                 + "floatsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(floatsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(floatsArray)).getV8TypedArray();
 
         assertEquals(25, result.length());
         assertEquals(16.2, (Float) result.get(0), 0.00001);
         floatsArray.close();
+        result.close();
     }
 
     @Test
@@ -2538,11 +2547,12 @@ public class V8ObjectUtilsTest {
                 + "floatsArray[0] = 16.2;\n"
                 + "floatsArray;\n");
 
-        V8TypedArray result = (V8TypedArray) V8ObjectUtils.getValue(floatsArray);
+        V8TypedArray result = ((TypedArray) V8ObjectUtils.getValue(floatsArray)).getV8TypedArray();
 
         assertEquals(10, result.length());
         assertEquals(16.2, (Double) result.get(0), 0.0001);
         floatsArray.close();
+        result.close();
     }
 
     @Test
@@ -2550,10 +2560,11 @@ public class V8ObjectUtilsTest {
         V8ArrayBuffer buf = (V8ArrayBuffer) v8.executeScript("var buf = new ArrayBuffer(100);\n"
                 + "buf;\n");
 
-        V8ArrayBuffer result = (V8ArrayBuffer) V8ObjectUtils.getValue(buf);
+        V8ArrayBuffer result = ((ArrayBuffer) V8ObjectUtils.getValue(buf)).getV8ArrayBuffer();
 
         assertEquals(100, result.limit());
         buf.close();
+        result.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -2682,6 +2693,7 @@ public class V8ObjectUtilsTest {
     public void testObjectUndefinedTypeAdapter_Map_GetValue() {
         V8Object object = v8.executeObjectScript("x = {b:{a:{}}}; x");
 
+        @SuppressWarnings("resource")
         V8Value result = (V8Value) V8ObjectUtils.getValue(object, new SingleTypeAdapter(V8Value.V8_OBJECT) {
 
             @Override

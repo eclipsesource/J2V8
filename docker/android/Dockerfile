@@ -49,7 +49,8 @@ ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
 
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 
-RUN yes | sdkmanager --licenses
+COPY ./shared/install-android-dependencies.sh /temp/docker/shared
+RUN ./install-android-dependencies.sh
 
 COPY ./shared/install.cmake.sh /temp/docker/shared
 RUN ./install.cmake.sh
@@ -75,6 +76,19 @@ RUN sdkmanager "system-images;android-21;default;armeabi-v7a"
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5widgets5
 ENV QT_QPA_PLATFORM offscreen
 ENV LD_LIBRARY_PATH ${ANDROID_HOME}/tools/lib64:${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib
+
+ARG KEYSTORE
+ARG KEYSTORE_PASSWORD
+
+ENV KEYSTORE=$KEYSTORE
+ENV KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
+
+RUN mkdir ~/.gnupg
+
+RUN if [ -n "$KEYSTORE" ]; then echo $KEYSTORE | base64 -d > my-private-key.asc; fi
+RUN if [ -n "$KEYSTORE" -a -n "$KEYSTORE_PASSWORD" ]; then echo $KEYSTORE_PASSWORD | gpg --import --batch --yes --passphrase-fd 0 my-private-key.asc; fi
+
+RUN cp -r ~/.gnupg /
 
 EXPOSE 22
 EXPOSE 5037

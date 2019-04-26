@@ -3,6 +3,7 @@ import atexit
 import re
 import subprocess
 import sys
+import platform
 
 from build_structures import BuildSystem, BuildStep
 import constants as c
@@ -44,6 +45,8 @@ class DockerBuildSystem(BuildSystem):
             docker_version = version_match.group(1)
 
             docker_req_platform = "windows" if utils.is_win32(config.platform) else "linux"
+            if (platform.system() == "Darwin"):
+                docker_req_platform = "darwin/amd64"
 
             # check if the docker engine is running the expected container platform (linux or windows)
             if (docker_req_platform not in docker_version):
@@ -85,6 +88,12 @@ class DockerBuildSystem(BuildSystem):
         def vendor_arg(value):
             return build_arg("vendor", value)
 
+        def keystore_arg(value):
+            return build_arg("KEYSTORE", value)
+
+        def keystorepassword_arg(value):
+            return build_arg("KEYSTORE_PASSWORD", value)
+
         # use custom sys-image if it was specified by the user
         args_str += sys_image_arg(config.sys_image)
 
@@ -99,6 +108,9 @@ class DockerBuildSystem(BuildSystem):
 
         # pass a specified vendor string to the docker build
         args_str += vendor_arg(config.vendor)
+
+        args_str += keystore_arg("$KEYSTORE")
+        args_str += keystorepassword_arg("$KEYSTORE_PASSWORD")
 
         image_name = self.get_image_name(config)
 
@@ -128,7 +140,7 @@ class DockerBuildSystem(BuildSystem):
         image_name = self.get_image_name(config)
         container_name = self.get_container_name(config)
 
-        docker_run_str = "docker run " + extra_options + " -e MAVEN_REPO_USER=$MAVEN_REPO_USER -e MAVEN_REPO_PASS=$MAVEN_REPO_PASS -P -v $CWD:" + mount_point + \
+        docker_run_str = "docker run " + extra_options + " -e KEY_ID=$KEY_ID -e KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD -e MAVEN_REPO_USER=$MAVEN_REPO_USER -e MAVEN_REPO_PASS=$MAVEN_REPO_PASS -P -v $CWD:" + mount_point + \
             " --name " + container_name + " " + image_name + " " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(docker_run_str, config)

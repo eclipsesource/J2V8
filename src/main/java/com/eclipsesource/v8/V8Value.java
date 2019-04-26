@@ -143,6 +143,17 @@ abstract public class V8Value implements Releasable {
     }
 
     /**
+     * Returns a constructor name of the V8 Value.
+     *
+     * @return The V8Value constructor name as a string.
+     */
+    public String getConstructorName() {
+        v8.checkThread();
+        v8.checkReleased();
+        return v8.getConstructorName(v8.getV8RuntimePtr(), objectHandle);
+    }
+
+    /**
      * Determines if this value is undefined.
      *
      * @return Returns true if the value is undefined, false otherwise

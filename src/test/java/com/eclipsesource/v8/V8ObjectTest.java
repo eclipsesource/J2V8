@@ -1855,6 +1855,75 @@ public class V8ObjectTest {
         new V8Object(v8).setWeak().close();
 
         assertEquals(0, v8.getObjectReferenceCount());
+
+    @Test
+    public void testConstructorNameFunction() {
+        v8.executeVoidScript("function Foo() {} var foo = new Foo();");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Foo");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameObject() {
+        v8.executeVoidScript("var foo = new Object()");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Object");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameObject_2() {
+        v8.executeVoidScript("var foo = {}");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Object");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameArray() {
+        v8.executeVoidScript("var foo = []");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Array");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameTypedArray() {
+        v8.executeVoidScript("var foo = new Uint8Array()");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Uint8Array");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameArrayBuffer() {
+        v8.executeVoidScript("var foo = new ArrayBuffer()");
+        V8ArrayBuffer object = (V8ArrayBuffer) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "ArrayBuffer");
+
+        object.close();
+    }
+
+    @Test
+    public void testConstructorNameMap() {
+        v8.executeVoidScript("var foo = new Map()");
+        V8Object object = (V8Object) v8.get("foo");
+
+        assertEquals(object.getConstructorName(), "Map");
+
+        object.close();
     }
 
 }
