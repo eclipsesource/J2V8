@@ -146,7 +146,7 @@ public class PlatformDetectorTest {
         assertEquals("x86_64", PlatformDetector.Arch.getName());
     }
 
-    @Test(expected = UnsatisfiedLinkError.class)
+    @Test
     public void testGetArcharmv7l() {
         System.setProperty("os.arch", "armv7l");
 
