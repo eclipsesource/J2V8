@@ -47,7 +47,7 @@ def build_node_js(config):
             --openssl-no-asm        \\
             --without-snapshot      \\
             --enable-static &&      \\
-            CFLAGS=-fPIC CXXFLAGS=-fPIC make -j4 \"  \
+            CFLAGS=-fPIC CXXFLAGS=-fPIC make -j4 > node.build.output 2>&1 \"  \
             """,
     ]
 

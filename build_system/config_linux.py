@@ -35,7 +35,7 @@ def build_node_js(config):
             --without-snapshot      \
             --enable-static""",
         # "make clean", # TODO: make this an on/off option
-        "CFLAGS=-fPIC CXXFLAGS=-fPIC make -j4",
+        "CFLAGS=-fPIC CXXFLAGS=-fPIC make -j4 > node.build.output 2>&1",
     ]
 
 linux_config.build_step(c.build_node_js, build_node_js)
