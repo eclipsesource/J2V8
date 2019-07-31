@@ -34,8 +34,16 @@ def build_node_js(config):
         os.environ['DEST_CPU'] = "x64"
     else:
         os.environ['DEST_CPU'] = arch
+    if ("x86_64" in arch):
+        os.environ['API_VERSION'] = """21"""
+    elif ("arm64-v8a" in arch):
+        os.environ['API_VERSION'] = """21"""
+    elif ("x86" in arch):
+        os.environ['API_VERSION'] = """16"""
+    else:
+        os.environ['API_VERSION'] = """16"""
     return [
-        """android-gcc-toolchain $ARCH --api 21 --host gcc-lpthread -C \
+        """android-gcc-toolchain $ARCH --api $API_VERSION --host gcc-lpthread -C \
             sh -c \"                \\
             cd ./node;              \\
             ./configure             \\
