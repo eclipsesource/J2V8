@@ -38,6 +38,8 @@ def build_node_js(config):
         os.environ['API_VERSION'] = """21"""
     elif ("arm64-v8a" in arch):
         os.environ['API_VERSION'] = """21"""
+    elif ("arm64" in arch):
+        os.environ['API_VERSION'] = """21"""
     elif ("x86" in arch):
         os.environ['API_VERSION'] = """16"""
     else:
