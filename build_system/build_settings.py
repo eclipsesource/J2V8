@@ -17,8 +17,8 @@ NODE_VERSION = '{}.{}.{}'.format(NODE_VERSION_MAJOR, NODE_VERSION_MINOR, NODE_VE
 #-----------------------------------------------------------------------
 
 J2V8_VERSION_MAJOR, J2V8_VERSION_MINOR, J2V8_VERSION_PATCH = 4, 8, 5
-J2V8_VERSION_SUFFIX = "-SNAPSHOT"
-#J2V8_VERSION_SUFFIX = ""
+#J2V8_VERSION_SUFFIX = "-SNAPSHOT"
+J2V8_VERSION_SUFFIX = ""
 
 # The J2V8 version in the format {major.minor.patch} to be used in other build & utility scripts
 J2V8_VERSION = '{}.{}.{}'.format(J2V8_VERSION_MAJOR, J2V8_VERSION_MINOR, J2V8_VERSION_PATCH)
