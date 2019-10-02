@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - v8-7.4.288-build
+
+jobs:
+  build_linux:
+    name: V8 7.4.288 build for Linux x64
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: check build dependencies
+      run: |
+        python --version
+        git --version
+        docker --version
+    - name: Build J2V8 for Linux x86_64
+      run: |
+        python nodejs.py git clone
+        python nodejs.py diff apply
+        python build.py -t linux -a x64 --docker --keep-native-libs all
+    - name: Archive J2V8 jar
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: j2v8-linux-x86_64
+        path: build.out/j2v8_linux_x86_64-5.1.0-SNAPSHOT.jar
+        
