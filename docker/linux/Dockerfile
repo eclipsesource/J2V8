@@ -1,5 +1,5 @@
 # sys_image can be overridden from the CLI
-ARG sys_image=debian:jessie
+ARG sys_image=debian:stable
 
 FROM $sys_image
 
