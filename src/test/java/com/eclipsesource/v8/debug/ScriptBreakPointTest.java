@@ -19,12 +19,14 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 
+@Ignore("Debugging changed on upstream V8")
 public class ScriptBreakPointTest {
 
     private static String script = "// 1 \n"
