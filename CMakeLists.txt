@@ -1,4 +1,3 @@
-
 # NOTE: this works around the windows docker / msbuild bug, that causes the
 # VC++ linker to fail creating PDB debug files in a shared volume
 # (see: https://social.msdn.microsoft.com/Forums/en-US/bd281c61-8e04-4f56-aec2-5ad565271d7f/windowsservercorelatest-vc-2015-build-tools-throws-linker-error-lnk1318-unexpected-pdb?forum=windowscontainers)
@@ -14,12 +13,12 @@ endif()
 
 cmake_minimum_required(VERSION 3.6)
 project(j2v8)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # set up the module path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(BuildUtils)
-include(NodeJsUtils)
 include(Policies)
 
 #-----------------------------------------------------------------------
@@ -31,15 +30,10 @@ find_package(Java)
 
 # j2v8 dependency options
 set(J2V8_JDK_DIR ${Java_ROOT} CACHE STRING "Path to the Java JDK dependency")
-set(J2V8_NODEJS_DIR "${CMAKE_SOURCE_DIR}/node" CACHE STRING "Path to the Node.js dependency")
-
-# get the required Node.js link libraries
-get_njs_libs(${J2V8_NODEJS_DIR} "Debug" FALSE)
-get_njs_libs(${J2V8_NODEJS_DIR} "Release" TRUE)
+set(J2V8_V8_DIR "${CMAKE_SOURCE_DIR}/v8.out" CACHE STRING "Path to the V8 JS engine dependency")
 
 # j2v8 build options
 set(J2V8_TARGET_ARCH "" CACHE STRING "The target architecture for the build.")
-option(J2V8_NODE_ENABLED "Build the J2V8 native bridge with Node.js support enabled" ON)
 option(J2V8_BUILD_ONLY_DEBUG_RELEASE "Generate only Debug and Release configurations (exclude RelWithDebInfo and MinSizeRel)" ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND MSVC)
@@ -138,8 +132,6 @@ message("J2V8_LIB_PLATFORM_NAME = ${J2V8_LIB_PLATFORM_NAME}")
 message("J2V8_TARGET_ARCH       = ${J2V8_TARGET_ARCH}")
 message("J2V8_BUILD_X64         = ${J2V8_BUILD_X64}")
 message("--------------------------------------------------")
-message("J2V8_NODE_ENABLED      = ${J2V8_NODE_ENABLED}")
-message("--------------------------------------------------")
 
 #-----------------------------------------------------------------------
 # INCLUDE DIRECTORIES & SOURCE FILES
@@ -147,10 +139,7 @@ message("--------------------------------------------------")
 
 # project include directories
 set(include_dirs
-    ${J2V8_NODEJS_DIR}
-    ${J2V8_NODEJS_DIR}/src
-    ${J2V8_NODEJS_DIR}/deps/v8
-    ${J2V8_NODEJS_DIR}/deps/v8/include
+    ${J2V8_V8_DIR}/include
 )
 
 # do not use JAVA_HOME for Java include files for Android
@@ -177,8 +166,8 @@ source_group("" FILES ${src_files})
 # BUILD SETTINGS & COMPILATION
 #-----------------------------------------------------------------------
 
-# tell gcc/clang to use the c++11 standard
-set(CMAKE_CXX_STANDARD 11)
+# tell gcc/clang to use the c++14 standard
+set(CMAKE_CXX_STANDARD 14)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
@@ -196,12 +185,10 @@ if(J2V8_LINK_WITH_STATIC_MSVCRT)
 endif()
 
 # create the j2v8 library
-add_library(j2v8 SHARED ${src_files})
+add_library(v8_monolith STATIC IMPORTED)
+set_target_properties(v8_monolith PROPERTIES IMPORTED_LOCATION ${J2V8_V8_DIR}/${J2V8_MONOLITH_LIB_DIR}/libv8_monolith.a)
 
-# enable Node.js if requested by the build options above
-if(J2V8_NODE_ENABLED)
-    set_property(TARGET j2v8 PROPERTY COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS} NODE_COMPATIBLE=1)
-endif()
+add_library(j2v8 SHARED ${src_files})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND MSVC)
     set_property(TARGET j2v8 APPEND_STRING PROPERTY LINK_FLAGS_RELEASE "/LTCG")
@@ -215,8 +202,10 @@ include_directories(${include_dirs})
 
 # link the necessary libraries
 target_link_libraries(j2v8
-    debug "${njs_Debug_libs}" "${j2v8_Debug_libs}"
-    optimized "${njs_Release_libs}" "${j2v8_Release_libs}"
+    v8_monolith
+    debug "${j2v8_Debug_libs}"
+    optimized "${j2v8_Release_libs}"
+    "${libgcc}"
 )
 
 #-----------------------------------------------------------------------

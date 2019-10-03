@@ -17,6 +17,7 @@ arch_arm = 'arm'
 arch_arm64 = 'arm64'
 
 # atomic build-steps
+build_v8 = 'v8'
 build_node_js = 'nodejs'
 build_j2v8_cmake = 'j2v8cmake'
 build_j2v8_jni = 'j2v8jni'

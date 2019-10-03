@@ -67,7 +67,7 @@ def init_buildsteps():
     """Setup of all available build-step atomics & combinations"""
     # special alias to group all build steps into a single one
     multi_step(c.build_all, [
-        c.build_node_js,
+        c.build_v8,
         c.build_j2v8_cmake,
         c.build_j2v8_jni,
         c.build_j2v8_cpp,
@@ -84,18 +84,18 @@ def init_buildsteps():
     atomic_step(c.build_j2v8_java, c.build_java)
     atomic_step(c.build_j2v8_test, c.build_test)
 
-    # multi-step alias: build only the native parts (includes nodejs)
+    # multi-step alias: build only the native parts (includes V8)
     multi_step(c.build_native, [
-        c.build_node_js,
+        c.build_v8,
         c.build_j2v8_cmake,
         c.build_j2v8_jni,
         c.build_j2v8_cpp,
         c.build_j2v8_optimize,
     ])
 
-    # multi-step alias: build everything that belongs to J2V8 (excludes Node.js)
-    # this is useful when building J2V8 with a pre-compiled Node.js dependency package
-    multi_step(c.build_j2v8, [c.build_all], [c.build_node_js, c.build_j2v8_test])
+    # multi-step alias: build everything that belongs to J2V8 (excludes V8)
+    # this is useful when building J2V8 with a pre-compiled V8 dependency package
+    multi_step(c.build_j2v8, [c.build_all], [c.build_v8, c.build_j2v8_test])
 
 def evaluate_build_step_option(step):
     """Find the registered evaluator function for the given step and execute it"""
@@ -205,29 +205,30 @@ def execute_build(params):
             cross_cfg = cross_configs.get(cross_sys)
 
     # if we are the build-instigator (not a cross-compile build-agent) we directly run some initial checks & setups for the build
-    if (not params.cross_agent):
-        print "Checking Node.js builtins integration consistency..."
-        utils.check_node_builtins()
+    # if (not params.cross_agent):
+        # print "Checking V8 builtins integration consistency..."
+        # utils.check_node_builtins()
 
-        v8_major,v8_minor,v8_build,v8_patch,v8_is_candidate = utils.get_v8_version()
-        njs_major,njs_minor,njs_patch,njs_is_release = utils.get_nodejs_version()
+        # v8_major,v8_minor,v8_build,v8_patch,v8_is_candidate = utils.get_v8_version()
 
-        print "--------------------------------------------------"
-        print "V8:      %(v8_major)s.%(v8_minor)s.%(v8_build)s.%(v8_patch)s (candidate: %(v8_is_candidate)s)" % locals()
-        print "Node.js: %(njs_major)s.%(njs_minor)s.%(njs_patch)s (release: %(njs_is_release)s)" % locals()
-        print "--------------------------------------------------"
+        # print "--------------------------------------------------"
+        # print "V8:      %(v8_major)s.%(v8_minor)s.%(v8_build)s.%(v8_patch)s (candidate: %(v8_is_candidate)s)" % locals()
+        # print "--------------------------------------------------"
 
-        print "Caching Node.js artifacts..."
-        curr_node_tag = (params.vendor + "-" if params.vendor else "") + target + "." + params.arch
-        utils.store_nodejs_output(curr_node_tag, build_cwd)
+        # print "Caching V8 artifacts..."
+        # curr_node_tag = (params.vendor + "-" if params.vendor else "") + target + "." + params.arch
+        # utils.store_nodejs_output(curr_node_tag, build_cwd)
 
-    def execute_build_step(build_system, build_step):
+    def execute_build_step(build_system, build_step, v8_build = False):
         """Creates an immutable copy of a single BuildStep configuration and executes it in the build-system"""
         # from this point on, make the build-input immutable to ensure consistency across the whole build process
         # any actions during the build-step should only be made based on the initial set of variables & conditions
         # NOTE: this restriction makes it much more easy to reason about the build-process as a whole (see "unidirectional data flow")
         build_step = immutable.freeze(build_step)
-        build_system.build(build_step)
+        if (v8_build):
+            build_system.build_v8(build_step)
+        else:    
+            build_system.build(build_step)
 
     # a cross-compile was requested, we just launch the virtualization-environment and then delegate
     # the originally requested build parameters to the cross-compile environment then running the build.py CLI
@@ -267,6 +268,13 @@ def execute_build(params):
         cross_cfg.docker = params.docker
         cross_cfg.vagrant = params.vagrant
 
+        if 'v8' in parsed_steps:
+            parsed_steps.remove('v8')
+            
+            # first build V8 and store output
+            execute_build_step(cross_compiler, cross_cfg, True)
+
+        
         # start the cross-compile
         execute_build_step(cross_compiler, cross_cfg)
 
