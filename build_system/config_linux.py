@@ -11,6 +11,7 @@ linux_config.set_cross_configs({
     "docker": DockerBuildStep(
         platform=c.target_linux,
         host_cwd="$CWD/docker",
+        v8_cwd="$CWD/v8",
         build_cwd="/j2v8"
     )
 })
@@ -42,7 +43,8 @@ linux_config.build_step(c.build_node_js, build_node_js)
 #-----------------------------------------------------------------------
 def build_j2v8_cmake(config):
     cmake_vars = cmu.setAllVars(config)
-
+    V8_monolith_library_dir = config.platform + "." + config.arch
+    
     # NOTE: uses Python string interpolation (see: https://stackoverflow.com/a/4450610)
     return \
         u.mkdir(u.cmake_out_dir) + \
@@ -50,10 +52,11 @@ def build_j2v8_cmake(config):
         u.rm("CMakeCache.txt CMakeFiles/") + \
         u.setJavaHome(config) + \
         ["""cmake \
+            -DJ2V8_MONOLITH_LIB_DIR={0} \
             -DCMAKE_BUILD_TYPE=Release \
             %(cmake_vars)s \
             ../../ \
-        """
+        """.format(V8_monolith_library_dir)
         % locals()]
 
 linux_config.build_step(c.build_j2v8_cmake, build_j2v8_cmake)

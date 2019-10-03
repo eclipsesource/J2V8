@@ -57,7 +57,7 @@ def cli_exit(message):
 def get_v8_version():
     v8_version_text = None
 
-    with file("./node/deps/v8/include/v8-version.h", "r") as v8_version_file:
+    with file("./v8.out/include/v8-version.h", "r") as v8_version_file:
         v8_version_text = v8_version_file.read()
 
         major = re.search(r"#define V8_MAJOR_VERSION (\d+)", v8_version_text)
@@ -206,6 +206,13 @@ def execute_to_str(cmd, cwd = None):
         raise subprocess.CalledProcessError(p.returncode, cmd, err)
 
     return out
+
+def store_v8_output(image_name, config):
+    print "Storing V8 output from '{0}' docker image".format(image_name)
+    build_cwd = get_cwd()
+    dest_cpu= c.arch_x64 if config.arch == c.arch_x86_64 else config.arch
+    static_library_output_dir = config.platform + "." + dest_cpu
+    execute("""docker run --rm -v {0}/v8.out:/mount {1} /bin/bash -c "cp -R include /mount && mkdir -p /mount/{3}/ && cp -R out.gn/{2}.release/obj/libv8_monolith.a /mount/{3}/" """.format(build_cwd, image_name, dest_cpu, static_library_output_dir))
 
 def store_nodejs_output(next_node_tag, build_cwd):
     """Cache built Node.js artifacts into a common directory structure, identified by vendor, platform and architecture."""

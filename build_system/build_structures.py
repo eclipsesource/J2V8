@@ -49,24 +49,37 @@ class PlatformConfig():
 
 class BuildStep(object):
     """Configuration capsule for all values that are defined for a well-defined step in the build pipeline"""
-    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None):
+    def __init__(self, name, platform, build = [], build_cwd = None, host_cwd = None, v8_cwd = None):
         self.name = name
         self.platform = platform
         self.build = build
         self.build_cwd = build_cwd
         self.host_cwd = host_cwd
+        self.v8_cwd = v8_cwd
         self.custom_cmd = None
 
 class BuildSystem:
     """The functional compositor and abstract base-class for any concrete build-system implementation"""
     __metaclass__ = ABCMeta
 
-    def build(self, config):
+    def prepare_build(self, config):
         # perform the health check for this build-system first
         self.health_check(config)
 
         # clean previous build outputs
         self.clean(config)
+
+    def build_v8(self, config):
+        self.prepare_build(config)
+        
+        # execute V8 build stage
+        self.exec_v8_build(config)
+
+        # store V8 build output
+        utils.store_v8_output(self.get_v8_image_name(config), config)
+
+    def build(self, config):
+        self.prepare_build(config)
 
         # copy the maven / gradle config files to the docker shared directory
         # this allows Dockerfiles to pre-fetch most of the maven / gradle dependencies before the actual build
@@ -82,6 +95,10 @@ class BuildSystem:
         self.pre_build(config)
         self.exec_build(config)
         self.post_build(config)
+
+    def exec_v8_cmd(self, cmd, config):
+        """Execute a shell-command on the host system (injects $CWD as the location of the J2V8 source directory"""
+        self.__exec_cmd_core(cmd, config, config.v8_cwd)
 
     def exec_host_cmd(self, cmd, config):
         """Execute a shell-command on the host system (injects $CWD as the location of the J2V8 source directory"""

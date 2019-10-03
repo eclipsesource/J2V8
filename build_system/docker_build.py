@@ -11,8 +11,8 @@ import build_utils as utils
 import docker_configs as dkr_cfg
 
 class DockerBuildStep(BuildStep):
-    def __init__(self, platform, build_cwd = None, host_cwd = None):
-        super(DockerBuildStep, self).__init__("docker-build-host", platform, None, build_cwd, host_cwd)
+    def __init__(self, platform, build_cwd = None, host_cwd = None, v8_cwd = None):
+        super(DockerBuildStep, self).__init__("docker-build-host", platform, None, build_cwd, host_cwd, v8_cwd)
 
 class DockerBuildSystem(BuildSystem):
     def clean(self, config):
@@ -55,11 +55,48 @@ class DockerBuildSystem(BuildSystem):
         except subprocess.CalledProcessError:
             utils.cli_exit("ERROR: Failed Docker build-system health check, make sure Docker is available and running!")
 
+    def get_v8_image_name(self, config):
+        return "v8-" + config.platform + "-" + config.arch
+
     def get_image_name(self, config):
         return "j2v8-$VENDOR-$PLATFORM"
 
     def get_container_name(self, config):
         return "j2v8.$VENDOR.$PLATFORM.$ARCH"
+        
+    def exec_v8_build(self, config):
+        print ("V8 build preparing " + config.platform + "@" + config.arch + " => " + config.name)
+
+        args_str = ""
+
+        def build_arg(name, value):
+            return (" --build-arg " + name + "=" + value) if value else ""
+
+        def target_os(value):
+            return build_arg("target_os", value)
+
+        def target_cpu(value):
+            return build_arg("target_cpu", value)
+        
+        # if we are building with docker
+        # and a specific vendor was specified for the build
+        # and no custom sys-image was specified ...
+        if (config.docker and config.vendor and not config.sys_image):
+            vendor_default_image = dkr_cfg.vendor_default_images.get(config.vendor)
+
+        dest_cpu= config.arch
+        if config.arch == c.arch_x86_64:
+            dest_cpu = c.arch_x64
+        elif config.arch == c.arch_x86:
+            dest_cpu = 'ia32'
+
+        args_str += target_os(config.platform)
+        args_str += target_cpu(dest_cpu)
+
+        image_name = self.get_v8_image_name(config)
+
+        print ("Building V8 docker image: " + config.inject_env(image_name))
+        self.exec_v8_cmd("docker build " + args_str + " -f Dockerfile -t \"" + image_name + "\" . ", config)
 
     def pre_build(self, config):
         print ("preparing " + config.platform + "@" + config.arch + " => " + config.name)

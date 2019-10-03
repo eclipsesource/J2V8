@@ -19,8 +19,6 @@ jobs:
         docker --version
     - name: Build J2V8 for Linux x86_64
       run: |
-        python nodejs.py git clone
-        python nodejs.py diff apply
         python build.py -t linux -a x64 --docker --keep-native-libs all
     - name: Archive J2V8 jar
       uses: actions/upload-artifact@v1.0.0
