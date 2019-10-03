@@ -153,8 +153,8 @@ public class V8ScriptExecutionExceptionTest {
             assertEquals("file", e.getFileName());
             assertEquals(3, e.getLineNumber());
             assertEquals(" y.toString()", e.getSourceLine());
-            assertEquals(2, e.getStartColumn());
-            assertEquals(3, e.getEndColumn());
+            assertEquals(3, e.getStartColumn());
+            assertEquals(4, e.getEndColumn());
             assertEquals("TypeError: Cannot read property 'toString' of undefined", e.getJSMessage());
             return;
         }

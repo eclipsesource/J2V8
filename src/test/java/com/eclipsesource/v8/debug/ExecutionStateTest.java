@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,6 +31,7 @@ import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.debug.DebugHandler.DebugEvent;
 import com.eclipsesource.v8.debug.mirror.Frame;
 
+@Ignore("Debugging changed on upstream V8")
 public class ExecutionStateTest {
 
     private static String script = "// 1  \n"
