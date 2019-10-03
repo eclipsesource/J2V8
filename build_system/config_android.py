@@ -12,6 +12,7 @@ android_config.set_cross_configs({
     "docker": DockerBuildStep(
         platform=c.target_android,
         host_cwd="$CWD/docker",
+        v8_cwd="$CWD/v8",
         build_cwd="/j2v8"
     )
 })
@@ -56,17 +57,20 @@ android_config.build_step(c.build_node_js, build_node_js)
 def build_j2v8_cmake(config):
     cmake_vars = cmu.setAllVars(config)
     cmake_toolchain = cmu.setToolchain("$BUILD_CWD/docker/android/android.$ARCH.toolchain.cmake")
-
+    dest_cpu= c.arch_x64 if config.arch == c.arch_x86_64 else config.arch
+    V8_monolith_library_dir = config.platform + "." + dest_cpu
+    
     return \
         u.mkdir(u.cmake_out_dir) + \
         ["cd " + u.cmake_out_dir] + \
         u.rm("CMakeCache.txt CMakeFiles/") + [
         """cmake \
+            -DJ2V8_MONOLITH_LIB_DIR={0} \
             -DCMAKE_BUILD_TYPE=Release \
             %(cmake_vars)s \
             %(cmake_toolchain)s \
             ../../ \
-        """
+        """.format(V8_monolith_library_dir)
         % locals()
     ]
 
