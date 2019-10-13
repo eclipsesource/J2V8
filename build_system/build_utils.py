@@ -212,6 +212,7 @@ def store_v8_output(image_name, config):
     build_cwd = get_cwd()
     dest_cpu= c.arch_x64 if config.arch == c.arch_x86_64 else config.arch
     static_library_output_dir = config.platform + "." + dest_cpu
+    dest_cpu= 'ia32' if config.arch == c.arch_x86 else dest_cpu
     execute("""docker run --rm -v {0}/v8.out:/mount {1} /bin/bash -c "cp -R include /mount && mkdir -p /mount/{3}/ && cp -R out.gn/{2}.release/obj/libv8_monolith.a /mount/{3}/" """.format(build_cwd, image_name, dest_cpu, static_library_output_dir))
 
 def store_nodejs_output(next_node_tag, build_cwd):
