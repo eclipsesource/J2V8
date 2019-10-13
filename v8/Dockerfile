@@ -1,4 +1,4 @@
-ARG sys_image=gcc:9.2
+ARG sys_image=ubuntu:16.04
 
 FROM $sys_image
 
@@ -44,6 +44,11 @@ RUN echo "target_os= ['${target_os}']">>.gclient
 RUN gclient sync
 
 WORKDIR /v8build/v8
+RUN echo y | \
+	if [ "x${target_os}" = "xandroid" ]; then \
+		./build/install-build-deps-android.sh ; \
+	else \
+		./build/install-build-deps.sh ; fi
 RUN git checkout 7.4.288
 
 RUN ./tools/dev/v8gen.py ${build_platform} -vv

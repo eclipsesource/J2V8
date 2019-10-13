@@ -42,6 +42,21 @@ jobs:
         name: j2v8-android-arm64-so
         path: cmake.out/android.arm64/libj2v8-android-arm64-v8a.so
 
+  build_j2v8_android_arm:
+    name: V8 7.4.288 build for Android arm
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1 
+    - name: Build J2V8 for Android arm
+      run: |
+        python build.py -t android -a arm --docker v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize
+    - name: Archive J2V8 shared object
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: j2v8-android-arm-so
+        path: cmake.out/android.arm/libj2v8-android-armeabi-v7a.so
+
   build_j2v8_android_x86_64:
     name: V8 7.4.288 build for Android x86_64
     runs-on: ubuntu-latest
@@ -57,9 +72,24 @@ jobs:
         name: j2v8-android-x86_64-so
         path: cmake.out/android.x86_64/libj2v8-android-x86_64.so
 
+  build_j2v8_android_x86:
+    name: V8 7.4.288 build for Android x86
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1 
+    - name: Build J2V8 for Android x86
+      run: |
+        python build.py -t android -a x86 --docker v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize
+    - name: Archive J2V8 shared object
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: j2v8-android-x86-so
+        path: cmake.out/android.x86/libj2v8-android-x86.so
+
   generate_j2v8_aar:
     name: Create J2V8 Android archive (aar)
-    needs: [build_j2v8_android_arm64, build_j2v8_android_x86_64]
+    needs: [build_j2v8_android_arm64, build_j2v8_android_arm, build_j2v8_android_x86_64, build_j2v8_android_x86]
     runs-on: ubuntu-latest
 
     steps:
@@ -71,24 +101,42 @@ jobs:
       with:
         name: j2v8-android-arm64-so
 
+    - name: Download Android arm shared object
+      uses: actions/download-artifact@v1
+      with:
+        name: j2v8-android-arm-so
+
     - name: Download Android x86_64 shared object
       uses: actions/download-artifact@v1
       with:
         name: j2v8-android-x86_64-so
 
+    - name: Download Android x86 shared object
+      uses: actions/download-artifact@v1
+      with:
+        name: j2v8-android-x86-so
+
     - name: Copy shared objects to cmake.out directory and bundle Android aar file
       run: |
         mkdir -p cmake.out/android.arm64
+        mkdir -p cmake.out/android.arm
         mkdir -p cmake.out/android.x86_64
+        mkdir -p cmake.out/android.x86
         
         cp -R j2v8-android-arm64-so/* cmake.out/android.arm64
+        cp -R j2v8-android-arm-so/* cmake.out/android.arm
         cp -R j2v8-android-x86_64-so/* cmake.out/android.x86_64
+        cp -R j2v8-android-x86-so/* cmake.out/android.x86
 
         ls -la cmake.out/
         ls -la cmake.out/android.arm64
+        ls -la cmake.out/android.arm
         ls -la cmake.out/android.x86_64
+        ls -la cmake.out/android.x86
 
         # start bundling
+        python build.py -t android -a x86 --docker --keep-native-libs j2v8java
+        python build.py -t android -a arm --docker --keep-native-libs j2v8java
         python build.py -t android -a x86_64 --docker --keep-native-libs j2v8java
         python build.py -t android -a arm64 --docker --keep-native-libs j2v8java
     
