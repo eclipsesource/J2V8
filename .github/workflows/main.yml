@@ -24,12 +24,14 @@ jobs:
         echo $PATH
 
         fetch v8
+        cd v8
+        git checkout 7.4.288
+        cd ../
+        
         echo "target_os= ['linux']">>.gclient
         gclient sync
 
         cd v8
-
-        git checkout 7.4.288
         ./tools/dev/v8gen.py x64.release -vv
         
         rm out.gn/x64.release/args.gn
@@ -76,12 +78,14 @@ jobs:
         echo $PATH
 
         fetch v8
+        cd v8
+        git checkout 7.4.288
+        cd ../
+        
         echo "target_os= ['android']">>.gclient
         gclient sync
 
         cd v8
-
-        git checkout 7.4.288
         ./tools/dev/v8gen.py arm64.release -vv
         
         rm out.gn/arm64.release/args.gn
@@ -129,12 +133,14 @@ jobs:
         echo $PATH
 
         fetch v8
+        cd v8
+        git checkout 7.4.288
+        cd ../
+
         echo "target_os= ['android']">>.gclient
         gclient sync
 
         cd v8
-
-        git checkout 7.4.288
         ./tools/dev/v8gen.py arm.release -vv
         
         rm out.gn/arm.release/args.gn
@@ -175,12 +181,14 @@ jobs:
         echo $PATH
 
         fetch v8
+        cd v8
+        git checkout 7.4.288
+        cd ../
+
         echo "target_os= ['android']">>.gclient
         gclient sync
 
         cd v8
-
-        git checkout 7.4.288
         ./tools/dev/v8gen.py x64.release -vv
         
         rm out.gn/x64.release/args.gn
@@ -221,12 +229,14 @@ jobs:
         echo $PATH
 
         fetch v8
+        cd v8
+        git checkout 7.4.288
+        cd ../
+
         echo "target_os= ['android']">>.gclient
         gclient sync
 
         cd v8
-
-        git checkout 7.4.288
         ./tools/dev/v8gen.py ia32.release -vv
         
         rm out.gn/ia32.release/args.gn
@@ -312,8 +322,11 @@ jobs:
         python build.py -t android -a arm --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python build.py -t android -a x86_64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python build.py -t android -a arm64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
-        python build.py -t android -a arm64 j2v8release --keep-native-libs --docker
     
+    - name: Release
+      if: github.ref == 'refs/heads/master'
+      run: python build.py -t android -a arm64 j2v8release --keep-native-libs --docker
+
     - name: Archive J2V8 Android aar file
       uses: actions/upload-artifact@v1.0.0
       with:
