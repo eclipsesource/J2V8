@@ -12,6 +12,8 @@
 #include <libplatform/libplatform.h>
 #include <iostream>
 #include <v8.h>
+#include <v8-inspector.h>
+#include <functional>
 #include <string.h>
 #include <map>
 #include <cstdlib>
@@ -29,6 +31,22 @@
 using namespace std;
 using namespace v8;
 
+inline std::string convertStringViewToSTDString(Isolate* isolate, const v8_inspector::StringView stringView) {
+  int length = static_cast<int>(stringView.length());
+  v8::Local<v8::String> message = (
+        stringView.is8Bit()
+          ? v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(stringView.characters8()), v8::NewStringType::kNormal, length)
+          : v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(stringView.characters16()), v8::NewStringType::kNormal, length)
+      ).ToLocalChecked();
+  v8::String::Utf8Value result(isolate, message->ToString(isolate));
+  return *result;
+}
+
+inline v8_inspector::StringView convertSTDStringToStringView(const std::string &str) {
+  auto* stringView = reinterpret_cast<const uint8_t*>(str.c_str());
+  return { stringView, str.length() };
+}
+
 class MethodDescriptor {
 public:
   jlong methodID;
@@ -41,6 +59,137 @@ public:
   jlong objectHandle;
 };
 
+class InspectorDelegate {
+public:
+  InspectorDelegate(const function<void(std::string)> &onResponse, const function<void(void)> &waitFrontendMessage) {
+    onResponse_ = onResponse;
+    waitFrontendMessage_ = waitFrontendMessage;
+  }
+
+  void emitOnResponse(string message) {
+    onResponse_(message);
+  }
+
+  void emitWaitFrontendMessage() {
+    waitFrontendMessage_();
+  }
+
+private:
+  std::function<void(std::string)> onResponse_;
+  std::function<void(void)> waitFrontendMessage_;
+};
+
+class V8InspectorChannelImpl final: public v8_inspector::V8Inspector::Channel
+{
+public:
+  V8InspectorChannelImpl(Isolate* isolate, InspectorDelegate* inspectorDelegate) {
+    isolate_ = isolate;
+    inspectorDelegate_ = inspectorDelegate;
+  }
+
+  void sendResponse(int callId, unique_ptr<v8_inspector::StringBuffer> message) override {
+    const std::string response = convertStringViewToSTDString(isolate_, message->string());
+    inspectorDelegate_->emitOnResponse(response);
+  }
+
+  void sendNotification(unique_ptr<v8_inspector::StringBuffer> message) override {
+    const std::string notification = convertStringViewToSTDString(isolate_, message->string());
+    inspectorDelegate_->emitOnResponse(notification);
+  }
+
+  void flushProtocolNotifications() override {}
+
+  uint8_t waitFrontendMessageOnPause() {
+    inspectorDelegate_->emitWaitFrontendMessage();
+    return 1;
+  }
+
+private:
+  v8::Isolate* isolate_;
+  InspectorDelegate* inspectorDelegate_;
+};
+
+class V8InspectorClientImpl final: public v8_inspector::V8InspectorClient {
+public:
+  V8InspectorClientImpl(Isolate* isolate, const std::unique_ptr<v8::Platform> &platform, InspectorDelegate* inspectorDelegate, std::string contextName) {
+    isolate_ = isolate;
+    context_ = isolate->GetCurrentContext();
+    platform_ = platform.get();
+    channel_ = std::unique_ptr<V8InspectorChannelImpl>(new V8InspectorChannelImpl(isolate, inspectorDelegate));
+    inspector_ = v8_inspector::V8Inspector::create(isolate, this);
+    session_ = inspector_->connect(kContextGroupId, channel_.get(), v8_inspector::StringView());
+    context_->SetAlignedPointerInEmbedderData(1, this);
+
+    inspector_->contextCreated(
+      v8_inspector::V8ContextInfo(isolate->GetCurrentContext(),
+      kContextGroupId,
+      convertSTDStringToStringView(contextName))
+    );
+  }
+
+  void dispatchProtocolMessage(const v8_inspector::StringView &message_view) {
+    session_->dispatchProtocolMessage(message_view);
+  }
+
+  void runMessageLoopOnPause(int contextGroupId) override {
+    if (run_nested_loop_) {
+        return;
+    }
+    terminated_ = false;
+    run_nested_loop_ = true;
+    while (!terminated_ && channel_->waitFrontendMessageOnPause()) {
+        while (v8::platform::PumpMessageLoop(platform_, isolate_)) {}
+    }
+    terminated_ = true;
+    run_nested_loop_ = false;
+  }
+
+  void quitMessageLoopOnPause() override {
+    terminated_ = true;
+  }
+
+  void schedulePauseOnNextStatement(const v8_inspector::StringView &reason) {
+    session_->schedulePauseOnNextStatement(reason, reason);
+  }
+
+private:
+  static const int kContextGroupId = 1;
+  v8::Isolate* isolate_;
+  v8::Handle<v8::Context> context_;
+  v8::Platform* platform_;
+  unique_ptr<v8_inspector::V8Inspector> inspector_;
+  unique_ptr<v8_inspector::V8InspectorSession> session_;
+  unique_ptr<V8InspectorChannelImpl> channel_;
+  uint8_t terminated_ = 0;
+  uint8_t run_nested_loop_ = 0;
+};
+
+class V8Inspector {
+public:
+  jobject delegate = nullptr;
+  V8InspectorClientImpl* client = nullptr;
+
+  void dispatchProtocolMessage(const std::string &message) {
+    if (client == nullptr) {
+      return;
+    }
+    v8_inspector::StringView protocolMessage = convertSTDStringToStringView(message);
+    client->dispatchProtocolMessage(protocolMessage);
+  }
+
+  void schedulePauseOnNextStatement(const std::string reason) {
+    if (client == nullptr) {
+      return;
+    }
+    auto reason_ = convertSTDStringToStringView(reason);
+    client->schedulePauseOnNextStatement(reason_);
+  }
+
+  void onResponse(const string& message);
+
+  void waitFrontendMessage();
+};
+
 class V8Runtime {
 public:
   Isolate* isolate;
@@ -49,8 +198,7 @@ public:
   Locker* locker;
   jobject v8;
   jthrowable pendingException;
-
-
+  V8Inspector* inspector;
 };
 
 std::unique_ptr<v8::Platform> v8Platform = nullptr;
@@ -61,6 +209,8 @@ const char* ToCString(const String::Utf8Value& value) {
 
 JavaVM* jvm = nullptr;
 jclass v8cls = nullptr;
+jclass v8InspectorCls = nullptr;
+jclass v8InspectorDelegateCls = nullptr;
 jclass v8ObjectCls = nullptr;
 jclass v8ArrayCls = nullptr;
 jclass v8TypedArrayCls = nullptr;
@@ -105,6 +255,8 @@ jmethodID booleanInitMethodID = nullptr;
 jmethodID v8FunctionInitMethodID = nullptr;
 jmethodID v8ObjectInitMethodID = nullptr;
 jmethodID v8RuntimeExceptionInitMethodID = nullptr;
+jmethodID v8InspectorDelegateOnResponseMethodID = nullptr;
+jmethodID v8InspectorDelegateWaitFrontendMessageMethodID = nullptr;
 
 void throwParseException(JNIEnv *env, const Local<Context>& context, Isolate* isolate, TryCatch* tryCatch);
 void throwExecutionException(JNIEnv *env, const Local<Context>& context, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr);
@@ -184,6 +336,12 @@ Local<String> createV8String(JNIEnv *env, Isolate *isolate, jstring &string) {
   return result;
 }
 
+std::string createString(JNIEnv *env, Isolate *isolate, jstring &str) {
+  Local<String> v8Str = createV8String(env, isolate, str);
+  v8::String::Utf8Value stdString(isolate, v8Str);
+  return ToCString(stdString);
+}
+
 Handle<Value> getValueWithKey(JNIEnv* env, const Local<Context>& context, Isolate* isolate, jlong &v8RuntimePtr, jlong &objectHandle, jstring &key) {
   Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<PersistentBase<Object>*>(objectHandle));
   Local<String> v8Key = createV8String(env, isolate, key);
@@ -250,6 +408,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     // on first creation, store the JVM and a handle to J2V8 classes
     jvm = vm;
     v8cls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8"));
+    v8InspectorCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/inspector/V8Inspector"));
+    v8InspectorDelegateCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/inspector/V8InspectorDelegate"));
     v8ObjectCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Object"));
     v8ArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8Array"));
     v8TypedArrayCls = (jclass)env->NewGlobalRef((env)->FindClass("com/eclipsesource/v8/V8TypedArray"));
@@ -297,7 +457,22 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     v8FunctionInitMethodID = env->GetMethodID(v8FunctionCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
     v8ObjectInitMethodID = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/eclipsesource/v8/V8;)V");
 
+    v8InspectorDelegateOnResponseMethodID = env->GetMethodID(v8InspectorDelegateCls, "onResponse", "(Ljava/lang/String;)V");
+    v8InspectorDelegateWaitFrontendMessageMethodID = env->GetMethodID(v8InspectorDelegateCls, "waitFrontendMessageOnPause", "()V");
+
     return JNI_VERSION_1_6;
+}
+
+void V8Inspector::onResponse(const string& message) {
+    JNIEnv * env;
+    getJNIEnv(env);
+    env->CallVoidMethod(delegate, v8InspectorDelegateOnResponseMethodID, env->NewStringUTF(message.c_str()));
+}
+
+void V8Inspector::waitFrontendMessage() {
+    JNIEnv * env;
+    getJNIEnv(env);
+    env->CallVoidMethod(delegate, v8InspectorDelegateWaitFrontendMessageMethodID);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
@@ -363,6 +538,36 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     }
     delete(runtime->locker);
     return reinterpret_cast<jlong>(runtime);
+}
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createInspector
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jobject inspectorDelegateObj, jstring contextName) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, 0)
+
+  runtime->inspector = new V8Inspector();
+  runtime->inspector->delegate = env->NewGlobalRef(inspectorDelegateObj);
+  
+  InspectorDelegate* delegate = new InspectorDelegate(
+    std::bind(&V8Inspector::onResponse, runtime->inspector, std::placeholders::_1),
+    std::bind(&V8Inspector::waitFrontendMessage, runtime->inspector)
+  );
+  runtime->inspector->client = new V8InspectorClientImpl(runtime->isolate, v8Platform, delegate, createString(env, runtime->isolate, contextName));
+
+  return reinterpret_cast<jlong>(runtime->inspector);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1dispatchProtocolMessage
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong v8InspectorPtr, jstring protocolMessage) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, )
+  V8Inspector* inspector = reinterpret_cast<V8Inspector*>(v8InspectorPtr);
+  inspector->dispatchProtocolMessage(createString(env, isolate, protocolMessage));
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1schedulePauseOnNextStatement
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong v8InspectorPtr, jstring reason) {
+  Isolate* isolate = SETUP(env, v8RuntimePtr, )
+  V8Inspector* inspector = reinterpret_cast<V8Inspector*>(v8InspectorPtr);
+  inspector->schedulePauseOnNextStatement(createString(env, isolate, reason));
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1acquireLock
