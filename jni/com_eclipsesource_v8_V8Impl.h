@@ -117,6 +117,30 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _createInspector
+ * Signature: (JLcom/eclipsesource/v8/inspector/V8InspectorDelegate;Ljava/lang/String;)J
+ */
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createInspector
+  (JNIEnv *, jobject, jlong, jobject, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _dispatchProtocolMessage
+ * Signature: (JJLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1dispatchProtocolMessage
+  (JNIEnv *, jobject, jlong, jlong, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _schedulePauseOnNextStatement
+ * Signature: (JJLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1schedulePauseOnNextStatement
+  (JNIEnv *, jobject, jlong, jlong, jstring);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _executeIntegerScript
  * Signature: (JLjava/lang/String;Ljava/lang/String;I)I
  */

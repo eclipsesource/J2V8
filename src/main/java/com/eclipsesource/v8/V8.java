@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.eclipsesource.v8.inspector.V8InspectorDelegate;
 import com.eclipsesource.v8.utils.V8Executor;
 import com.eclipsesource.v8.utils.V8Map;
 import com.eclipsesource.v8.utils.V8Runnable;
@@ -274,6 +275,20 @@ public class V8 extends V8Object {
         locker = new V8Locker(this);
         checkThread();
         objectHandle = _getGlobalObject(v8RuntimePtr);
+    }
+
+    public long createInspector(final V8InspectorDelegate inspectorDelegate, final String contextName) {
+        return _createInspector(v8RuntimePtr, inspectorDelegate, contextName);
+    }
+
+    public void dispatchProtocolMessage(final long V8InspectorPtr, final String protocolMessage) {
+        checkThread();
+        _dispatchProtocolMessage(v8RuntimePtr, V8InspectorPtr, protocolMessage);
+    }
+
+    public void schedulePauseOnNextStatement(final long V8InspectorPtr, final String reason) {
+        checkThread();
+        _schedulePauseOnNextStatement(v8RuntimePtr, V8InspectorPtr, reason);
     }
 
     /**
@@ -1412,6 +1427,12 @@ public class V8 extends V8Object {
     private native void _releaseRuntime(long v8RuntimePtr);
 
     private native long _createIsolate(String globalAlias);
+
+    private native long _createInspector(long v8RuntimePtr, final V8InspectorDelegate inspectorDelegate, final String contextName);
+
+    private native void _dispatchProtocolMessage(final long v8RuntimePtr, long v8InspectorPtr, final String protocolMessage);
+
+    private native void _schedulePauseOnNextStatement(final long v8RuntimePtr, long v8InspectorPtr, final String reason);
 
     private native int _executeIntegerScript(long v8RuntimePtr, final String script, final String scriptName, final int lineNumber);
 
