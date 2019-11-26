@@ -9,9 +9,8 @@
 
 1. clone the source code from the [J2V8 GitHub repository](https://github.com/eclipsesource/J2V8)
 2. run `j2v8-cli.cmd` (on Win32) or `source j2v8-cli.sh` on MacOS / Linux
-3. `nodejs git clone` to clone the Node.js/V8 source code
-4. `nodejs diff apply` to apply the required modifications to the Node.js source code
-5. start the desired J2V8 build either via `build -i` or `build ...args` (see below for details)
+3. `run v8.sh` on MacOS / Linux
+4. start the desired J2V8 build either via `build -i` or `build ...args` (see below for details)
 
 # Build-System CLI
 
@@ -30,21 +29,18 @@ entering interactive mode...
 
 [0] android-x86 @ Docker
 [1] android-arm @ Docker
-[2] alpine-linux-x64 @ Docker
-[3] linux-x64
-[4] linux-x64 @ Docker
-[5] linux-x86 @ Docker
-[6] macosx-x64
-[7] macosx-x64 @ Vagrant
-[8] macosx-x86 @ Vagrant
-[9] windows-x64
-[10] windows-x64 @ Docker
-[11] windows-x64 @ Vagrant
+[2] android-arm64 @ Docker
+[3] android-x64 @ Docker
+[4] alpine-linux-x64 @ Docker
+[5] linux-x64
+[6] linux-x64 @ Docker
+[7] macosx-x64
+[8] macosx-x64 @ Vagrant
 
-Select a predefined build-configuration to run: 3
+Select a predefined build-configuration to run: 5
 Building: linux-x64
 
-Override build-steps ? (leave empty to run pre-configured steps): nodejs j2v8 test
+Override build-steps ? (leave empty to run pre-configured steps): v8 j2v8 test
 ```
 
 ## Non-interactive
@@ -53,8 +49,8 @@ build -h, --help
 # or
 python build.py -h, --help
 
-usage: build [-h] --target {android,linux,macos,win32} --arch {x86,x64,arm}
-             [--vendor VENDOR] [--keep-native-libs] [--node-enabled]
+usage: build [-h] --target {android,linux,macos,win32} --arch {x86,x64,arm,arm64,x86_64}
+             [--vendor VENDOR] [--keep-native-libs]
              [--docker] [--vagrant] [--sys-image SYS_IMAGE] [--no-shutdown]
              [--redirect-stdout] [--interactive]
              [build-steps [build-steps ...]]
@@ -62,20 +58,20 @@ usage: build [-h] --target {android,linux,macos,win32} --arch {x86,x64,arm}
 
 ### Basic Examples
 
+Pre build step:<br/>
+`chmod +x v8.sh && ./v8.sh`
+
+Build for Android arm64 using Docker:<br/>
+`python build.py -t android -a arm64 --docker --keep-native-libs j2v8`
+
 Build for Debian/Ubuntu Linux x64 on the host-system:<br/>
-`build -t linux -a x64`
+`build -t linux -a x64 j2v8 test`
 
 Build for Debian/Ubuntu Linux x64 using Docker:<br/>
-`build -t linux -a x64 -dkr`
+`build -t linux -a x64 --docker j2v8 test`
 
-Build for Alpine-Linux x64 using Docker and Node.js features included:<br/>
-`build -v alpine -t linux -a x64 -dkr -ne`
-
-Build for MacOSX x64 using Vagrant excluding Node.js features:<br/>
-`build -t macos -a x64 -vgr`
-
-Build for Windows x64 directly on the host-system, Node.js features included:<br/>
-`build -t win32 -a x64 -ne`
+Build for MacOSX x64 on the host-system:<br/>
+`build -t macos -a x64 j2v8 test`
 
 ### Build-Step syntax
 
@@ -86,8 +82,8 @@ For ease of use, there are also some advanced build-step aliases that when speci
 
 - `all` ... is the default, and will run all known build-steps
 - `native` ... will run only the build-steps that are relevant for building **native** artifacts
-    - `node_js`, `j2v8_cmake`, `j2v8_jni`, `j2v8_cpp`, `j2v8_optimize`
-- `j2v8` ... runs all build-steps, except for `nodejs` and `j2v8test`
+    - `v8`, `j2v8_cmake`, `j2v8_jni`, `j2v8_cpp`, `j2v8_optimize`
+- `j2v8` ... runs all build-steps, except for `v8` and `j2v8test`
 - `java` ... alias for the single `j2v8java` step
 - `test` ... alias for the single `j2v8test` step
 
@@ -115,28 +111,21 @@ Run the `j2v8test` step with additional args that will be passed to maven:<br/>
 The J2V8 build-system performs several build steps in a fixed order to produce the final J2V8 packages for usage on the designated target platforms. What follows is a short summary for what each of the executed build-steps does and what output artifacts are produced by each step.
 
 ```
-Node.js --> CMake --> JNI --> C++ --> Optimize --> Java/Android Build --> Java/Android Test
+V8 --> CMake --> JNI --> C++ --> Optimize --> Java/Android Build --> Java/Android Test
 ```
 ---
-## Node.js
-CLI name: `nodejs`
+## V8
+CLI name: `v8`
 
-Builds the [Node.js](https://nodejs.org/en/) & [V8](https://developers.google.com/v8/) dependency artifacts that are later linked into the J2V8 native bridge code.
-(only works if the Node.js source was checked out into the J2V8 `./node` directory)
+Build the [V8](https://developers.google.com/v8/) dependency artifacts that are later linked into the J2V8 native bridge code.
 
 __Inputs:__
-- Node.js source code
-    - see [Github](https://github.com/nodejs/node)
-- Node.js GIT patches with customizations for integrating Node.js into J2V8
-    - `./node.patches/*.diff`
+- V8 source code
+    - see [Github](https://chromium.googlesource.com/v8/v8)
 
 __Artifacts:__
-- Node.js & V8 static link libraries
-    - `./node/out/`
-    - *win32 specific*
-        - `./node/build/`
-        - `./node/Debug/`
-        - `./node/Release/`
+- V8 monolithic static link library
+    - `./v8/out.gn/<platform>.release/obj/libv8_monolith.a`
 ---
 ## CMake
 CLI name: `j2v8cmake`
@@ -144,8 +133,7 @@ CLI name: `j2v8cmake`
 Uses [CMake](https://cmake.org/) to generate the native Makefiles / IDE project files to later build the J2V8 C++ native bridge shared libraries.
 
 __Inputs__:
-- Node.js / V8 static link libraries
-    - `./cmake/NodeJsUtils.cmake`
+- V8 monolithic static link library
 - CMakeLists & CMake utilities
     - `CMakeLists.txt`
     - `./cmake/*.cmake`
@@ -170,11 +158,11 @@ __Artifacts:__
 ## C++
 CLI name: `j2v8cpp`
 
-Compile and link the J2V8 native shared libraries (.so/.dylib/.dll), which contain the C++ JNI bridge code to interop with the embedded Node.js / V8 parts.
+Compile and link the J2V8 native shared libraries (.so/.dylib/.dll), which contain the C++ JNI bridge code to interop with the embedded V8 parts.
 
 __Inputs__:
 - CMake generated Makefiles / IDE Project-files
-- Node.js / V8 static link libraries & C++ header files
+- V8 monolithic static link library & C++ header files
 - J2V8 C++ JNI source code
     - `./jni/com_eclipsesource_v8_V8Impl.h`
     - `./jni/com_eclipsesource_v8_V8Impl.cpp`
@@ -247,7 +235,7 @@ __Artifacts:__
 # Cross-Compiling
 
 For cross-compiling J2V8 uses [Docker](https://www.docker.com/) (android, linux, windows) and [Vagrant](https://www.vagrantup.com/) (macos, windows).
-The full source-code (of both J2V8 and Node.js) on the build-host are just shared via mounted volumes with the Docker / Vagrant machines, so you can quickly make changes and perform builds fast.
+The full source-code (of both J2V8 and V8) on the build-host are just shared via mounted volumes with the Docker / Vagrant machines, so you can quickly make changes and perform builds fast.
 
 To invoke a cross-compile build, simply invoke the `build.py` script as usual but add the `--docker`, `-dkr` or `--vagrant`, `-vgr` flags.
 This will automatically provision and run the necessary virtualization to run the requested build fully independent of your local environment.
