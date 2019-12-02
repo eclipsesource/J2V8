@@ -12,12 +12,6 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Download monolithic libraries to v8.out directory and bundle Linux jar and Android aar file
-      env:
-          KEY_ID: ${{ secrets.KEY_ID }}
-          KEYSTORE: ${{ secrets.KEYSTORE }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          MAVEN_REPO_USER: ${{ secrets.MAVEN_REPO_USER }}
-          MAVEN_REPO_PASS: ${{ secrets.MAVEN_REPO_PASS }}
       run: |
         curl -O https://download.eclipsesource.com/j2v8/v8/libv8_7.4.288_monolith.zip
         mkdir -p v8.out
@@ -31,6 +25,12 @@ jobs:
         python build.py -t android -a arm64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
     
     - name: Release
+      env:
+          KEY_ID: ${{ secrets.KEY_ID }}
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          MAVEN_REPO_USER: ${{ secrets.MAVEN_REPO_USER }}
+          MAVEN_REPO_PASS: ${{ secrets.MAVEN_REPO_PASS }}
       if: github.ref == 'refs/heads/master'
       run: python build.py -t android -a arm64 j2v8release --keep-native-libs --docker
 
