@@ -40,6 +40,10 @@ RUN echo ${path_to_args}
 
 # Fetch V8 code
 RUN fetch v8
+WORKDIR /v8build/v8
+RUN git checkout 7.4.288
+WORKDIR /v8build
+
 RUN echo "target_os= ['${target_os}']">>.gclient
 RUN gclient sync
 
@@ -49,7 +53,6 @@ RUN echo y | \
 		./build/install-build-deps-android.sh ; \
 	else \
 		./build/install-build-deps.sh ; fi
-RUN git checkout 7.4.288
 
 RUN ./tools/dev/v8gen.py ${build_platform} -vv
 

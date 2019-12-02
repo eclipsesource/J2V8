@@ -3,284 +3,15 @@ name: Build J2V8
 on: [push]
 
 jobs:
-  build_j2v8_linux_x86_64:
-    name: V8 7.4.288 build for Linux x64
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: check build dependencies
-      run: |
-        python --version
-        git --version
-        docker --version
-    
-    - name: Build J2V8 for Linux x86_64
-      run: |
-        mkdir -p v8build
-        cd v8build
-        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-        export PATH=$GITHUB_WORKSPACE/v8build/depot_tools:"$PATH" 
-        echo $PATH
-
-        fetch v8
-        echo "target_os= ['linux']">>.gclient
-        gclient sync
-
-        cd v8
-
-        git checkout 7.4.288
-        ./tools/dev/v8gen.py x64.release -vv
-        
-        rm out.gn/x64.release/args.gn
-        cp $GITHUB_WORKSPACE/v8/linux-x64/args.gn out.gn/x64.release/args.gn
-        ls -al out.gn/x64.release/
-        cat out.gn/x64.release/args.gn
-        sleep 1m
-        touch out.gn/x64.release/args.gn
-        ls -al out.gn/x64.release/
-
-        ninja -C out.gn/x64.release -t clean
-        ninja -C out.gn/x64.release v8_monolith
-
-        mkdir -p $GITHUB_WORKSPACE/v8.out/linux.x64
-        cp out.gn/x64.release/obj/libv8_monolith.a $GITHUB_WORKSPACE/v8.out/linux.x64
-
-        cd $GITHUB_WORKSPACE
-        cp -R v8build/v8/include v8.out/
-        python build.py -t linux -a x64 --docker j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
-    - name: Archive J2V8 jar
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: j2v8-linux-x86_64
-        path: build.out/j2v8_linux_x86_64-6.0.0-SNAPSHOT.jar
-  
-  build_v8_android_arm64:
-    name: V8 7.4.288 build for Android arm64
-    runs-on: ubuntu-16.04
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: check build dependencies
-      run: |
-        python --version
-        git --version
-        docker --version
-    
-    - name: Build V8 for Android arm64
-      run: |
-        mkdir -p v8build
-        cd v8build
-        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-        export PATH=$GITHUB_WORKSPACE/v8build/depot_tools:"$PATH" 
-        echo $PATH
-
-        fetch v8
-        echo "target_os= ['android']">>.gclient
-        gclient sync
-
-        cd v8
-
-        git checkout 7.4.288
-        ./tools/dev/v8gen.py arm64.release -vv
-        
-        rm out.gn/arm64.release/args.gn
-        cp $GITHUB_WORKSPACE/v8/android-arm64/args.gn out.gn/arm64.release/args.gn
-        ls -al out.gn/arm64.release/
-        cat out.gn/arm64.release/args.gn
-        sleep 1m
-        touch out.gn/arm64.release/args.gn
-        ls -al out.gn/arm64.release/
-
-        ninja -C out.gn/arm64.release -t clean
-        ninja -C out.gn/arm64.release v8_monolith
-    
-        cd $GITHUB_WORKSPACE
-        zip -r v8_include.zip v8build/v8/include
-    - name: Archive V8 monolith
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: v8-android-arm64-monolith
-        path: v8build/v8/out.gn/arm64.release/obj/libv8_monolith.a
-    - name: Archive V8 header files
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: v8-header-files
-        path: v8_include.zip
-
-  build_v8_android_arm:
-    name: V8 7.4.288 build for Android arm
-    runs-on: ubuntu-16.04
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: check build dependencies
-      run: |
-        python --version
-        git --version
-        docker --version
-    
-    - name: Build V8 for Android arm
-      run: |
-        mkdir -p v8build
-        cd v8build
-        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-        export PATH=$GITHUB_WORKSPACE/v8build/depot_tools:"$PATH" 
-        echo $PATH
-
-        fetch v8
-        echo "target_os= ['android']">>.gclient
-        gclient sync
-
-        cd v8
-
-        git checkout 7.4.288
-        ./tools/dev/v8gen.py arm.release -vv
-        
-        rm out.gn/arm.release/args.gn
-        cp $GITHUB_WORKSPACE/v8/android-arm/args.gn out.gn/arm.release/args.gn
-        ls -al out.gn/arm.release/
-        cat out.gn/arm.release/args.gn
-        sleep 1m
-        touch out.gn/arm.release/args.gn
-        ls -al out.gn/arm.release/
-
-        ninja -C out.gn/arm.release -t clean
-        ninja -C out.gn/arm.release v8_monolith
-    
-    - name: Archive V8 monolith
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: v8-android-arm-monolith
-        path: v8build/v8/out.gn/arm.release/obj/libv8_monolith.a
-
-  build_v8_android_x86_64:
-    name: V8 7.4.288 build for Android x86_64
-    runs-on: ubuntu-16.04
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: check build dependencies
-      run: |
-        python --version
-        git --version
-        docker --version
-    
-    - name: Build V8 for Android x86_64
-      run: |
-        mkdir -p v8build
-        cd v8build
-        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-        export PATH=$GITHUB_WORKSPACE/v8build/depot_tools:"$PATH" 
-        echo $PATH
-
-        fetch v8
-        echo "target_os= ['android']">>.gclient
-        gclient sync
-
-        cd v8
-
-        git checkout 7.4.288
-        ./tools/dev/v8gen.py x64.release -vv
-        
-        rm out.gn/x64.release/args.gn
-        cp $GITHUB_WORKSPACE/v8/android-x64/args.gn out.gn/x64.release/args.gn
-        ls -al out.gn/x64.release/
-        cat out.gn/x64.release/args.gn
-        sleep 1m
-        touch out.gn/x64.release/args.gn
-        ls -al out.gn/x64.release/
-
-        ninja -C out.gn/x64.release -t clean
-        ninja -C out.gn/x64.release v8_monolith
-    
-    - name: Archive V8 monolith
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: v8-android-x86_64-monolith
-        path: v8build/v8/out.gn/x64.release/obj/libv8_monolith.a
-
-  build_v8_android_x86:
-    name: V8 7.4.288 build for Android x86
-    runs-on: ubuntu-16.04
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: check build dependencies
-      run: |
-        python --version
-        git --version
-        docker --version
-    
-    - name: Build V8 for Android x86
-      run: |
-        mkdir -p v8build
-        cd v8build
-        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-        export PATH=$GITHUB_WORKSPACE/v8build/depot_tools:"$PATH" 
-        echo $PATH
-
-        fetch v8
-        echo "target_os= ['android']">>.gclient
-        gclient sync
-
-        cd v8
-
-        git checkout 7.4.288
-        ./tools/dev/v8gen.py ia32.release -vv
-        
-        rm out.gn/ia32.release/args.gn
-        cp $GITHUB_WORKSPACE/v8/android-ia32/args.gn out.gn/ia32.release/args.gn
-        ls -al out.gn/ia32.release/
-        cat out.gn/ia32.release/args.gn
-        sleep 1m
-        touch out.gn/ia32.release/args.gn
-        ls -al out.gn/ia32.release/
-
-        ninja -C out.gn/ia32.release -t clean
-        ninja -C out.gn/ia32.release v8_monolith
-    
-    - name: Archive V8 monolith
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: v8-android-x86-monolith
-        path: v8build/v8/out.gn/ia32.release/obj/libv8_monolith.a
-
-  generate_j2v8_aar:
-    name: Create J2V8 Android archive (aar)
-    needs: [build_v8_android_arm64, build_v8_android_arm, build_v8_android_x86_64, build_v8_android_x86]
+  generate_j2v8_archives:
+    name: Create J2V8 Linux jar and Android aar archive files
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Download Android arm64 monolithic library
-      uses: actions/download-artifact@v1
-      with:
-        name: v8-android-arm64-monolith
-
-    - name: Download Android arm monolithic library
-      uses: actions/download-artifact@v1
-      with:
-        name: v8-android-arm-monolith
-
-    - name: Download Android x86_64 monolithic library
-      uses: actions/download-artifact@v1
-      with:
-        name: v8-android-x86_64-monolith
-
-    - name: Download Android x86 monolithic library
-      uses: actions/download-artifact@v1
-      with:
-        name: v8-android-x86-monolith
-
-    - name: Download V8 header files
-      uses: actions/download-artifact@v1
-      with:
-        name: v8-header-files
-
-    - name: Copy monolithic libraries to v8.out directory and bundle Android aar file
+    - name: Download monolithic libraries to v8.out directory and bundle Linux jar and Android aar file
       env:
           KEY_ID: ${{ secrets.KEY_ID }}
           KEYSTORE: ${{ secrets.KEYSTORE }}
@@ -288,34 +19,28 @@ jobs:
           MAVEN_REPO_USER: ${{ secrets.MAVEN_REPO_USER }}
           MAVEN_REPO_PASS: ${{ secrets.MAVEN_REPO_PASS }}
       run: |
-        mkdir -p v8.out/android.arm64
-        mkdir -p v8.out/android.arm
-        mkdir -p v8.out/android.x64
-        mkdir -p v8.out/android.x86
-        
-        cp -R v8-android-arm64-monolith/* v8.out/android.arm64
-        cp -R v8-android-arm-monolith/* v8.out/android.arm
-        cp -R v8-android-x86_64-monolith/* v8.out/android.x64
-        cp -R v8-android-x86-monolith/* v8.out/android.x86
-
-        unzip v8-header-files/v8_include.zip -d .
-        mv v8build/v8/include v8.out/
-
-        ls -la v8.out/
-        ls -la v8.out/android.arm64
-        ls -la v8.out/android.arm
-        ls -la v8.out/android.x64
-        ls -la v8.out/android.x86
+        curl -O https://download.eclipsesource.com/j2v8/v8/libv8_7.4.288_monolith.zip
+        mkdir -p v8.out
+        unzip libv8_7.4.288_monolith.zip -d v8.out
 
         # start j2v8 build
+        python build.py -t linux -a x64 --docker j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
         python build.py -t android -a x86 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python build.py -t android -a arm --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python build.py -t android -a x86_64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python build.py -t android -a arm64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
-        python build.py -t android -a arm64 j2v8release --keep-native-libs --docker
     
+    - name: Release
+      if: github.ref == 'refs/heads/master'
+      run: python build.py -t android -a arm64 j2v8release --keep-native-libs --docker
+
     - name: Archive J2V8 Android aar file
       uses: actions/upload-artifact@v1.0.0
       with:
         name: j2v8-android-aar
         path: build/outputs/aar/j2v8-release.aar
+    - name: Archive J2V8 Linux x86_64 jar
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: j2v8-linux-x86_64
+        path: build.out/j2v8_linux_x86_64-6.0.0-SNAPSHOT.jar
