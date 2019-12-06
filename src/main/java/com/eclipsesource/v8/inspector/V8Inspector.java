@@ -4,13 +4,14 @@ import java.util.ArrayList;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8ScriptExecutionException;
 
 public class V8Inspector {
+
     private V8                runtime;
     private long              inspectorPtr         = 0;
     private boolean           waitingForConnection = true;
     private ArrayList<V8InspectorScript> scripts;
-
 
     public static V8Inspector createV8Inspector(final V8 runtime, final V8InspectorDelegate inspectorDelegate, final String contextName) {
         return new V8Inspector(runtime, inspectorDelegate, contextName);
@@ -27,17 +28,15 @@ public class V8Inspector {
                 V8Object json = runtime.executeObjectScript("JSON.parse(`" + protocolMessage + "`)");
                 if (json.getString("method").equals("Runtime.runIfWaitingForDebugger")) {
                     waitingForConnection = false;
-                    schedulePauseOnNextStatement("");
+                    runtime.schedulePauseOnNextStatement(inspectorPtr, "");
                     executeScripts();
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (V8ScriptExecutionException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }
-
-    public void schedulePauseOnNextStatement(final String reason) {
-        runtime.schedulePauseOnNextStatement(inspectorPtr, reason);
     }
 
     public void addScript(final V8InspectorScript script) {
@@ -55,4 +54,5 @@ public class V8Inspector {
             runtime.executeScript(script.getScriptContent(), script.getScriptName(), 0);
         }
     }
+
 }
