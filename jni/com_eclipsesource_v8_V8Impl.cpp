@@ -761,7 +761,10 @@ bool invokeFunction(JNIEnv *env, const Local<Context>& context, Isolate* isolate
   Handle<Object> receiver = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(receiverHandle));
   Handle<Function> func = Handle<Function>::Cast(object);
   TryCatch tryCatch(isolate);
-  result = func->Call(context, receiver, size, args).ToLocalChecked();
+  MaybeLocal<Value> function_call_result = func->Call(context, receiver, size, args);
+  if (!function_call_result.IsEmpty()) {
+      result = function_call_result.ToLocalChecked();
+  }
   if (args != nullptr) {
     delete(args);
   }
