@@ -96,6 +96,18 @@ public class V8JSFunctionCallTest {
         parameters.close();
     }
 
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testCallFunctionThrows() {
+        v8.executeVoidScript("function test() {throw new Error('Error');}");
+        V8Function function = (V8Function) v8.getObject("test");
+
+        try {
+            function.call(v8, null);
+        } finally {
+            function.close();
+        }
+    }
+
     @Test
     public void testCallFunctionNullParameters() {
         v8.executeVoidScript("function call() {return true;}");
