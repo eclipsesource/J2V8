@@ -1,17 +1,23 @@
 package com.eclipsesource.v8.inspector;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ScriptExecutionException;
 
 public class V8Inspector {
 
     private V8                runtime;
     private long              inspectorPtr         = 0;
     private boolean           waitingForConnection = true;
-    private ArrayList<V8InspectorScript> scripts;
+    private List<DebuggerConnectionListener> debuggerConnectionListeners;
+
+    protected V8Inspector(final V8 runtime, final V8InspectorDelegate inspectorDelegate, final String contextName) {
+        this.runtime = runtime;
+        inspectorPtr = runtime.createInspector(inspectorDelegate, contextName);
+        debuggerConnectionListeners = new ArrayList<DebuggerConnectionListener>();
+    }
 
     public static V8Inspector createV8Inspector(final V8 runtime, final V8InspectorDelegate inspectorDelegate, final String contextName) {
         return new V8Inspector(runtime, inspectorDelegate, contextName);
@@ -25,33 +31,36 @@ public class V8Inspector {
         try {
             runtime.dispatchProtocolMessage(inspectorPtr, protocolMessage);
             if (waitingForConnection) {
-                V8Object json = runtime.executeObjectScript("JSON.parse(`" + protocolMessage + "`)");
-                if (json.getString("method").equals("Runtime.runIfWaitingForDebugger")) {
-                    waitingForConnection = false;
-                    runtime.schedulePauseOnNextStatement(inspectorPtr, "");
-                    executeScripts();
-                }
+                verifyDebuggerConnection(protocolMessage);
             }
-        } catch (V8ScriptExecutionException e) {
-            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void addScript(final V8InspectorScript script) {
-        scripts.add(script);
+    public void addDebuggerConnectionListener(final DebuggerConnectionListener listener) {
+        debuggerConnectionListeners.add(listener);
     }
 
-    protected V8Inspector(final V8 runtime, final V8InspectorDelegate inspectorDelegate, final String contextName) {
-        this.runtime = runtime;
-        inspectorPtr = runtime.createInspector(inspectorDelegate, contextName);
-        scripts = new ArrayList<V8InspectorScript>();
+    public void removeDebuggerConnectionListener(final DebuggerConnectionListener listener) {
+        debuggerConnectionListeners.remove(listener);
     }
 
-    private void executeScripts() {
-        for (final V8InspectorScript script : scripts) {
-            runtime.executeScript(script.getScriptContent(), script.getScriptName(), 0);
+    private void verifyDebuggerConnection(final String protocolMessage) {
+        V8Object json = null;
+        try {
+            json = runtime.executeObjectScript("JSON.parse(JSON.stringify(" + protocolMessage + "))");
+            if (json.getString("method").equals("Runtime.runIfWaitingForDebugger")) {
+                waitingForConnection = false;
+                runtime.schedulePauseOnNextStatement(inspectorPtr, "");
+                for (DebuggerConnectionListener listener : debuggerConnectionListeners) {
+                    listener.onDebuggerConnected();
+                }
+            }
+        } finally {
+            if (json != null) {
+                json.close();
+            }
         }
     }
 

@@ -541,7 +541,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
 }
 
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createInspector
-  (JNIEnv *env, jobject, jlong v8RuntimePtr, jobject inspectorDelegateObj, jstring contextName) {
+  (JNIEnv *env, jobject, jlong v8RuntimePtr, jobject inspectorDelegateObj, jstring jcontextName) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0)
 
   runtime->inspector = new V8Inspector();
@@ -551,7 +551,9 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createInspector
     std::bind(&V8Inspector::onResponse, runtime->inspector, std::placeholders::_1),
     std::bind(&V8Inspector::waitFrontendMessage, runtime->inspector)
   );
-  runtime->inspector->client = new V8InspectorClientImpl(runtime->isolate, v8Platform, delegate, createString(env, runtime->isolate, contextName));
+
+  std::string contextName = jcontextName != nullptr ? createString(env, runtime->isolate, jcontextName) : "";
+  runtime->inspector->client = new V8InspectorClientImpl(runtime->isolate, v8Platform, delegate, contextName);
 
   return reinterpret_cast<jlong>(runtime->inspector);
 }

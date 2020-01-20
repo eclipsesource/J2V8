@@ -1,10 +1,11 @@
 package com.eclipsesource.v8.inspector;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -18,7 +19,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8ScriptExecutionException;
 
 public class V8InspectorTest {
 
@@ -64,7 +64,7 @@ public class V8InspectorTest {
 
         }).when(inspectorDelegate).waitFrontendMessageOnPause();
 
-        // Standart Chrome DevTool protocol messages
+        // Default Chrome DevTool protocol messages
         inspector.dispatchProtocolMessage("{\"id\":1,\"method\":\"Profiler.enable\"}");
         inspector.dispatchProtocolMessage("{\"id\":2,\"method\":\"Runtime.enable\"}");
         inspector.dispatchProtocolMessage("{\"id\":3,\"method\":\"Debugger.enable\",\"params\":{\"maxScriptsCacheSize\":10000000}}");
@@ -76,9 +76,16 @@ public class V8InspectorTest {
     }
 
     @Test
-    public void testDelegateOnResponseCalled() {
-        inspector.addScript(new V8InspectorScript("console.log('foo')", "app.js"));
+    public void testEmptyContextNameDoesNotThrow() {
+        try {
+            V8Inspector.createV8Inspector(spyV8, inspectorDelegate);
+        } catch (Exception e) {
+            fail("Should not have thrown any exception");
+        }
+    }
 
+    @Test
+    public void testDelegateOnResponseCalled() {
         startInspector();
 
         verify(inspectorDelegate, atLeast(8)).onResponse(any(String.class));
@@ -86,37 +93,49 @@ public class V8InspectorTest {
 
     @Test
     public void testSchedulePauseOnNextStatementCalled() {
-        inspector.addScript(new V8InspectorScript("console.log('foo')", "app.js"));
-
         startInspector();
 
         verify(spyV8).schedulePauseOnNextStatement(any(Long.class), eq(""));
     }
 
     @Test
-    public void testExecuteScriptCalledFromInspector() {
-        inspector.addScript(new V8InspectorScript("console.log('foo')", "app.js"));
-        inspector.addScript(new V8InspectorScript("var bar = 'baz';", "foo.js"));
+    public void testDebuggerConnection() {
+        inspector.addDebuggerConnectionListener(new DebuggerConnectionListener() {
+            @Override
+            public void onDebuggerConnected() {
+                spyV8.executeScript("console.log('foo')", "app.js", 0);
+                spyV8.executeScript("var bar = 'baz';", "foo.js", 0);
+            }
+
+            @Override
+            public void onDebuggerDisconnected() {
+            }
+        });
 
         startInspector();
 
-        verify(spyV8).executeScript("console.log('foo')", "app.js", 0);
-        verify(spyV8).executeScript("var bar = 'baz';", "foo.js", 0);
+        verify(spyV8, atLeast(8)).executeObjectScript(any(String.class));
+        verify(spyV8, atLeast(10)).executeScript(any(String.class), nullable(String.class), eq(0));
+        verify(spyV8, atLeastOnce()).executeScript(eq("console.log('foo')"), eq("app.js"), eq(0));
+        verify(spyV8, atLeastOnce()).executeScript(eq("var bar = 'baz';"), eq("foo.js"), eq(0));
     }
 
-    @Test(expected = V8ScriptExecutionException.class)
-    public void testThrowsErrorOnScriptExecution() {
-        inspector.addScript(new V8InspectorScript("var bar = baz;", "foo.js"));
-
+    @Test
+    public void textComplexProtocolMessageDoesNotThrow() {
         try {
-            startInspector();
-        } catch (V8ScriptExecutionException e) {
-            assertNotNull(e);
-            assertEquals("foo.js", e.getFileName());
-            assertEquals(1, e.getLineNumber());
-            assertEquals("ReferenceError: baz is not defined", e.getJSMessage());
-            throw e;
+            inspector.addDebuggerConnectionListener(new DebuggerConnectionListener() {
+                @Override
+                public void onDebuggerConnected() {
+                    String protocolMessage = "{\"method\":\"Debugger.setBreakpointByUrl\",\"params\":{\"lineNumber\":0,\"urlRegex\":\"^[^/\\\\]+-\\d+\\.([jJ][sS])$\"},\"id\":8}";
+                    inspector.dispatchProtocolMessage(protocolMessage);
+                }
+
+                @Override
+                public void onDebuggerDisconnected() {
+                }
+            });
+        } catch (Exception e) {
+            fail("Should not have thrown any exception");
         }
     }
-
 }
