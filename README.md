@@ -1,7 +1,7 @@
 J2V8
 ====
 
-[![Build Status](https://secure.travis-ci.org/eclipsesource/J2V8.png)](http://travis-ci.org/eclipsesource/J2V8)
+![Build Status](https://github.com/eclipsesource/J2V8/workflows/Build%20J2V8/badge.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/com.eclipsesource.j2v8/j2v8.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.eclipsesource.j2v8%22)
 
 J2V8 is a set of Java bindings for V8. J2V8 focuses on performance and tight integration with V8. It also takes a 'primitive first' approach, meaning that if a value can be accessed as a primitive, then it should be. This forces a more static type system between the JS and Java code, but it also improves the performance since intermediate Objects are not created.
@@ -10,7 +10,7 @@ We developed J2V8 as a high performance engine for our multi-platform mobile too
 
 Building J2V8
 =============
-Building J2V8 requires building both the native parts and the Java library (.jar/.aar file). To build the native parts we first build Node.js as a library and then statically link J2V8 to that. The Java parts are built with maven/gradle.
+Building J2V8 requires building both the native parts and the Java library (.jar/.aar file). To build the native parts we first build V8 as a monolithic library and then statically link J2V8 to that. The Java parts are built with maven/gradle.
 
 J2V8 uses a cross-platform, cross-compiling build-system written in Python.
 
