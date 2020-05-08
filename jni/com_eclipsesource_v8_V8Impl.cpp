@@ -51,6 +51,7 @@ class MethodDescriptor {
 public:
   jlong methodID;
   jlong v8RuntimePtr;
+  Persistent<External> obj;
 };
 
 class WeakReferenceDescriptor {
@@ -261,6 +262,7 @@ jmethodID v8InspectorDelegateWaitFrontendMessageMethodID = nullptr;
 void throwParseException(JNIEnv *env, const Local<Context>& context, Isolate* isolate, TryCatch* tryCatch);
 void throwExecutionException(JNIEnv *env, const Local<Context>& context, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr);
 void throwError(JNIEnv *env, const char *message);
+void disposeMethod(v8::WeakCallbackInfo<MethodDescriptor> const& data);
 void throwV8RuntimeException(JNIEnv *env,  String::Value *message);
 void throwResultUndefinedException(JNIEnv *env, const char *message);
 Isolate* getIsolate(JNIEnv *env, jlong handle);
@@ -516,7 +518,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
     v8::Isolate::CreateParams create_params;
     create_params.array_buffer_allocator = &array_buffer_allocator;
     runtime->isolate = v8::Isolate::New(create_params);
-    runtime->locker = new Locker(runtime->isolate);
+    Locker locker(runtime->isolate);
     v8::Isolate::Scope isolate_scope(runtime->isolate);
     runtime->v8 = env->NewGlobalRef(v8);
     runtime->pendingException = nullptr;
@@ -536,7 +538,6 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
       runtime->globalObject = new Persistent<Object>;
       runtime->globalObject->Reset(runtime->isolate, context->Global()->GetPrototype()->ToObject(context).ToLocalChecked());
     }
-    delete(runtime->locker);
     return reinterpret_cast<jlong>(runtime);
 }
 
@@ -1253,7 +1254,7 @@ JNIEXPORT jint JNICALL Java_com_eclipsesource_v8_V8__1arrayGetSize
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-	  return TypedArray::Cast(*array)->Length();
+      return (jint) TypedArray::Cast(*array)->Length();
   }
   return Array::Cast(*array)->Length();
 }
@@ -1827,22 +1828,15 @@ JNIEXPORT jlongArray JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Function
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0);
   MethodDescriptor* md = new MethodDescriptor();
   Local<External> ext = External::New(isolate, md);
-  Persistent<External> pext(isolate, ext);
   isolate->IdleNotificationDeadline(1);
-  pext.SetWeak(md, [](v8::WeakCallbackInfo<MethodDescriptor> const& data) {
-    MethodDescriptor* md = data.GetParameter();
-    jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
-    JNIEnv * env;
-    getJNIEnv(env);
-    env->CallVoidMethod(v8, v8DisposeMethodID, md->methodID);
-    delete(md);
-  }, WeakCallbackType::kParameter);
 
   Local<Function> function = Function::New(context, objectCallback, ext).ToLocalChecked();
   md->v8RuntimePtr = v8RuntimePtr;
   Persistent<Object>* container = new Persistent<Object>;
   container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, function);
   md->methodID = reinterpret_cast<jlong>(md);
+  md->obj.Reset(isolate, ext);
+  md->obj.SetWeak(md, &disposeMethod, WeakCallbackType::kParameter);
 
   // Position 0 is the pointer to the container, position 1 is the pointer to the descriptor
   jlongArray result = env->NewLongArray(2);
@@ -1893,23 +1887,19 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1registerJavaMethod
   isolate->IdleNotificationDeadline(1);
   MethodDescriptor* md= new MethodDescriptor();
   Local<External> ext = External::New(isolate, md);
-  Persistent<External> pext(isolate, ext);
-  pext.SetWeak(md, [](v8::WeakCallbackInfo<MethodDescriptor> const& data) {
-    MethodDescriptor* md = data.GetParameter();
-    jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
-    JNIEnv * env;
-    getJNIEnv(env);
-    env->CallVoidMethod(v8, v8DisposeMethodID, md->methodID);
-    delete(md);
-  }, WeakCallbackType::kParameter);
 
   md->methodID = reinterpret_cast<jlong>(md);
   md->v8RuntimePtr = v8RuntimePtr;
+
   MaybeLocal<Function> func = Function::New(context, callback, ext);
   if (!func.IsEmpty()) {
     Maybe<bool> unusedResult = object->Set(context, v8FunctionName, func.ToLocalChecked());
     unusedResult.Check();
   }
+
+  md->obj.Reset(isolate, ext);
+  md->obj.SetWeak(md, &disposeMethod, WeakCallbackType::kParameter);
+
   return md->methodID;
 }
 
@@ -2095,6 +2085,20 @@ void throwV8RuntimeException(JNIEnv *env, String::Value *message) {
 
 void throwError(JNIEnv *env, const char *message) {
   (env)->ThrowNew(errorCls, message);
+}
+
+void disposeMethod(v8::WeakCallbackInfo<MethodDescriptor> const& data) {
+    MethodDescriptor* md = data.GetParameter();
+    jobject v8 = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr)->v8;
+    JNIEnv* env;
+    getJNIEnv(env);
+    env->CallVoidMethod(v8, v8DisposeMethodID, md->methodID);
+    if (!md->obj.IsEmpty()) {
+        md->obj.ClearWeak();
+        md->obj.Reset();
+    }
+    delete(md);
+    md = nullptr;
 }
 
 jobject getResult(JNIEnv *env, const Local<Context>& context, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType) {
