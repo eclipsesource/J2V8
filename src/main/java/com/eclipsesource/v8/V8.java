@@ -48,6 +48,7 @@ public class V8 extends V8Object {
 
     private Map<String, Object>          data                    = null;
     private final V8Locker               locker;
+    private SignatureProvider            signatureProvider       = null;
     private long                         objectReferences        = 0;
     private long                         v8RuntimePtr            = 0;
     private List<Releasable>             resources               = null;
@@ -161,6 +162,10 @@ public class V8 extends V8Object {
             runtimeCounter++;
         }
         return runtime;
+    }
+
+    public void setSignatureProvider(final SignatureProvider signatureProvider) {
+        this.signatureProvider = signatureProvider;
     }
 
     /**
@@ -685,16 +690,51 @@ public class V8 extends V8Object {
      * Primitives will be boxed.
      *
      * @param script The script to execute.
-     * @param scriptName The name of the script
+     * @param uri The name of the script
+     *
+     * @return The result of the script as a Java Object.
+     */
+    public Object executeScript(final String script, final String uri) {
+        checkThread();
+        checkScript(script);
+        return executeScript(getV8RuntimePtr(), UNKNOWN, script, uri, 0);
+    }
+
+    /**
+     * Executes a JS Script on this runtime and returns the result as a Java Object.
+     * Primitives will be boxed.
+     *
+     * @param script The script to execute.
+     * @param uri The name of the script
      * @param lineNumber The line number that is considered to be the first line of
      * the script. Typically 0, but could be set to another value for exception stack trace purposes.
      *
      * @return The result of the script as a Java Object.
      */
-    public Object executeScript(final String script, final String scriptName, final int lineNumber) {
+    public Object executeScript(final String script, final String uri, final int lineNumber) {
         checkThread();
         checkScript(script);
-        return executeScript(getV8RuntimePtr(), UNKNOWN, script, scriptName, lineNumber);
+        return executeScript(getV8RuntimePtr(), UNKNOWN, script, uri, lineNumber);
+    }
+
+    /**
+     * Executes a JS Script module on this runtime and returns the result as a Java Object.
+     * Primitives will be boxed.
+     *
+     * If the script does not match the signature (as verified with the public key) then a
+     * V8SecurityException will be thrown.
+     *
+     * @param script The signed script to execute
+     * @param modulePrefix The module prefix
+     * @param modulePostfix The module postfix
+     * @param uri The name of the script
+     *
+     * @return The result of the script as a Java Object.
+     */
+    public Object executeModule(final String script, final String modulePrefix, final String modulePostfix, final String uri) {
+        checkThread();
+        checkScript(script);
+        return executeScript(getV8RuntimePtr(), UNKNOWN, modulePrefix + script + modulePostfix, uri, 0);
     }
 
     /**
@@ -770,7 +810,7 @@ public class V8 extends V8Object {
      *
      * @return The unique build ID of the Native library.
      */
-    public long getBuildID() {
+    public static long getBuildID() {
         return _getBuildID();
     }
 
@@ -1608,7 +1648,7 @@ public class V8 extends V8Object {
 
     private native long _getGlobalObject(final long v8RuntimePtr);
 
-    private native long _getBuildID();
+    private native static long _getBuildID();
 
     private native static void _startNodeJS(final long v8RuntimePtr, final String fileName);
 

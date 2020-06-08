@@ -1933,4 +1933,37 @@ public class V8Test {
         fail("Exception not thrown");
     }
 
+    @Test
+    public void testExecuteModuleResult() {
+        Object result = v8.executeModule("var foo = 7;", "(function() {", "});", "index.js");
+
+        assertTrue(result instanceof V8Function);
+        ((V8Function) result).close();
+    }
+
+    @Test
+    public void testExecuteModuleResultExecution() {
+        V8Function function = (V8Function) v8.executeModule("var foo = 7; return foo;", "(function() {", "});", "index.js");
+        V8Array parameters = new V8Array(v8);
+
+        int result = (Integer) function.call(v8, parameters);
+
+        assertEquals(7, result);
+        function.close();
+        parameters.close();
+    }
+
+    @Test(expected = V8ScriptExecutionException.class)
+    public void testExecuteModuleException() {
+        V8Function function = (V8Function) v8.executeModule("var foo = 7; return fo;", "(function() {", "});", "module.js");
+        V8Array parameters = new V8Array(v8);
+
+        try {
+            function.call(v8, parameters);
+        } catch (V8ScriptExecutionException ex) {
+            parameters.close();
+            function.close();
+            throw ex;
+        }
+    }
 }

@@ -19,7 +19,6 @@
 #include <cstdlib>
 #include "com_eclipsesource_v8_V8Impl.h"
 
-
 #define TAG "J2V8_V8Impl"
 
 #pragma comment(lib, "userenv.lib")
@@ -483,6 +482,11 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setFlags
         env->ReleaseStringUTFChars(v8flags, str);
         v8::V8::Initialize();
     }
+}
+
+JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
+  (JNIEnv *, jclass) {
+  return 2;
 }
 
 ShellArrayBufferAllocator array_buffer_allocator;
@@ -2182,9 +2186,4 @@ jobject getResult(JNIEnv *env, const Local<Context>& context, jobject &v8, jlong
   }
 
   return nullptr;
-}
-
-JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
-  (JNIEnv *, jobject) {
-  return 2;
 }
