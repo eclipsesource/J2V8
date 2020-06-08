@@ -841,7 +841,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getGlobalObject
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_eclipsesource_v8_V8
