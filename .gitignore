@@ -29,6 +29,7 @@ node
 build.out
 cmake.out
 node.out
+v8.out
 
 # test input/output
 test-mockup-os-release

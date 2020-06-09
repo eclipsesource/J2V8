@@ -37,7 +37,7 @@ inline std::string convertStringViewToSTDString(Isolate* isolate, const v8_inspe
           ? v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(stringView.characters8()), v8::NewStringType::kNormal, length)
           : v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(stringView.characters16()), v8::NewStringType::kNormal, length)
       ).ToLocalChecked();
-  v8::String::Utf8Value result(isolate, message->ToString(isolate));
+  v8::String::Utf8Value result(isolate, message);
   return *result;
 }
 
@@ -86,7 +86,7 @@ public:
     inspectorDelegate_ = inspectorDelegate;
   }
 
-  void sendResponse(int callId, unique_ptr<v8_inspector::StringBuffer> message) override {
+  void sendResponse(int, unique_ptr<v8_inspector::StringBuffer> message) override {
     const std::string response = convertStringViewToSTDString(isolate_, message->string());
     inspectorDelegate_->emitOnResponse(response);
   }
@@ -130,7 +130,7 @@ public:
     session_->dispatchProtocolMessage(message_view);
   }
 
-  void runMessageLoopOnPause(int contextGroupId) override {
+  void runMessageLoopOnPause(int) override {
     if (run_nested_loop_) {
         return;
     }
@@ -389,7 +389,7 @@ class ShellArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   virtual void Free(void* data, size_t) { free(data); }
 };
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void*) {
     JNIEnv *env;
     jint onLoad_err = -1;
     if ( vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK ) {
@@ -489,15 +489,13 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getBuildID
   return 2;
 }
 
-ShellArrayBufferAllocator array_buffer_allocator;
-
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1startNodeJS
-  (JNIEnv * env, jclass, jlong v8RuntimePtr, jstring fileName) {
+  (JNIEnv * env, jclass, jlong, jstring) {
     (env)->ThrowNew(unsupportedOperationExceptionCls, "startNodeJS Not Supported.");
 }
 
 JNIEXPORT jboolean JNICALL Java_com_eclipsesource_v8_V8__1pumpMessageLoop
-  (JNIEnv * env, jclass, jlong v8RuntimePtr) {
+  (JNIEnv * env, jclass, jlong) {
     (env)->ThrowNew(unsupportedOperationExceptionCls, "pumpMessageLoop Not Supported.");
  return false;
 }
@@ -518,7 +516,7 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1createIsolate
  (JNIEnv *env, jobject v8, jstring globalAlias) {
     V8Runtime* runtime = new V8Runtime();
     v8::Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator = &array_buffer_allocator;
+    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     runtime->isolate = v8::Isolate::New(create_params);
     runtime->locker = new Locker(runtime->isolate);
     v8::Isolate::Scope isolate_scope(runtime->isolate);
@@ -604,7 +602,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1releaseLock
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1lowMemoryNotification
-  (JNIEnv *env, jobject, jlong v8RuntimePtr) {
+  (JNIEnv*, jobject, jlong v8RuntimePtr) {
   V8Runtime* runtime = reinterpret_cast<V8Runtime*>(v8RuntimePtr);
   runtime->isolate->LowMemoryNotification();
 }
@@ -628,7 +626,6 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Object
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1getGlobalObject
   (JNIEnv *env, jobject, jlong v8RuntimePtr) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0)
-  Local<Object> obj = Object::New(isolate);
   return reinterpret_cast<jlong>(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->globalObject);
 }
 
@@ -1467,7 +1464,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayNullItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1481,7 +1478,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayUndefinedItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1496,7 +1493,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1511,7 +1508,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1526,7 +1523,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayBooleanItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1541,7 +1538,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1556,7 +1553,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayObjectItem
   Isolate* isolate = SETUP(env, v8RuntimePtr, );
   Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
   if ( array->IsTypedArray() ) {
-     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.");
+     Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
      v8::String::Value strValue(isolate, string);
      throwV8RuntimeException(env, &strValue);
      return;
@@ -1684,7 +1681,7 @@ void voidCallback(const FunctionCallbackInfo<Value>& args) {
       isolate->ThrowException(v8String);
     }
     else {
-      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception").ToLocalChecked());
     }
   }
   env->CallVoidMethod(parameters, v8ArrayReleaseMethodID);
@@ -1758,7 +1755,7 @@ void objectCallback(const FunctionCallbackInfo<Value>& args) {
       isolate->ThrowException(v8String);
     }
     else {
-      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception"));
+      isolate->ThrowException(String::NewFromUtf8(isolate, "Unhandled Java Exception").ToLocalChecked());
     }
   }
   else if (resultObject == nullptr) {

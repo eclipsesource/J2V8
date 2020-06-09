@@ -71,10 +71,10 @@ public class V8Test {
     }
 
     @Test
-    public void testGetVersion_StartsWith5() {
+    public void testGetVersion_StartsWith8() {
         String v8version = V8.getV8Version();
 
-        assertTrue(v8version.startsWith("7.4"));
+        assertTrue(v8version.startsWith("8.3"));
     }
 
     @Test
