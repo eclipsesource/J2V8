@@ -13,16 +13,12 @@ jobs:
 
     - name: Download monolithic libraries to v8.out directory and bundle Linux jar and Android aar file
       run: |
-        curl -O https://download.eclipsesource.com/j2v8/v8/libv8_7.4.288_monolith.zip
-        mkdir -p v8.out
-        unzip libv8_7.4.288_monolith.zip -d v8.out
-
         # start j2v8 build
-        python build.py -t linux -a x64 --docker j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
-        python build.py -t android -a x86 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
-        python build.py -t android -a arm --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
-        python build.py -t android -a x86_64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
-        python build.py -t android -a arm64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
+        python build.py -t linux -a x64 --docker v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
+        python build.py -t android -a x86 --docker --keep-native-libs v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
+        python build.py -t android -a arm --docker --keep-native-libs v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
+        python build.py -t android -a x86_64 --docker --keep-native-libs v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
+        python build.py -t android -a arm64 --docker --keep-native-libs v8 j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
     
     - name: Release
       env:
