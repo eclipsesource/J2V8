@@ -48,9 +48,9 @@ abstract public class V8Value implements Releasable {
     public static final int FLOAT_32_ARRAY               = 16;
     public static final int UNDEFINED                    = 99;
 
-    protected V8      v8;
-    protected long    objectHandle;
-    protected boolean released = true;
+    protected V8            v8;
+    protected long          objectHandle;
+    protected boolean       released                     = true;
 
     protected V8Value() {
         super();
@@ -82,7 +82,6 @@ abstract public class V8Value implements Releasable {
             throw e;
         }
     }
-
 
     /**
      * Returns a string representation of the V8 Type.
@@ -272,6 +271,9 @@ abstract public class V8Value implements Releasable {
         v8.checkThread();
         if (!released) {
             try {
+                if (isWeak()) {
+                    v8.v8WeakReferences.remove(getHandle());
+                }
                 v8.releaseObjRef(this);
             } finally {
                 released = true;
