@@ -45,7 +45,20 @@ public class NodeJS {
      * been compiled for your platform.
      */
     public static NodeJS createNodeJS() {
-        return createNodeJS(null);
+        return createNodeJS(null, null);
+    }
+
+    /**
+     * Creates a NodeJS runtime and executes a JS Script
+     *
+     * @param file The JavaScript to execute or null for no script.
+     * @return The NodeJS runtime.
+     *
+     * May throw an UnsupportedOperationException if node.js integration has not
+     * been compiled for your platform.
+     */
+    public static NodeJS createNodeJS(final File file){
+        return createNodeJS(file, null);
     }
 
     /**
@@ -75,13 +88,14 @@ public class NodeJS {
      * Creates a NodeJS runtime and executes a JS Script
      *
      * @param file The JavaScript to execute or null for no script.
+     * @param tempDirectory The name of the directory to extract the native
      * @return The NodeJS runtime.
      *
      * May throw an UnsupportedOperationException if node.js integration has not
      * been compiled for your platform.
      */
-    public static NodeJS createNodeJS(final File file) {
-        V8 v8 = V8.createV8Runtime(GLOBAL);
+    public static NodeJS createNodeJS(final File file, final String tempDirectory) {
+        V8 v8 = V8.createV8Runtime(GLOBAL, tempDirectory);
         final NodeJS node = new NodeJS(v8);
         v8.registerJavaMethod(new JavaVoidCallback() {
 
