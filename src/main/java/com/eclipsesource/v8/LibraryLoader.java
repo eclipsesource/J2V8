@@ -94,7 +94,7 @@ class LibraryLoader {
             return;
 
         String path = null;
-            
+
         if (tempDirectory != null) {
             path = tempDirectory;
         } else {
@@ -157,7 +157,6 @@ class LibraryLoader {
                 }
                 os.close();
                 is.close();
-                chmod("755", fileName);
                 if (load(fileName, message)) {
                     return true;
                 }
@@ -182,13 +181,4 @@ class LibraryLoader {
         return false;
     }
 
-    static void chmod(final String permision, final String path) {
-        if (PlatformDetector.OS.isWindows()) {
-            return;
-        }
-        try {
-            Runtime.getRuntime().exec(new String[] { "chmod", permision, path }).waitFor(); //$NON-NLS-1$
-        } catch (Throwable e) {
-        }
-    }
 }
