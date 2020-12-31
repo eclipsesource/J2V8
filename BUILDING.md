@@ -4,6 +4,7 @@
 
 1. Python 2
 2. Docker (*only required for building using Docker)
+3. CMake
 
 #### Build
 
