@@ -155,7 +155,7 @@ public class V8ScriptExecutionExceptionTest {
             assertEquals(" y.toString()", e.getSourceLine());
             assertEquals(3, e.getStartColumn());
             assertEquals(4, e.getEndColumn());
-            assertEquals("TypeError: Cannot read property 'toString' of undefined", e.getJSMessage());
+            assertEquals("TypeError: Cannot read properties of undefined (reading 'toString')", e.getJSMessage());
             return;
         }
         fail("Exception should have been thrown.");

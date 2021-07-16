@@ -739,7 +739,8 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8Float64Array
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JI
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jint capacity) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0)
-  Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, static_cast<size_t>(capacity));
+  std::unique_ptr<v8::BackingStore> backing_store = v8::ArrayBuffer::NewBackingStore(isolate, static_cast<size_t>(capacity));
+  Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, std::move(backing_store));
   Persistent<Object>* container = new Persistent<Object>;
   container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, arrayBuffer);
   return reinterpret_cast<jlong>(container);
@@ -748,7 +749,13 @@ JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JI
 JNIEXPORT jlong JNICALL Java_com_eclipsesource_v8_V8__1initNewV8ArrayBuffer__JLjava_nio_ByteBuffer_2I
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jobject byteBuffer, jint capacity) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, 0)
-  Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, env->GetDirectBufferAddress(byteBuffer), static_cast<size_t>(capacity));
+  std::unique_ptr<v8::BackingStore> backing_store = ArrayBuffer::NewBackingStore(
+    env->GetDirectBufferAddress(byteBuffer),
+    static_cast<size_t>(capacity),
+    [](void*, size_t, void*){},
+    nullptr
+  );
+  Local<ArrayBuffer> arrayBuffer = ArrayBuffer::New(isolate, std::move(backing_store));
   Persistent<Object>* container = new Persistent<Object>;
   container->Reset(reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate, arrayBuffer);
   return reinterpret_cast<jlong>(container);
@@ -758,7 +765,7 @@ JNIEXPORT jobject JNICALL Java_com_eclipsesource_v8_V8__1createV8ArrayBufferBack
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle, jint capacity) {
   Isolate* isolate = SETUP(env, v8RuntimePtr, nullptr)
   Handle<ArrayBuffer> arrayBuffer = Local<ArrayBuffer>::New(isolate, *reinterpret_cast<Persistent<ArrayBuffer>*>(objectHandle));
-  void* dataPtr = arrayBuffer->GetContents().Data();
+  void* dataPtr = arrayBuffer->GetBackingStore()->Data();
   jobject byteBuffer = env->NewDirectByteBuffer(dataPtr, capacity);
   return byteBuffer;
 }
@@ -831,7 +838,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_eclipsesource_v8_V8__1getKeys
 
 ScriptOrigin* createScriptOrigin(JNIEnv * env, Isolate* isolate, jstring &jscriptName, jint jlineNumber = 0) {
   Local<String> scriptName = createV8String(env, isolate, jscriptName);
-  return new ScriptOrigin(scriptName, Integer::New(isolate, jlineNumber));
+  return new ScriptOrigin(isolate, scriptName, jlineNumber);
 }
 
 bool compileScript(const Local<Context>& context, Isolate *isolate, jstring &jscript, JNIEnv *env, jstring jscriptName, jint &jlineNumber, Local<Script> &script, TryCatch* tryCatch) {
@@ -2158,14 +2165,14 @@ jobject getResult(JNIEnv *env, const Local<Context>& context, jobject &v8, jlong
   }
   else if (result->IsArrayBuffer()) {
     ArrayBuffer* arrayBuffer = ArrayBuffer::Cast(*result);
-    if ( arrayBuffer->ByteLength() == 0 || arrayBuffer->GetContents().Data() == nullptr ) {
+    if ( arrayBuffer->ByteLength() == 0 || arrayBuffer->GetBackingStore()->Data() == nullptr ) {
       jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, NULL);
       jlong resultHandle = getHandle(env, objectResult);
       v8::Isolate* isolate = reinterpret_cast<V8Runtime*>(v8RuntimePtr)->isolate;
       reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(context).ToLocalChecked());
       return objectResult;
     }
-    jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetContents().Data(), static_cast<jlong>(arrayBuffer->ByteLength()));
+    jobject byteBuffer = env->NewDirectByteBuffer(arrayBuffer->GetBackingStore()->Data(), static_cast<jlong>(arrayBuffer->ByteLength()));
     jobject objectResult = env->NewObject(v8ArrayBufferCls, v8ArrayBufferInitMethodID, v8, byteBuffer);
     jlong resultHandle = getHandle(env, objectResult);
 
