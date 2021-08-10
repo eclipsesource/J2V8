@@ -13,7 +13,7 @@ jobs:
 
     - name: Download monolithic libraries and extract to v8.out
       run: |
-        curl -O https://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
+        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
         mkdir -p v8.out
         unzip libv8_9.3.345.11_monolith.zip -d v8.out
 
