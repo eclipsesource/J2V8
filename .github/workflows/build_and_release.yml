@@ -1,33 +1,10 @@
-name: Build and test J2V8
+name: Build and release J2V8
 
-on: [push]
+on: workflow_dispatch
 
 jobs:
-  build_j2v8_linux_x86_64:
-    name: Build J2V8 for Linux
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-
-    - name: Download monolithic libraries and extract to v8.out
-      run: |
-        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
-        mkdir -p v8.out
-        unzip libv8_9.3.345.11_monolith.zip -d v8.out
-
-    - name: Start J2V8 build
-      run: python2 build.py -t linux -a x64 --docker j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
-
-    - name: Archive J2V8 Linux x86_64 jar
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: j2v8-linux-x86_64
-        path: build.out/j2v8_linux_x86_64-6.2.1.jar
-
   build_j2v8_android:
-    name: Build J2V8 for Android
+    name: Android
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +13,7 @@ jobs:
 
     - name: Download monolithic libraries and extract to v8.out
       run: |
-        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
+        curl -O https://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
         mkdir -p v8.out
         unzip libv8_9.3.345.11_monolith.zip -d v8.out
 
@@ -46,6 +23,15 @@ jobs:
         python2 build.py -t android -a arm --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python2 build.py -t android -a x86_64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
         python2 build.py -t android -a arm64 --docker --keep-native-libs j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java
+
+    - name: Release J2V8
+      env:
+          KEY_ID: ${{ secrets.KEY_ID }}
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          MAVEN_REPO_USER: ${{ secrets.MAVEN_REPO_USER }}
+          MAVEN_REPO_PASS: ${{ secrets.MAVEN_REPO_PASS }}
+      run: python2 build.py -t android -a arm64 j2v8release --keep-native-libs --docker
 
     - name: Archive J2V8 Android aar
       uses: actions/upload-artifact@v1.0.0
