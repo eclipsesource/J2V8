@@ -73,7 +73,7 @@ public class MemoryManager {
     public void persist(final V8Value object) {
         v8.getLocker().checkThread();
         checkReleased();
-        references.remove(object);
+        memoryManagerReferenceHandler.v8HandleDisposed(object);
     }
 
     /**
