@@ -1,0 +1,240 @@
+Allow:
+## 接口:
+
+####  init
+获取设备 channel 对象,用于后续操作,可调用 channel.stop() 停止进程
+
+####  init_wireless 
+iOS version < 14.0
+启动 wifi 模式启动,启动实例之后,拔掉 usb 依然可以获取数据，用于后续操作,可调用 channel.stop() 停止进程
+
+#### get_processes
+获取设备的进程列表
+
+#### get_channel
+当前设备可用服务列表
+
+#### start_get_gpu
+开始获取 gpu 数据
+
+#### stop_get_gpu 
+结束获取 gpu 数据
+
+#### launch_app 
+启动app
+
+#### start_get_network
+开始获取网络数据
+
+#### stop_get_network
+结束获取网络数据
+
+#### start_get_system 
+开始获取系统数据
+
+#### stop_get_system
+结束获取系统数据
+
+#### get_device 
+获取设备对象
+
+#### get_applications
+获取手机应用列表
+
+#### start_xcuitest
+启动 xcuittest
+
+#### stop_xcuitest
+停止 xcuitest
+
+#### start_get_fps
+开始获取 fps 相关数据
+
+#### stop_get_fps
+结束获取 fps 相关数据
+
+#### start_get_graphics_fps
+开始获取 graphics 计算 fps
+
+#### stop_get_graphics_fps
+结束获取 graphics 计算 fps
+
+#### start_get_mobile_notifications
+开始监听事件，比如 app 唤醒，杀死，退出到后台等等
+
+#### stop_get_mobile_notifications
+结束监听事件，比如 app 唤醒，杀死，退出到后台等等
+
+#### start_forward
+开始端口转发
+
+#### stop_forward
+结束端口转发
+
+#### get_netstat
+获取单应用的网络信息
+
+### 接口使用 demo:
+#### 直接调用接口
+优点:使用方便  
+缺点:重复开启通道
+
+    //调用单个接口
+    from ios_device import py_ios_device
+
+    channels = py_ios_device.get_channel()
+    print(channels)
+    
+    //有开始和结束的接口
+    import time
+
+    from ios_device import py_ios_device
+    
+    
+    def callback(rep):
+        print(rep)
+    
+    
+    channel = py_ios_device.start_get_network(callback=callback)
+    time.sleep(5)
+    py_ios_device.stop_get_network(channel)
+    channel.stop()
+    
+    // 或者
+    import time
+
+    from ios_device import py_ios_device
+    
+    
+    def callback(rep):
+        print(rep)
+    
+    
+    channel = py_ios_device.init()
+    py_ios_device.start_get_network(rpc_channel=channel, callback=callback)
+    time.sleep(5)
+    py_ios_device.stop_get_network(channel)
+    channel.stop()
+
+
+#### 对象方式调用接口
+优点:通道复用
+    
+    //单个接口
+    from ios_device.py_ios_device import PyiOSDevice
+    
+    device = PyiOSDevice()
+    channels = device.get_channel()
+    print(channels)
+    device.stop()
+
+
+    //有开始和结束的接口
+    import time
+    
+    from ios_device.py_ios_device import PyiOSDevice
+    
+    
+    def callback(res):
+        print(res)
+    
+    
+    device = PyiOSDevice()
+    device.start_get_network(callback)
+    time.sleep(5)
+    device.stop_get_network()
+    device.stop()
+
+
+### iOS 自动化
+    
+    import json
+    import re
+    import time
+    
+    from appium import webdriver
+    from ios_device.py_ios_device import PyiOSDevice
+    
+    # 这个留空
+    web_driver_agent_url = ""
+    
+    # 这里设置 wda 的端口,保证每个设备都有自己的端口
+    wda_port = 8200
+    
+    # 这里是 wda 的 bundle id, 一般为 xxx.xxx.xxx.xctrunner
+    wda_bundle_id = ""
+    
+    # 设备 id
+    device_id = ""
+    
+    # 被测应用 bundle id
+    app = ""
+    
+    device_channel = PyiOSDevice(device_id=device_id)
+    
+    
+    def xcuitest_callback(res):
+        global web_driver_agent_url
+    
+        if "ServerURLHere->" in str(res):
+            web_driver_agent_url = re.findall("ServerURLHere->(.+?)<-ServerURLHere", str(res))[0]
+    
+    
+    # 开启xcuitest 
+    # 2021/3/8 更新了 1.0.7 版本,可选择是否进行端口转发
+    xcuitest = device_channel.start_xcuitest(bundle_id=wda_bundle_id,
+                                             callback=xcuitest_callback,
+                                             app_env={"USE_PORT": wda_port},
+                                             forward=True,
+                                             pair_ports=["8200:8200"])
+    
+    
+    def fps_callback(res):
+        print("fps 数据{}".format(json.dumps(res)))
+    
+    
+    # 开启 fps 数据获取通道
+    device_channel.start_get_fps(fps_callback)
+    
+    
+    def gpu_callback(res):
+        print("gpu 数据{}".format(json.dumps(res)))
+    
+    # 开启 gpu 数据获取通道
+    device_channel.start_get_gpu(gpu_callback)
+    
+    while web_driver_agent_url == "":
+        time.sleep(1)
+    
+    print(web_driver_agent_url)
+    
+    desired_caps = {
+        'app': app,
+        'udid': device_id,
+        'platformName': "iOS",
+        'deviceName': 'iPhone',
+        'xcodeOrgId': '9CVMN4UZK4',
+        'xcodeSigningId': 'iPhone Developer',
+        'automationName': 'XCUITest',
+        "wdaLocalPort": wda_port,
+        'webDriverAgentUrl': "http://127.0.0.1:8200",
+        'noReset': True,
+        'clearSystemFiles': True,
+        "wdaLaunchTimeout": 360000,
+        'newCommandTimeout': 1000,
+        'showXcodeLog': True
+    }
+    
+    driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", desired_capabilities=desired_caps)
+    driver.launch_app()
+    time.sleep(1)
+    driver.launch_app()
+    
+    
+    driver.stop_client()
+    
+    # 关闭通道
+    device_channel.stop_get_fps()
+    device_channel.stop_get_gpu()
+    device_channel.stop_xcuitest(xcuitest)
+    device_channel.stop()
