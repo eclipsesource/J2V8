@@ -13,9 +13,9 @@ jobs:
 
     - name: Download monolithic libraries and extract to v8.out
       run: |
-        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
+        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_10.3.174.14_monolith.zip
         mkdir -p v8.out
-        unzip libv8_9.3.345.11_monolith.zip -d v8.out
+        unzip libv8_10.3.174.14_monolith.zip -d v8.out
 
     - name: Start J2V8 build
       run: python2 build.py -t linux -a x64 --docker j2v8cmake j2v8jni j2v8cpp j2v8optimize j2v8java j2v8test
@@ -24,7 +24,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: j2v8-linux-x86_64
-        path: build.out/j2v8_linux_x86_64-6.2.1.jar
+        path: build.out/j2v8_linux_x86_64-6.2.2.jar
 
   build_j2v8_android:
     name: Build J2V8 for Android
@@ -36,9 +36,9 @@ jobs:
 
     - name: Download monolithic libraries and extract to v8.out
       run: |
-        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_9.3.345.11_monolith.zip
+        curl -k -O http://download.eclipsesource.com/j2v8/v8/libv8_10.3.174.14_monolith.zip
         mkdir -p v8.out
-        unzip libv8_9.3.345.11_monolith.zip -d v8.out
+        unzip libv8_10.3.174.14_monolith.zip -d v8.out
 
     - name: Start J2V8 build
       run: |

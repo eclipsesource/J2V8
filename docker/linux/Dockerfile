@@ -1,5 +1,5 @@
 # sys_image can be overridden from the CLI
-ARG sys_image=debian:stable
+ARG sys_image=debian:buster
 
 FROM $sys_image
 
