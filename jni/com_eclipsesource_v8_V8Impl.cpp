@@ -1868,7 +1868,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
       jobject v8 = reinterpret_cast<V8Runtime*>(wrd->v8RuntimePtr)->v8;
       env->CallVoidMethod(v8, v8WeakReferenceReleased, wrd->objectHandle);
       delete(wrd);
-    }, WeakCallbackType::kFinalizer);
+    }, WeakCallbackType::kParameter);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1clearWeak

@@ -166,8 +166,8 @@ source_group("" FILES ${src_files})
 # BUILD SETTINGS & COMPILATION
 #-----------------------------------------------------------------------
 
-# tell gcc/clang to use the c++14 standard
-set(CMAKE_CXX_STANDARD 14)
+# tell gcc/clang to use the c++17 standard
+set(CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
