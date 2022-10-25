@@ -11,7 +11,10 @@
 package com.eclipsesource.v8.utils;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 import com.eclipsesource.v8.ReferenceHandler;
 import com.eclipsesource.v8.V8;
@@ -30,7 +33,7 @@ public class MemoryManager {
 
     private MemoryManagerReferenceHandler memoryManagerReferenceHandler;
     private V8                            v8;
-    private ArrayList<V8Value>            references = new ArrayList<V8Value>();
+    private SimpleArrayList<V8Value>      references = new SimpleArrayList<>();
     private boolean                       releasing = false;
     private boolean                       released   = false;
 
@@ -132,6 +135,57 @@ public class MemoryManager {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Custom implementation of ArrayList that overrides equality to instead of compare element by element would only</BR>
+     * compare references and ranges.
+     * @param <E> – the type of elements in this list
+     */
+    private static class SimpleArrayList<E> extends ArrayList<E> {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+
+            if (!(o instanceof List)) {
+                return false;
+            }
+
+            final int expectedModCount = modCount;
+            // ArrayList can be subclassed and given arbitrary behavior, but we can
+            // still deal with the common case where o is ArrayList precisely
+            boolean equal = equalsRange((List<?>) o, 0, this.size());
+
+            checkForComodification(expectedModCount);
+            return equal;
+        }
+
+        boolean equalsRange(List<?> other, int from, int to) {
+            final Object[] es = this.toArray();
+            if (to > es.length) {
+                throw new ConcurrentModificationException();
+            }
+            Iterator<?> oit = other.iterator();
+            for (; from < to; from++) {
+                if (!oit.hasNext() || !Objects.equals(es[from], oit.next())) {
+                    return false;
+                }
+            }
+            return !oit.hasNext();
+        }
+
+        private void checkForComodification(final int expectedModCount) {
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
+
+        public int size() {
+            return super.size();
         }
     }
 
