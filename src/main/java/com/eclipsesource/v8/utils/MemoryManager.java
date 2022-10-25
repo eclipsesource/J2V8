@@ -33,7 +33,7 @@ public class MemoryManager {
 
     private MemoryManagerReferenceHandler memoryManagerReferenceHandler;
     private V8                            v8;
-    private SimpleArrayList<V8Value>      references = new SimpleArrayList<>();
+    private SimpleArrayList<V8Value>      references = new SimpleArrayList<V8Value>();
     private boolean                       releasing = false;
     private boolean                       released   = false;
 
