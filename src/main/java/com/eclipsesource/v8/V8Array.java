@@ -610,6 +610,60 @@ public class V8Array extends V8Object {
         return this;
     }
 
+    /**
+     * Pushes all integers in the given array to the next available spots in the Array.
+     *
+     * @param values The integer array to push to the array.
+     * @return The receiver.
+     */
+    public V8Array pushIntegers(final int[] values) {
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        for (int value : values) {
+            push(value);
+        }
+        return this;
+    }
+
+    /**
+     * Pushes all doubles in the given array to the next available spots in the Array.
+     *
+     * @param values The double array to push to the array.
+     * @return The receiver.
+     */
+    public V8Array pushDoubles(final double[] values) {
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        for (double value : values) {
+            push(value);
+        }
+        return this;
+    }
+
+    /**
+     * Pushes all strings in the given array to the next available spots in the Array.
+     *
+     * @param values The string array to push to the array.
+     * @return The receiver.
+     */
+    public V8Array pushStrings(final String[] values) {
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        for (String value : values) {
+            push(value);
+        }
+        return this;
+    }
+
     static class Undefined extends V8Array {
 
         public Undefined() {
