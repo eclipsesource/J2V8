@@ -1352,6 +1352,18 @@ public class V8 extends V8Object {
         _addArrayIntItem(v8RuntimePtr, arrayHandle, value);
     }
 
+    protected void addArrayIntItems(final long v8RuntimePtr, final long arrayHandle, final int[] values) {
+        _addArrayIntItems(v8RuntimePtr, arrayHandle, values);
+    }
+
+    protected void addArrayDoubleItems(final long v8RuntimePtr, final long arrayHandle, final double[] values) {
+        _addArrayDoubleItems(v8RuntimePtr, arrayHandle, values);
+    }
+
+    protected void addArrayStringItems(final long v8RuntimePtr, final long arrayHandle, final String[] values) {
+        _addArrayStringItems(v8RuntimePtr, arrayHandle, values);
+    }
+
     protected void addArrayBooleanItem(final long v8RuntimePtr, final long arrayHandle, final boolean value) {
         _addArrayBooleanItem(v8RuntimePtr, arrayHandle, value);
     }
@@ -1563,6 +1575,12 @@ public class V8 extends V8Object {
     private native Object _arrayGet(long v8RuntimePtr, int expectedType, long arrayHandle, int index);
 
     private native void _addArrayIntItem(long v8RuntimePtr, long arrayHandle, int value);
+
+    private native void _addArrayIntItems(long v8RuntimePtr, long arrayHandle, int[] values);
+
+    private native void _addArrayDoubleItems(long v8RuntimePtr, long arrayHandle, double[] values);
+
+    private native void _addArrayStringItems(long v8RuntimePtr, long arrayHandle, String[] values);
 
     private native void _addArrayBooleanItem(long v8RuntimePtr, long arrayHandle, boolean value);
 

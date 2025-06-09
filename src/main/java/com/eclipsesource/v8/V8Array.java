@@ -472,6 +472,25 @@ public class V8Array extends V8Object {
     }
 
     /**
+     * Pushes integer values to the next available spot in the Array. In
+     * particular, this[length] = value;
+     *
+     * @param values The value to push to the array.
+     *
+     * @return The receiver.
+     */
+
+    public V8Array push(final int[] values){
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        v8.addArrayIntItems(v8.getV8RuntimePtr(), getHandle(), values);
+        return this;
+    }
+
+    /**
      * Pushes a boolean value to the next available spot in the Array. In
      * particular, this[length] = value;
      *
@@ -502,6 +521,25 @@ public class V8Array extends V8Object {
     }
 
     /**
+     * Pushes double values to the next available spot in the Array. In
+     * particular, this[length] = value;
+     *
+     * @param values The value to push to the array.
+     *
+     * @return The receiver.
+     */
+
+    public V8Array push(final double[] values){
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        v8.addArrayDoubleItems(v8.getV8RuntimePtr(), getHandle(), values);
+        return this;
+    }
+
+    /**
      * Pushes a String value to the next available spot in the Array. In
      * particular, this[length] = value;
      *
@@ -519,6 +557,23 @@ public class V8Array extends V8Object {
         } else {
             v8.addArrayStringItem(v8.getV8RuntimePtr(), getHandle(), value);
         }
+        return this;
+    }
+    /**
+     * Pushes String values to the next available spot in the Array. In
+     * particular, this[length] = value;
+     *
+     * @param values The value to push to the array.
+     *
+     * @return The receiver.
+     */
+    public V8Array push(final String[] values) {
+        v8.checkThread();
+        checkReleased();
+        if (values == null) {
+            throw new NullPointerException("values is null");
+        }
+        v8.addArrayStringItems(v8.getV8RuntimePtr(), getHandle(), values);
         return this;
     }
 
@@ -577,7 +632,8 @@ public class V8Array extends V8Object {
                 v8.addArrayStringItem(v8.getV8RuntimePtr(), getHandle(), (String) value);
             } else if (value instanceof V8Value) {
                 v8.addArrayObjectItem(v8.getV8RuntimePtr(), getHandle(), ((V8Value) value).getHandle());
-            } else {
+            }
+            else {
                 throw new IllegalArgumentException();
             }
         }
@@ -607,60 +663,6 @@ public class V8Array extends V8Object {
         v8.checkThread();
         checkReleased();
         v8.addArrayUndefinedItem(v8.getV8RuntimePtr(), getHandle());
-        return this;
-    }
-
-    /**
-     * Pushes all integers in the given array to the next available spots in the Array.
-     *
-     * @param values The integer array to push to the array.
-     * @return The receiver.
-     */
-    public V8Array pushIntegers(final int[] values) {
-        v8.checkThread();
-        checkReleased();
-        if (values == null) {
-            throw new NullPointerException("values is null");
-        }
-        for (int value : values) {
-            push(value);
-        }
-        return this;
-    }
-
-    /**
-     * Pushes all doubles in the given array to the next available spots in the Array.
-     *
-     * @param values The double array to push to the array.
-     * @return The receiver.
-     */
-    public V8Array pushDoubles(final double[] values) {
-        v8.checkThread();
-        checkReleased();
-        if (values == null) {
-            throw new NullPointerException("values is null");
-        }
-        for (double value : values) {
-            push(value);
-        }
-        return this;
-    }
-
-    /**
-     * Pushes all strings in the given array to the next available spots in the Array.
-     *
-     * @param values The string array to push to the array.
-     * @return The receiver.
-     */
-    public V8Array pushStrings(final String[] values) {
-        v8.checkThread();
-        checkReleased();
-        if (values == null) {
-            throw new NullPointerException("values is null");
-        }
-        for (String value : values) {
-            push(value);
-        }
         return this;
     }
 

@@ -1510,6 +1510,106 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
   int index = Array::Cast(*array)->Length();
   array->Set(context, index, v8Value);
 }
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItems
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jintArray values) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, );
+    Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+
+    if ( array->IsTypedArray() ) {
+        Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
+        v8::String::Value strValue(isolate, string);
+        throwV8RuntimeException(env, &strValue);
+        return;
+    }
+
+    // JNI: Java int[] -> C++ int*
+    jsize length = env->GetArrayLength(values);
+    jint* elements = env->GetIntArrayElements(values, NULL);
+    if (elements == nullptr) {
+        return;
+    }
+
+    Local<Context> context = isolate->GetCurrentContext();
+    int startIndex = Array::Cast(*array)->Length();
+
+    for (jsize i = 0; i < length; i++) {
+        Local<Value> v8Value = Int32::New(isolate, elements[i]);
+        array->Set(context, startIndex + i, v8Value).Check();
+    }
+
+    // JNI: relaese memory
+    env->ReleaseIntArrayElements(values, elements, JNI_ABORT);
+}
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItems
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jdoubleArray values) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, );
+    Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+
+    if ( array->IsTypedArray() ) {
+        Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
+        v8::String::Value strValue(isolate, string);
+        throwV8RuntimeException(env, &strValue);
+        return;
+    }
+
+    // JNI: Java double[] -> C++ double*
+    jsize length = env->GetArrayLength(values);
+    jdouble* elements = env->GetDoubleArrayElements(values, NULL);
+    if (elements == nullptr) {
+        return;
+    }
+
+    Local<Context> context = isolate->GetCurrentContext();
+    int startIndex = Array::Cast(*array)->Length();
+
+    for (jsize i = 0; i < length; i++) {
+        Local<Value> v8Value = Number::New(isolate, elements[i]);
+        array->Set(context, startIndex + i, v8Value).Check();
+    }
+
+    // JNI: release memory
+    env->ReleaseDoubleArrayElements(values, elements, JNI_ABORT);
+}
+
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItems
+(JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jobjectArray values) {
+    Isolate* isolate = SETUP(env, v8RuntimePtr, );
+    Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+
+    if ( array->IsTypedArray() ) {
+        Local<String> string = String::NewFromUtf8(isolate, "Cannot push to a Typed Array.").ToLocalChecked();
+        v8::String::Value strValue(isolate, string);
+        throwV8RuntimeException(env, &strValue);
+        return;
+    }
+
+    // JNI: Java String[] -> jobjectArray
+    jsize length = env->GetArrayLength(values);
+    if (length == 0) {
+        return;
+    }
+
+    Local<Context> context = isolate->GetCurrentContext();
+    int startIndex = Array::Cast(*array)->Length();
+
+    for (jsize i = 0; i < length; i++) {
+        jstring javaString = (jstring) env->GetObjectArrayElement(values, i);
+        if (javaString == nullptr) {
+            // for null string null V8 value
+            Local<Value> v8Value = Null(isolate);
+            array->Set(context, startIndex + i, v8Value).Check();
+        } else {
+            // Java String -> UTF-8 -> V8 String
+            const char* cString = env->GetStringUTFChars(javaString, NULL);
+            if (cString != nullptr) {
+                Local<String> v8String = String::NewFromUtf8(isolate, cString).ToLocalChecked();
+                array->Set(context, startIndex + i, v8String).Check();
+                env->ReleaseStringUTFChars(javaString, cString);
+            }
+            env->DeleteLocalRef(javaString);
+        }
+    }
+}
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItem
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong arrayHandle, jdouble value) {

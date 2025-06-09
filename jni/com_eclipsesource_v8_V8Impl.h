@@ -501,6 +501,31 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItem
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayIntItems
+ * Signature: (JJ[I])V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayIntItems
+   (JNIEnv *, jobject, jlong, jlong, jintArray);
+
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayDoubleItems
+ * Signature: (JJ[D])V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayDoubleItems
+   (JNIEnv *, jobject, jlong, jlong, jdoubleArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
+ * Method:    _addArrayStringItems
+ * Signature: (JJ[Ljava/lang/String;])V
+ */
+JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1addArrayStringItems
+   (JNIEnv *, jobject, jlong, jlong, jobjectArray);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _addArrayBooleanItem
  * Signature: (JJZ)V
  */
