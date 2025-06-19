@@ -37,6 +37,7 @@ LOCAL_SRC_FILES := com_eclipsesource_v8_V8Impl.cpp
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../node/node.$(TARGET_ARCH_ABI)/deps $(LOCAL_PATH)/../node/node.$(TARGET_ARCH_ABI)/deps/v8 $(LOCAL_PATH)/../node/node.$(TARGET_ARCH_ABI)/deps/v8/include $(LOCAL_PATH)/../node/node.$(TARGET_ARCH_ABI)/deps/icu-small/source 
 LOCAL_CFLAGS	+= -std=c++11 -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC 
 LOCAL_LDLIBS	+= -L$(SYSROOT)/usr/lib -llog -latomic
+LOCAL_LDFLAGS    += -Wl,-z,max-page-size=16384
 
 LOCAL_STATIC_LIBRARIES := \
 	v8_base v8_nosnapshot v8_libplatform v8_libbase v8_libsampler
