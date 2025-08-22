@@ -3,12 +3,12 @@ Contains the essential lists/map structures that are referenced by the build pro
 """
 import collections
 
-import constants as c
+from . import constants as c
 
-from config_android import android_config
-from config_linux import linux_config
-from config_macos import macos_config
-from config_win32 import win32_config
+from .config_android import android_config
+from .config_linux import linux_config
+from .config_macos import macos_config
+from .config_win32 import win32_config
 
 CLIStep = collections.namedtuple("CLIStep", "id help")
 

@@ -1,6 +1,6 @@
-ARG sys_image=debian:jessie-slim
+ARG sys_image=debian:bookworm
 
-FROM $sys_image
+FROM --platform=linux/amd64 $sys_image
 
 RUN mkdir -p /temp/docker/shared/
 WORKDIR /temp/docker/shared/
@@ -45,7 +45,7 @@ RUN mkdir /usr/local/android-sdk/tools/keymaps && \
 
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
-ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
+ENV JAVA_HOME "/opt/jdk8"
 
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 

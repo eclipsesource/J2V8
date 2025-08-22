@@ -1,10 +1,10 @@
 import os
-import constants as c
-from build_structures import PlatformConfig
-from vagrant_build import VagrantBuildSystem, VagrantBuildStep
-import java_build_steps as j
-import shared_build_steps as u
-import cmake_utils as cmu
+from . import constants as c
+from .build_structures import PlatformConfig
+from .vagrant_build import VagrantBuildSystem, VagrantBuildStep
+from . import java_build_steps as j
+from . import shared_build_steps as u
+from . import cmake_utils as cmu
 
 macos_config = PlatformConfig(c.target_macos, [c.arch_x86, c.arch_x64])
 

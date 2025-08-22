@@ -1,18 +1,29 @@
-
-if java_loc="$(type -p javac)" || [ -z "$java_loc" ]; then
-    echo "JDK already installed, skipping installation..."
-    echo "Existing JDK location: "$java_loc
+if command -v javac >/dev/null 2>&1; then
+    echo "JDK already installed: $(javac -version 2>&1)"
+    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
     exit 0
 fi
 
-# sources:
-# - https://www.mkyong.com/java/how-to-install-oracle-jdk-8-on-debian/
+echo "Installing AdoptOpenJDK 8..."
 
-echo "Preparing JDK..."
-curl -L -C - -b "oraclelicense=accept-securebackup-cookie" -O http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz
-mkdir -p /opt/jdk
-tar x -C /opt/jdk -f jdk-8u131-linux-x64.tar.gz
+# Устанавливаем yes и wget
+apt-get update && apt-get install -y yes wget
 
-update-alternatives --install /usr/bin/java java /opt/jdk/jdk1.8.0_131/bin/java 100
-update-alternatives --install /usr/bin/javac javac /opt/jdk/jdk1.8.0_131/bin/javac 100
-update-alternatives --install /usr/bin/javah javah /opt/jdk/jdk1.8.0_131/bin/javah 100
+# Скачиваем AdoptOpenJDK 8
+wget -q https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u392-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u392b08.tar.gz
+tar -xzf OpenJDK8U-jdk_x64_linux_hotspot_8u392b08.tar.gz -C /opt
+mv /opt/jdk8u392-b08 /opt/jdk8
+
+export JAVA_HOME=/opt/jdk8
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Используем yes для автоматического подтверждения
+yes "" | update-alternatives --install /usr/bin/java java $JAVA_HOME/bin/java 100
+yes "" | update-alternatives --install /usr/bin/javac javac $JAVA_HOME/bin/javac 100
+yes "" | update-alternatives --install /usr/bin/javah javah $JAVA_HOME/bin/javah 100
+
+rm OpenJDK8U-jdk_x64_linux_hotspot_8u392b08.tar.gz
+
+echo "AdoptOpenJDK 8 installation completed"
+java -version
+javac -version

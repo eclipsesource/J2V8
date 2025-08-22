@@ -17,10 +17,12 @@ configurations {
 
 buildscript {
     repositories {
-        jcenter()
+        maven { url 'https://repo1.maven.org/maven2' }
+        maven { url 'https://storage.googleapis.com/r8-releases/raw' }
+        maven { url 'https://maven.google.com' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.android.tools.build:gradle:2.3.0'
         classpath 'com.stanfy.spoon:spoon-gradle-plugin:1.2.2'
     }
 }
@@ -29,7 +31,9 @@ apply plugin: 'com.android.library'
 apply plugin: 'spoon'
 
 repositories {
-    jcenter()
+    maven { url 'https://repo1.maven.org/maven2' }
+    maven { url 'https://storage.googleapis.com/r8-releases/raw' }
+    maven { url 'https://maven.google.com' }
 }
 
 dependencies {
@@ -46,7 +50,7 @@ dependencies {
 
 android {
     compileSdkVersion 10
-    buildToolsVersion '24.0.3'
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 10

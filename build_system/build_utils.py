@@ -5,9 +5,9 @@ import re
 import shutil
 import subprocess
 import sys
-from itertools import ifilter
+# from itertools import ifilter
 
-import constants as c
+from . import constants as c
 
 V8Version = collections.namedtuple("V8Version", "major minor build patch is_candidate")
 NodeJSVersion = collections.namedtuple("NodeJSVersion", "major minor patch is_release")
@@ -208,7 +208,7 @@ def execute_to_str(cmd, cwd = None):
     return out
 
 def store_v8_output(image_name, config):
-    print "Storing V8 output from '{0}' docker image".format(image_name)
+    print ("Storing V8 output from '{0}' docker image".format(image_name))
     build_cwd = get_cwd()
     dest_cpu= c.arch_x64 if config.arch == c.arch_x86_64 else config.arch
     static_library_output_dir = config.platform + "." + dest_cpu
@@ -238,7 +238,7 @@ def store_nodejs_output(next_node_tag, build_cwd):
 
     if (curr_node_tag != next_node_tag):
         if (curr_node_tag is not None):
-            print ">>> Storing Node.js build files for later use: " + curr_node_tag
+            print (">>> Storing Node.js build files for later use: " + curr_node_tag)
 
             for subdir in ["out"] + extra_dirs:
                 curr_cache = cached_dir(curr_node_tag, subdir)
@@ -251,7 +251,7 @@ def store_nodejs_output(next_node_tag, build_cwd):
 
                 # move the previously built artifacts into the cache
                 if (os.path.isdir(node)):
-                    print "node --- " + subdir + " ---> cache[" + curr_node_tag + "]"
+                    print ("node --- " + subdir + " ---> cache[" + curr_node_tag + "]")
                     shutil.move(node, curr_cache)
 
         if (next_node_tag is None):
@@ -260,8 +260,8 @@ def store_nodejs_output(next_node_tag, build_cwd):
         next_dir = cached_dir(next_node_tag, "out")
 
         if (os.path.isdir(next_dir)):
-            print ">>> Reused Node.js build files from build-cache: " + next_node_tag
-            print "node <--- out --- cache[" + next_node_tag + "]"
+            print (">>> Reused Node.js build files from build-cache: " + next_node_tag)
+            print ("node <--- out --- cache[" + next_node_tag + "]")
             # move main node.js "out" directory from the cache back into the node directory
             shutil.move(next_dir, out_dir)
 
@@ -271,10 +271,10 @@ def store_nodejs_output(next_node_tag, build_cwd):
                 next_cache = cached_dir(next_node_tag, subdir)
 
                 if (os.path.isdir(next_cache)):
-                    print "node <--- " + subdir + " --- cache[" + next_node_tag + "]"
+                    print ("node <--- " + subdir + " --- cache[" + next_node_tag + "]")
                     shutil.move(next_cache, node)
         else:
-            print ">>> Prepared Node.js build-cache: " + next_node_tag
+            print (">>> Prepared Node.js build-cache: " + next_node_tag)
 
             # create fresh out-dir in the cache to receive build artifacts ...
             if not os.path.exists(out_dir):
@@ -286,7 +286,7 @@ def store_nodejs_output(next_node_tag, build_cwd):
 
     elif (not next_node_tag is None):
         # this build is for the same vendor/platform/architecture as last time
-        print ">>> Node.js build-cache used: " + next_node_tag
+        print (">>> Node.js build-cache used: " + next_node_tag)
 
 def apply_file_template(src, dest, inject_vars_fn):
     """Read a text file from src, run the read text through a transformer function and write the modified text into dest"""

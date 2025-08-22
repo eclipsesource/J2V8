@@ -1,5 +1,5 @@
-import constants as c
-import shared_build_steps as u
+from . import constants as c
+from . import shared_build_steps as u
 
 def add_java_build_step(platform_config):
     # after the maven build is complete, copy the JAR artifact to the central output directory

@@ -5,7 +5,7 @@ for selection when running the build.py script with the --interactive, -i parame
 Parameters for the build can be specified by their variable-name ("dest" defined in the cli.py arguments).
 An array of build-steps can also be specified here, if none are specified then "all" steps will be run.
 """
-import constants as c
+from . import constants as c
 
 configs = [
       # ANDROID builds

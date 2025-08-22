@@ -1,12 +1,12 @@
 
 import sys
 
-import cli
-import build_constants as bc
-import constants as c
-import build_utils as utils
-from shell_build import ShellBuildSystem
-import immutable
+from . import cli
+from . import build_constants as bc
+from . import constants as c
+from . import build_utils as utils
+from .shell_build import ShellBuildSystem
+from . import immutable
 
 class BuildState:
     # collection of all parsed build-steps that will then be passed on to the core build function

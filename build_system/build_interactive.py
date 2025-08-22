@@ -3,10 +3,10 @@ import argparse
 import sys
 import shlex
 
-import build_configs as bcfg
-import build_executor as bex
-import build_utils as utils
-import cli as cli
+from . import build_configs as bcfg
+from . import build_executor as bex
+from . import build_utils as utils
+from . import cli as cli
 
 def run_interactive_cli():
       idx = 0

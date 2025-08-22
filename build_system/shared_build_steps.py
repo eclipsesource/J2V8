@@ -5,24 +5,36 @@ reused between target-platform configurations or build-steps on the same platfor
 import glob
 import os
 import sys
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree as ET
+import xml.parsers.expat
 
-# see: https://stackoverflow.com/a/27333347/425532
-class XmlCommentParser(ET.XMLTreeBuilder):
+class XmlCommentParser:
+    def __init__(self):
+        self._tree_builder = ET.TreeBuilder()
+        self._parser = xml.parsers.expat.ParserCreate()
 
-   def __init__(self):
-       ET.XMLTreeBuilder.__init__(self)
-       # assumes ElementTree 1.2.X
-       self._parser.CommentHandler = self.handle_comment
+        self._parser.CommentHandler = self.handle_comment
+        self._parser.StartElementHandler = self._tree_builder.start
+        self._parser.EndElementHandler = self._tree_builder.end
+        self._parser.CharacterDataHandler = self._tree_builder.data
 
-   def handle_comment(self, data):
-       self._target.start(ET.Comment, {})
-       self._target.data(data)
-       self._target.end(ET.Comment)
+        self._target = self._tree_builder
 
-import constants as c
-import build_settings as s
-import build_utils as utils
+    def handle_comment(self, data):
+        self._tree_builder.start(ET.Comment, {})
+        self._tree_builder.data(data)
+        self._tree_builder.end(ET.Comment)
+
+    def feed(self, data):
+        self._parser.Parse(data, 0)
+
+    def close(self):
+        self._parser.Parse("", 1)
+        return self._tree_builder.close()
+
+from . import constants as c
+from . import build_settings as s
+from . import build_utils as utils
 
 # TODO: add CLI option to override / pass-in custom maven/gradle args
 # NOTE: --batch-mode is needed to avoid unicode symbols messing up stdout while unit-testing the build-system
@@ -66,11 +78,11 @@ def setJavaHome(config):
         # currently only the Alpine image brings its own java-installation & JAVA_HOME
         # for other Linux images we install the JDK and setup JAVA_HOME manually
         if (config.vendor != c.vendor_alpine):
-            print "Setting JAVA_HOME env-var for Docker Linux build"
+            print ("Setting JAVA_HOME env-var for Docker Linux build")
             return setEnvVar("JAVA_HOME", "/opt/jdk/jdk1.8.0_131")
 
     # for any other builds, we can just assume that JAVA_HOME is already set system-wide
-    print "Using system-var JAVA_HOME"
+    print ("Using system-var JAVA_HOME")
     return []
 
 def setVersionEnv(config):
@@ -173,7 +185,7 @@ def copyNativeLibs(config):
     else:
         lib_target_path = "src/main/resources/"
 
-    print "Copying native lib from: " + platform_lib_path + " to: " + lib_target_path
+    print ("Copying native lib from: " + platform_lib_path + " to: " + lib_target_path)
 
     copy_cmds += cp(platform_lib_path + " " + lib_target_path)
 
@@ -246,9 +258,7 @@ def apply_maven_settings(settings, src_pom_path = "./pom.xml", target_pom_path =
 
     target_pom_path = target_pom_path or src_pom_path
 
-    print "Updating Maven configuration (" + target_pom_path + ")..."
-
-    tree = ET.parse(src_pom_path, XmlCommentParser())
+    tree = ET.parse(src_pom_path)
     root = tree.getroot()
 
     __recurse_maven_settings(settings, __handle_setting)
