@@ -60,17 +60,36 @@ WORKDIR /v8build/v8
 COPY install-deps.sh .
 RUN echo y | sh install-deps.sh
 
+# Install sysroots needed for cross-compilation
+# Always install x64 sysroot for host tools
+RUN build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
+
+# Install additional sysroots for Android cross-compilation
+RUN if [ "${target_os}" = "android" ]; then \
+      if [ "${target_cpu}" = "arm" ]; then \
+        build/linux/sysroot_scripts/install-sysroot.py --arch=arm; \
+      elif [ "${target_cpu}" = "arm64" ]; then \
+        build/linux/sysroot_scripts/install-sysroot.py --arch=arm64; \
+      elif [ "${target_cpu}" = "x86" ]; then \
+        build/linux/sysroot_scripts/install-sysroot.py --arch=i386; \
+      fi; \
+    fi
+
 ENV target_cpu ${target_cpu}
 ENV build_platform ${target_cpu}.release
 ENV path_to_args ${target_os}-${target_cpu}/args.gn
 
-RUN ./tools/dev/v8gen.py ${build_platform} -vv
-
-RUN rm out.gn/${build_platform}/args.gn
+# Create output directory and copy custom args.gn
+# Skip v8gen.py as it fails with --check flag in V8 12.4 for cross-compilation setups
+RUN mkdir -p out.gn/${build_platform}
 COPY ./${path_to_args} out.gn/${build_platform}/args.gn
+
+# Display the configuration
 RUN ls -al out.gn/${build_platform}/
 RUN cat out.gn/${build_platform}/args.gn
-RUN touch out.gn/${build_platform}/args.gn
+
+# Run GN directly to generate build files
+RUN gn gen out.gn/${build_platform}
 
 # Build the V8 monolithic static liblary
 RUN ninja -j 4 -C out.gn/${build_platform} -t clean
