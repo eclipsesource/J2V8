@@ -7,8 +7,8 @@
 # Accept licences
 # src http://vgaidarji.me/blog/2017/05/31/automatically-accept-android-sdkmanager-licenses/
 
-for I in "platforms;android-10" \
-         "build-tools;24.0.3"; do
+for I in "platforms;android-34" \
+         "build-tools;34.0.0"; do
     echo "Trying to update with tools/bin/sdkmanager: " $I
     yes | sdkmanager $I
 done

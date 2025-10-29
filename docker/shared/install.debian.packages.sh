@@ -6,10 +6,14 @@ apt-get -qq update && \
 	unzip \
 	gcc gcc-multilib \
 	g++ g++-multilib \
+	python3 \
+	python3-venv \
+	python3-distutils \
 	curl \
 	file \
-	python \
 	make \
 	wget \
 	supervisor \
-	execstack
+
+# Ensure legacy scripts find python
+ln -sf /usr/bin/python3 /usr/bin/python

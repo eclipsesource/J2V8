@@ -9,10 +9,7 @@ fi
 # - https://www.mkyong.com/java/how-to-install-oracle-jdk-8-on-debian/
 
 echo "Preparing JDK..."
-curl -L -C - -b "oraclelicense=accept-securebackup-cookie" -O http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz
-mkdir -p /opt/jdk
-tar x -C /opt/jdk -f jdk-8u131-linux-x64.tar.gz
+apt-get -qq update &&   DEBIAN_FRONTEND=noninteractive apt-get -qq install -y --no-install-recommends     openjdk-17-jdk     openjdk-17-jre  && rm -rf /var/lib/apt/lists/*
 
-update-alternatives --install /usr/bin/java java /opt/jdk/jdk1.8.0_131/bin/java 100
-update-alternatives --install /usr/bin/javac javac /opt/jdk/jdk1.8.0_131/bin/javac 100
-update-alternatives --install /usr/bin/javah javah /opt/jdk/jdk1.8.0_131/bin/javah 100
+update-alternatives --set java $(update-alternatives --list java | grep java-17 | head -n 1)
+update-alternatives --set javac $(update-alternatives --list javac | grep java-17 | head -n 1)

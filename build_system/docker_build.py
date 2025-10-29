@@ -46,7 +46,10 @@ class DockerBuildSystem(BuildSystem):
 
             docker_req_platform = "windows" if utils.is_win32(config.platform) else "linux"
             if (platform.system() == "Darwin"):
-                docker_req_platform = "darwin/amd64"
+                # Intel Macs report darwin/amd64 while Apple Silicon reports darwin/arm64. Accept either.
+                if not any(arch in docker_version for arch in ("darwin/amd64", "darwin/arm64")):
+                    utils.cli_exit("ERROR: docker server must be using darwin/amd64 (Intel) or darwin/arm64 (Apple Silicon) containers, instead found server version using: " + docker_version)
+                return
 
             # check if the docker engine is running the expected container platform (linux or windows)
             if (docker_req_platform not in docker_version):

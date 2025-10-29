@@ -285,7 +285,7 @@ public class PlatformDetector {
         if (value.matches("^(arm|arm32)$") || value.startsWith("armv7")) {
             return "arm_32";
         }
-        if ("aarch64".equals(value) || value.startsWith("armv8")) {
+        if ("aarch64".equals(value) || value.startsWith("armv8") || value.startsWith("arm64")) {
             return "aarch_64";
         }
         if (value.matches("^(ppc|ppc32)$")) {

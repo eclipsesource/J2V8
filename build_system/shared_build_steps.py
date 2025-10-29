@@ -37,7 +37,7 @@ cmake_out_dir = "./cmake.out/$VENDOR-$PLATFORM.$ARCH/"
 # Common shell commands & utils
 #-----------------------------------------------------------------------
 def gradleCmd():
-    return "gradlew" if os.name == "nt" else "gradle"
+    return "gradlew.bat" if os.name == "nt" else "./gradlew"
 
 def gradle(cmd):
     return [
@@ -60,16 +60,9 @@ def setEnvVar(name, value):
         return ["export " + name + "=\"" + value + "\""]
 
 def setJavaHome(config):
-    # NOTE: Docker Linux builds need some special handling, because not all images have
-    # a pre-defined JAVA_HOME environment variable
-    if (config.platform == c.target_linux and config.cross_agent == "docker"):
-        # currently only the Alpine image brings its own java-installation & JAVA_HOME
-        # for other Linux images we install the JDK and setup JAVA_HOME manually
-        if (config.vendor != c.vendor_alpine):
-            print "Setting JAVA_HOME env-var for Docker Linux build"
-            return setEnvVar("JAVA_HOME", "/opt/jdk/jdk1.8.0_131")
-
-    # for any other builds, we can just assume that JAVA_HOME is already set system-wide
+    # Assume the host or container images expose a compatible JDK on PATH/JAVA_HOME.
+    # The Gradle wrapper now targets JDK 17+, so callers should provision that runtime
+    # as part of their environment rather than relying on hard-coded defaults here.
     print "Using system-var JAVA_HOME"
     return []
 

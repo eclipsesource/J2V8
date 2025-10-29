@@ -20,7 +20,7 @@ class TestAndroidDocker(unittest.TestCase):
     @expectOutput([
         r"assumption failure org\.junit\.AssumptionViolatedException: Skipped test \(Node\.js features not included in native library\)",
         r"Total tests 9, assumption_failure 9",
-        r"\n:spoon\n\nBUILD SUCCESSFUL\n\nTotal time: ",
+        r"\n:test\n\nBUILD SUCCESSFUL\n\nTotal time: ",
     ])
     def test_x86_node_disabled(self):
 
@@ -32,7 +32,7 @@ class TestAndroidDocker(unittest.TestCase):
 
         bex.execute_build(params)
 
-    @expectOutput(r"\n:spoon\n\nBUILD SUCCESSFUL\n\nTotal time: ")
+    @expectOutput(r"\n:test\n\nBUILD SUCCESSFUL\n\nTotal time: ")
     def test_x86_node_enabled(self):
 
         params = self.with_x86_defaults(

@@ -7,6 +7,7 @@ use_custom_libcxx = false
 v8_monolithic = true
 v8_use_external_startup_data = false
 v8_enable_i18n_support= false
+android_enable_16k_pages = true
 symbol_level = 0
 v8_android_log_stdout = true
 v8_enable_pointer_compression = false

@@ -15,12 +15,12 @@ RUN ./install.debian.packages.sh
 
 ENV ANDROID_HOME "/usr/local/android-sdk"
 
-ENV NDK_VERSION "r18"
-ENV NDK_NAME "android-ndk-$NDK_VERSION-linux-x86_64"
+ENV NDK_VERSION "r26d"
+ENV NDK_NAME "android-ndk-$NDK_VERSION-linux"
 RUN echo "Preparing Android NDK..." && \
     mkdir -p /build && \
     cd /build && \
-    curl -fSOL https://dl.google.com/android/repository/$NDK_NAME.zip && \
+    wget -q https://dl.google.com/android/repository/$NDK_NAME.zip -O $NDK_NAME.zip && \
     unzip -qq $NDK_NAME.zip && \
     rm $NDK_NAME.zip
 
@@ -95,4 +95,3 @@ EXPOSE 5037
 EXPOSE 5554
 EXPOSE 5555
 EXPOSE 5900
-
