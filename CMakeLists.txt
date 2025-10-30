@@ -103,14 +103,18 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(J2V8_LIB_PLATFORM_NAME "macosx")
 
     # configure library architecture
-    if(J2V8_BUILD_X64)
+    if(J2V8_TARGET_ARCH STREQUAL "x86_64")
         set(CMAKE_OSX_ARCHITECTURES "x86_64")
-    else()
+    elseif(J2V8_TARGET_ARCH STREQUAL "aarch_64" OR J2V8_TARGET_ARCH STREQUAL "arm64")
+        set(CMAKE_OSX_ARCHITECTURES "arm64")
+    elseif(J2V8_TARGET_ARCH STREQUAL "i386" OR J2V8_TARGET_ARCH STREQUAL "x86")
         set(CMAKE_OSX_ARCHITECTURES "i386")
 
         # fix for 32-bit linking error "ld: illegal text reloc"
         # see: https://stackoverflow.com/a/9322458/425532
         set(CMAKE_SHARED_LINKER_FLAGS "-read_only_relocs suppress")
+    else()
+        message(FATAL_ERROR "Unsupported architecture for macOS: ${J2V8_TARGET_ARCH}")
     endif()
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
