@@ -14,7 +14,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.junit.After;
@@ -87,10 +90,15 @@ public class V8RuntimeNotLoadedTest {
 
         System.setProperty(JAVA_LIBRARY_PATH, path);
 
-        // set sys_paths to null so that java.library.path will be reevalueted next time it is needed
-        final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-        sysPathsField.setAccessible(true);
-        sysPathsField.set(null, null);
+        // Try to reset sys_paths (Java 8 only - field was removed in Java 9+)
+        try {
+            final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+            sysPathsField.setAccessible(true);
+            sysPathsField.set(null, null);
+        } catch (NoSuchFieldException e) {
+            // Java 9+ - sys_paths field doesn't exist
+            // Just setting the system property is sufficient for our test purposes
+        }
     }
 
     public static class SeparateClassloaderTestRunner extends BlockJUnit4ClassRunner {
@@ -113,8 +121,26 @@ public class V8RuntimeNotLoadedTest {
 
         public static class TestClassLoader extends URLClassLoader {
             public TestClassLoader() {
-                // TODO: this crashes on Android (see: https://stackoverflow.com/q/31920245)
-                super(((URLClassLoader) getSystemClassLoader()).getURLs());
+                super(getClasspathURLs());
+            }
+            
+            /**
+             * Get the classpath URLs from the java.class.path system property.
+             * This approach works on all Java versions (8+) and doesn't require
+             * casting the system classloader to URLClassLoader (which fails on Java 9+).
+             */
+            private static URL[] getClasspathURLs() {
+                String classpath = System.getProperty("java.class.path");
+                String[] paths = classpath.split(System.getProperty("path.separator"));
+                URL[] urls = new URL[paths.length];
+                for (int i = 0; i < paths.length; i++) {
+                    try {
+                        urls[i] = new File(paths[i]).toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException("Invalid classpath entry: " + paths[i], e);
+                    }
+                }
+                return urls;
             }
 
             @Override

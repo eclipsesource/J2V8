@@ -16,8 +16,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,21 +27,7 @@ public class LibraryLoaderTest {
     private String vendor;
     private String arch;
 
-    private Field releaseFilesField;
     private String[] releaseFiles;
-
-    static void makeFinalStaticAccessible(final Field field) {
-        field.setAccessible(true);
-
-        try {
-            // on certain JVMs this is not present and will throw the exceptions below (e.g. the Android Dalvik VM)
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        }
-        catch (NoSuchFieldException e) {}
-        catch (IllegalAccessException e) {}
-    }
 
     @Before
     public void setup() throws Exception {
@@ -51,11 +35,8 @@ public class LibraryLoaderTest {
         vendor = System.getProperty("java.specification.vendor");
         arch = System.getProperty("os.arch");
 
-        Class<?> vendorClass = PlatformDetector.Vendor.class;
-        releaseFilesField = vendorClass.getDeclaredField("LINUX_OS_RELEASE_FILES");
-        makeFinalStaticAccessible(releaseFilesField);
-
-        releaseFiles = (String[]) releaseFilesField.get(null);
+        // Save the original test override value
+        releaseFiles = PlatformDetector.Vendor.testLinuxOsReleaseFiles;
     }
 
     @After
@@ -64,7 +45,8 @@ public class LibraryLoaderTest {
         System.setProperty("java.specification.vendor", vendor);
         System.setProperty("os.arch", arch);
 
-        releaseFilesField.set(null, releaseFiles);
+        // Restore the original test override value
+        PlatformDetector.Vendor.testLinuxOsReleaseFiles = releaseFiles;
     }
 
     private static boolean skipTest() {
@@ -105,7 +87,7 @@ public class LibraryLoaderTest {
         final String test_vendor = "linux_vendor";
 
         // mock /etc/os-release file
-        releaseFilesField.set(null, new String[] { os_release_test_path });
+        PlatformDetector.Vendor.testLinuxOsReleaseFiles = new String[] { os_release_test_path };
 
         PrintWriter out = new PrintWriter(os_release_test_path);
         out.println(

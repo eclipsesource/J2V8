@@ -110,6 +110,9 @@ public class PlatformDetector {
         private static final String[] LINUX_OS_RELEASE_FILES = {"/etc/os-release", "/usr/lib/os-release"};
         private static final String REDHAT_RELEASE_FILE = "/etc/redhat-release";
         private static final String LINUX_ID_PREFIX = "ID=";
+        
+        // Package-private field for testing purposes - allows tests to override the release files
+        static String[] testLinuxOsReleaseFiles = null;
 
         public static String getName() {
             if (OS.isWindows()) {
@@ -129,8 +132,13 @@ public class PlatformDetector {
         }
 
         private static String getLinuxOsReleaseId() {
+            // Use test override if set, otherwise use production values
+            String[] filesToCheck = (testLinuxOsReleaseFiles != null) 
+                ? testLinuxOsReleaseFiles 
+                : LINUX_OS_RELEASE_FILES;
+            
             // First, look for the os-release file.
-            for (String osReleaseFileName : LINUX_OS_RELEASE_FILES) {
+            for (String osReleaseFileName : filesToCheck) {
                 File file = new File(osReleaseFileName);
                 if (file.exists()) {
                     return parseLinuxOsReleaseFile(file);
