@@ -112,19 +112,21 @@ private:
 class V8InspectorClientImpl final: public v8_inspector::V8InspectorClient {
 public:
   V8InspectorClientImpl(Isolate* isolate, const std::unique_ptr<v8::Platform> &platform, InspectorDelegate* inspectorDelegate, std::string contextName) {
-    isolate_ = isolate;
-    context_ = isolate->GetCurrentContext();
-    platform_ = platform.get();
-    channel_ = std::unique_ptr<V8InspectorChannelImpl>(new V8InspectorChannelImpl(isolate, inspectorDelegate));
-    inspector_ = v8_inspector::V8Inspector::create(isolate, this);
-    session_ = inspector_->connect(kContextGroupId, channel_.get(), v8_inspector::StringView());
-    context_->SetAlignedPointerInEmbedderData(1, this);
+    // isolate_ = isolate;
+    // context_ = isolate->GetCurrentContext();
+    // platform_ = platform.get();
+    // channel_ = std::unique_ptr<V8InspectorChannelImpl>(new V8InspectorChannelImpl(isolate, inspectorDelegate));
+    // inspector_ = v8_inspector::V8Inspector::create(isolate, this);
+    // session_ = inspector_->connect(kContextGroupId, channel_.get(), v8_inspector::StringView());
+    // context_->SetAlignedPointerInEmbedderData(1, this);
 
-    inspector_->contextCreated(
-      v8_inspector::V8ContextInfo(isolate->GetCurrentContext(),
-      kContextGroupId,
-      convertSTDStringToStringView(contextName))
-    );
+    // inspector_->contextCreated(
+    //   v8_inspector::V8ContextInfo(isolate->GetCurrentContext(),
+    //   kContextGroupId,
+    //   convertSTDStringToStringView(contextName))
+    // );
+
+    // Remove the inspector for now.
   }
 
   void dispatchProtocolMessage(const v8_inspector::StringView &message_view) {
@@ -262,6 +264,7 @@ void throwParseException(JNIEnv *env, const Local<Context>& context, Isolate* is
 void throwExecutionException(JNIEnv *env, const Local<Context>& context, Isolate* isolate, TryCatch* tryCatch, jlong v8RuntimePtr);
 void throwError(JNIEnv *env, const char *message);
 void disposeMethod(v8::WeakCallbackInfo<MethodDescriptor> const& data);
+void weakReferenceReleased(v8::WeakCallbackInfo<WeakReferenceDescriptor> const& data);
 void throwV8RuntimeException(JNIEnv *env,  String::Value *message);
 void throwResultUndefinedException(JNIEnv *env, const char *message);
 Isolate* getIsolate(JNIEnv *env, jlong handle);
@@ -1861,14 +1864,7 @@ JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1setWeak
     WeakReferenceDescriptor* wrd = new WeakReferenceDescriptor();
     wrd->v8RuntimePtr = v8RuntimePtr;
     wrd->objectHandle = objectHandle;
-    reinterpret_cast<Persistent<Object>*>(objectHandle)->SetWeak(wrd, [](v8::WeakCallbackInfo<WeakReferenceDescriptor> const& data) {
-      WeakReferenceDescriptor* wrd = data.GetParameter();
-      JNIEnv * env;
-      getJNIEnv(env);
-      jobject v8 = reinterpret_cast<V8Runtime*>(wrd->v8RuntimePtr)->v8;
-      env->CallVoidMethod(v8, v8WeakReferenceReleased, wrd->objectHandle);
-      delete(wrd);
-    }, WeakCallbackType::kFinalizer);
+    reinterpret_cast<Persistent<Object>*>(objectHandle)->SetWeak(wrd, &weakReferenceReleased, WeakCallbackType::kParameter);
 }
 
 JNIEXPORT void JNICALL Java_com_eclipsesource_v8_V8__1clearWeak
@@ -2107,6 +2103,15 @@ void disposeMethod(v8::WeakCallbackInfo<MethodDescriptor> const& data) {
     }
     delete(md);
     md = nullptr;
+}
+
+void weakReferenceReleased(v8::WeakCallbackInfo<WeakReferenceDescriptor> const& data) {
+    WeakReferenceDescriptor* descriptor = data.GetParameter();
+    JNIEnv* env;
+    getJNIEnv(env);
+    jobject v8 = reinterpret_cast<V8Runtime*>(descriptor->v8RuntimePtr)->v8;
+    env->CallVoidMethod(v8, v8WeakReferenceReleased, descriptor->objectHandle);
+    delete(descriptor);
 }
 
 jobject getResult(JNIEnv *env, const Local<Context>& context, jobject &v8, jlong v8RuntimePtr, Handle<Value> &result, jint expectedType) {

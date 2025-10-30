@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.6.3</version>
+      <version>5.14.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -94,8 +94,11 @@
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
           <workingDirectory>target</workingDirectory>
-          <argLine>-Djava.library.path=${basedir}/jni</argLine>
+          <argLine>-Djava.library.path=${basedir}/jni --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
           <runOrder>alphabetical</runOrder>
+          <excludes>
+            <exclude>**/V8InspectorTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>

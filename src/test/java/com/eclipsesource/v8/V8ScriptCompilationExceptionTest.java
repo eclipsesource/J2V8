@@ -12,6 +12,7 @@ package com.eclipsesource.v8;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
@@ -110,7 +111,8 @@ public class V8ScriptCompilationExceptionTest {
             assertEquals("for (int i = 0; i < x.length; i++) {", e.getSourceLine());
             assertEquals(9, e.getStartColumn());
             assertEquals(10, e.getEndColumn());
-            assertEquals("SyntaxError: Unexpected identifier", e.getJSMessage());
+            // Newer V8 versions include the identifier name in the error message
+            assertTrue(e.getJSMessage().contains("SyntaxError: Unexpected identifier"));
             return;
         }
         fail("Exception should have been thrown.");
