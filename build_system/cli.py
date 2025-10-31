@@ -1,7 +1,7 @@
 import argparse
 
-import constants as c
-import build_constants as bc
+from . import constants as c
+from . import build_constants as bc
 
 class BuildParams(object):
     """Value container for all build-parameters"""

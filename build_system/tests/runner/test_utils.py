@@ -1,9 +1,9 @@
 
 def write_log(level, message = ""):
-    print "$ [%(level)s] %(message)s" % locals()
+    print("$ [%(level)s] %(message)s" % locals())
 
 def write_separator():
-    print "$---------------------------------------------------------------------------------------------------"
+    print("$---------------------------------------------------------------------------------------------------")
 
 def get_test_names(test):
     test_class = type(test).__name__

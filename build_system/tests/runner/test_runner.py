@@ -47,14 +47,14 @@ class SurePhyreTestRunner(object):
         utils.write_separator()
         utils.write_log("INFO", "T E S T S")
 
-        for k, class_tests in test_class_dict.iteritems():
+        for k, class_tests in test_class_dict.items():
             class_suite = TestSuite(class_tests)
             reports_dir = os.path.join(os.path.dirname(__main__.__file__), "test-reports")
 
             if not os.path.exists(reports_dir):
                 os.makedirs(reports_dir)
 
-            with file(os.path.join(reports_dir, k + '.txt'), 'wb') as fp:
+            with open(os.path.join(reports_dir, k + '.txt'), 'wb') as fp:
                 # execute all tests in this test class
                 class_result = TestResult([sys.stdout, fp], class_tests)
                 class_suite(class_result)

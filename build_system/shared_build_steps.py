@@ -7,22 +7,9 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
-# see: https://stackoverflow.com/a/27333347/425532
-class XmlCommentParser(ET.XMLTreeBuilder):
-
-   def __init__(self):
-       ET.XMLTreeBuilder.__init__(self)
-       # assumes ElementTree 1.2.X
-       self._parser.CommentHandler = self.handle_comment
-
-   def handle_comment(self, data):
-       self._target.start(ET.Comment, {})
-       self._target.data(data)
-       self._target.end(ET.Comment)
-
-import constants as c
-import build_settings as s
-import build_utils as utils
+from . import constants as c
+from . import build_settings as s
+from . import build_utils as utils
 
 # TODO: add CLI option to override / pass-in custom maven/gradle args
 # NOTE: --batch-mode is needed to avoid unicode symbols messing up stdout while unit-testing the build-system
@@ -63,7 +50,7 @@ def setJavaHome(config):
     # Assume the host or container images expose a compatible JDK on PATH/JAVA_HOME.
     # The Gradle wrapper now targets JDK 17+, so callers should provision that runtime
     # as part of their environment rather than relying on hard-coded defaults here.
-    print "Using system-var JAVA_HOME"
+    print("Using system-var JAVA_HOME")
     return []
 
 def setVersionEnv(config):
@@ -166,7 +153,7 @@ def copyNativeLibs(config):
     else:
         lib_target_path = "src/main/resources/"
 
-    print "Copying native lib from: " + platform_lib_path + " to: " + lib_target_path
+    print("Copying native lib from: " + platform_lib_path + " to: " + lib_target_path)
 
     copy_cmds += cp(platform_lib_path + " " + lib_target_path)
 
@@ -239,9 +226,9 @@ def apply_maven_settings(settings, src_pom_path = "./pom.xml", target_pom_path =
 
     target_pom_path = target_pom_path or src_pom_path
 
-    print "Updating Maven configuration (" + target_pom_path + ")..."
+    print("Updating Maven configuration (" + target_pom_path + ")...")
 
-    tree = ET.parse(src_pom_path, XmlCommentParser())
+    tree = ET.parse(src_pom_path)
     root = tree.getroot()
 
     __recurse_maven_settings(settings, __handle_setting)

@@ -2,8 +2,8 @@ import unittest
 
 from runner.test_asserts import *
 
-import constants as c
-import build_executor as bex
+from . import constants as c
+from . import build_executor as bex
 
 class TestWin32Docker(unittest.TestCase):
 

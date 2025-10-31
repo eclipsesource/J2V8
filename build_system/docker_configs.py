@@ -1,4 +1,4 @@
-import constants as c
+from . import constants as c
 
 vendor_default_images = {
     c.vendor_alpine: "openjdk:8u131-alpine",

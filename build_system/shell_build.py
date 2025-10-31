@@ -1,8 +1,8 @@
 import subprocess
 import sys
-from build_structures import BuildSystem
-import constants as c
-import build_utils as utils
+from .build_structures import BuildSystem
+from . import constants as c
+from . import build_utils as utils
 
 class ShellBuildSystem(BuildSystem):
     def clean(self, config):

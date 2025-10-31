@@ -3,10 +3,10 @@ import argparse
 import sys
 import shlex
 
-import build_configs as bcfg
-import build_executor as bex
-import build_utils as utils
-import cli as cli
+from . import build_configs as bcfg
+from . import build_executor as bex
+from . import build_utils as utils
+from . import cli as cli
 
 def run_interactive_cli():
       idx = 0
@@ -52,7 +52,7 @@ def run_interactive_cli():
       # merge the potentially customized build-steps into the
       # original pre-defined build-config params
       # see: https://stackoverflow.com/a/15277395/425532
-      build_params.update((k,v) for k,v in user_params.iteritems() if v is not None)
+      build_params.update((k,v) for k,v in user_params.items() if v is not None)
 
       # start the build
       bex.execute_build(build_params)
