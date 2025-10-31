@@ -1,4 +1,4 @@
-ARG sys_image=debian:jessie-slim
+ARG sys_image=debian:bullseye-slim
 
 FROM $sys_image
 
@@ -34,20 +34,29 @@ ENV PATH "$PATH:/build/android-gcc-toolchain:$NDK"
 ENV PATH "$PATH:$ANDROID_HOME/tools"
 ENV PATH "$PATH:$ANDROID_HOME/platform-tools"
 
-RUN mkdir -p ${ANDROID_HOME} && \
-    cd ${ANDROID_HOME} && \
-    wget -q https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip -O android_tools.zip && \
-    unzip -qq android_tools.zip && \
-    rm android_tools.zip
-
-RUN mkdir /usr/local/android-sdk/tools/keymaps && \
-    touch /usr/local/android-sdk/tools/keymaps/en-us
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
+    cd ${ANDROID_HOME}/cmdline-tools && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip && \
+    unzip -qq cmdline-tools.zip && \
+    mv cmdline-tools latest && \
+    rm cmdline-tools.zip
 
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
-ENV JAVA_HOME "/opt/jdk/jdk1.8.0_131"
 
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+# Debug: Show what actually got installed
+RUN echo "=== Debugging Java Installation ===" && \
+    ls -la /usr/lib/jvm/ && \
+    echo "=== Which javac ===" && \
+    which javac && \
+    echo "=== Javac real path ===" && \
+    readlink -f $(which javac) && \
+    echo "=== Java version ===" && \
+    java -version
+
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-arm64"
+
+ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
 
 COPY ./shared/install-android-dependencies.sh /temp/docker/shared
 RUN ./install-android-dependencies.sh
@@ -58,7 +67,7 @@ ENV PATH "$PATH:/opt/cmake/bin"
 
 COPY ./shared/install.gradle.sh /temp/docker/shared
 RUN ./install.gradle.sh
-ENV GRADLE_HOME "/opt/gradle-3.5"
+ENV GRADLE_HOME "/opt/gradle-8.5"
 ENV PATH "$PATH:$GRADLE_HOME/bin"
 
 RUN mkdir -p /temp
@@ -67,15 +76,8 @@ COPY ./android/AndroidManifest.xml /temp/src/main/AndroidManifest.xml
 WORKDIR /temp
 RUN cd /temp && gradle --dry-run
 
-# Install the Android tools
-RUN sdkmanager emulator
-RUN sdkmanager tools
-RUN sdkmanager "system-images;android-21;default;armeabi-v7a"
-
-# Required for Android ARM Emulator
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5widgets5
-ENV QT_QPA_PLATFORM offscreen
-ENV LD_LIBRARY_PATH ${ANDROID_HOME}/tools/lib64:${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib
+# Note: Removed deprecated Android SDK packages (emulator, tools, system-images)
+# These are no longer available in modern Android SDK and not needed for building J2V8
 
 ARG KEYSTORE
 ARG KEYSTORE_PASSWORD
