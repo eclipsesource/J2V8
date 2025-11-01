@@ -1,7 +1,9 @@
-set(CMAKE_SYSTEM_NAME Android)
-set(CMAKE_SYSTEM_VERSION 21) # API level
+# Android NDK r26d Toolchain Configuration for x86_64
+# This file delegates to Android NDK's official CMake toolchain
 
-set(CMAKE_ANDROID_ARCH x86_64)
-set(CMAKE_ANDROID_ARCH_ABI x86_64)
-set(CMAKE_ANDROID_NDK /build/android-ndk-r26d/)
-set(CMAKE_ANDROID_STL_TYPE c++_static)
+set(ANDROID_ABI x86_64)
+set(ANDROID_PLATFORM android-21)
+set(ANDROID_STL c++_static)
+
+# Include Android NDK's official toolchain file
+include(/build/android-ndk-r26d/build/cmake/android.toolchain.cmake)

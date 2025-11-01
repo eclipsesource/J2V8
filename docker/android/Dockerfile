@@ -20,9 +20,15 @@ ENV NDK_NAME "android-ndk-$NDK_VERSION-linux"
 RUN echo "Preparing Android NDK..." && \
     mkdir -p /build && \
     cd /build && \
-    wget -q https://dl.google.com/android/repository/$NDK_NAME.zip -O $NDK_NAME.zip && \
-    unzip -qq $NDK_NAME.zip && \
-    rm $NDK_NAME.zip
+    echo "Downloading $NDK_NAME.zip from Google..." && \
+    wget --progress=bar:force https://dl.google.com/android/repository/$NDK_NAME.zip -O $NDK_NAME.zip && \
+    echo "Download complete. File size:" && \
+    ls -lh $NDK_NAME.zip && \
+    echo "Extracting NDK..." && \
+    unzip -q $NDK_NAME.zip && \
+    echo "Cleaning up..." && \
+    rm $NDK_NAME.zip && \
+    echo "NDK ready at /build/android-ndk-$NDK_VERSION"
 
 RUN echo "Preparing Android GCC-Toolchain..." && \
     mkdir -p /build && \
@@ -44,7 +50,7 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
 COPY ./shared/install.jdk.sh /temp/docker/shared
 RUN ./install.jdk.sh
 
-# Debug: Show what actually got installed
+# Debug: Show what actually got installed and set JAVA_HOME dynamically
 RUN echo "=== Debugging Java Installation ===" && \
     ls -la /usr/lib/jvm/ && \
     echo "=== Which javac ===" && \
@@ -54,7 +60,13 @@ RUN echo "=== Debugging Java Installation ===" && \
     echo "=== Java version ===" && \
     java -version
 
-ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-arm64"
+# Set JAVA_HOME dynamically based on actual architecture
+RUN ARCH=$(dpkg --print-architecture) && \
+    echo "Detected architecture: $ARCH" && \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-$ARCH" >> /etc/environment && \
+    echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-$ARCH" > /tmp/java_home.env
+
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 
 ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
 

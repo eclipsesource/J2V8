@@ -81,6 +81,7 @@ def build_j2v8_jni(config):
     java_class_id = "com.eclipsesource.v8.V8"
     java_class_parts = java_class_id.split(".")
     java_class_filepath = "./target/classes/" + "/".join(java_class_parts) + ".class"
+    java_source_filepath = "./src/main/java/" + "/".join(java_class_parts) + ".java"
 
     if (not os.path.exists(java_class_filepath)):
         return [
@@ -88,11 +89,12 @@ def build_j2v8_jni(config):
             "echo JNI Header generation will be skipped...",
         ]
 
+    # Use javac -h for Java 11+ (javah was removed)
+    # Note: javac -h requires source files (.java), not compiled class files
     return [
         "echo Generating JNI header files...",
-        "cd ./target/classes",
-        "javah " + java_class_id,
-        ] + cp("com_eclipsesource_v8_V8.h ../../jni/com_eclipsesource_v8_V8Impl.h") + [
+        "javac -h ./jni -cp ./target/classes " + java_source_filepath,
+        ] + [
         "echo Done",
     ]
 #-----------------------------------------------------------------------

@@ -8,7 +8,9 @@ build/
 depot_tools/
 v8build/
 v8-working.out/
+jni/*.h
 
+*.class
 .gradle
 .DS_Store
 *.patch

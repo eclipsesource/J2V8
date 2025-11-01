@@ -98,8 +98,9 @@ class DockerBuildSystem(BuildSystem):
 
         image_name = self.get_v8_image_name(config)
 
+        no_cache = " --no-cache" if hasattr(config, 'no_docker_cache') and config.no_docker_cache else ""
         print ("Building V8 docker image: " + config.inject_env(image_name))
-        self.exec_v8_cmd("docker build " + args_str + " -f Dockerfile -t \"" + image_name + "\" . ", config)
+        self.exec_v8_cmd("docker build" + no_cache + " " + args_str + " -f Dockerfile -t \"" + image_name + "\" . ", config)
 
     def pre_build(self, config):
         print ("preparing " + config.platform + "@" + config.arch + " => " + config.name)
@@ -154,8 +155,13 @@ class DockerBuildSystem(BuildSystem):
 
         image_name = self.get_image_name(config)
 
+        no_cache = " --no-cache" if hasattr(config, 'no_docker_cache') and config.no_docker_cache else ""
+        
+        # Android NDK is only available for x86_64, so force platform emulation on ARM64 hosts
+        platform_flag = " --platform linux/amd64" if config.platform == "android" else ""
+        
         print ("Building docker image: " + config.inject_env(image_name))
-        self.exec_host_cmd("docker build " + args_str + " -f $PLATFORM/Dockerfile -t \"" + image_name + "\" . ", config)
+        self.exec_host_cmd("docker build" + no_cache + platform_flag + " " + args_str + " -f $PLATFORM/Dockerfile -t \"" + image_name + "\" . ", config)
 
     def exec_build(self, config):
         print ("DOCKER running " + config.platform + "@" + config.arch + " => " + config.name)
@@ -180,7 +186,10 @@ class DockerBuildSystem(BuildSystem):
         image_name = self.get_image_name(config)
         container_name = self.get_container_name(config)
 
-        docker_run_str = "docker run " + extra_options + " -e KEY_ID=$KEY_ID -e KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD -e MAVEN_REPO_USER=$MAVEN_REPO_USER -e MAVEN_REPO_PASS=$MAVEN_REPO_PASS -P -v $CWD:" + mount_point + \
+        # Android NDK is only available for x86_64, so force platform emulation on ARM64 hosts
+        platform_flag = " --platform linux/amd64" if config.platform == "android" else ""
+
+        docker_run_str = "docker run" + platform_flag + " " + extra_options + " -e KEY_ID=$KEY_ID -e KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD -e MAVEN_REPO_USER=$MAVEN_REPO_USER -e MAVEN_REPO_PASS=$MAVEN_REPO_PASS -P -v $CWD:" + mount_point + \
             " --name " + container_name + " " + image_name + " " + shell_invoke + " \"cd $BUILD_CWD" + cmd_separator + " " + build_cmd + "\""
 
         docker_run_str = self.inject_env(docker_run_str, config)

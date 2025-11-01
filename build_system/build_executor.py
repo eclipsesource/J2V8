@@ -263,6 +263,7 @@ def execute_build(params):
         cross_cfg.arch = params.arch
         cross_cfg.file_abi = target_platform.file_abi(params.arch)
         cross_cfg.no_shutdown = params.no_shutdown
+        cross_cfg.no_docker_cache = params.no_docker_cache
         cross_cfg.sys_image = params.sys_image
         cross_cfg.vendor = params.vendor
         cross_cfg.docker = params.docker
@@ -316,6 +317,7 @@ def execute_build(params):
             target_step.docker = params.docker
             target_step.vagrant = params.vagrant
             target_step.keep_native_libs = params.keep_native_libs
+            target_step.no_docker_cache = params.no_docker_cache
             target_step.args = getattr(params, step, None)
 
             # run the current BuildStep

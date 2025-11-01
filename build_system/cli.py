@@ -17,6 +17,7 @@ class BuildParams(object):
         "vagrant": None,
         "sys_image": None,
         "no_shutdown": None,
+        "no_docker_cache": None,
         "redirect_stdout": None,
         "buildsteps": c.build_all,
     }
@@ -130,6 +131,13 @@ def init_cross_compile_args(parser):
     parser.add_argument("--no-shutdown", "-nos",
                         help="When using a cross-compile environment, do not shutdown the virtualized environment when the build is finished or canceled.",
                         dest="no_shutdown",
+                        action="store_const",
+                        const=True)
+
+    parser.add_argument("--no-docker-cache", "-ndc",
+                        help="Force Docker to rebuild images without using cache (useful after changing Dockerfiles or for clean rebuilds).",
+                        dest="no_docker_cache",
+                        default=False,
                         action="store_const",
                         const=True)
 
