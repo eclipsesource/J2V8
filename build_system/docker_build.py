@@ -99,6 +99,7 @@ class DockerBuildSystem(BuildSystem):
         image_name = self.get_v8_image_name(config)
 
         no_cache = " --no-cache" if hasattr(config, 'no_docker_cache') and config.no_docker_cache else ""
+
         print ("Building V8 docker image: " + config.inject_env(image_name))
         self.exec_v8_cmd("docker build" + no_cache + " " + args_str + " -f Dockerfile -t \"" + image_name + "\" . ", config)
 

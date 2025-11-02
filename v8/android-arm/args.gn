@@ -11,4 +11,3 @@ android_enable_16k_pages = true
 symbol_level = 0
 v8_android_log_stdout = true
 v8_enable_pointer_compression = false
-

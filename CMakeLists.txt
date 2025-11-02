@@ -64,6 +64,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
     set(J2V8_LIB_VENDOR_NAME "")
     set(J2V8_LIB_PLATFORM_NAME "android")
+    
+    # Android needs explicit C/C++ library linking
+    # Note: -lc++ removed - NDK toolchain provides correct lib based on ANDROID_STL
+    set (j2v8_Debug_libs "-lc -llog -ldl")
+    set (j2v8_Release_libs "-lc -llog -ldl")
 #}
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 #{
@@ -176,7 +181,7 @@ set(CMAKE_CXX_STANDARD 20)
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-variable -O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fPIC ")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=4096 ")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=4096 -Wl,--allow-shlib-undefined ")
 endif()
 
 # remove the MinSizeRel and RelWithDebInfo configurations
