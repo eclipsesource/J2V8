@@ -49,13 +49,21 @@ public class PlatformDetector {
 
     public static class OS {
         public static String getName() {
+            // Check for Android first using class existence
+            try {
+                Class.forName("android.os.Build");
+                return Platform.ANDROID;
+            } catch (ClassNotFoundException e) {
+                // Not Android, continue with other checks
+            }
+
             final String osProperty = System.getProperty("os.name");
             final String osName = normalizeOs(osProperty);
 
             final String vendorProperty = System.getProperty("java.specification.vendor");
             final String vendorName = normalize(vendorProperty);
 
-            // special handling for android
+            // fallback special handling for android
             if (vendorName.contains("android") || osName.contains("android")) {
                 return Platform.ANDROID;
             }

@@ -79,6 +79,8 @@ class LibraryLoader {
 
     static void loadLibrary(final String tempDirectory) {
         if (PlatformDetector.OS.isAndroid()) {
+            // On Android, System.loadLibrary automatically handles ABI selection
+            // It will look in lib/{abi}/ folders (e.g. armeabi-v7a, arm64-v8a, etc.)
             System.loadLibrary("j2v8");
             return;
         }
