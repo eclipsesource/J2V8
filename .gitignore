@@ -20,6 +20,7 @@ jni/*.h
 hs_err*.log
 *.tar.gz
 *.hprof
+local.properties
 
 # Intellij project files
 *.iml
