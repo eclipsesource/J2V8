@@ -82,8 +82,7 @@ def build_j2v8_cpp(config):
     return [
         "cd " + u.cmake_out_dir,
         "make -j4",
-        "cd ../..",
-    ] + u.copyNativeLibs(config)
+    ]
 
 android_config.build_step(c.build_j2v8_cpp, build_j2v8_cpp)
 #-----------------------------------------------------------------------

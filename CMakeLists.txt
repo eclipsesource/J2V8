@@ -64,7 +64,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(J2V8_LIB_ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
     set(J2V8_LIB_VENDOR_NAME "")
     set(J2V8_LIB_PLATFORM_NAME "android")
-    
+
     # Android needs explicit C/C++ library linking
     # Note: -lc++ removed - NDK toolchain provides correct lib based on ANDROID_STL
     set (j2v8_Debug_libs "-lc -llog -ldl")
@@ -167,6 +167,7 @@ endif()
 set(src_files
     jni/com_eclipsesource_v8_V8Impl.cpp
     jni/com_eclipsesource_v8_V8Impl.h
+    jni/android_stdio_stubs.c
 )
 
 # Android-specific source files
