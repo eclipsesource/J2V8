@@ -109,7 +109,7 @@ def copyOutput(config):
 
 def clearNativeLibs(config):
     """
-    Delete previously built native J2V8 libraries from any platforms
+    Delete previously built native J2V8 libraries from the current platform/architecture
     (can be disabled by the "keep_native_libs" config property)
     """
     # the CLI can override this step
@@ -121,9 +121,14 @@ def clearNativeLibs(config):
         libs = glob.glob(lib_pattern)
         return [rm(lib)[0] for lib in libs]
 
-    rm_libs = \
-        clearLibs("src/main/resources/libj2v8*") + \
-        clearLibs("src/main/jniLibs/*/libj2v8.so")
+    rm_libs = []
+    
+    if (utils.is_android(config.platform)):
+        # Only clear the specific architecture being built to preserve other architectures
+        rm_libs = clearLibs(config.inject_env("src/main/jniLibs/$FILE_ABI/libj2v8.so"))
+    else:
+        # For non-Android platforms, clear all resources
+        rm_libs = clearLibs("src/main/resources/libj2v8*")
 
     return rm_libs
 

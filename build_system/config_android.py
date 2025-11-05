@@ -82,7 +82,8 @@ def build_j2v8_cpp(config):
     return [
         "cd " + u.cmake_out_dir,
         "make -j4",
-    ]
+        "cd ../..",
+    ] + u.copyNativeLibs(config)
 
 android_config.build_step(c.build_j2v8_cpp, build_j2v8_cpp)
 #-----------------------------------------------------------------------
@@ -94,6 +95,18 @@ def build_j2v8_java(config):
         u.gradle("clean assembleRelease")
 
 android_config.build_step(c.build_j2v8_java, build_j2v8_java)
+#-----------------------------------------------------------------------
+def build_j2v8_package(config):
+    """
+    Package all native libraries from src/main/jniLibs into a multi-architecture AAR.
+    This step does not run 'clean', preserving all architectures.
+    Note: The config.arch parameter is ignored for this step.
+    """
+    return \
+        u.setVersionEnv(config) + \
+        u.gradle("assembleRelease")
+
+android_config.build_step(c.build_j2v8_package, build_j2v8_package)
 #-----------------------------------------------------------------------
 def build_j2v8_test(config):
     # if you are running this step without cross-compiling, it is assumed that a proper target Android device

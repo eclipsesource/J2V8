@@ -148,13 +148,21 @@ def execute_build(params):
     # this defines the PlatformConfig / operating system the build should be run for
     target_platform = bc.platform_configs.get(target)
 
-    if (params.arch is None):
-        utils.cli_exit("ERROR: No target architecture specified")
+    # Check if arch is required for the requested build steps
+    # j2v8package doesn't need arch since it packages all architectures
+    requires_arch = not (len(params.buildsteps) == 1 and params.buildsteps[0] == c.build_j2v8_package)
+    
+    if (params.arch is None and requires_arch):
+        utils.cli_exit("ERROR: No target architecture specified (required for all build steps except 'j2v8package')")
 
-    avail_architectures = target_platform.architectures
+    if (params.arch is not None):
+        avail_architectures = target_platform.architectures
 
-    if (not params.arch in avail_architectures):
-        utils.cli_exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + target)
+        if (not params.arch in avail_architectures):
+            utils.cli_exit("ERROR: Unsupported architecture: \"" + params.arch + "\" for selected target platform: " + target)
+    elif not requires_arch:
+        # For j2v8package, use a dummy arch value (will be ignored by the build step)
+        params.arch = target_platform.architectures[0] if target_platform.architectures else c.arch_arm64
 
     if (params.buildsteps is None):
         utils.cli_exit("ERROR: No build-step specified, valid values are: " + ", ".join(bc.avail_build_steps))

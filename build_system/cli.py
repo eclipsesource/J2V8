@@ -75,9 +75,11 @@ def init_required_args(parser):
                         choices=sorted(bc.avail_targets))
 
     parser.add_argument("--arch", "-a",
-                        help="The build target architecture identifier (the available architectures are also dependent on the selected platform for a build).",
+                        help="The build target architecture identifier (the available architectures are also dependent on the selected platform for a build).\n" +
+                             "                Note: Not required when using the 'j2v8package' build step.",
                         dest="arch",
-                        required=True,
+                        required=False,
+                        default=None,
                         choices=bc.avail_architectures)
 
 def init_optional_args(parser):

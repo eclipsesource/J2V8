@@ -25,6 +25,8 @@ atomic_build_steps = [
     CLIStep(c.build_j2v8_optimize, "    The native J2V8 libraries are optimized for performance and/or filesize by using the available tools of the target-platform / compiler-toolchain."),
     CLIStep(c.build_j2v8_java, "        Compiles the Java source code and packages it, including the previously built native libraries, into the final package artifacts.\n" +
                        "                For the execution of this build-step Maven (Java) or Gradle (Android) are used for the respective target platforms."),
+    CLIStep(c.build_j2v8_package, "     Packages all previously built native libraries (from multiple architectures) into a single multi-architecture artifact.\n" +
+                       "                This step does not run 'clean', preserving all native libraries in src/main/jniLibs/. Does not require --arch parameter."),
     CLIStep(c.build_j2v8_test, "        Runs the Java (JUnit/Gradle) unit tests."),
     CLIStep(c.build_j2v8_release, "     Release J2V8."),
 ]

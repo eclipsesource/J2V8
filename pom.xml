@@ -2,19 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  <!--
-  The following XML values will be replaced by the build-system before the
-  JAR package is compiled and bundled in the "j2v8java" build-step.
-  (any changes that you made to these XML values will then be overwritten!)
-  - <os>
-  - <arch>
-  - <artifactId>
-  - <version>
-  - <name>
-
-  If you want to specify a different version string for the JAR bundle,
-  please change the values in build_settings.py instead.
-  -->
+  
   <os>macos</os>
   <ws>gtk</ws>
   <arch>aarch_64</arch>

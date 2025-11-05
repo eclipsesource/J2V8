@@ -169,6 +169,11 @@ set(src_files
     jni/com_eclipsesource_v8_V8Impl.h
 )
 
+# Android-specific source files
+# if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+#     list(APPEND src_files jni/android_stdio_stubs.c)
+# endif()
+
 source_group("" FILES ${src_files})
 
 #-----------------------------------------------------------------------
