@@ -16,6 +16,9 @@ import java.util.Iterator;
 import com.eclipsesource.v8.ReferenceHandler;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Value;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 /**
  * A memory manager that tracks all V8 Handles while the object is registered.
@@ -30,7 +33,7 @@ public class MemoryManager {
 
     private MemoryManagerReferenceHandler memoryManagerReferenceHandler;
     private V8                            v8;
-    private ArrayList<V8Value>            references = new ArrayList<V8Value>();
+    private Set<V8Value> references = Collections.newSetFromMap(new IdentityHashMap<>());
     private boolean                       releasing = false;
     private boolean                       released   = false;
 
