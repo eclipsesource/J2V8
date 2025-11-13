@@ -315,4 +315,32 @@ public class MemoryManagerTest {
         assertTrue(memoryManager.isReleased());
     }
 
+    @Test
+    public void testPersistedObjectAffectReferenceCount() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+        V8Object object = new V8Object(v8);
+
+        assertEquals(1, memoryManager.getObjectReferenceCount());
+        memoryManager.persist(object);
+        assertEquals(0, memoryManager.getObjectReferenceCount());
+
+        memoryManager.release();
+        object.close();
+    }
+
+    @Test
+    public void testPersistDuplicatedObject() {
+        MemoryManager memoryManager = new MemoryManager(v8);
+        V8Object object1 = new V8Object(v8);
+        V8Object object2 = object1.twin();
+
+        memoryManager.persist(object2);
+        memoryManager.release();
+
+        assertTrue(object1.isReleased());
+        assertFalse(object2.isReleased());
+        object1.close();
+        object2.close();
+    }
+
 }
