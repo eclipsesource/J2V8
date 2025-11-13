@@ -98,7 +98,7 @@ public class NodeJS {
         try {
             File startupScript = createTemporaryScriptFile(STARTUP_SCRIPT, STARTUP_SCRIPT_NAME);
             try {
-                v8.createNodeRuntime(startupScript.getAbsolutePath());
+                v8.createNodeRuntime(startupScript.getCanonicalPath());
             } finally {
                 startupScript.delete();
             }
@@ -165,9 +165,11 @@ public class NodeJS {
         v8.checkThread();
         V8Array requireParams = new V8Array(v8);
         try {
-            requireParams.push(file.getAbsolutePath());
+            requireParams.push(file.getCanonicalPath());
             return (V8Object) require.call(null, requireParams);
-        } finally {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }finally {
             requireParams.close();
         }
     }
@@ -202,8 +204,10 @@ public class NodeJS {
             public Object invoke(final V8Object receiver, final V8Array parameters) {
                 V8Array requireParams = new V8Array(v8);
                 try {
-                    requireParams.push(file.getAbsolutePath());
+                    requireParams.push(file.getCanonicalPath());
                     return require.call(null, requireParams);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 } finally {
                     requireParams.close();
                 }
