@@ -40,8 +40,8 @@ android {
 }
 
 dependencies {
-    // Reference the J2V8 AAR from the parent project
-    implementation files('../build/outputs/aar/j2v8-release.aar')
+    // J2V8 from Maven Central
+    implementation 'com.eclipsesource.j2v8:j2v8:6.3.4'
     
     // Android dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'

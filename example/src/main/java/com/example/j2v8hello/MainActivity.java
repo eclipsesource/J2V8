@@ -24,11 +24,12 @@ public class MainActivity extends AppCompatActivity {
             
             // Also demonstrate math
             int mathResult = v8.executeIntegerScript("7 * 6");
-            
+
             // Display results
             String output = "JavaScript Result:\n" + result + "\n\n" +
                           "Math Result (7 * 6):\n" + mathResult + "\n\n" +
-                          "V8 Version:\n" + V8.getV8Version();
+                          "V8 Version:\n" + V8.getV8Version() + "\n\n" +
+                          "J2V8 Version:\n" + V8.getJ2V8Version();
             
             resultText.setText(output);
             
