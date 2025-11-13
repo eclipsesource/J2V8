@@ -185,14 +185,16 @@ def apply_maven_config_settings(config, src_pom_path = "./pom.xml", target_pom_p
     os = config.inject_env("$VENDOR-$PLATFORM")
     arch = config.file_abi
     version = s.J2V8_FULL_VERSION
-    name = config.inject_env("j2v8_$VENDOR-$PLATFORM_$FILE_ABI")
+    # Use simple "j2v8" artifact ID for single multi-arch AAR
+    artifact_id = "j2v8"
+    name = "j2v8"
 
     maven_settings = {
         "properties": {
             "os": os,
             "arch": arch,
         },
-        "artifactId": name,
+        "artifactId": artifact_id,
         "version": version,
         "name": name,
     }

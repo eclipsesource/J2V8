@@ -148,11 +148,39 @@ def build_j2v8_test(config):
 
 android_config.build_step(c.build_j2v8_test, build_j2v8_test)
 #-----------------------------------------------------------------------
+def build_j2v8_publish(config):
+    """
+    Publish Android AAR to Maven Central Portal.
+    Publishes the multi-architecture AAR as a single 'j2v8' artifact.
+    Note: Run 'j2v8package' first to create the multi-arch AAR with all native libraries.
+    """
+    # Update Maven pom.xml settings (modifies file in place)
+    u.apply_maven_config_settings(config)
+    
+    # Use simple artifact ID without platform/architecture
+    artifact_id = "j2v8"
+    version = u.s.J2V8_FULL_VERSION
+    
+    return \
+        u.setEnvVar("ARTIFACT_ID", artifact_id) + \
+        u.setEnvVar("VERSION", version) + [
+        "rm -rf target/*",
+        "mkdir -p target",
+        "cp build/outputs/aar/j2v8-release.aar target/$ARTIFACT_ID-$VERSION.aar",
+        "cp pom.xml target/$ARTIFACT_ID-$VERSION.pom",
+        "sed -i.bak 's|<packaging>pom</packaging>|<packaging>aar</packaging>|' target/$ARTIFACT_ID-$VERSION.pom && rm target/$ARTIFACT_ID-$VERSION.pom.bak",
+        "mvn package -Prelease -Dgpg.skip=true",
+        "cd target && rm -f $ARTIFACT_ID-$VERSION.pom.asc $ARTIFACT_ID-$VERSION.pom.md5 $ARTIFACT_ID-$VERSION.pom.sha1 && for file in *.jar *.aar *.pom; do [ -f \"$file\" ] && gpg --batch --passphrase \"$KEYSTORE_PASSWORD\" -ab \"$file\" && md5sum \"$file\" | awk '{print $1}' > \"${file}.md5\" && shasum -a 1 \"$file\" | awk '{print $1}' > \"${file}.sha1\"; done && cd ..",
+        "mvn assembly:single@create-central-bundle -Prelease",
+        "mvn deploy -Prelease -Dgpg.skip=true"
+    ]
+
+android_config.build_step(c.build_j2v8_publish, build_j2v8_publish)
+#-----------------------------------------------------------------------
 def build_j2v8_release(config):
     return \
         u.setVersionEnv(config) + \
-        u.gradle(" uploadArchives")
+        u.gradle("publish")
 
 android_config.build_step(c.build_j2v8_release, build_j2v8_release)
 #-----------------------------------------------------------------------
-

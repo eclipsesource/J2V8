@@ -1,0 +1,394 @@
+diff --git a/build.gradle b/build.gradle
+index c192aca42a..a882c146a3 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -8,12 +8,16 @@
+     }
+ }
+ 
++plugins {
++    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
++}
++
+ apply plugin: 'com.android.library'
+ apply plugin: 'maven-publish'
+ apply plugin: 'signing'
+ 
+ group = 'com.eclipsesource.j2v8'
+-version = System.getenv('J2V8_FULL_VERSION') ?: '0.0.0-local'
++version = System.getenv('J2V8_FULL_VERSION') ?: '6.3.2'
+ 
+ base {
+     archivesName = 'j2v8'
+@@ -97,33 +101,22 @@
+                 }
+             }
+         }
+-
+-        repositories {
+-            if (System.getenv('MAVEN_REPO_USER') && System.getenv('MAVEN_REPO_PASS')) {
+-                maven {
+-                    name = 'sonatype'
+-                    url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+-                    credentials {
+-                        username = System.getenv('MAVEN_REPO_USER')
+-                        password = System.getenv('MAVEN_REPO_PASS')
+-                    }
+-                }
+-
+-                maven {
+-                    name = 'sonatypeSnapshots'
+-                    url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+-                    credentials {
+-                        username = System.getenv('MAVEN_REPO_USER')
+-                        password = System.getenv('MAVEN_REPO_PASS')
+-                    }
+-                }
+-            }
++    }
++
++    signing {
++        if (findProperty('signing.keyId')) {
++            sign publishing.publications.release
+         }
+     }
+ }
+ 
+-signing {
+-    if (findProperty('signing.keyId')) {
+-        sign publishing.publications.release
++nexusPublishing {
++    repositories {
++        central {
++            nexusUrl.set(uri("https://central.sonatype.com/api/v1/publisher/"))
++            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/api/v1/publisher/"))
++            username = System.getenv('MAVEN_REPO_USER')
++            password = System.getenv('MAVEN_REPO_PASS')
++        }
+     }
+ }
+diff --git a/build_system/build_constants.py b/build_system/build_constants.py
+index 16c6b61aec..059558d709 100644
+--- a/build_system/build_constants.py
++++ b/build_system/build_constants.py
+@@ -27,6 +27,8 @@
+                        "                For the execution of this build-step Maven (Java) or Gradle (Android) are used for the respective target platforms."),
+     CLIStep(c.build_j2v8_package, "     Packages all previously built native libraries (from multiple architectures) into a single multi-architecture artifact.\n" +
+                        "                This step does not run 'clean', preserving all native libraries in src/main/jniLibs/. Does not require --arch parameter."),
++    CLIStep(c.build_j2v8_publish, "     Publishes the J2V8 package to Maven Central Portal.\n" +
++                       "                Updates pom.xml with artifact metadata, creates bundle with all required files (pom.xml, AAR, sources, javadoc, signatures), and uploads to Maven Central."),
+     CLIStep(c.build_j2v8_test, "        Runs the Java (JUnit/Gradle) unit tests."),
+     CLIStep(c.build_j2v8_release, "     Release J2V8."),
+ ]
+diff --git a/build_system/build_settings.py b/build_system/build_settings.py
+index 621a210077..5f3fb412d0 100644
+--- a/build_system/build_settings.py
++++ b/build_system/build_settings.py
+@@ -16,7 +16,7 @@
+ # J2V8 settings
+ #-----------------------------------------------------------------------
+ 
+-J2V8_VERSION_MAJOR, J2V8_VERSION_MINOR, J2V8_VERSION_PATCH = 6, 2, 1
++J2V8_VERSION_MAJOR, J2V8_VERSION_MINOR, J2V8_VERSION_PATCH = 6, 3, 4
+ # J2V8_VERSION_SUFFIX = "-SNAPSHOT"
+ J2V8_VERSION_SUFFIX = ""
+ 
+diff --git a/build_system/config_android.py b/build_system/config_android.py
+index a474ecbd3f..0db378adcb 100644
+--- a/build_system/config_android.py
++++ b/build_system/config_android.py
+@@ -148,11 +148,39 @@
+ 
+ android_config.build_step(c.build_j2v8_test, build_j2v8_test)
+ #-----------------------------------------------------------------------
++def build_j2v8_publish(config):
++    """
++    Publish Android AAR to Maven Central Portal.
++    Publishes the multi-architecture AAR as a single 'j2v8' artifact.
++    Note: Run 'j2v8package' first to create the multi-arch AAR with all native libraries.
++    """
++    # Update Maven pom.xml settings (modifies file in place)
++    u.apply_maven_config_settings(config)
++    
++    # Use simple artifact ID without platform/architecture
++    artifact_id = "j2v8"
++    version = u.s.J2V8_FULL_VERSION
++    
++    return \
++        u.setEnvVar("ARTIFACT_ID", artifact_id) + \
++        u.setEnvVar("VERSION", version) + [
++        "rm -rf target/*",
++        "mkdir -p target",
++        "cp build/outputs/aar/j2v8-release.aar target/$ARTIFACT_ID-$VERSION.aar",
++        "cp pom.xml target/$ARTIFACT_ID-$VERSION.pom",
++        "sed -i.bak 's|<packaging>pom</packaging>|<packaging>aar</packaging>|' target/$ARTIFACT_ID-$VERSION.pom && rm target/$ARTIFACT_ID-$VERSION.pom.bak",
++        "mvn package -Prelease -Dgpg.skip=true",
++        "cd target && rm -f $ARTIFACT_ID-$VERSION.pom.asc $ARTIFACT_ID-$VERSION.pom.md5 $ARTIFACT_ID-$VERSION.pom.sha1 && for file in *.jar *.aar *.pom; do [ -f \"$file\" ] && gpg --batch --passphrase \"$KEYSTORE_PASSWORD\" -ab \"$file\" && md5sum \"$file\" | awk '{print $1}' > \"${file}.md5\" && shasum -a 1 \"$file\" | awk '{print $1}' > \"${file}.sha1\"; done && cd ..",
++        "mvn assembly:single@create-central-bundle -Prelease",
++        "mvn deploy -Prelease -Dgpg.skip=true"
++    ]
++
++android_config.build_step(c.build_j2v8_publish, build_j2v8_publish)
++#-----------------------------------------------------------------------
+ def build_j2v8_release(config):
+     return \
+         u.setVersionEnv(config) + \
+-        u.gradle(" uploadArchives")
++        u.gradle("publish")
+ 
+ android_config.build_step(c.build_j2v8_release, build_j2v8_release)
+ #-----------------------------------------------------------------------
+-
+diff --git a/build_system/constants.py b/build_system/constants.py
+index bc8fc9c3ee..8403575de0 100644
+--- a/build_system/constants.py
++++ b/build_system/constants.py
+@@ -25,6 +25,7 @@
+ build_j2v8_optimize = 'j2v8optimize'
+ build_j2v8_java = 'j2v8java'
+ build_j2v8_package = 'j2v8package'
++build_j2v8_publish = 'j2v8publish'
+ build_j2v8_test = 'j2v8test'
+ build_j2v8_release = 'j2v8release'
+ 
+diff --git a/build_system/shared_build_steps.py b/build_system/shared_build_steps.py
+index ae0f4440ab..9dce56188c 100644
+--- a/build_system/shared_build_steps.py
++++ b/build_system/shared_build_steps.py
+@@ -185,14 +185,16 @@
+     os = config.inject_env("$VENDOR-$PLATFORM")
+     arch = config.file_abi
+     version = s.J2V8_FULL_VERSION
+-    name = config.inject_env("j2v8_$VENDOR-$PLATFORM_$FILE_ABI")
++    # Use simple "j2v8" artifact ID for single multi-arch AAR
++    artifact_id = "j2v8"
++    name = "j2v8"
+ 
+     maven_settings = {
+         "properties": {
+             "os": os,
+             "arch": arch,
+         },
+-        "artifactId": name,
++        "artifactId": artifact_id,
+         "version": version,
+         "name": name,
+     }
+diff --git a/diff.txt b/diff.txt
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/pom.xml b/pom.xml
+index 4a5126dd8a..2c46a0e7de 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,17 +3,17 @@
+   <properties>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   
+-  <os>macos</os>
++  <os>android</os>
+   <ws>gtk</ws>
+-  <arch>aarch_64</arch>
++  <arch>arm64-v8a</arch>
+   </properties>
+ 
+   <groupId>com.eclipsesource.j2v8</groupId>
+-  <artifactId>j2v8_macos_aarch_64</artifactId>
+-  <version>6.2.1</version>
+-  <packaging>bundle</packaging>
++  <artifactId>j2v8</artifactId>
++  <version>6.3.4</version>
++  <packaging>pom</packaging>
+ 
+-  <name>j2v8_macos_aarch_64</name>
++  <name>j2v8</name>
+   <description>J2V8 is a set of Java bindings for V8</description>
+   <url>https://github.com/eclipsesource/j2v8</url>
+   <licenses>
+@@ -52,14 +52,7 @@
+   </dependencies>
+ 
+   <distributionManagement>
+-    <snapshotRepository>
+-      <id>ossrh</id>
+-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+-    </snapshotRepository>
+-    <repository>
+-      <id>ossrh</id>
+-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+-    </repository>
++    
+   </distributionManagement>
+ 
+   <build>
+@@ -75,6 +68,17 @@
+       </plugin>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
++        <artifactId>maven-jar-plugin</artifactId>
++        <version>3.3.0</version>
++        <executions>
++          <execution>
++            <id>default-jar</id>
++            <phase>none</phase>
++          </execution>
++        </executions>
++      </plugin>
++      <plugin>
++        <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-surefire-plugin</artifactId>
+         <version>2.22.0</version>
+         <configuration>
+@@ -110,15 +114,87 @@
+       <build>
+         <plugins>
+           <plugin>
+-            <groupId>org.sonatype.plugins</groupId>
+-            <artifactId>nexus-staging-maven-plugin</artifactId>
+-            <version>1.6.3</version>
+-            <extensions>true</extensions>
+-            <configuration>
+-              <serverId>ossrh</serverId>
+-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+-            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+-            </configuration>
++            <groupId>org.apache.maven.plugins</groupId>
++            <artifactId>maven-install-plugin</artifactId>
++            <configuration>
++              <skip>true</skip>
++            </configuration>
++          </plugin>
++          <plugin>
++            <groupId>org.apache.maven.plugins</groupId>
++            <artifactId>maven-deploy-plugin</artifactId>
++            <configuration>
++              <skip>true</skip>
++            </configuration>
++          </plugin>
++          <plugin>
++            <groupId>org.codehaus.mojo</groupId>
++            <artifactId>build-helper-maven-plugin</artifactId>
++            <version>3.4.0</version>
++            <executions>
++              <execution>
++                <id>attach-aar</id>
++                <phase>package</phase>
++                <goals>
++                  <goal>attach-artifact</goal>
++                </goals>
++                <configuration>
++                  <artifacts>
++                    <artifact>
++                      <file>${project.build.directory}/${project.artifactId}-${project.version}.aar</file>
++                      <type>aar</type>
++                    </artifact>
++                  </artifacts>
++                </configuration>
++              </execution>
++            </executions>
++          </plugin>
++          <plugin>
++            <groupId>org.apache.maven.plugins</groupId>
++            <artifactId>maven-assembly-plugin</artifactId>
++            <version>3.6.0</version>
++            <executions>
++              <execution>
++                <id>create-central-bundle</id>
++                <phase>package</phase>
++                <goals>
++                  <goal>single</goal>
++                </goals>
++                <configuration>
++                  <descriptors>
++                    <descriptor>src/assembly/central-bundle.xml</descriptor>
++                  </descriptors>
++                  <appendAssemblyId>true</appendAssemblyId>
++                </configuration>
++              </execution>
++            </executions>
++          </plugin>
++          <plugin>
++            <groupId>org.codehaus.mojo</groupId>
++            <artifactId>exec-maven-plugin</artifactId>
++            <version>3.1.0</version>
++            <executions>
++              <execution>
++                <id>upload-to-central-portal</id>
++                <phase>deploy</phase>
++                <goals>
++                  <goal>exec</goal>
++                </goals>
++                <configuration>
++                  <executable>curl</executable>
++                  <arguments>
++                    <argument>--request</argument>
++                    <argument>POST</argument>
++                    <argument>--verbose</argument>
++                    <argument>--header</argument>
++                    <argument>Authorization: Bearer ${env.MAVEN_REPO_TOKEN}</argument>
++                    <argument>--form</argument>
++                    <argument>bundle=@${project.build.directory}/${project.artifactId}-${project.version}-central-bundle.zip</argument>
++                    <argument>https://central.sonatype.com/api/v1/publisher/upload?name=${project.artifactId}&amp;publishingType=AUTOMATIC</argument>
++                  </arguments>
++                </configuration>
++              </execution>
++            </executions>
+           </plugin>
+           <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+@@ -150,6 +226,10 @@
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-gpg-plugin</artifactId>
+             <version>1.5</version>
++            <configuration>
++              <keyname>${env.KEY_ID}</keyname>
++              <passphrase>${env.KEYSTORE_PASSWORD}</passphrase>
++            </configuration>
+             <executions>
+               <execution>
+                 <id>sign-artifacts</id>
+diff --git a/src/assembly/central-bundle.xml b/src/assembly/central-bundle.xml
+new file mode 100644
+index 0000000000..c77e0a3c81
+--- /dev/null
++++ b/src/assembly/central-bundle.xml
+@@ -0,0 +1,39 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
++          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
++    <id>central-bundle</id>
++    <formats>
++        <format>zip</format>
++    </formats>
++    <includeBaseDirectory>false</includeBaseDirectory>
++    <files>
++        <!-- Include modified POM from target with proper Maven naming -->
++        <file>
++            <source>${project.build.directory}/${project.artifactId}-${project.version}.pom</source>
++            <destName>${project.artifactId}-${project.version}.pom</destName>
++            <outputDirectory>com/eclipsesource/j2v8/${project.artifactId}/${project.version}</outputDirectory>
++        </file>
++    </files>
++    <fileSets>
++        <!-- Include artifacts from target directory -->
++        <fileSet>
++            <directory>${project.build.directory}</directory>
++            <outputDirectory>com/eclipsesource/j2v8/${project.artifactId}/${project.version}</outputDirectory>
++            <includes>
++                <!-- Main artifact (AAR/JAR/bundle) -->
++                <include>${project.artifactId}-${project.version}.aar</include>
++                <include>${project.artifactId}-${project.version}.jar</include>
++                <!-- Sources JAR -->
++                <include>${project.artifactId}-${project.version}-sources.jar</include>
++                <!-- Javadoc JAR -->
++                <include>${project.artifactId}-${project.version}-javadoc.jar</include>
++                <!-- GPG signatures -->
++                <include>*.asc</include>
++                <!-- Checksums -->
++                <include>*.md5</include>
++                <include>*.sha1</include>
++            </includes>
++        </fileSet>
++    </fileSets>
++</assembly>

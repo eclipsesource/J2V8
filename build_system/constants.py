@@ -25,6 +25,7 @@ build_j2v8_cpp = 'j2v8cpp'
 build_j2v8_optimize = 'j2v8optimize'
 build_j2v8_java = 'j2v8java'
 build_j2v8_package = 'j2v8package'
+build_j2v8_publish = 'j2v8publish'
 build_j2v8_test = 'j2v8test'
 build_j2v8_release = 'j2v8release'
 

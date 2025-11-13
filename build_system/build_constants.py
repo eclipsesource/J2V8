@@ -27,6 +27,8 @@ atomic_build_steps = [
                        "                For the execution of this build-step Maven (Java) or Gradle (Android) are used for the respective target platforms."),
     CLIStep(c.build_j2v8_package, "     Packages all previously built native libraries (from multiple architectures) into a single multi-architecture artifact.\n" +
                        "                This step does not run 'clean', preserving all native libraries in src/main/jniLibs/. Does not require --arch parameter."),
+    CLIStep(c.build_j2v8_publish, "     Publishes the J2V8 package to Maven Central Portal.\n" +
+                       "                Updates pom.xml with artifact metadata, creates bundle with all required files (pom.xml, AAR, sources, javadoc, signatures), and uploads to Maven Central."),
     CLIStep(c.build_j2v8_test, "        Runs the Java (JUnit/Gradle) unit tests."),
     CLIStep(c.build_j2v8_release, "     Release J2V8."),
 ]

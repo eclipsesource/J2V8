@@ -3,17 +3,17 @@
   <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   
-  <os>macos</os>
+  <os>android</os>
   <ws>gtk</ws>
-  <arch>aarch_64</arch>
+  <arch>arm64-v8a</arch>
   </properties>
 
   <groupId>com.eclipsesource.j2v8</groupId>
-  <artifactId>j2v8_macos_aarch_64</artifactId>
-  <version>6.2.1</version>
-  <packaging>bundle</packaging>
+  <artifactId>j2v8</artifactId>
+  <version>6.3.4</version>
+  <packaging>pom</packaging>
 
-  <name>j2v8_macos_aarch_64</name>
+  <name>j2v8</name>
   <description>J2V8 is a set of Java bindings for V8</description>
   <url>https://github.com/eclipsesource/j2v8</url>
   <licenses>
@@ -52,14 +52,7 @@
   </dependencies>
 
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
+    
   </distributionManagement>
 
   <build>
@@ -72,6 +65,17 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -110,15 +114,87 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.3</version>
-            <extensions>true</extensions>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              <skip>true</skip>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+              <execution>
+                <id>attach-aar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/${project.artifactId}-${project.version}.aar</file>
+                      <type>aar</type>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>create-central-bundle</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/central-bundle.xml</descriptor>
+                  </descriptors>
+                  <appendAssemblyId>true</appendAssemblyId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>upload-to-central-portal</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>curl</executable>
+                  <arguments>
+                    <argument>--request</argument>
+                    <argument>POST</argument>
+                    <argument>--verbose</argument>
+                    <argument>--header</argument>
+                    <argument>Authorization: Bearer ${env.MAVEN_REPO_TOKEN}</argument>
+                    <argument>--form</argument>
+                    <argument>bundle=@${project.build.directory}/${project.artifactId}-${project.version}-central-bundle.zip</argument>
+                    <argument>https://central.sonatype.com/api/v1/publisher/upload?name=${project.artifactId}&amp;publishingType=AUTOMATIC</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -150,6 +226,10 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
             <version>1.5</version>
+            <configuration>
+              <keyname>${env.KEY_ID}</keyname>
+              <passphrase>${env.KEYSTORE_PASSWORD}</passphrase>
+            </configuration>
             <executions>
               <execution>
                 <id>sign-artifacts</id>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+    <id>central-bundle</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <files>
+        <!-- Include modified POM from target with proper Maven naming -->
+        <file>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}.pom</source>
+            <destName>${project.artifactId}-${project.version}.pom</destName>
+            <outputDirectory>com/eclipsesource/j2v8/${project.artifactId}/${project.version}</outputDirectory>
+        </file>
+    </files>
+    <fileSets>
+        <!-- Include artifacts from target directory -->
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>com/eclipsesource/j2v8/${project.artifactId}/${project.version}</outputDirectory>
+            <includes>
+                <!-- Main artifact (AAR/JAR/bundle) -->
+                <include>${project.artifactId}-${project.version}.aar</include>
+                <include>${project.artifactId}-${project.version}.jar</include>
+                <!-- Sources JAR -->
+                <include>${project.artifactId}-${project.version}-sources.jar</include>
+                <!-- Javadoc JAR -->
+                <include>${project.artifactId}-${project.version}-javadoc.jar</include>
+                <!-- GPG signatures -->
+                <include>*.asc</include>
+                <!-- Checksums -->
+                <include>*.md5</include>
+                <include>*.sha1</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
