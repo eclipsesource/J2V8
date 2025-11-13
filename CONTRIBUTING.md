@@ -6,7 +6,7 @@ contributors to follow so we have a chance to keep on top of things.
 
 ## Code contributions
 
-Code contributions are greatly appreciated. We currently target V8 3.26, so
+Code contributions are greatly appreciated. We currently target V8 3.26, soo
 all contributions must link against that version of V8. Code contributions
 should be accompanied by a set of unit tests. All tests are written in Java
 and executed using JUnit. See `src/test/java` for examples.
