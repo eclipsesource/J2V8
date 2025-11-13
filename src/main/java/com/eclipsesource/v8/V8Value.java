@@ -223,14 +223,34 @@ abstract public class V8Value implements Releasable {
      * the object will be closed, so this should only be used if there is no
      * other way to track object usage.
      *
+     * @param handler A handler that will be notified when the value weakly-
+     *                referenced by this value is reclaimed by the V8
+     *                garbage collector.
+     * @return The receiver.
+     */
+    public V8Value setWeak(WeakReferenceHandler handler) {
+        v8.checkThread();
+        v8.checkReleased();
+        v8.v8WeakReferences.put(getHandle(), new V8.WeakRefEntry(this, handler));
+        v8.setWeak(v8.getV8RuntimePtr(), getHandle());
+        return this;
+    }
+
+    /**
+     * Sets the V8Value as weak reference. A weak reference will eventually
+     * be closed when no more references exist to this object. Once setWeak
+     * is called, you should check if {@link V8Value#isReleased()} is true
+     * before invoking any methods on this object.
+     *
+     * If any other references exist to this object, the object will not be
+     * reclaimed. Even if no reference exist, V8 does not give any guarantee
+     * the object will be closed, so this should only be used if there is no
+     * other way to track object usage.
+     *
      * @return The receiver.
      */
     public V8Value setWeak() {
-        v8.checkThread();
-        v8.checkReleased();
-        v8.v8WeakReferences.put(getHandle(), this);
-        v8.setWeak(v8.getV8RuntimePtr(), getHandle());
-        return this;
+        return setWeak(null);
     }
 
     /**
