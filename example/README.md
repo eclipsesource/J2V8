@@ -15,7 +15,7 @@ This simple Android app:
 
 - Android Studio (latest version recommended)
 - Android SDK with API 21+ (Android 5.0+)
-- An ARM Android device or emulator (armeabi-v7a)
+- An Android device or emulator (ARM, ARM64, x86, or x86_64)
 
 ## Project Structure
 
@@ -37,48 +37,39 @@ example/
 
 ## Building the App
 
+This example uses J2V8 from Maven Central, so there's no need to build J2V8 locally!
+
 ### Option 1: Using Android Studio
 
-1. **First, ensure J2V8 is built:**
-   ```bash
-   cd ..  # Go to J2V8 root
-   python build.py -t android --arch arm --docker j2v8
-   ```
-
-2. **Open the project:**
+1. **Open the project:**
    - Launch Android Studio
    - Select "Open an Existing Project"
    - Navigate to and select the `example/` directory
 
-3. **Sync Gradle:**
-   - Android Studio should automatically sync
+2. **Sync Gradle:**
+   - Android Studio will automatically download J2V8 from Maven Central
    - If not, click "Sync Project with Gradle Files" in the toolbar
 
-4. **Run the app:**
+3. **Run the app:**
    - Connect an Android device or start an emulator
    - Click the "Run" button (green triangle)
    - Select your device/emulator
 
 ### Option 2: Using Command Line
 
-1. **Ensure J2V8 AAR exists:**
-   ```bash
-   cd ..  # Go to J2V8 root
-   ls build/outputs/aar/j2v8-release.aar  # Should exist
-   ```
-
-2. **Build the APK:**
+1. **Build the APK:**
    ```bash
    cd example
    ./gradlew assembleDebug
    ```
+   Gradle will automatically download J2V8 6.3.0 from Maven Central.
 
-3. **Install on device:**
+2. **Install on device:**
    ```bash
    adb install build/outputs/apk/debug/app-debug.apk
    ```
 
-4. **Launch the app:**
+3. **Launch the app:**
    ```bash
    adb shell am start -n com.example.j2v8hello/.MainActivity
    ```
@@ -100,43 +91,32 @@ V8 Version:
 
 ## Troubleshooting
 
+### Gradle Cannot Resolve J2V8
+
+**Problem:** Gradle cannot download J2V8 from Maven Central
+**Solution:** 
+- Ensure you have internet connectivity
+- Check that Maven Central is accessible
+- Verify the version number in `build.gradle` matches the published version
+- Try invalidating caches: `./gradlew clean --refresh-dependencies`
+
 ### App Crashes on Launch
 
 **Problem:** Native library not loaded
-**Solution:** Ensure the AAR contains `jni/armeabi-v7a/libj2v8.so`:
-```bash
-unzip -l ../build/outputs/aar/j2v8-release.aar | grep libj2v8.so
-```
+**Solution:** The J2V8 AAR from Maven Central includes native libraries for all Android architectures (armeabi-v7a, arm64-v8a, x86, x86_64). If crashes persist:
+- Check Android Studio's Logcat for specific error messages
+- Verify your device/emulator architecture is supported
+- Ensure minSdk version is 21 or higher
 
-### Wrong Architecture
+### Architecture Compatibility
 
-**Problem:** App only works on ARM devices
-**Solution:** J2V8 was built for `armeabi-v7a`. To support other architectures:
-```bash
-# For 64-bit ARM
-python build.py -t android --arch arm64 --docker j2v8
+The J2V8 6.3.0 AAR includes native libraries for:
+- **armeabi-v7a** (32-bit ARM devices)
+- **arm64-v8a** (64-bit ARM devices) 
+- **x86** (32-bit x86 emulators/devices)
+- **x86_64** (64-bit x86 emulators/devices)
 
-# For x86 emulators
-python build.py -t android --arch x86 --docker j2v8
-```
-
-Then update `build.gradle`:
-```gradle
-ndk {
-    abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-}
-```
-
-### Gradle Sync Issues
-
-**Problem:** Cannot resolve J2V8 dependency
-**Solution:** The AAR path in `build.gradle` is relative. Ensure:
-```
-J2V8/
-├── build/outputs/aar/j2v8-release.aar  ← Must exist here
-└── example/                             ← You are here
-    └── build.gradle
-```
+Android automatically selects the correct library for your device/emulator, so the app works everywhere without additional configuration.
 
 ## Modifying the JavaScript Code
 
