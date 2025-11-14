@@ -337,6 +337,15 @@ public class V8 extends V8Object {
     }
 
     /**
+     * Gets the J2V8 version of the V8 engine
+     *
+     * @return The version of the V8 Engine.
+     */
+    public static String getJ2V8Version() {
+        return _getJ2V8Version();
+    }
+
+    /**
      * Returns the revision ID of this version as specified
      * by the source code management system. Currently we use
      * Git, so this will return the commit ID for this revision.
@@ -1641,6 +1650,8 @@ public class V8 extends V8Object {
     private native ByteBuffer _createV8ArrayBufferBackingStore(final long v8RuntimePtr, final long objectHandle, final int capacity);
 
     private native static String _getVersion();
+
+    private native static String _getJ2V8Version();
 
     private static native void _setFlags(String v8flags);
 

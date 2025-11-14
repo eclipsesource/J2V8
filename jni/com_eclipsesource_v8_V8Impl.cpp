@@ -321,6 +321,10 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion (JNIEnv *env
   return env->NewStringUTF(utfString);
 }
 
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getJ2V8Version (JNIEnv *env, jclass) {
+  const char* utfString = "6.3.4";
+  return env->NewStringUTF(utfString);
+}
 
 JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getConstructorName
 (JNIEnv *env, jobject, jlong v8RuntimePtr, jlong objectHandle) {

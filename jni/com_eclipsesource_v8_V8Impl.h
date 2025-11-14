@@ -813,6 +813,14 @@ JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getVersion
 
 /*
  * Class:     com_eclipsesource_v8_V8
+ * Method:    _getJ2V8Version
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_eclipsesource_v8_V8__1getJ2V8Version
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_eclipsesource_v8_V8
  * Method:    _setFlags
  * Signature: (Ljava/lang/String;)V
  */
