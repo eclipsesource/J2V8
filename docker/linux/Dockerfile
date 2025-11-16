@@ -23,7 +23,7 @@ RUN ./install.jdk.sh
 
 COPY ./shared/install.maven.sh /temp/docker/shared
 RUN ./install.maven.sh
-ENV PATH "$PATH:/opt/apache-maven-3.5.0/bin"
+ENV PATH "$PATH:/opt/apache-maven-3.6.0/bin"
 
 COPY ./shared/install.cmake.sh /temp/docker/shared
 RUN ./install.cmake.sh
