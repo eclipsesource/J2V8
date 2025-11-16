@@ -1,0 +1,13 @@
+arguments=--init-script C\:\\Users\\nasre\\AppData\\Roaming\\Code\\User\\globalStorage\\redhat.java\\1.47.0\\config_win\\org.eclipse.osgi\\58\\0\\.cp\\gradle\\init\\init.gradle --init-script C\:\\Users\\nasre\\AppData\\Roaming\\Code\\User\\globalStorage\\redhat.java\\1.47.0\\config_win\\org.eclipse.osgi\\58\\0\\.cp\\gradle\\protobuf\\init.gradle
+auto.sync=false
+build.scans.enabled=false
+connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
+connection.project.dir=
+eclipse.preferences.version=1
+gradle.user.home=
+java.home=C\:/Program Files/Eclipse Adoptium/jdk-21.0.8.9-hotspot
+jvm.arguments=
+offline.mode=false
+override.workspace.settings=true
+show.console.view=true
+show.executions.view=true

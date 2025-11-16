@@ -8,6 +8,7 @@ import com.eclipsesource.v8.V8;
  * This example shows various ways to execute JavaScript code
  * and retrieve different types of results.
  */
+//Added a descriptive note for new contributions:This file demonstrates how J2V8 runs Javascript within java
 public class J2V8Example {
     
     public static void main(String[] args) {
