@@ -552,6 +552,16 @@ public class V8ObjectUtils {
         return result;
     }
 
+    private static List<Object> toList(Object array){
+        int length=Array.getLength(array);
+        List<Object> list = new ArrayList<>(length);
+
+        for(int i=0;i<length;i++){
+            list.add(Array.get(array, i));
+        }
+        return list;
+    }
+
     @SuppressWarnings("unchecked")
     private static Object getV8Result(final V8 v8, final Object value, final Map<Object, V8Value> cache) {
         if (cache.containsKey(value)) {
@@ -599,6 +609,9 @@ public class V8ObjectUtils {
         } else if (value instanceof List) {
             V8Array array = toV8Array(v8, (List) value, cache);
             result.push(array);
+        } else if (value.getClass().isArray()){
+            V8Array array = toV8Array(v8, toList(value), cache);
+            result.push(array);
         } else {
             throw new IllegalStateException("Unsupported Object of type: " + value.getClass());
         }
@@ -633,6 +646,9 @@ public class V8ObjectUtils {
             result.add(key, object);
         } else if (value instanceof List) {
             V8Array array = toV8Array(v8, (List) value, cache);
+            result.add(key, array);
+        } else if (value.getClass().isArray()){
+            V8Array array = toV8Array(v8, toList(value), cache);
             result.add(key, array);
         } else {
             throw new IllegalStateException("Unsupported Object of type: " + value.getClass());
