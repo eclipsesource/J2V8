@@ -1,0 +1,13 @@
+sudo: required
+services: docker
+jdk:
+  - openjdk8
+before_install: 
+ - sudo apt-get -qq update
+ - sudo apt-get install -y execstack
+ - curl -O https://download.eclipsesource.com/j2v8/v8/libv8_7.4.288_monolith.zip
+ - mkdir -p v8.out
+ - unzip libv8_7.4.288_monolith.zip -d v8.out
+install:
+  curl https://cmake.org/files/v3.6/cmake-3.6.1-Linux-x86_64.tar.gz | sudo tar -x -z --strip-components 1 -C /usr
+script: python build.py -t linux -a x64 j2v8 test
